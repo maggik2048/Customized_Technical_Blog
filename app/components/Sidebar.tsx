@@ -3,65 +3,91 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FaCube, FaCalculator } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 
-const menu = [
+interface Item {
+  name: string;
+  href?: string;
+  count?: number;
+  children?: Item[];
+}
+
+const menu: Item[] = [
   {
-    title: "Physics",
-    key: "physics",
-    items: [{ name: "Fluid Mechanics", href: "/physics/fluid" }],
-  },
-  {
-    title: "Math",
-    key: "math",
-    items: [{ name: "Linear Algebra", href: "/math/linear" }],
+    name: "Computer Science Revisited (학부 기초 정리)",
+    children: [
+      { name: "Network", count: 3, href: "/cs/network" },
+      { name: "Artificial Intelligence", count: 0, href: "/cs/ai" },
+      { name: "SQL & Database", count: 11, href: "/cs/sql" },
+      {
+        name: "Compiler & Programming Language",
+        count: 27,
+        children: [{ name: "Embedded", count: 2, href: "/cs/compiler/embedded" }],
+      },
+      { name: "Discrete Mathematics", count: 0, href: "/cs/discrete" },
+      {
+        name: "Digital Electronics (COE)",
+        count: 1,
+        children: [
+          { name: "Operating Systems", count: 17, href: "/cs/digital/os" },
+        ],
+      },
+      { name: "Systems Programming", count: 7, href: "/cs/systems" },
+      { name: "DataStructure & Algorithm", count: 0, href: "/cs/dsa" },
+      { name: "C++", count: 0, href: "/cs/cpp" },
+      { name: "Software Engineering", count: 0, href: "/cs/se" },
+      {
+        name: "Security",
+        count: 1,
+        href: "/cs/security",
+      },
+      { name: "Multithreading & Concurrency", count: 13, href: "/cs/concurrency" },
+    ],
   },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const [open, setOpen] = useState<Record<string, boolean>>({ physics: true, math: false });
+  const [open, setOpen] = useState<Record<string, boolean>>({});
 
-  return (
-    <aside className="w-64 h-screen bg-gray-900 text-white p-4 overflow-y-auto">
-      {menu.map((section) => (
-        <div key={section.key} className="mb-4 border-b border-gray-700 pb-2">
+  const renderItems = (items: Item[], parentKey = "") =>
+    items.map((item, index) => {
+      const key = parentKey + index;
+      const hasChildren = item.children && item.children.length > 0;
+
+      return (
+        <div key={key} className="ml-0">
           <button
-            onClick={() => setOpen({ ...open, [section.key]: !open[section.key] })}
-            className="font-semibold text-lg w-full text-left hover:text-yellow-400 transition-colors flex items-center gap-2"
+            onClick={() => hasChildren && setOpen({ ...open, [key]: !open[key] })}
+            className={`flex justify-between items-center w-full px-4 py-2 hover:bg-gray-800 transition-colors rounded text-left ${
+              pathname === item.href ? "bg-gray-700 font-bold" : "text-gray-300"
+            }`}
           >
-            {section.title === "Physics" && <FaCube />}
-            {section.title === "Math" && <FaCalculator />}
-            {section.title}
+            <span>{item.name}</span>
+            {item.count !== undefined && <span className="ml-2 text-gray-400">({item.count})</span>}
           </button>
 
-          {/* Accordion with animation */}
-          <AnimatePresence>
-            {open[section.key] && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="ml-4 mt-2 flex flex-col gap-1 overflow-hidden"
-                transition={{ duration: 0.3 }}
-              >
-                {section.items.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={`block px-4 py-2 rounded text-gray-300 hover:bg-gray-700 hover:text-white transition-colors ${
-                      pathname === item.href ? "bg-gray-700 text-white font-bold" : ""
-                    }`}
-                  >
-                    {item.name}
-                  </Link>
-                ))}
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {hasChildren && (
+            <AnimatePresence>
+              {open[key] && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="ml-4 overflow-hidden flex flex-col gap-1"
+                >
+                  {renderItems(item.children!, key + "-")}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          )}
         </div>
-      ))}
+      );
+    });
+
+  return (
+    <aside className="w-80 h-screen bg-gray-900 text-white p-4 overflow-y-auto">
+      {renderItems(menu)}
     </aside>
   );
 }
