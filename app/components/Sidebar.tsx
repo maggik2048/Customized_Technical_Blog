@@ -12,6 +12,7 @@ interface Item {
   children?: Item[];
 }
 
+// 이전 메뉴 구조 그대로
 const menu: Item[] = [
   {
     name: "Computer Science Revisited (학부 기초 정리)",
@@ -46,6 +47,7 @@ const menu: Item[] = [
   },
 ];
 
+// 메뉴 렌더링 재귀 함수
 export default function Sidebar() {
   const pathname = usePathname();
   const [open, setOpen] = useState<Record<string, boolean>>({});
@@ -59,9 +61,9 @@ export default function Sidebar() {
         <div key={key} className="ml-0">
           <button
             onClick={() => hasChildren && setOpen({ ...open, [key]: !open[key] })}
-            className={`flex justify-between items-center w-full px-4 py-2 hover:bg-gray-800 transition-colors rounded text-left ${
+            className={`flex justify-between items-center w-full px-4 py-2 rounded text-left transition-colors ${
               pathname === item.href ? "bg-gray-700 font-bold" : "text-gray-300"
-            }`}
+            } hover:bg-gray-800`}
           >
             <span>{item.name}</span>
             {item.count !== undefined && <span className="ml-2 text-gray-400">({item.count})</span>}
@@ -86,7 +88,8 @@ export default function Sidebar() {
     });
 
   return (
-    <aside className="w-80 h-screen bg-gray-900 text-white p-4 overflow-y-auto">
+    <aside className="w-64 h-screen bg-black text-white p-6 space-y-4 overflow-y-auto">
+      <h1 className="text-xl font-bold mb-6">Graphics Lab</h1>
       {renderItems(menu)}
     </aside>
   );
