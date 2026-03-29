@@ -1,4 +1,3 @@
-// app/components/SidebarItem.tsx
 "use client";
 
 import { useState } from "react";
@@ -21,17 +20,15 @@ export default function SidebarItem({ item, pathname, parentKey = "" }: Props) {
 
   return (
     <div className="ml-0">
-      {/* 버튼 영역 */}
       <button
         onClick={() => hasChildren && setOpen(!open)}
-        className={`flex justify-between items-center w-full px-4 py-2 rounded text-left transition-colors
-          ${isActive ? "bg-gray-700 font-bold text-white" : "text-gray-300 hover:bg-gray-800"}`}
+        className={`flex justify-between items-center w-full px-4 py-2 text-left transition-colors bg-transparent border-none outline-none
+          ${isActive ? "!bg-gray-700 !font-bold !text-white !text-xl" : "text-gray-300 hover:!bg-gray-800 !text-xl !font-bold"}`}
       >
         <span className="truncate">{item.name}</span>
-        {item.count !== undefined && <span className="ml-2 text-gray-400">{`(${item.count})`}</span>}
+        {item.count !== undefined && <span className="ml-2 text-gray-400">({item.count})</span>}
       </button>
 
-      {/* 자식 메뉴 */}
       {hasChildren && (
         <AnimatePresence>
           {open && (
@@ -47,6 +44,12 @@ export default function SidebarItem({ item, pathname, parentKey = "" }: Props) {
             </motion.div>
           )}
         </AnimatePresence>
+      )}
+
+      {item.href && (
+        <Link href={item.href} className="sr-only">
+          Go
+        </Link>
       )}
     </div>
   );
