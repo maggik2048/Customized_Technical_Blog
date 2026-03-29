@@ -1,3 +1,4 @@
+// app/layout.tsx
 "use client";
 
 import "katex/dist/katex.min.css";
@@ -9,12 +10,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className="flex h-screen overflow-hidden">
-        {/* 왼쪽 사이드바 */}
+        {/* 왼쪽 Sidebar */}
         <Sidebar />
 
-        {/* 오른쪽 메인 콘텐츠 */}
+        {/* 오른쪽 Main Content */}
         <main className="flex-1 bg-gray-100 p-6 overflow-auto relative">
-          {/* 3D Canvas */}
+          {/* 3D Canvas 영역 */}
           <div className="w-full h-96 mb-6 border rounded shadow">
             <Canvas camera={{ position: [3, 3, 3] }}>
               <ambientLight intensity={0.5} />
@@ -27,7 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </Canvas>
           </div>
 
-          {/* 수식 + 본문 */}
+          {/* KaTeX + 본문 */}
           <div className="prose max-w-none">{children}</div>
         </main>
       </body>
