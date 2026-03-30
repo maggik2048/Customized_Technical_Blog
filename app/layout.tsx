@@ -3,6 +3,13 @@ import "./globals.css";
 import { usePathname } from "next/navigation";
 import Sidebar from "./components/Sidebar";
 
+import { Orbitron } from "next/font/google";
+
+const orbitron = Orbitron({
+  subsets: ["latin"],
+  weight: ["400", "700", "900"],
+});
+
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -10,7 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="en">
-      <body style={{ margin: 0 }}>
+      <body className={orbitron.className} style={{ margin: 0 }}>
         {isHome ? (
           // 🔥 HOME (강제 블랙)
           <div
