@@ -1,18 +1,23 @@
-import Link from "next/link";
 import { menu } from "./components/sidebarData";
 import CategoryCard from "./components/CategoryCard";
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-black text-white p-10">
-      <h1 className="text-4xl font-bold mb-8">Graphics Lab V2</h1>
+    <div className="min-h-screen bg-black text-white pl-16 pr-10 pt-12">
+      {/* Title */}
+      <h1 className="text-5xl font-extrabold tracking-tight mb-12">
+        Graphics Lab V2
+      </h1>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-        {menu.map((section) =>
-          section.children?.map((item) => (
-            <CategoryCard key={item.name} item={item} />
-          ))
-        )}
+      {/* Content */}
+      <div className="max-w-5xl">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-8">
+          {menu.map((section) =>
+            section.children?.map((item) => (
+              <CategoryCard key={item.name} item={item} />
+            ))
+          )}
+        </div>
       </div>
     </div>
   );

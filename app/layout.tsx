@@ -1,7 +1,8 @@
 "use client";
-
+import "./globals.css";
 import { usePathname } from "next/navigation";
 import Sidebar from "./components/Sidebar";
+
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -16,7 +17,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             style={{
               width: "100vw",
               height: "100vh",
-              background: "black",
+              backgroundImage: "url('/images/lee-su-yeon-header.jpg')",
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              backgroundRepeat: "no-repeat",
               color: "white",
               display: "flex",
               alignItems: "center",

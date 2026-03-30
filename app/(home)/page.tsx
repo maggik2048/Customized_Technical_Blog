@@ -1,10 +1,9 @@
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-black text-white">
-      <h1 className="text-4xl font-bold">Graphics Lab V2</h1>
-      <p className="mt-2">
-        Select a category from the.
-      </p>
+    <div className="min-h-screen bg-black flex items-center justify-center">
+      <h1 className="text-red-500 text-7xl font-black">
+        TAILWIND TEST
+      </h1>
     </div>
   );
 }
