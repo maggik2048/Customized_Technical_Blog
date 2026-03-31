@@ -3,7 +3,7 @@ import CategoryCard from "./components/CategoryCard";
 
 export default function HomePage() {
   return (
-    <div className="pl-16 pr-10">
+    <div className="pl-16 pr-10 opacity-80">
       {/* 🔥 HUGE TITLE */}
       <h1
         className="
