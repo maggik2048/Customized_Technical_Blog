@@ -16,7 +16,7 @@ export default function CategoryCard({ item }: { item: Item }) {
 
   return (
     <Link href={item.href}>
-      <div className="bg-gray-900 hover:bg-gray-800 transition-all duration-200 p-6 rounded-2xl cursor-pointer border border-gray-800 hover:scale-[1.02]">
+      <div className="bg-gray-950 hover:bg-gray-800 transition p-6 rounded-lg">
         <h2 className="text-xl font-semibold text-gray-100 hover:text-white">
           {item.name}
         </h2>
