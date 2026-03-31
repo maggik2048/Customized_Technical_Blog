@@ -12,8 +12,8 @@ export default function HomePage() {
           height: "100vh",
           display: "flex",
           flexDirection: "column",
-          justifyContent: "flex-start", // 위쪽 정렬
-          paddingTop: "40px", // 타이틀 위로 살짝 이동
+          justifyContent: "flex-start",
+          paddingTop: "40px",
           paddingLeft: "80px",
         }}
       >
@@ -27,36 +27,13 @@ export default function HomePage() {
           >
             Graphics Lab V2
           </h1>
-
-          <div
-            style={{
-              position: "absolute",
-              top: 0,
-              left: "180px",
-              width: "630px",
-              height: "100%",
-              overflow: "hidden",
-            }}
-          >
-            <h1
-              className="hero-title-white"
-              style={{
-                fontSize: "9vh",
-                position: "absolute",
-                top: 0,
-                left: "-180px",
-              }}
-            >
-              Graphics Lab V2
-            </h1>
-          </div>
         </div>
 
         {/* 🔥 CATEGORY GRID 바로 아래 */}
         <div
           style={{
             maxWidth: "1024px",
-            margin: "300px auto 0 auto", 
+            margin: "300px auto 0 auto",
             padding: "0 1rem",
           }}
         >
