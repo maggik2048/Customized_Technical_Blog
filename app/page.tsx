@@ -1,5 +1,6 @@
 import { menu } from "./components/sidebarData";
 import CategoryCard from "./components/CategoryCard";
+import TopHeaderText from "./components/TopHeaderText"; // ← 최상단 import
 
 export default function HomePage() {
   return (
@@ -13,10 +14,13 @@ export default function HomePage() {
           display: "flex",
           flexDirection: "column",
           justifyContent: "flex-start",
-          paddingTop: "40px",
+          paddingTop: "20px",
           paddingLeft: "80px",
         }}
       >
+        {/* 🔹 TOP NAV COMPONENT */}
+        <TopHeaderText /> {/* ← 여기서 바로 호출 */}
+
         {/* 🔥 HERO TITLE */}
         <div style={{ position: "relative", height: "9vh", marginBottom: "1.5rem" }}>
           <h1
