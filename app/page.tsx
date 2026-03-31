@@ -45,7 +45,7 @@ export default function HomePage() {
             padding: "0 1rem",
           }}
         >
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-1">
             {menu.map((section) =>
               section.children?.map((item) => <CategoryCard key={item.name} item={item} />)
             )}

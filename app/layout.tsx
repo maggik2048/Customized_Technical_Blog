@@ -28,7 +28,17 @@ export default function RootLayout({
               position: "relative",
               width: "100vw",
               height: "100vh",
-              backgroundImage: "url('/images/lee-su-yeon-header-bright.jpg')",
+
+              // ✅ 여기만 수정됨 (vignette 추가)
+              backgroundImage: `
+                radial-gradient(circle at center, 
+                  rgba(0,0,0,0) 40%, 
+                  rgba(0,0,0,0.2) 70%, 
+                  rgba(0,0,0,0.2) 100%
+                ),
+                url('/images/lee-su-yeon-header.jpg')
+              `,
+
               backgroundSize: "cover",
               backgroundPosition: "center",
               backgroundRepeat: "no-repeat",
@@ -43,9 +53,9 @@ export default function RootLayout({
                 top: 0,
                 left: "180px",
                 height: "100%",
-                width: "630px", // adjust width here
-                background: "rgba(0.5, 0.5, 0.5, 0.7)", // adjust opacity here
-                backdropFilter: "blur(3px)", // osptional sci-fi glass effect
+                width: "630px",
+                background: "rgba(0.5, 0.5, 0.5, 0.7)",
+                backdropFilter: "blur(3px)",
               }}
             />
 
@@ -57,7 +67,7 @@ export default function RootLayout({
                 height: "100%",
                 display: "flex",
                 alignItems: "center",
-                paddingLeft: "80px", // pushes content into the bar
+                paddingLeft: "80px",
               }}
             >
               {children}
