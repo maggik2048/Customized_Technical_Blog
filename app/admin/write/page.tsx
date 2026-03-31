@@ -3,12 +3,15 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import { menu, Item } from "../../components/sidebarData"; // 수정된 경로
 
 export default function WritePage() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [category, setCategory] = useState("discrete"); // 기본값
+
+  const firstCategory = menu[0].children?.[0]?.href?.split("/").pop() || "";
+  const [category, setCategory] = useState(firstCategory);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +25,6 @@ export default function WritePage() {
       return;
     }
 
-    // 저장 후 카테고리 페이지로 이동
     router.push(`/category/${category}`);
   };
 
@@ -30,7 +32,15 @@ export default function WritePage() {
     <div style={{ padding: 40 }}>
       <h1>새 글 작성</h1>
 
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 16, maxWidth: 600 }}>
+      <form
+        onSubmit={handleSubmit}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 16,
+          maxWidth: 600,
+        }}
+      >
         <input
           type="text"
           placeholder="제목"
@@ -40,11 +50,19 @@ export default function WritePage() {
           style={{ padding: 8, fontSize: 16 }}
         />
 
-        <select value={category} onChange={(e) => setCategory(e.target.value)}>
-          <option value="discrete">Discrete</option>
-          <option value="network">Network</option>
-          <option value="ai">AI</option>
-          <option value="dsa">DSA</option>
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          style={{ padding: 8, fontSize: 16 }}
+        >
+          {menu[0].children?.map((item: Item) => (
+            <option
+              key={item.name}
+              value={item.href?.split("/").pop() || ""}
+            >
+              {item.name}
+            </option>
+          ))}
         </select>
 
         <textarea
@@ -56,7 +74,15 @@ export default function WritePage() {
           required
         />
 
-        <button type="submit" style={{ padding: 12, backgroundColor: "#1e40af", color: "#fff", fontWeight: "bold" }}>
+        <button
+          type="submit"
+          style={{
+            padding: 12,
+            backgroundColor: "#1e40af",
+            color: "#fff",
+            fontWeight: "bold",
+          }}
+        >
           저장
         </button>
       </form>

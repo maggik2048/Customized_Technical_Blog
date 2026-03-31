@@ -29,7 +29,7 @@ export default function LatestPosts() {
         .limit(5);
 
       if (error) {
-        console.error("Failed to fetch latest posts:", error);
+        console.error(error);
         setLoading(false);
         return;
       }
@@ -53,10 +53,7 @@ export default function LatestPosts() {
             <Link href={`/post/${post.id}`}>
               <h3 style={{ cursor: "pointer", color: "#1e40af" }}>{post.title}</h3>
             </Link>
-            <ReactMarkdown
-              remarkPlugins={[remarkMath]}
-              rehypePlugins={[rehypeKatex]}
-            >
+            <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
               {post.content.slice(0, 150) + (post.content.length > 150 ? "..." : "")}
             </ReactMarkdown>
             <div style={{ marginTop: 8, fontSize: 12, color: "#888" }}>

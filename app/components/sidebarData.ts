@@ -13,6 +13,7 @@ export const menu: Item[] = [
       { name: "Artificial Intelligence", count: 0, href: "/category/ai" },
       { name: "Discrete Mathematics", count: 0, href: "/category/discrete" },
       { name: "Data Structure & Algorithm", count: 0, href: "/category/dsa" },
+      { name: "Unreal Engine", count: 30, href: "/category/unrealengine" },
     ],
   },
 ];
