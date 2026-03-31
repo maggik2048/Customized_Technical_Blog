@@ -17,29 +17,26 @@ a {
   text-decoration: none !important;
 }
 
-/* 🔥 TEXTURE TITLE */
+/* 🔥 HERO TITLE */
 .hero-title {
-  background-image: url("/images/lee-su-yeon-header-bright.jpg");
-  background-size: cover;
-  background-position: center;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.005em;
+  font-size: 9vh;
 
+  background-image: 
+    linear-gradient(
+      to right,
+      rgba(255,255,255,0.8) 0px,
+      rgba(255,255,255,0.8) 600px,
+      transparent 600px,
+      transparent 100%
+    ),
+    url("/images/lee-su-yeon-header-bright.jpg");
+  
+  background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 
-  font-weight: 900;
-  line-height: 1;
-  letter-spacing: 0.005em;
-
-  text-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
-}
-
-/* 🔥 WHITE OVERLAY TITLE (bar 안에서만 보일 것) */
-.hero-title-white {
-  color: rgba(255, 255, 255, 0.8);
-
-  font-weight: 900;
-  line-height: 1;
-  letter-spacing: 0.005em;
-
-  pointer-events: none;
+  text-shadow: 0 0 20px rgba(0,0,0,0.4);
 }
