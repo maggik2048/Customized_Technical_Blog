@@ -19,6 +19,6 @@ a {
 
 
 a {
-  color: red !important;
+  color: rgba(255, 255, 255, 0.8) !important;
   text-decoration: none !important;
 }
