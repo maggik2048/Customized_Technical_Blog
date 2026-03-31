@@ -1,10 +1,23 @@
+// CategoryCard.tsx
 import Link from "next/link";
 import { Item } from "./sidebarData";
 
 export default function CategoryCard({ item }: { item: Item }) {
+  const cardScale = 0.65; // 1/1.8
+
+  // 공통 스타일
+  const cardStyle: React.CSSProperties = {
+    transform: `scale(${cardScale})`,
+    transformOrigin: "top left",
+    width: "100%", // grid item width 유지
+  };
+
   if (!item.href) {
     return (
-      <div className="bg-black/50 p-6 rounded-lg opacity-40">
+      <div
+        className="bg-black/50 p-6 rounded-lg opacity-40"
+        style={cardStyle}
+      >
         <h2 className="text-sm font-medium text-gray-400 tracking-wide">
           {item.name}
         </h2>
@@ -14,7 +27,7 @@ export default function CategoryCard({ item }: { item: Item }) {
   }
 
   return (
-    <Link href={item.href} className="block">
+    <Link href={item.href} className="block" style={cardStyle}>
       <div
         className="
           bg-black/70
@@ -29,7 +42,7 @@ export default function CategoryCard({ item }: { item: Item }) {
           className="
             text-sm
             font-medium
-            text-gray-300
+            text-gray-300/80
             tracking-wide
             group-hover:text-white
             transition
@@ -39,7 +52,7 @@ export default function CategoryCard({ item }: { item: Item }) {
         </h2>
 
         {item.count !== undefined && (
-          <p className="text-xs text-gray-500 mt-2">
+          <p className="text-xs text-gray-500/80 mt-2">
             {item.count} topics
           </p>
         )}
