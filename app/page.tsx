@@ -4,33 +4,51 @@ import CategoryCard from "./components/CategoryCard";
 export default function HomePage() {
   return (
     <div className="pl-16 pr-10">
+      
       {/* 🔥 TITLE WRAPPER */}
-      <div style={{ position: "relative" }}>
-        {/* 🔥 원본 (텍스처 텍스트) */}
+      <div
+        style={{
+          position: "relative",
+          height: "9vh", // 🔥 텍스트 높이 고정 (핵심)
+          marginBottom: "2.5rem",
+        }}
+      >
+        {/* 🔥 텍스처 텍스트 */}
         <h1
-          className="
-            hero-title
-            leading-none
-            tracking-[0.005em]
-            mb-10
-          "
-          style={{ fontSize: "9vh" }}
-        >
-          Graphics Lab V2
-        </h1>
-
-        {/* 🔥 복제 (white overlay 텍스트) */}
-        <h1
-          className="hero-title-white"
+          className="hero-title"
           style={{
             fontSize: "9vh",
             position: "absolute",
             top: 0,
-            left: "0", // 🔥 black bar 시작 위치
+            left: 0,
           }}
         >
           Graphics Lab V2
         </h1>
+
+        {/* 🔥 흰색 텍스트 (bar 안에서만 보임) */}
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: "180px",
+            width: "630px",
+            height: "100%",
+            overflow: "hidden",
+          }}
+        >
+          <h1
+            className="hero-title-white"
+            style={{
+              fontSize: "9vh",
+              position: "absolute",
+              top: 0,
+              left: "-180px", // 🔥 핵심: 원래 위치로 보정
+            }}
+          >
+            Graphics Lab V2
+          </h1>
+        </div>
       </div>
 
       {/* 🔥 CATEGORY GRID */}

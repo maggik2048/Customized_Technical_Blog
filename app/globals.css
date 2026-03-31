@@ -13,19 +13,12 @@ body {
 }
 
 a {
-  color: inherit;
-  text-decoration: none;
-}
-
-a {
   color: rgba(255, 255, 255, 0.83) !important;
   text-decoration: none !important;
 }
 
-/* 🔥 HERO TITLE (기존 유지 + 추가 포함 최종본) */
+/* 🔥 TEXTURE TITLE */
 .hero-title {
-  position: relative; /* ✅ 추가 */
-
   background-image: url("/images/lee-su-yeon-header-bright.jpg");
   background-size: cover;
   background-position: center;
@@ -37,29 +30,11 @@ a {
   line-height: 1;
   letter-spacing: 0.005em;
 
-  text-shadow: 0 0 20px rgba(0,0,0,0.4);
+  text-shadow: 0 0 20px rgba(0, 0, 0, 0.4);
 }
 
-/* 🔥 BLACK BAR 영역에서만 흰색 덮기 */
-.hero-title::after {
-  content: attr(data-text);
-  position: absolute;
-  left: 0;
-  top: 0;
-  
-
-  color: rgba(255, 255, 255, 0.8);
-
-  /* 🔥 bar 영역 (180px ~ 810px) */
-  clip-path: inset(0 calc(100% - 810px) 0 180px);
-
-  pointer-events: none;
-}
-
-
+/* 🔥 WHITE OVERLAY TITLE (bar 안에서만 보일 것) */
 .hero-title-white {
-  position: absolute;
-
   color: rgba(255, 255, 255, 0.8);
 
   font-weight: 900;
