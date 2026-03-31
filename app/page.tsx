@@ -1,7 +1,9 @@
+// app/page.tsx
 import { menu } from "./components/sidebarData";
 import CategoryCard from "./components/CategoryCard";
 import TopHeaderText from "./components/TopHeaderText";
-import SocialIcons from "./components/SocialIcons"; // ← 새로 추가
+import SocialIcons from "./components/SocialIcons";
+import Link from "next/link";
 
 export default function HomePage() {
   return (
@@ -49,6 +51,25 @@ export default function HomePage() {
             {menu.map((section) =>
               section.children?.map((item) => <CategoryCard key={item.name} item={item} />)
             )}
+          </div>
+
+          {/* 🔹 글쓰기 버튼 */}
+          <div style={{ marginTop: 32, textAlign: "center" }}>
+            <Link href="/admin/write">
+              <button
+                style={{
+                  padding: "12px 24px",
+                  backgroundColor: "#1e40af",
+                  color: "#fff",
+                  fontWeight: "bold",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                  fontSize: 16,
+                }}
+              >
+                새 글 작성
+              </button>
+            </Link>
           </div>
         </div>
       </div>
