@@ -22,3 +22,19 @@ a {
   color: rgba(255, 255, 255, 0.8) !important;
   text-decoration: none !important;
 }
+
+
+.hero-title {
+  background-image: url("/images/lee-su-yeon-header-bright.jpg");
+  background-size: cover;
+  background-position: center;
+
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 0.005em;
+
+  text-shadow: 0 0 20px rgba(0,0,0,0.4);
+}

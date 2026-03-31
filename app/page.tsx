@@ -7,10 +7,10 @@ export default function HomePage() {
       {/* 🔥 HUGE TITLE */}
       <h1
         className="
-          font-black
+          hero-title
           leading-none
           tracking-[0.005em]
-          text-white
+
           mb-10
         "
         style={{ fontSize: "9vh" }}
