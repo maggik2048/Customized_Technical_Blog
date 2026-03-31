@@ -3,6 +3,7 @@ import { menu } from "./components/sidebarData";
 import CategoryCard from "./components/CategoryCard";
 import TopHeaderText from "./components/TopHeaderText";
 import SocialIcons from "./components/SocialIcons";
+import LatestPosts from "./components/LatestPosts";
 import Link from "next/link";
 
 export default function HomePage() {
@@ -39,37 +40,47 @@ export default function HomePage() {
           </h1>
         </div>
 
-        {/* 🔥 CATEGORY GRID */}
+        {/* 🔥 MAIN GRID: CATEGORY + LATEST POSTS */}
         <div
           style={{
+            display: "flex",
             maxWidth: "1024px",
             margin: "300px auto 0 auto",
             padding: "0 1rem",
+            gap: "2rem",
           }}
         >
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-1">
-            {menu.map((section) =>
-              section.children?.map((item) => <CategoryCard key={item.name} item={item} />)
-            )}
+          {/* 🔹 CATEGORY GRID (왼쪽) */}
+          <div style={{ flex: 2 }}>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-1">
+              {menu.map((section) =>
+                section.children?.map((item) => <CategoryCard key={item.name} item={item} />)
+              )}
+            </div>
+
+            {/* 🔹 글쓰기 버튼 */}
+            <div style={{ marginTop: 32, textAlign: "center" }}>
+              <Link href="/admin/write">
+                <button
+                  style={{
+                    padding: "12px 24px",
+                    backgroundColor: "#1e40af",
+                    color: "#fff",
+                    fontWeight: "bold",
+                    borderRadius: 8,
+                    cursor: "pointer",
+                    fontSize: 16,
+                  }}
+                >
+                  새 글 작성
+                </button>
+              </Link>
+            </div>
           </div>
 
-          {/* 🔹 글쓰기 버튼 */}
-          <div style={{ marginTop: 32, textAlign: "center" }}>
-            <Link href="/admin/write">
-              <button
-                style={{
-                  padding: "12px 24px",
-                  backgroundColor: "#1e40af",
-                  color: "#fff",
-                  fontWeight: "bold",
-                  borderRadius: 8,
-                  cursor: "pointer",
-                  fontSize: 16,
-                }}
-              >
-                새 글 작성
-              </button>
-            </Link>
+          {/* 🔹 LATEST POSTS (오른쪽) */}
+          <div style={{ flex: 1 }}>
+            <LatestPosts />
           </div>
         </div>
       </div>
