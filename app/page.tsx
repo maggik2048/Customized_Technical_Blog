@@ -1,6 +1,7 @@
 import { menu } from "./components/sidebarData";
 import CategoryCard from "./components/CategoryCard";
-import TopHeaderText from "./components/TopHeaderText"; // ← 최상단 import
+import TopHeaderText from "./components/TopHeaderText";
+import SocialIcons from "./components/SocialIcons"; // ← 새로 추가
 
 export default function HomePage() {
   return (
@@ -18,8 +19,11 @@ export default function HomePage() {
           paddingLeft: "80px",
         }}
       >
-        {/* 🔹 TOP NAV COMPONENT */}
-        <TopHeaderText /> {/* ← 여기서 바로 호출 */}
+        {/* 🔹 TOP NAV */}
+        <TopHeaderText />
+
+        {/* 🔹 SOCIAL ICONS */}
+        <SocialIcons />
 
         {/* 🔥 HERO TITLE */}
         <div style={{ position: "relative", height: "9vh", marginBottom: "1.5rem" }}>
@@ -33,7 +37,7 @@ export default function HomePage() {
           </h1>
         </div>
 
-        {/* 🔥 CATEGORY GRID 바로 아래 */}
+        {/* 🔥 CATEGORY GRID */}
         <div
           style={{
             maxWidth: "1024px",
