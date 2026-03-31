@@ -2,27 +2,44 @@ import Link from "next/link";
 import { Item } from "./sidebarData";
 
 export default function CategoryCard({ item }: { item: Item }) {
-  // Disabled card (no link)
   if (!item.href) {
     return (
-      <div className="bg-gray-800 p-6 rounded-2xl opacity-50 border border-gray-700">
-        <h2 className="text-xl font-semibold text-gray-300">
+      <div className="bg-black/50 p-6 rounded-lg opacity-40">
+        <h2 className="text-sm font-medium text-gray-400 tracking-wide">
           {item.name}
         </h2>
-        <p className="text-sm text-gray-500 mt-2">Coming soon</p>
+        <p className="text-xs text-gray-500 mt-2">Coming soon</p>
       </div>
     );
   }
 
   return (
-    <Link href={item.href}>
-      <div className="bg-gray-950 hover:bg-gray-800 transition p-6 rounded-lg">
-        <h2 className="text-xl font-semibold text-gray-100 hover:text-white">
+    <Link href={item.href} className="block">
+      <div
+        className="
+          bg-black/70
+          hover:bg-black/85
+          transition
+          p-6
+          rounded-lg
+          shadow-[0_0_20px_rgba(0,0,0,0.5)]
+        "
+      >
+        <h2
+          className="
+            text-sm
+            font-medium
+            text-gray-300
+            tracking-wide
+            group-hover:text-white
+            transition
+          "
+        >
           {item.name}
         </h2>
 
         {item.count !== undefined && (
-          <p className="text-sm text-gray-400 mt-2">
+          <p className="text-xs text-gray-500 mt-2">
             {item.count} topics
           </p>
         )}
