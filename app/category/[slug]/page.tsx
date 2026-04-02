@@ -1,16 +1,14 @@
 import { supabase } from "@/lib/supabase";
-import ReactMarkdown from "react-markdown";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
-import "katex/dist/katex.min.css";
 import Link from "next/link";
+import React from "react";
 
 export default async function CategoryPage(props: any) {
   const params = await props.params;
 
+  // Supabase에서 해당 카테고리 포스트 가져오기
   const { data, error } = await supabase
     .from("posts")
-    .select("*")
+    .select("id, title") // content는 안 가져옴
     .eq("category", params.slug)
     .order("created_at", { ascending: false });
 
@@ -25,21 +23,13 @@ export default async function CategoryPage(props: any) {
       </h1>
 
       {data?.map((post) => (
-        <div key={post.id} style={{ marginBottom: 30 }}>
-          {/* 제목에 링크 적용 */}
+        <div key={post.id} style={{ marginBottom: 20 }}>
+          {/* 제목만 링크 적용 */}
           <Link href={`/post/${post.id}`}>
             <h2 style={{ cursor: "pointer", color: "skyblue" }}>
               {post.title}
             </h2>
           </Link>
-
-          {/* 마크다운 렌더링 */}
-          <ReactMarkdown
-            remarkPlugins={[remarkMath]}
-            rehypePlugins={[rehypeKatex]}
-          >
-            {post.content}
-          </ReactMarkdown>
         </div>
       ))}
     </div>
