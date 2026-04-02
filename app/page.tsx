@@ -1,12 +1,15 @@
 // app/page.tsx
-import { menu } from "./components/sidebarData";
+import { getMenu } from "./components/sidebarData";
 import CategoryCard from "./components/CategoryCard";
 import TopHeaderText from "./components/TopHeaderText";
 import SocialIcons from "./components/SocialIcons";
 import LatestPosts from "./components/LatestPosts";
 import Link from "next/link";
 
-export default function HomePage() {
+// 🔥 async 추가 (핵심)
+export default async function HomePage() {
+  const menu = await getMenu(); // 🔥 이 줄 추가
+
   return (
     <div>
       {/* 🔥 HERO SECTION */}
@@ -40,7 +43,7 @@ export default function HomePage() {
           </h1>
         </div>
 
-        {/* 🔥 MAIN GRID: CATEGORY + LATEST POSTS */}
+        {/* 🔥 MAIN GRID */}
         <div
           style={{
             display: "flex",
@@ -50,11 +53,13 @@ export default function HomePage() {
             gap: "2rem",
           }}
         >
-          {/* 🔹 CATEGORY GRID (왼쪽) */}
+          {/* 🔹 CATEGORY GRID */}
           <div style={{ flex: 2 }}>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-1">
               {menu.map((section) =>
-                section.children?.map((item) => <CategoryCard key={item.name} item={item} />)
+                section.children?.map((item) => (
+                  <CategoryCard key={item.name} item={item} />
+                ))
               )}
             </div>
 
@@ -78,7 +83,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* 🔹 LATEST POSTS (오른쪽) */}
+          {/* 🔹 LATEST POSTS */}
           <div style={{ flex: 1 }}>
             <LatestPosts />
           </div>
