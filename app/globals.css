@@ -40,3 +40,17 @@ a {
 
   text-shadow: 0 0 20px rgba(0,0,0,0.1);
 }
+
+
+
+/* 📄 문서용 (카테고리 / 포스트 내부) */
+.document-font {
+  font-family: 
+    "Courier New",
+    "Menlo",
+    "Monaco",
+    monospace;
+  
+  color: #111; /* 글 읽기용 */
+  line-height: 1.6;
+}
