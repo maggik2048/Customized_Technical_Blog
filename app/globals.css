@@ -54,3 +54,30 @@ a {
   color: #111; /* 글 읽기용 */
   line-height: 1.6;
 }
+
+
+
+@font-face {
+  font-family: 'Latin Modern';
+  src: url('/fonts/latin-modern/lmroman10-bolditalic.woff2') format('woff2'),
+       url('/fonts/latin-modern/lmroman10-bolditalic.woff') format('woff');
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Latin Modern';
+  src: url('/fonts/latin-modern/lmroman7-bold.woff2') format('woff2'),
+       url('/fonts/latin-modern/lmroman10-bolditalic.woff') format('woff');
+  font-weight: 700;
+  font-style: normal;
+}
+
+/* 필요시 italic 등 추가 가능 */
+
+/* 글로벌 적용 */
+body {
+  margin: 0;
+  font-family: 'Latin Modern', serif;
+  color: var(--foreground);
+}

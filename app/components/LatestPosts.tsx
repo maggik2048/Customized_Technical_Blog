@@ -41,12 +41,12 @@ export default function LatestPosts() {
     fetchPosts();
   }, []);
 
-  if (loading) return <div>로딩 중...</div>;
-  if (posts.length === 0) return <div>아직 작성된 글이 없습니다.</div>;
+  if (loading) return <div>Loading...</div>;
+  if (posts.length === 0) return <div>There are No Posts yet.</div>;
 
   return (
     <div style={{ marginTop: 60 }}>
-      <h2 style={{ fontSize: 24, marginBottom: 16 }}>최신 글</h2>
+      <h2 style={{ fontSize: 24, marginBottom: 16 }}>Recent Posts</h2>
       <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
         {posts.map((post) => (
           <div key={post.id} style={{ border: "1px solid #ccc", borderRadius: 8, padding: 16 }}>

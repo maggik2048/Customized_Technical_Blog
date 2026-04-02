@@ -39,7 +39,7 @@ export default async function HomePage() {
               fontSize: "9vh",
             }}
           >
-            Graphics Lab V2
+            ART of CODE
           </h1>
         </div>
 
@@ -77,7 +77,7 @@ export default async function HomePage() {
                     fontSize: 16,
                   }}
                 >
-                  새 글 작성
+                  Write New Post
                 </button>
               </Link>
             </div>

@@ -3,12 +3,7 @@
 import "./globals.css";
 import { usePathname } from "next/navigation";
 import Sidebar from "./components/Sidebar";
-import { Orbitron } from "next/font/google";
-
-const orbitron = Orbitron({
-  subsets: ["latin"],
-  weight: ["400", "700", "900"],
-});
+import SidebarContainer from "./components/SidebarContainer";
 
 export default function RootLayout({
   children,
@@ -20,7 +15,7 @@ export default function RootLayout({
 
   return (
     <html lang="en">
-      <body className={orbitron.className} style={{ margin: 0 }}>
+      <body style={{ margin: 0 }}>
         {isHome ? (
           // 🔥 HOME HERO LAYOUT
           <div
@@ -43,7 +38,7 @@ export default function RootLayout({
               overflow: "hidden",
             }}
           >
-            {/* LEFT OVERLAY BAR */}
+            {/* LEFT OVERLAY BAR with image */}
             <div
               style={{
                 position: "absolute",
@@ -51,7 +46,12 @@ export default function RootLayout({
                 left: "180px",
                 height: "100%",
                 width: "630px",
-                background: "rgba(0.5, 0.5, 0.5, 0.7)",
+                background: `
+                  linear-gradient(rgba(40,40,40,0.7), rgba(40,40,40,0.7)),
+                  url('/images/smile2.jpg')
+                `,
+                backgroundSize: "50% auto",
+                backgroundPosition: "center",
                 backdropFilter: "blur(3px)",
               }}
             />
@@ -73,7 +73,7 @@ export default function RootLayout({
         ) : (
           // 🔥 NON-HOME LAYOUT (PostPage 등)
           <div style={{ display: "flex", height: "100vh" }}>
-            <Sidebar />
+            <SidebarContainer />
 
             <main
               style={{
