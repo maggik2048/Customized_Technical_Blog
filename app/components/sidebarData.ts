@@ -1,69 +1,74 @@
 import { supabase } from "@/lib/supabase";
 
+// ---------------------------
+// 1️ 타입 정의
+// ---------------------------
 export interface Item {
   name: string;
-  category?: string;
+  slug: string;        // category key
   href?: string;
   count?: number;
   children?: Item[];
 }
 
-// 🔥 menu를 "함수"로 만든다 (핵심)
+// ---------------------------
+// 2️ 카테고리 config (추가/수정 쉬움)
+// ---------------------------
+const CATEGORY_CONFIG: Omit<Item, "href" | "count">[] = [
+  { name: "Network1", slug: "network" },
+  { name: "Artificial Intelligence", slug: "ai" },
+  { name: "Discrete Mathematics", slug: "discrete" },
+  { name: "Data Structure & Algorithm", slug: "dsa" },
+  { name: "Unreal Engine", slug: "unrealengine" },
+  { name: "Embeded", slug: "embed" },
+  // 나중에 한 줄 추가만 하면 됨
+];
+
+// ---------------------------
+// 3️ 메뉴 생성 함수
+// ---------------------------
 export async function getMenu(): Promise<Item[]> {
-  const { data, error } = await supabase
+  // Supabase에서 posts의 category 가져오기
+  const { data: posts, error } = await supabase
     .from("posts")
     .select("category");
 
   if (error) {
     console.error("Supabase error:", error);
-    return [];
+    return [
+      {
+        name: "Computer Science Revisited",
+        children: CATEGORY_CONFIG.map((cat) => ({
+          ...cat,
+          href: `/category/${cat.slug}`,
+          count: 0,
+        })),
+      },
+    ];
   }
 
-  // 🔥 count 계산
+  // ---------------------------
+  // 4️카테고리별 count 계산
+  // ---------------------------
   const counts: Record<string, number> = {};
 
-  data?.forEach((row) => {
+  posts?.forEach((row) => {
     const key = row.category?.toLowerCase();
     if (!key) return;
     counts[key] = (counts[key] || 0) + 1;
   });
 
-  // 🔥 기존 구조 그대로 + count만 주입
+  // ---------------------------
+  // 5 최종 메뉴 구조 생성
+  // ---------------------------
   return [
     {
       name: "Computer Science Revisited",
-      children: [
-        {
-          name: "Network1",
-          category: "network",
-          href: "/category/network",
-          count: counts["network"] ?? 0,
-        },
-        {
-          name: "Artificial Intelligence",
-          category: "ai",
-          href: "/category/ai",
-          count: counts["ai"] ?? 0,
-        },
-        {
-          name: "Discrete Mathematics",
-          category: "discrete",
-          href: "/category/discrete",
-          count: counts["discrete"] ?? 0,
-        },
-        {
-          name: "Data Structure & Algorithm",
-          category: "dsa",
-          href: "/category/dsa",
-          count: counts["dsa"] ?? 0,
-        },
-        {
-          name: "Unreal Engine",
-          category: "unrealengine",
-          href: "/category/unrealengine",
-          count: counts["unrealengine"] ?? 0,
-        },
-      ],
+      children: CATEGORY_CONFIG.map((cat) => ({
+        ...cat,
+        href: `/category/${cat.slug}`,
+        count: counts[cat.slug] ?? 0,
+      })),
     },
   ];
 }
