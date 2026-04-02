@@ -4,7 +4,12 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
 
+//  코드 하이라이트 추가
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+
 export default async function PostPage(props: any) {
+  //  기존 방식 유지 (건드리지 않음)
   const params = await props.params;
 
   const { data, error } = await supabase
@@ -16,12 +21,43 @@ export default async function PostPage(props: any) {
   if (error) return <div>에러: {error.message}</div>;
 
   return (
-    <div className="document-font" style={{ padding: 40 }}> {/* 🔹 글자색 추가 */}
+    <div className="document-font" style={{ padding: 40 }}>
       <h1 style={{ fontSize: 32, color: "#111" }}>{data.title}</h1>
 
       <ReactMarkdown
         remarkPlugins={[remarkMath]}
         rehypePlugins={[rehypeKatex]}
+        components={{
+          code({ inline, className, children }) {
+            const match = /language-(\w+)/.exec(className || "");
+
+            //  inline code
+            if (inline) {
+              return (
+                <code
+                  style={{
+                    background: "#eee",
+                    padding: "2px 6px",
+                    borderRadius: 4,
+                    fontSize: "0.9em",
+                  }}
+                >
+                  {children}
+                </code>
+              );
+            }
+
+            //  block code (syntax highlighting)
+            return (
+              <SyntaxHighlighter
+                style={oneDark}
+                language={match?.[1] || "text"}
+              >
+                {String(children).replace(/\n$/, "")}
+              </SyntaxHighlighter>
+            );
+          },
+        }}
       >
         {data.content}
       </ReactMarkdown>
