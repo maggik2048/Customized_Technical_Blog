@@ -18,10 +18,14 @@ export default function CategoryCard({ item }: { item: Item }) {
         className="bg-black/50 p-3 rounded-lg opacity-40"
         style={cardStyle}
       >
-        <h2 className="text-sm font-medium text-gray-400 tracking-wide">
-          {item.name}
-        </h2>
-        <p className="text-xs text-gray-500 mt-1">Coming soon</p>
+        <div className="flex justify-between items-center gap-2">
+          <h2 className="text-sm font-medium text-gray-400 tracking-wide truncate">
+            {item.name}
+          </h2>
+          <p className="text-xs text-gray-500/80">
+            Coming soon
+          </p>
+        </div>
       </div>
     );
   }
@@ -38,24 +42,16 @@ export default function CategoryCard({ item }: { item: Item }) {
           shadow-[0_0_20px_rgba(255,255,255,0.2)]
         "
       >
-        <h2
-          className="
-            text-sm
-            font-medium
-            text-gray-300/80
-            tracking-wide
-            transition
-            group-hover:text-white
-          "
-        >
-          {item.name}
-        </h2>
-
-        {item.count !== undefined && (
-          <p className="text-xs text-gray-500/80 mt-1">
-            {item.count} topics
-          </p>
-        )}
+        <div className="flex justify-between items-center gap-2">
+          <h2 className="text-sm font-medium text-gray-300/80 tracking-wide truncate">
+            {item.name}
+          </h2>
+          {item.count !== undefined && (
+            <p className="text-xs text-gray-500/80 whitespace-nowrap">
+              {item.count} topics
+            </p>
+          )}
+        </div>
       </div>
     </Link>
   );
