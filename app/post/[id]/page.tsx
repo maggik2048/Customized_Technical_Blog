@@ -16,8 +16,8 @@ export default async function PostPage(props: any) {
   if (error) return <div>에러: {error.message}</div>;
 
   return (
-    <div style={{ padding: 40 }}>
-      <h1 style={{ fontSize: 32 }}>{data.title}</h1>
+    <div style={{ padding: 40, color: "#111" }}> {/* 🔹 글자색 추가 */}
+      <h1 style={{ fontSize: 32, color: "#111" }}>{data.title}</h1>
 
       <ReactMarkdown
         remarkPlugins={[remarkMath]}

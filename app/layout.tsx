@@ -22,14 +22,12 @@ export default function RootLayout({
     <html lang="en">
       <body className={orbitron.className} style={{ margin: 0 }}>
         {isHome ? (
-          // 🔥 HOME (Hero Section)
+          // 🔥 HOME HERO LAYOUT
           <div
             style={{
               position: "relative",
               width: "100vw",
               height: "100vh",
-
-              // ✅ 여기만 수정됨 (vignette 추가)
               backgroundImage: `
                 radial-gradient(circle at center, 
                   rgba(0,0,0,0) 40%, 
@@ -38,7 +36,6 @@ export default function RootLayout({
                 ),
                 url('/images/lee-su-yeon-header.jpg')
               `,
-
               backgroundSize: "cover",
               backgroundPosition: "center",
               backgroundRepeat: "no-repeat",
@@ -46,7 +43,7 @@ export default function RootLayout({
               overflow: "hidden",
             }}
           >
-            {/* 🔳 LEFT VERTICAL OVERLAY BAR */}
+            {/* LEFT OVERLAY BAR */}
             <div
               style={{
                 position: "absolute",
@@ -59,7 +56,7 @@ export default function RootLayout({
               }}
             />
 
-            {/* 🧠 CONTENT LAYER */}
+            {/* CONTENT LAYER */}
             <div
               style={{
                 position: "relative",
@@ -74,7 +71,7 @@ export default function RootLayout({
             </div>
           </div>
         ) : (
-          // 🔥 DOCS LAYOUT
+          // 🔥 NON-HOME LAYOUT (PostPage 등)
           <div style={{ display: "flex", height: "100vh" }}>
             <Sidebar />
 
@@ -84,6 +81,7 @@ export default function RootLayout({
                 background: "#f3f4f6",
                 padding: "24px",
                 overflow: "auto",
+                color: "#111", // 🔹 전체 글자색 기본 지정
               }}
             >
               {children}
