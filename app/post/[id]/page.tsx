@@ -3,36 +3,37 @@ import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
-
-//  코드 하이라이트 추가
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import DrawingOverlay from "../../components/DrawingOverlay"; // 상대경로 확인..이건 drawing was possible in separated box. 
 
-export default async function PostPage(props: any) {
-  //  기존 방식 유지 (건드리지 않음)
-  const params = await props.params;
+interface PostPageProps {
+  params: { id?: string };
+}
+
+export default async function PostPage({ params }: PostPageProps) {
+  const postId = params?.id ?? "642b0d17-7938-4f2c-96ba-1e79ec8ff413";
 
   const { data, error } = await supabase
     .from("posts")
     .select("*")
-    .eq("id", params.id)
+    .eq("id", postId)
     .single();
 
   if (error) return <div>에러: {error.message}</div>;
+  if (!data) return <div>게시글이 존재하지 않습니다.</div>;
 
   return (
     <div className="document-font" style={{ padding: 40 }}>
-      <h1 style={{ fontSize: 32, color: "#111" }}>{data.title}</h1>
+      <h1 style={{ fontSize: 32 }}>{data.title}</h1>
 
       <ReactMarkdown
         remarkPlugins={[remarkMath]}
         rehypePlugins={[rehypeKatex]}
         components={{
-          code({ inline, className, children }) {
+          code({ inline, className, children, ...props }) {
             const match = /language-(\w+)/.exec(className || "");
-
-            //  inline code
-            if (inline) {
+            if (inline)
               return (
                 <code
                   style={{
@@ -41,17 +42,17 @@ export default async function PostPage(props: any) {
                     borderRadius: 4,
                     fontSize: "0.9em",
                   }}
+                  {...props}
                 >
                   {children}
                 </code>
               );
-            }
 
-            //  block code (syntax highlighting)
             return (
               <SyntaxHighlighter
                 style={oneDark}
                 language={match?.[1] || "text"}
+                PreTag="div"
               >
                 {String(children).replace(/\n$/, "")}
               </SyntaxHighlighter>
@@ -61,6 +62,8 @@ export default async function PostPage(props: any) {
       >
         {data.content}
       </ReactMarkdown>
+
+      <DrawingOverlay width={800} height={600} />
     </div>
   );
 }

@@ -1,68 +1,69 @@
 "use client";
 import React, { useRef, useEffect, useState } from "react";
 
-interface Point {
-  x: number;
-  y: number;
-}
-
-interface Line {
-  points: Point[];
-  color: string;
-  width: number;
-}
+export interface Point { x: number; y: number; }
+export interface Line { points: Point[]; color: string; width: number; }
 
 interface OverlayCanvasProps {
   width: number;
   height: number;
+  lines: Line[];
+  setLines: (lines: Line[]) => void;
   penColor?: string;
   penWidth?: number;
+  enabled?: boolean;
 }
 
 export default function OverlayCanvas({
   width,
   height,
+  lines,
+  setLines,
   penColor = "yellow",
   penWidth = 4,
+  enabled = true,
 }: OverlayCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [drawing, setDrawing] = useState(false);
-  const [lines, setLines] = useState<Line[]>([]);
   const [currentLine, setCurrentLine] = useState<Line | null>(null);
 
-  // 그리기 시작
   const startDrawing = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!enabled) return;
     const rect = canvasRef.current!.getBoundingClientRect();
     const x = "touches" in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
     const y = "touches" in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
-    const newLine: Line = { points: [{ x, y }], color: penColor, width: penWidth };
-    setCurrentLine(newLine);
+    setCurrentLine({ points: [{ x, y }], color: penColor, width: penWidth });
     setDrawing(true);
   };
 
-  // 그리는 중
   const draw = (e: React.MouseEvent | React.TouchEvent) => {
-    if (!drawing || !currentLine) return;
+    if (!enabled || !drawing || !currentLine) return;
     const rect = canvasRef.current!.getBoundingClientRect();
     const x = "touches" in e ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
     const y = "touches" in e ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
-
-    setCurrentLine((prev) => prev && { ...prev, points: [...prev.points, { x, y }] });
+    setCurrentLine({ ...currentLine, points: [...currentLine.points, { x, y }] });
   };
 
-  // 그리기 종료
   const endDrawing = () => {
-    if (currentLine) setLines((prev) => [...prev, currentLine]);
+    if (currentLine) setLines([...lines, currentLine]);
     setCurrentLine(null);
     setDrawing(false);
   };
 
-  // Canvas 렌더
+  const undo = () => setLines(lines.slice(0, -1));
+
+  const exportJSON = () => {
+    const dataStr = JSON.stringify(lines);
+    const blob = new Blob([dataStr], { type: "application/json" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "drawing.json";
+    link.click();
+  };
+
   useEffect(() => {
     const ctx = canvasRef.current?.getContext("2d");
     if (!ctx) return;
-
-    // 초기화
     ctx.clearRect(0, 0, width, height);
 
     const drawLine = (line: Line) => {
@@ -71,10 +72,7 @@ export default function OverlayCanvas({
       ctx.lineJoin = "round";
       ctx.lineCap = "round";
       ctx.beginPath();
-      line.points.forEach((p, i) => {
-        if (i === 0) ctx.moveTo(p.x, p.y);
-        else ctx.lineTo(p.x, p.y);
-      });
+      line.points.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
       ctx.stroke();
     };
 
@@ -87,7 +85,14 @@ export default function OverlayCanvas({
       ref={canvasRef}
       width={width}
       height={height}
-      style={{ position: "absolute", top: 0, left: 0, pointerEvents: "auto" }}
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        pointerEvents: enabled ? "auto" : "none",
+        zIndex: 1,
+        background: "rgba(0,0,0,0.05)", // 임시 배경으로 영역 확인
+      }}
       onMouseDown={startDrawing}
       onMouseMove={draw}
       onMouseUp={endDrawing}

@@ -19,7 +19,8 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@components/*": ["components/*"]  // <-- 추가된 alias
     }
   },
   "include": [
