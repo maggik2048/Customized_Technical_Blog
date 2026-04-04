@@ -1,27 +1,62 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { menu, Item } from "../../components/sidebarData"; // 수정된 경로
+import { getMenu } from "../../components/sidebarData";
+import { Item } from "../../components/types";
+
+import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import "katex/dist/katex.min.css";
+
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 export default function WritePage() {
   const router = useRouter();
+
+  const [menu, setMenu] = useState<Item[]>([]);
+  const [category, setCategory] = useState("");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
-  const firstCategory = menu[0].children?.[0]?.href?.split("/").pop() || "";
-  const [category, setCategory] = useState(firstCategory);
+  // 🔥 메뉴 로드
+  useEffect(() => {
+    const loadMenu = async () => {
+      const data = await getMenu();
+      setMenu(data);
 
+      const first =
+        data[0]?.children?.[0]?.href?.split("/").pop() || "";
+
+      setCategory(first);
+    };
+
+    loadMenu();
+  }, []);
+
+  // 🔥 글 저장
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const { data, error } = await supabase
-      .from("posts")
-      .insert([{ title, content, category }]);
+    if (!title || !content || !category) {
+      alert("모든 필드를 입력하세요");
+      return;
+    }
+
+    const { error } = await supabase.from("posts").insert([
+      {
+        title,
+        content,
+        category,
+      },
+    ]);
 
     if (error) {
-      alert("저장 실패: " + error.message);
+      console.error(error);
+      alert("글 저장 실패");
       return;
     }
 
@@ -30,60 +65,117 @@ export default function WritePage() {
 
   return (
     <div style={{ padding: 40 }}>
-      <h1>새 글 작성</h1>
+      <h1 style={{ fontSize: 28, marginBottom: 20 }}>Write Post</h1>
 
-      <form
-        onSubmit={handleSubmit}
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 16,
-          maxWidth: 600,
-        }}
-      >
-        <input
-          type="text"
-          placeholder="제목"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          required
-          style={{ padding: 8, fontSize: 16 }}
-        />
+      <form onSubmit={handleSubmit}>
+        {/* 카테고리 */}
+        <div style={{ marginBottom: 16 }}>
+          <label>Category</label>
+          <br />
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            style={{ width: "100%", padding: 8 }}
+          >
+            {menu.map((cat) =>
+              cat.children?.map((child) => (
+                <option key={child.slug} value={child.slug}>
+                  {child.name}
+                </option>
+              ))
+            )}
+          </select>
+        </div>
 
-        <select
-          value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          style={{ padding: 8, fontSize: 16 }}
-        >
-          {menu[0].children?.map((item: Item) => (
-            <option
-              key={item.name}
-              value={item.href?.split("/").pop() || ""}
+        {/* 제목 */}
+        <div style={{ marginBottom: 16 }}>
+          <label>Title</label>
+          <br />
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            style={{ width: "100%", padding: 8 }}
+          />
+        </div>
+
+        {/* 🔥 에디터 + 프리뷰 */}
+        <div style={{ display: "flex", gap: 20 }}>
+          {/* 입력 영역 */}
+          <textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="Write Markdown with KaTeX..."
+            style={{
+              width: "50%",
+              height: 400,
+              padding: 10,
+              fontFamily: "monospace",
+            }}
+          />
+
+          {/* 미리보기 영역 */}
+          <div
+            style={{
+              width: "50%",
+              height: 400,
+              overflow: "auto",
+              padding: 10,
+              background: "#111",
+              color: "#fff",
+              borderRadius: 8,
+            }}
+          >
+            <ReactMarkdown
+              remarkPlugins={[remarkMath]}
+              rehypePlugins={[rehypeKatex]}
+              components={{
+                code({ inline, className, children, ...props }) {
+                  const match = /language-(\w+)/.exec(className || "");
+
+                  if (inline) {
+                    return (
+                      <code
+                        style={{
+                          background: "#333",
+                          padding: "2px 6px",
+                          borderRadius: 4,
+                        }}
+                        {...props}
+                      >
+                        {children}
+                      </code>
+                    );
+                  }
+
+                  return (
+                    <SyntaxHighlighter
+                      style={oneDark}
+                      language={match?.[1] || "text"}
+                      PreTag="div"
+                    >
+                      {String(children).replace(/\n$/, "")}
+                    </SyntaxHighlighter>
+                  );
+                },
+              }}
             >
-              {item.name}
-            </option>
-          ))}
-        </select>
-
-        <textarea
-          placeholder="내용 (Markdown 지원)"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          rows={10}
-          style={{ padding: 8, fontSize: 16, fontFamily: "monospace" }}
-          required
-        />
+              {content || "Preview will appear here..."}
+            </ReactMarkdown>
+          </div>
+        </div>
 
         <button
           type="submit"
           style={{
-            padding: 12,
-            backgroundColor: "#1e40af",
+            marginTop: 20,
+            padding: "10px 20px",
+            background: "#1e40af",
             color: "#fff",
-            fontWeight: "bold",
+            borderRadius: 6,
+            cursor: "pointer",
           }}
         >
-          저장
+          Submit
         </button>
       </form>
     </div>

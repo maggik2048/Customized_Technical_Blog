@@ -4,6 +4,7 @@ import "./globals.css";
 import { usePathname } from "next/navigation";
 import SidebarContainer from "./components/SidebarContainer";
 import ClickableImageBox from "./components/ClickableImageBox";
+import SidebarWrapper from "./components/SidebarWrapper";
 
 export default function RootLayout({
   children,
@@ -37,7 +38,7 @@ export default function RootLayout({
               overflow: "hidden",
             }}
           >
-            {/* 🔥 LEFT OVERLAY BAR */}
+            {/* LEFT OVERLAY */}
             <div
               style={{
                 position: "absolute",
@@ -52,7 +53,6 @@ export default function RootLayout({
                 backgroundSize: "150% auto",
                 backgroundPosition: "center",
                 backdropFilter: "blur(3px)",
-
                 display: "flex",
                 flexDirection: "column",
                 justifyContent: "center",
@@ -61,19 +61,17 @@ export default function RootLayout({
                 zIndex: 1,
               }}
             >
-              {/* ✅ WORKING IMAGE BOXES */}
               <ClickableImageBox
                 imageSrc="/images/manim.png"
                 href="/category/art"
               />
-
               <ClickableImageBox
-                imageSrc="/images/painting.png" // ✅ FIXED
+                imageSrc="/images/painting.png"
                 href="/category/code"
               />
             </div>
 
-            {/* 🔥 MAIN CONTENT */}
+            {/* MAIN */}
             <div
               style={{
                 position: "relative",
@@ -89,7 +87,8 @@ export default function RootLayout({
           </div>
         ) : (
           <div style={{ display: "flex", height: "100vh" }}>
-            <SidebarContainer />
+            {/* 🔥 여기만 수정 */}
+            <SidebarWrapper />
 
             <main
               style={{
