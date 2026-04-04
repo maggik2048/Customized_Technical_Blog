@@ -17,7 +17,6 @@ a {
   text-decoration: none !important;
 }
 
-/* 🔥 HERO TITLE */
 .hero-title {
   font-weight: 900;
   line-height: 1;
@@ -26,19 +25,17 @@ a {
 
   background-image: 
     linear-gradient(
-      to right,
-      rgba(255,255,255,0.8) 0px,
-      rgba(255,255,255,0.8) 600px,
-      transparent 600px,
+      to bottom,
+      rgba(255,255,255,0.85) 0%,
+      rgba(255,255,255,0.85) 50%,   /* 🔥 key change */
+      transparent 50%,
       transparent 100%
     ),
-    url("/images/lee-su-yeon-header-bright.jpg");
+    url("/images/lee-su-yeon-header-bright-hot3.jpg");
   
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-
-  text-shadow: 0 0 20px rgba(0,0,0,0.1);
 }
 
 
