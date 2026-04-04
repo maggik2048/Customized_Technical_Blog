@@ -1,13 +1,21 @@
-import { getMenu } from "./components/sidebarData";
+"use client";
+
+import { useState } from "react";
 import CategoryCard from "./components/CategoryCard";
 import TopHeaderText from "./components/TopHeaderText";
 import SocialIcons from "./components/SocialIcons";
 import LatestPosts from "./components/LatestPosts";
 import Link from "next/link";
-import ClickableImageBox from "./components/ClickableImageBox"; // ✅ 추가
+import ClickableImageBox from "./components/ClickableImageBox";
+import { CATEGORY_TREE } from "./components/CategoryTree";
 
-export default async function HomePage() {
-  const menu = await getMenu();
+export default function HomePage() {
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
+  // 선택된 카테고리 찾기
+  const selected = CATEGORY_TREE.find(
+    (cat) => cat.slug === selectedCategory
+  );
 
   return (
     <div>
@@ -41,28 +49,52 @@ export default async function HomePage() {
             gap: "2rem",
           }}
         >
-          {/* CATEGORY */}
+          {/* LEFT */}
           <div style={{ flex: 2 }}>
-            
-            {/* 기존 grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-1">
-              {menu.map((section) =>
-                section.children?.map((item) => (
-                  <CategoryCard key={item.name} item={item} />
-                ))
-              )}
-            </div>
 
-            {/* ✅ 여기 추가 (code.jpg 박스) */}
-            <div style={{ marginTop: 16 }}>
-              <ClickableImageBox
-                imageSrc="/images/code3.png"
-                href="/code"
-                width={540} // 필요하면 조절
-              />
-            </div>
+            {/* ✅ 카테고리 선택된 경우 */}
+            {selected && (
+              <>
+                <button
+                  onClick={() => setSelectedCategory(null)}
+                  style={{
+                    marginBottom: 16,
+                    padding: "8px 16px",
+                    borderRadius: 6,
+                    background: "#ddd",
+                    cursor: "pointer",
+                  }}
+                >
+                  Back
+                </button>
 
-            {/* 버튼 */}
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-1">
+                  {selected.children?.map((item) => (
+                    <CategoryCard
+                      key={item.name}
+                      item={{
+                        ...item,
+                        href: `/category/${item.slug}`, // 🔥 핵심
+                        count: 1, // optional
+                      }}
+                    />
+                  ))}
+                </div>
+              </>
+            )}
+
+            {/* ✅ 초기 상태 (이미지) */}
+            {!selected && (
+              <div style={{ marginTop: 16 }}>
+                <ClickableImageBox
+                  imageSrc="/images/code3.png"
+                  width={540}
+                  onClick={() => setSelectedCategory("cs_revisited")}
+                />
+              </div>
+            )}
+
+            {/* 글쓰기 버튼 */}
             <div style={{ marginTop: 32, textAlign: "center" }}>
               <Link href="/admin/write">
                 <button
@@ -82,7 +114,7 @@ export default async function HomePage() {
             </div>
           </div>
 
-          {/* POSTS */}
+          {/* RIGHT */}
           <div style={{ flex: 1 }}>
             <LatestPosts />
           </div>
