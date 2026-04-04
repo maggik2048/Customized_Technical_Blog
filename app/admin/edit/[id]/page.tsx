@@ -8,7 +8,7 @@ export default function EditPage() {
 
   return (
     <div style={{ padding: 40 }}>
-      <h1>글 수정</h1>
+      <h1>Modify Post</h1>
       <PostForm mode="edit" postId={id as string} />
     </div>
   );

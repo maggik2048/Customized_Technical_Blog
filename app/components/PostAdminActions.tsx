@@ -8,7 +8,7 @@ export default function PostAdminActions({ postId }: { postId: string }) {
   const router = useRouter();
 
   const handleDelete = async () => {
-    if (!confirm("정말 삭제하시겠습니까?")) return;
+    if (!confirm("Are you sure that you want to delete this post?")) return;
 
     const { error } = await supabase
       .from("posts")
@@ -16,13 +16,13 @@ export default function PostAdminActions({ postId }: { postId: string }) {
       .eq("id", postId);
 
     if (error) {
-      alert("삭제 실패: " + error.message);
+      alert("Deletion Failed: " + error.message);
       return;
     }
 
-    alert("삭제 완료");
+    alert("Deletion Completed");
 
-    // 🔥 새로고침 대신 이동 (UX 개선)
+
     router.push("/");
   };
 
@@ -32,12 +32,12 @@ export default function PostAdminActions({ postId }: { postId: string }) {
         <button
           style={{
             padding: "6px 12px",
-            background: "#f59e0b",
+            background: "#414344",
             color: "#fff",
-            borderRadius: 4,
+            borderRadius: 20,
           }}
         >
-          수정
+          Modify Post
         </button>
       </Link>
 
@@ -45,12 +45,12 @@ export default function PostAdminActions({ postId }: { postId: string }) {
         onClick={handleDelete}
         style={{
           padding: "6px 12px",
-          background: "#dc2626",
+          background: "#616465",
           color: "#fff",
-          borderRadius: 4,
+          borderRadius: 1,
         }}
       >
-        삭제
+        Delete Post
       </button>
     </div>
   );
