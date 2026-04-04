@@ -14,16 +14,13 @@ import { motion } from "framer-motion";
 
 import PostAdminActions from "@/app/components/PostAdminActions";
 import { markdownComponents } from "@/lib/markdownComponents";
-import { useDarkMode } from "@/app/context/DarkModeContext"; // 전체 페이지 DarkMode
+import { useDarkMode } from "@/app/context/DarkModeContext";
 
 export default function PostPage() {
   const params = useParams();
   const id = params?.id as string;
 
-  // 전체 페이지 DarkMode (RootLayout와 연동)
-  const { mode: pageMode, toggle: togglePageMode } = useDarkMode();
-
-  // 코드 스니펫 전용 다크모드
+  const { mode: pageMode, toggle: togglePageMode } = useDarkMode(); 
   const [codeDark, setCodeDark] = useState(false);
 
   const [data, setData] = useState<any>(null);
@@ -56,9 +53,18 @@ export default function PostPage() {
 
   return (
     <motion.div
-      style={{ padding: 40, minHeight: "100vh" }}
+      style={{
+        padding: 40,
+        minHeight: "100vh",
+        backgroundSize: "1500px 1500px",    // 이미지 반복 크기 조절
+        backgroundRepeat: "repeat",       // 반복
+        backgroundPosition: "top left",
+      }}
       animate={{
-        backgroundColor: pageMode === "dark" ? "#1e1e1e" : "#f3f4f6",
+        backgroundImage:
+          pageMode === "dark"
+            ? 'url("/images/tri3.jpg")'
+            : 'url("/images/geo2.jpg")',
         color: pageMode === "dark" ? "#eee" : "#111",
       }}
       transition={{ duration: 0.5 }}
