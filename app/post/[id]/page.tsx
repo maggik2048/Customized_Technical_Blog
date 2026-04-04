@@ -15,13 +15,14 @@ import { motion } from "framer-motion";
 import PostAdminActions from "@/app/components/PostAdminActions";
 import { markdownComponents } from "@/lib/markdownComponents";
 import { useDarkMode } from "@/app/context/DarkModeContext";
+import { getHeaderImage } from "@/lib/getHeaderImage";
 
 // 🔹 Light 모드 코드 블록 커스텀 스타일 (글자 굵게)
 const customLight = {
   ...prism,
   'code[class*="language-"]': {
     ...prism['code[class*="language-"]'],
-    fontWeight: 510, // 전체 코드 텍스트 굵기
+    fontWeight: 510,
   },
   comment: { ...prism.comment, fontWeight: 500 },
   keyword: { ...prism.keyword, fontWeight: 600 },
@@ -32,10 +33,7 @@ export default function PostPage() {
   const params = useParams();
   const id = params?.id as string;
 
-  // 1️⃣ 전체 페이지 DarkMode (RootLayout와 연동)
   const { mode: pageMode, toggle: togglePageMode } = useDarkMode();
-
-  // 2️⃣ 코드 스니펫 전용 다크모드
   const [codeDark, setCodeDark] = useState(false);
 
   const [data, setData] = useState<any>(null);
@@ -65,6 +63,7 @@ export default function PostPage() {
   if (!data) return <div style={{ padding: 40 }}>Post not found</div>;
 
   const displayDate = data.project_date ?? data.created_at;
+  const headerImage = getHeaderImage(data);
 
   return (
     <motion.div
@@ -85,7 +84,7 @@ export default function PostPage() {
       transition={{ duration: 0.5 }}
       className="document-font"
     >
-      {/* 🔘 버튼 두 개 */}
+      {/* 🔘 버튼 */}
       <div style={{ display: "flex", gap: 16, marginBottom: 20 }}>
         <button
           onClick={togglePageMode}
@@ -110,7 +109,43 @@ export default function PostPage() {
         </button>
       </div>
 
-      {/* 헤더 + 우측 버튼 */}
+      {/* 🔹 풀폭 HEADER IMAGE */}
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+        style={{
+          width: "calc(100% + 80px)",   // 🔹 핵심
+          marginLeft: -40,              // 🔹 핵심
+          marginTop: -40,               // 🔹 핵심
+          height: 260,
+          marginBottom: 28,
+          borderRadius: "0 0 14px 14px",
+          overflow: "hidden",
+          position: "relative",
+        }}
+      >
+        <img
+          src={headerImage}
+          alt="header"
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+          }}
+        />
+
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.4))",
+          }}
+        />
+      </motion.div>
+
+      {/* 기존 헤더 */}
       <div
         style={{
           display: "flex",
@@ -145,10 +180,16 @@ export default function PostPage() {
                   color: codeDark ? "#eee" : "#111",
                 }}
                 transition={{ duration: 0.5 }}
-                style={{ borderRadius: 6, overflowX: "auto" }}
+                style={{
+                  borderRadius: 6,
+                  overflowX: "auto",
+                  border: codeDark
+                    ? "1px solid rgba(255,255,255,0.255)"
+                    : "1px solid rgba(0,0,0,0.18)",
+                }}
               >
                 <SyntaxHighlighter
-                  style={codeDark ? oneDark : customLight} // 🔹 Light 모드 글자 굵게 적용
+                  style={codeDark ? oneDark : customLight}
                   language={match?.[1] || "text"}
                 >
                   {String(children).replace(/\n$/, "")}
