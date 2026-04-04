@@ -10,19 +10,20 @@ import rehypeRaw from "rehype-raw";
 import "katex/dist/katex.min.css";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark, prism } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { motion } from "framer-motion";
 
 import PostAdminActions from "@/app/components/PostAdminActions";
 import { markdownComponents } from "@/lib/markdownComponents";
-import { useDarkMode } from "@/app/context/DarkModeContext"; // RootLayout와 연동된 전체 페이지 DarkMode
+import { useDarkMode } from "@/app/context/DarkModeContext"; // 전체 페이지 DarkMode
 
 export default function PostPage() {
   const params = useParams();
   const id = params?.id as string;
 
-  // 1️⃣ 전체 페이지 DarkMode (RootLayout Context)
+  // 전체 페이지 DarkMode (RootLayout와 연동)
   const { mode: pageMode, toggle: togglePageMode } = useDarkMode();
 
-  // 2️⃣ 코드 스니펫 전용 DarkMode
+  // 코드 스니펫 전용 다크모드
   const [codeDark, setCodeDark] = useState(false);
 
   const [data, setData] = useState<any>(null);
@@ -54,13 +55,14 @@ export default function PostPage() {
   const displayDate = data.project_date ?? data.created_at;
 
   return (
-    <div
-      style={{
-        padding: 40,
-        background: pageMode === "dark" ? "#1e1e1e" : "#fff",
+    <motion.div
+      style={{ padding: 40, minHeight: "100vh" }}
+      animate={{
+        backgroundColor: pageMode === "dark" ? "#1e1e1e" : "#f3f4f6",
         color: pageMode === "dark" ? "#eee" : "#111",
-        minHeight: "100vh",
       }}
+      transition={{ duration: 0.5 }}
+      className="document-font"
     >
       {/* 🔘 버튼 두 개 */}
       <div style={{ display: "flex", gap: 16, marginBottom: 20 }}>
@@ -116,18 +118,27 @@ export default function PostPage() {
             if (inline) return <code>{children}</code>;
 
             return (
-              <SyntaxHighlighter
-                style={codeDark ? oneDark : prism} // 코드 블록 전용 상태
-                language={match?.[1] || "text"}
+              <motion.div
+                animate={{
+                  backgroundColor: codeDark ? "#1e1e1e" : "#f3f4f6",
+                  color: codeDark ? "#eee" : "#111",
+                }}
+                transition={{ duration: 0.5 }}
+                style={{ borderRadius: 6, overflowX: "auto" }}
               >
-                {String(children).replace(/\n$/, "")}
-              </SyntaxHighlighter>
+                <SyntaxHighlighter
+                  style={codeDark ? oneDark : prism}
+                  language={match?.[1] || "text"}
+                >
+                  {String(children).replace(/\n$/, "")}
+                </SyntaxHighlighter>
+              </motion.div>
             );
           },
         }}
       >
         {data.content}
       </ReactMarkdown>
-    </div>
+    </motion.div>
   );
 }
