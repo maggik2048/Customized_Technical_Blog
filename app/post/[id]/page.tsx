@@ -16,11 +16,26 @@ import PostAdminActions from "@/app/components/PostAdminActions";
 import { markdownComponents } from "@/lib/markdownComponents";
 import { useDarkMode } from "@/app/context/DarkModeContext";
 
+// 🔹 Light 모드 코드 블록 커스텀 스타일 (글자 굵게)
+const customLight = {
+  ...prism,
+  'code[class*="language-"]': {
+    ...prism['code[class*="language-"]'],
+    fontWeight: 510, // 전체 코드 텍스트 굵기
+  },
+  comment: { ...prism.comment, fontWeight: 500 },
+  keyword: { ...prism.keyword, fontWeight: 600 },
+  string: { ...prism.string, fontWeight: 600 },
+};
+
 export default function PostPage() {
   const params = useParams();
   const id = params?.id as string;
 
-  const { mode: pageMode, toggle: togglePageMode } = useDarkMode(); 
+  // 1️⃣ 전체 페이지 DarkMode (RootLayout와 연동)
+  const { mode: pageMode, toggle: togglePageMode } = useDarkMode();
+
+  // 2️⃣ 코드 스니펫 전용 다크모드
   const [codeDark, setCodeDark] = useState(false);
 
   const [data, setData] = useState<any>(null);
@@ -56,8 +71,8 @@ export default function PostPage() {
       style={{
         padding: 40,
         minHeight: "100vh",
-        backgroundSize: "1500px 1500px",    // 이미지 반복 크기 조절
-        backgroundRepeat: "repeat",       // 반복
+        backgroundSize: "1500px 1500px",
+        backgroundRepeat: "repeat",
         backgroundPosition: "top left",
       }}
       animate={{
@@ -133,7 +148,7 @@ export default function PostPage() {
                 style={{ borderRadius: 6, overflowX: "auto" }}
               >
                 <SyntaxHighlighter
-                  style={codeDark ? oneDark : prism}
+                  style={codeDark ? oneDark : customLight} // 🔹 Light 모드 글자 굵게 적용
                   language={match?.[1] || "text"}
                 >
                   {String(children).replace(/\n$/, "")}
