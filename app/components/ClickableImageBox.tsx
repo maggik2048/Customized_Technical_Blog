@@ -1,12 +1,10 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 
-type ClickableImageBoxProps = {
+type Props = {
   imageSrc: string;
   href: string;
-  alt?: string;
   width?: number;
   height?: number;
 };
@@ -14,47 +12,33 @@ type ClickableImageBoxProps = {
 export default function ClickableImageBox({
   imageSrc,
   href,
-  alt = "image",
-  width = 300,
-  height = 200,
-}: ClickableImageBoxProps) {
+  width = 260,
+  height = 160,
+}: Props) {
   return (
     <Link href={href}>
       <div
         style={{
-          position: "relative",
           width: width,
           height: height,
-          overflow: "hidden",
           borderRadius: "12px",
+          overflow: "hidden",
           cursor: "pointer",
+
+          // ✅ same 방식 as your working background
+          backgroundImage: `url(${imageSrc})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+
           transition: "transform 0.2s ease",
         }}
         onMouseEnter={(e) => {
-          (e.currentTarget as HTMLDivElement).style.transform = "scale(1.03)";
+          (e.currentTarget as HTMLDivElement).style.transform = "scale(1.05)";
         }}
         onMouseLeave={(e) => {
           (e.currentTarget as HTMLDivElement).style.transform = "scale(1)";
         }}
-      >
-        <Image
-          src={imageSrc}
-          alt={alt}
-          fill
-          style={{
-            objectFit: "cover",
-          }}
-        />
-
-        {/* Optional dark overlay on hover */}
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            background: "rgba(0,0,0,0.15)",
-          }}
-        />
-      </div>
+      />
     </Link>
   );
 }

@@ -2,8 +2,8 @@
 
 import "./globals.css";
 import { usePathname } from "next/navigation";
-import Sidebar from "./components/Sidebar";
 import SidebarContainer from "./components/SidebarContainer";
+import ClickableImageBox from "./components/ClickableImageBox";
 
 export default function RootLayout({
   children,
@@ -17,7 +17,6 @@ export default function RootLayout({
     <html lang="en">
       <body style={{ margin: 0 }}>
         {isHome ? (
-          // 🔥 HOME HERO LAYOUT
           <div
             style={{
               position: "relative",
@@ -29,7 +28,7 @@ export default function RootLayout({
                   rgba(0,0,0,0.2) 70%, 
                   rgba(0,0,0,0.2) 100%
                 ),
-                url('/images/lee-su-yeon-header-lighten3.jpg')
+                url('/images/lee-su-yeon-header.jpg')
               `,
               backgroundSize: "cover",
               backgroundPosition: "center",
@@ -38,7 +37,7 @@ export default function RootLayout({
               overflow: "hidden",
             }}
           >
-            {/* LEFT OVERLAY BAR with image */}
+            {/* 🔥 LEFT OVERLAY BAR */}
             <div
               style={{
                 position: "absolute",
@@ -47,16 +46,34 @@ export default function RootLayout({
                 height: "100%",
                 width: "630px",
                 background: `
-                  linear-gradient(rgba(40,40,50,0.65), rgba(40,40,40,0.99)),
+                  linear-gradient(rgba(40,40,60,0.65), rgba(40,40,40,0.95)),
                   url('/images/dvinch6.jpg')
                 `,
                 backgroundSize: "150% auto",
                 backgroundPosition: "center",
                 backdropFilter: "blur(3px)",
-              }}
-            />
 
-            {/* CONTENT LAYER */}
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                gap: "28px",
+                zIndex: 2,
+              }}
+            >
+              {/* ✅ WORKING IMAGE BOXES */}
+              <ClickableImageBox
+                imageSrc="/images/manim.png"
+                href="/category/art"
+              />
+
+              <ClickableImageBox
+                imageSrc="/images/painting.png" // ✅ FIXED
+                href="/category/code"
+              />
+            </div>
+
+            {/* 🔥 MAIN CONTENT */}
             <div
               style={{
                 position: "relative",
@@ -71,7 +88,6 @@ export default function RootLayout({
             </div>
           </div>
         ) : (
-          // 🔥 NON-HOME LAYOUT (PostPage 등)
           <div style={{ display: "flex", height: "100vh" }}>
             <SidebarContainer />
 
@@ -81,7 +97,7 @@ export default function RootLayout({
                 background: "#f3f4f6",
                 padding: "24px",
                 overflow: "auto",
-                color: "#111", // 🔹 전체 글자색 기본 지정
+                color: "#111",
               }}
             >
               {children}
