@@ -29,7 +29,7 @@ export default function RootLayout({
                   rgba(0,0,0,0.2) 70%, 
                   rgba(0,0,0,0.2) 100%
                 ),
-                url('/images/lee-su-yeon-header.jpg')
+                url('/images/lee-su-yeon-header-lighten3.jpg')
               `,
               backgroundSize: "cover",
               backgroundPosition: "center",
@@ -47,10 +47,10 @@ export default function RootLayout({
                 height: "100%",
                 width: "630px",
                 background: `
-                  linear-gradient(rgba(40,40,40,0.7), rgba(40,40,40,0.7)),
-                  url('/images/smile2.jpg')
+                  linear-gradient(rgba(40,40,50,0.65), rgba(40,40,40,0.99)),
+                  url('/images/dvinch6.jpg')
                 `,
-                backgroundSize: "50% auto",
+                backgroundSize: "150% auto",
                 backgroundPosition: "center",
                 backdropFilter: "blur(3px)",
               }}

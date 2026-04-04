@@ -5,6 +5,7 @@ import TopHeaderText from "./components/TopHeaderText";
 import SocialIcons from "./components/SocialIcons";
 import LatestPosts from "./components/LatestPosts";
 import Link from "next/link";
+import ClickableImageBox from "./components/ClickableImageBox";
 
 // 🔥 async 추가 (핵심)
 export default async function HomePage() {
