@@ -2,15 +2,10 @@
 
 import "./globals.css";
 import { usePathname } from "next/navigation";
-import SidebarContainer from "./components/SidebarContainer";
-import ClickableImageBox from "./components/ClickableImageBox";
 import SidebarWrapper from "./components/SidebarWrapper";
+import ClickableImageBox from "./components/ClickableImageBox";
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isHome = pathname === "/";
 
@@ -34,7 +29,7 @@ export default function RootLayout({
               backgroundSize: "cover",
               backgroundPosition: "center",
               backgroundRepeat: "no-repeat",
-              color: "white",
+              color: "var(--fg-color)",
               overflow: "hidden",
             }}
           >
@@ -61,14 +56,8 @@ export default function RootLayout({
                 zIndex: 1,
               }}
             >
-              <ClickableImageBox
-                imageSrc="/images/manim.png"
-                href="/category/art"
-              />
-              <ClickableImageBox
-                imageSrc="/images/painting.png"
-                href="/category/code"
-              />
+              <ClickableImageBox imageSrc="/images/manim.png" href="/category/art" />
+              <ClickableImageBox imageSrc="/images/painting.png" href="/category/code" />
             </div>
 
             {/* MAIN */}
@@ -87,16 +76,14 @@ export default function RootLayout({
           </div>
         ) : (
           <div style={{ display: "flex", height: "100vh" }}>
-            {/* 🔥 여기만 수정 */}
             <SidebarWrapper />
-
             <main
               style={{
                 flex: 1,
-                background: "#f3f4f6",
+                background: "var(--bg-color)",
                 padding: "24px",
                 overflow: "auto",
-                color: "#111",
+                color: "var(--fg-color)",
               }}
             >
               {children}
