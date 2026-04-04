@@ -58,7 +58,7 @@ export default function RootLayout({
                 justifyContent: "center",
                 alignItems: "center",
                 gap: "28px",
-                zIndex: 2,
+                zIndex: 1,
               }}
             >
               {/* ✅ WORKING IMAGE BOXES */}
@@ -77,7 +77,7 @@ export default function RootLayout({
             <div
               style={{
                 position: "relative",
-                zIndex: 1,
+                zIndex: 2,
                 height: "100%",
                 display: "flex",
                 alignItems: "center",
