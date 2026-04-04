@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
+import remarkGfm from "remark-gfm"; // GitHub Flavored Markdown (표 지원)
 import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 import "katex/dist/katex.min.css";
@@ -84,7 +85,15 @@ export default function PostPage() {
 
   return (
     <motion.div
-      style={{ padding: 40, minHeight: "100vh", position: "relative", backgroundSize: "1500px 1500px", backgroundRepeat: "repeat", backgroundPosition: "top left", color: textColor }}
+      style={{
+        padding: 40,
+        minHeight: "100vh",
+        position: "relative",
+        backgroundSize: "1500px 1500px",
+        backgroundRepeat: "repeat",
+        backgroundPosition: "top left",
+        color: textColor,
+      }}
       animate={{ backgroundImage: `url("${bgImage}")` }}
       transition={{ duration: 0.5 }}
       className="document-font"
@@ -111,9 +120,21 @@ export default function PostPage() {
 
         {/* 본문 */}
         <ReactMarkdown
-          remarkPlugins={[remarkMath]}
+          remarkPlugins={[remarkMath, remarkGfm]} // ← 표 렌더링용 추가
           rehypePlugins={[rehypeKatex, rehypeRaw]}
-          components={{ ...markdownComponents, code: (props) => <CodeBlock {...props} codeDark={codeDark} /> }}
+          components={{
+            ...markdownComponents,
+            code: (props) => <CodeBlock {...props} codeDark={codeDark} />,
+            table: ({ node, ...props }) => (
+              <table style={{ borderCollapse: "collapse", width: "100%" }} {...props} />
+            ),
+            th: ({ node, ...props }) => (
+              <th style={{ border: "1px solid #ccc", padding: 6, backgroundColor: "#f5f5f5" }} {...props} />
+            ),
+            td: ({ node, ...props }) => (
+              <td style={{ border: "1px solid #ccc", padding: 6 }} {...props} />
+            ),
+          }}
         >
           {data.content}
         </ReactMarkdown>
