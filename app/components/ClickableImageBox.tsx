@@ -19,24 +19,21 @@ export default function ClickableImageBox({
     <Link href={href}>
       <div
         style={{
-          width: width,
-          height: height,
+          width,
+          height,
           borderRadius: "12px",
           overflow: "hidden",
           cursor: "pointer",
-
-          // ✅ same 방식 as your working background
           backgroundImage: `url(${imageSrc})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
-
           transition: "transform 0.2s ease",
         }}
         onMouseEnter={(e) => {
-          (e.currentTarget as HTMLDivElement).style.transform = "scale(1.05)";
+          e.currentTarget.style.transform = "scale(1.05)";
         }}
         onMouseLeave={(e) => {
-          (e.currentTarget as HTMLDivElement).style.transform = "scale(1)";
+          e.currentTarget.style.transform = "scale(1)";
         }}
       />
     </Link>

@@ -4,13 +4,13 @@ import TopHeaderText from "./components/TopHeaderText";
 import SocialIcons from "./components/SocialIcons";
 import LatestPosts from "./components/LatestPosts";
 import Link from "next/link";
+import ClickableImageBox from "./components/ClickableImageBox"; // ✅ 추가
 
 export default async function HomePage() {
   const menu = await getMenu();
 
   return (
     <div>
-      {/* 🔥 HERO SECTION CONTENT */}
       <div
         style={{
           position: "relative",
@@ -26,17 +26,12 @@ export default async function HomePage() {
         <TopHeaderText />
         <SocialIcons />
 
-        {/* 🔥 TITLE */}
         <div style={{ height: "9vh", marginBottom: "1.5rem" }}>
-          <h1
-            className="hero-title"
-            style={{ fontSize: "9vh" }}
-          >
+          <h1 className="hero-title" style={{ fontSize: "9vh" }}>
             ART of CODE
           </h1>
         </div>
 
-        {/* 🔥 MAIN GRID */}
         <div
           style={{
             display: "flex",
@@ -48,6 +43,8 @@ export default async function HomePage() {
         >
           {/* CATEGORY */}
           <div style={{ flex: 2 }}>
+            
+            {/* 기존 grid */}
             <div className="grid grid-cols-2 md:grid-cols-3 gap-1">
               {menu.map((section) =>
                 section.children?.map((item) => (
@@ -56,7 +53,16 @@ export default async function HomePage() {
               )}
             </div>
 
-            {/* BUTTON */}
+            {/* ✅ 여기 추가 (code.jpg 박스) */}
+            <div style={{ marginTop: 16 }}>
+              <ClickableImageBox
+                imageSrc="/images/code3.png"
+                href="/code"
+                width={540} // 필요하면 조절
+              />
+            </div>
+
+            {/* 버튼 */}
             <div style={{ marginTop: 32, textAlign: "center" }}>
               <Link href="/admin/write">
                 <button
