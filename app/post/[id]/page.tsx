@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
-import remarkGfm from "remark-gfm"; // GitHub Flavored Markdown (표 지원)
+import remarkGfm from "remark-gfm";
 import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 import "katex/dist/katex.min.css";
@@ -51,12 +51,17 @@ function CodeBlock({ inline, className, children, codeDark }: any) {
   );
 }
 
-// 🔹 헤더 이미지 컴포넌트
-function HeaderImage({ src }: { src: string }) {
+// 🔹 헤더 이미지 + 제목 컴포넌트
+function HeaderWithTitle({ src, title, date, children }: { src: string; title: string; date?: string; children?: React.ReactNode }) {
   return (
     <motion.div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: 260, zIndex: 0 }}>
       <img src={src} alt="header" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
       <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.4))" }} />
+      <div style={{ position: "absolute", bottom: 20, left: 40, color: "#fff" }}>
+        <h1 style={{ fontSize: 36, margin: 0 }}>{title}</h1>
+        {date && <p style={{ marginTop: 4, fontSize: 14, color: "rgba(255,255,255,0.8)" }}>{date}</p>}
+      </div>
+      {children}
     </motion.div>
   );
 }
@@ -104,36 +109,24 @@ export default function PostPage() {
         <button onClick={() => setCodeDark(!codeDark)} style={btnStyle}>Toggle Dark Code Snippet</button>
       </div>
 
-      <HeaderImage src={headerImage} />
-
-      <div style={{ marginTop: 260 }}>
-        {/* 제목 + 관리 버튼 */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
-          <div>
-            <h1 style={{ fontSize: 32 }}>{data.title}</h1>
-            <p style={{ color: "#888", marginTop: 8 }}>
-              {displayDate ? new Date(displayDate).toLocaleString("ko-KR") : ""}
-            </p>
-          </div>
+      {/* 헤더 이미지 + 제목 + 관리 버튼 */}
+      <HeaderWithTitle src={headerImage} title={data.title} date={displayDate ? new Date(displayDate).toLocaleString("ko-KR") : ""}>
+        <div style={{ position: "absolute", top: 10, right: 40, zIndex: 10 }}>
           <PostAdminActions postId={id} />
         </div>
+      </HeaderWithTitle>
 
-        {/* 본문 */}
+      {/* 본문 */}
+      <div style={{ marginTop: 260 }}>
         <ReactMarkdown
-          remarkPlugins={[remarkMath, remarkGfm]} // ← 표 렌더링용 추가
+          remarkPlugins={[remarkMath, remarkGfm]}
           rehypePlugins={[rehypeKatex, rehypeRaw]}
           components={{
             ...markdownComponents,
             code: (props) => <CodeBlock {...props} codeDark={codeDark} />,
-            table: ({ node, ...props }) => (
-              <table style={{ borderCollapse: "collapse", width: "100%" }} {...props} />
-            ),
-            th: ({ node, ...props }) => (
-              <th style={{ border: "1px solid #ccc", padding: 6, backgroundColor: "#f5f5f5" }} {...props} />
-            ),
-            td: ({ node, ...props }) => (
-              <td style={{ border: "1px solid #ccc", padding: 6 }} {...props} />
-            ),
+            table: ({ node, ...props }) => <table style={{ borderCollapse: "collapse", width: "100%" }} {...props} />,
+            th: ({ node, ...props }) => <th style={{ border: "1px solid #ccc", padding: 6, backgroundColor: "#f5f5f5" }} {...props} />,
+            td: ({ node, ...props }) => <td style={{ border: "1px solid #ccc", padding: 6 }} {...props} />,
           }}
         >
           {data.content}
