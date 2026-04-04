@@ -11,7 +11,10 @@ import "katex/dist/katex.min.css";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 
-// 🔥 핵심: external registry
+// 🔥 추가
+import PostAdminActions from "@/app/components/PostAdminActions";
+
+// external registry
 import { markdownComponents } from "@/lib/markdownComponents";
 
 export default function PostPage() {
@@ -44,20 +47,34 @@ export default function PostPage() {
   if (loading) return <div style={{ padding: 40 }}>Loading...</div>;
   if (!data) return <div style={{ padding: 40 }}>Post not found</div>;
 
-  // ✅ 추가된 부분 (핵심)
   const displayDate = data.project_date ?? data.created_at;
 
   return (
     <div style={{ padding: 40 }}>
-      <h1 style={{ fontSize: 32 }}>{data.title}</h1>
+      {/* 🔥 헤더 + 우측 버튼 */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+          marginBottom: 20,
+        }}
+      >
+        <div>
+          <h1 style={{ fontSize: 32 }}>{data.title}</h1>
 
-      {/* ✅ 날짜 표시 추가 */}
-      <p style={{ color: "#888", marginBottom: 20 }}>
-        {displayDate
-          ? new Date(displayDate).toLocaleString("ko-KR")
-          : ""}
-      </p>
+          <p style={{ color: "#888", marginTop: 8 }}>
+            {displayDate
+              ? new Date(displayDate).toLocaleString("ko-KR")
+              : ""}
+          </p>
+        </div>
 
+        {/* 🔥 여기 핵심 */}
+        <PostAdminActions postId={id} />
+      </div>
+
+      {/* 본문 */}
       <ReactMarkdown
         remarkPlugins={[remarkMath]}
         rehypePlugins={[rehypeKatex, rehypeRaw]}
