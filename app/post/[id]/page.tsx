@@ -13,25 +13,20 @@ import { oneDark, prism } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 import PostAdminActions from "@/app/components/PostAdminActions";
 import { markdownComponents } from "@/lib/markdownComponents";
+import { useDarkMode } from "@/app/context/DarkModeContext"; // RootLayout와 연동된 전체 페이지 DarkMode
 
 export default function PostPage() {
   const params = useParams();
   const id = params?.id as string;
 
+  // 1️⃣ 전체 페이지 DarkMode (RootLayout Context)
+  const { mode: pageMode, toggle: togglePageMode } = useDarkMode();
+
+  // 2️⃣ 코드 스니펫 전용 DarkMode
+  const [codeDark, setCodeDark] = useState(false);
+
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-
-  // 🌗 다크모드 state
-  const [darkMode, setDarkMode] = useState(false);
-
-  // body 클래스 토글
-  useEffect(() => {
-    if (darkMode) {
-      document.body.classList.add("dark-mode");
-    } else {
-      document.body.classList.remove("dark-mode");
-    }
-  }, [darkMode]);
 
   useEffect(() => {
     if (!id) {
@@ -59,19 +54,38 @@ export default function PostPage() {
   const displayDate = data.project_date ?? data.created_at;
 
   return (
-    <div style={{ padding: 40 }} className="document-font">
-      {/* 다크/라이트 토글 버튼 */}
-      <button
-        onClick={() => setDarkMode(!darkMode)}
-        style={{
-          marginBottom: 20,
-          padding: "6px 12px",
-          borderRadius: 4,
-          cursor: "pointer",
-        }}
-      >
-        Toggle {darkMode ? "Light" : "Dark"} Mode
-      </button>
+    <div
+      style={{
+        padding: 40,
+        background: pageMode === "dark" ? "#1e1e1e" : "#fff",
+        color: pageMode === "dark" ? "#eee" : "#111",
+        minHeight: "100vh",
+      }}
+    >
+      {/* 🔘 버튼 두 개 */}
+      <div style={{ display: "flex", gap: 16, marginBottom: 20 }}>
+        <button
+          onClick={togglePageMode}
+          style={{
+            padding: "6px 12px",
+            borderRadius: 4,
+            cursor: "pointer",
+          }}
+        >
+          Toggle Dark Mode (Whole)
+        </button>
+
+        <button
+          onClick={() => setCodeDark(!codeDark)}
+          style={{
+            padding: "6px 12px",
+            borderRadius: 4,
+            cursor: "pointer",
+          }}
+        >
+          Toggle Dark Code Snippet
+        </button>
+      </div>
 
       {/* 헤더 + 우측 버튼 */}
       <div
@@ -103,7 +117,7 @@ export default function PostPage() {
 
             return (
               <SyntaxHighlighter
-                style={darkMode ? oneDark : prism} // 토글 적용
+                style={codeDark ? oneDark : prism} // 코드 블록 전용 상태
                 language={match?.[1] || "text"}
               >
                 {String(children).replace(/\n$/, "")}
