@@ -17,7 +17,7 @@ import { markdownComponents } from "@/lib/markdownComponents";
 import { useDarkMode } from "@/app/context/DarkModeContext";
 import { getHeaderImage } from "@/lib/getHeaderImage";
 
-// 🔹 Light 모드 코드 블록 커스텀 스타일 (글자 굵게)
+// 🔹 Light 모드 코드 블록 커스텀 스타일
 const customLight = {
   ...prism,
   'code[class*="language-"]': {
@@ -70,6 +70,7 @@ export default function PostPage() {
       style={{
         padding: 40,
         minHeight: "100vh",
+        position: "relative", // 🔥 핵심
         backgroundSize: "1500px 1500px",
         backgroundRepeat: "repeat",
         backgroundPosition: "top left",
@@ -84,8 +85,16 @@ export default function PostPage() {
       transition={{ duration: 0.5 }}
       className="document-font"
     >
-      {/* 🔘 버튼 */}
-      <div style={{ display: "flex", gap: 16, marginBottom: 20 }}>
+      {/* 🔘 버튼 (헤더 위) */}
+      <div
+        style={{
+          position: "relative",
+          zIndex: 10,
+          display: "flex",
+          gap: 16,
+          marginBottom: 12,
+        }}
+      >
         <button
           onClick={togglePageMode}
           style={{
@@ -109,20 +118,19 @@ export default function PostPage() {
         </button>
       </div>
 
-      {/* 🔹 풀폭 HEADER IMAGE */}
+      {/* 🔥 FULL HEADER (absolute) */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
         style={{
-          width: "calc(100% + 80px)",   // 🔹 핵심
-          marginLeft: -40,              // 🔹 핵심
-          marginTop: -40,               // 🔹 핵심
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
           height: 260,
-          marginBottom: 28,
-          borderRadius: "0 0 14px 14px",
+          zIndex: 0,
           overflow: "hidden",
-          position: "relative",
         }}
       >
         <img
@@ -145,62 +153,67 @@ export default function PostPage() {
         />
       </motion.div>
 
-      {/* 기존 헤더 */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          marginBottom: 20,
-        }}
-      >
-        <div>
-          <h1 style={{ fontSize: 32 }}>{data.title}</h1>
-          <p style={{ color: "#888", marginTop: 8 }}>
-            {displayDate ? new Date(displayDate).toLocaleString("ko-KR") : ""}
-          </p>
+      {/* 🔥 내용 전체를 아래로 밀기 */}
+      <div style={{ marginTop: 260 }}>
+        {/* 기존 헤더 */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            marginBottom: 20,
+          }}
+        >
+          <div>
+            <h1 style={{ fontSize: 32 }}>{data.title}</h1>
+            <p style={{ color: "#888", marginTop: 8 }}>
+              {displayDate
+                ? new Date(displayDate).toLocaleString("ko-KR")
+                : ""}
+            </p>
+          </div>
+          <PostAdminActions postId={id} />
         </div>
-        <PostAdminActions postId={id} />
-      </div>
 
-      {/* 본문 */}
-      <ReactMarkdown
-        remarkPlugins={[remarkMath]}
-        rehypePlugins={[rehypeKatex, rehypeRaw]}
-        components={{
-          ...markdownComponents,
-          code({ inline, className, children }) {
-            const match = /language-(\w+)/.exec(className || "");
-            if (inline) return <code>{children}</code>;
+        {/* 본문 */}
+        <ReactMarkdown
+          remarkPlugins={[remarkMath]}
+          rehypePlugins={[rehypeKatex, rehypeRaw]}
+          components={{
+            ...markdownComponents,
+            code({ inline, className, children }) {
+              const match = /language-(\w+)/.exec(className || "");
+              if (inline) return <code>{children}</code>;
 
-            return (
-              <motion.div
-                animate={{
-                  backgroundColor: codeDark ? "#1e1e1e" : "#f3f4f6",
-                  color: codeDark ? "#eee" : "#111",
-                }}
-                transition={{ duration: 0.5 }}
-                style={{
-                  borderRadius: 6,
-                  overflowX: "auto",
-                  border: codeDark
-                    ? "1px solid rgba(255,255,255,0.255)"
-                    : "1px solid rgba(0,0,0,0.18)",
-                }}
-              >
-                <SyntaxHighlighter
-                  style={codeDark ? oneDark : customLight}
-                  language={match?.[1] || "text"}
+              return (
+                <motion.div
+                  animate={{
+                    backgroundColor: codeDark ? "#1e1e1e" : "#f3f4f6",
+                    color: codeDark ? "#eee" : "#111",
+                  }}
+                  transition={{ duration: 0.5 }}
+                  style={{
+                    borderRadius: 6,
+                    overflowX: "auto",
+                    border: codeDark
+                      ? "1px solid rgba(255,255,255,0.255)"
+                      : "1px solid rgba(0,0,0,0.18)",
+                  }}
                 >
-                  {String(children).replace(/\n$/, "")}
-                </SyntaxHighlighter>
-              </motion.div>
-            );
-          },
-        }}
-      >
-        {data.content}
-      </ReactMarkdown>
+                  <SyntaxHighlighter
+                    style={codeDark ? oneDark : customLight}
+                    language={match?.[1] || "text"}
+                  >
+                    {String(children).replace(/\n$/, "")}
+                  </SyntaxHighlighter>
+                </motion.div>
+              );
+            },
+          }}
+        >
+          {data.content}
+        </ReactMarkdown>
+      </div>
     </motion.div>
   );
 }
