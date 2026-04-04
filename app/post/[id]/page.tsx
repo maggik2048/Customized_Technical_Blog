@@ -44,17 +44,26 @@ export default function PostPage() {
   if (loading) return <div style={{ padding: 40 }}>Loading...</div>;
   if (!data) return <div style={{ padding: 40 }}>Post not found</div>;
 
+  // ✅ 추가된 부분 (핵심)
+  const displayDate = data.project_date ?? data.created_at;
+
   return (
     <div style={{ padding: 40 }}>
       <h1 style={{ fontSize: 32 }}>{data.title}</h1>
+
+      {/* ✅ 날짜 표시 추가 */}
+      <p style={{ color: "#888", marginBottom: 20 }}>
+        {displayDate
+          ? new Date(displayDate).toLocaleString("ko-KR")
+          : ""}
+      </p>
 
       <ReactMarkdown
         remarkPlugins={[remarkMath]}
         rehypePlugins={[rehypeKatex, rehypeRaw]}
         components={{
-          ...markdownComponents, // 🔥 플러그인 시스템
-          
-          // 코드 하이라이트는 여기 유지
+          ...markdownComponents,
+
           code({ inline, className, children }) {
             const match = /language-(\w+)/.exec(className || "");
 
