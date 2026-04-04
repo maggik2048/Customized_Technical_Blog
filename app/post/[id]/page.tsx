@@ -6,12 +6,13 @@ import { supabase } from "@/lib/supabase";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
+import rehypeRaw from "rehype-raw";
 import "katex/dist/katex.min.css";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 
-// ✅ Torus (이름 통일)
-import TorusWithNormals from "../../visualizations/TorusWithNormals";
+// 🔥 핵심: external registry
+import { markdownComponents } from "@/lib/markdownComponents";
 
 export default function PostPage() {
   const params = useParams();
@@ -33,13 +34,7 @@ export default function PostPage() {
         .eq("id", id)
         .single();
 
-      console.log("post:", post);
-      console.log("error:", error);
-
-      if (!error) {
-        setData(post);
-      }
-
+      if (!error) setData(post);
       setLoading(false);
     };
 
@@ -51,14 +46,15 @@ export default function PostPage() {
 
   return (
     <div style={{ padding: 40 }}>
-      {/* 제목 */}
       <h1 style={{ fontSize: 32 }}>{data.title}</h1>
 
-      {/* Markdown */}
       <ReactMarkdown
         remarkPlugins={[remarkMath]}
-        rehypePlugins={[rehypeKatex]}
+        rehypePlugins={[rehypeKatex, rehypeRaw]}
         components={{
+          ...markdownComponents, // 🔥 플러그인 시스템
+          
+          // 코드 하이라이트는 여기 유지
           code({ inline, className, children }) {
             const match = /language-(\w+)/.exec(className || "");
 
@@ -89,18 +85,6 @@ export default function PostPage() {
       >
         {data.content}
       </ReactMarkdown>
-
-      {/* 🔥 Torus 영역 */}
-      <div
-        style={{
-          width: 600,
-          height: 400,
-          marginTop: 40,
-          border: "1px solid #ccc",
-        }}
-      >
-        <TorusWithNormals />
-      </div>
     </div>
   );
 }
