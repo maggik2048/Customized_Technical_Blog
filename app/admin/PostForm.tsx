@@ -9,7 +9,7 @@ import MarkdownImageManager from "@/app/components/MarkdownImageManager";
 
 type Props = {
   mode: "create" | "edit";
-  postId?: string;
+  postId?: string; // ✅ UUID
 };
 
 export default function PostForm({ mode, postId }: Props) {
@@ -33,55 +33,89 @@ export default function PostForm({ mode, postId }: Props) {
     loadMenu();
   }, []);
 
-  // edit일 때 기존 글 불러오기
+  // 🔥 기존 글 불러오기 (UUID)
   useEffect(() => {
-    if (mode === "edit" && postId) {
-      const fetchPost = async () => {
-        const { data } = await supabase
-          .from("posts")
-          .select("*")
-          .eq("id", postId)
-          .single();
+    if (mode !== "edit" || !postId) return;
 
-        if (data) {
-          setTitle(data.title);
-          setContent(data.content);
-          setCategory(data.category);
-        }
-      };
+    const fetchPost = async () => {
+      console.log("fetch UUID:", postId);
 
-      fetchPost();
-    }
+      const { data, error } = await supabase
+        .from("posts")
+        .select("*")
+        .eq("id", postId) // ✅ 핵심
+        .single();
+
+      if (error) {
+        console.error("fetch error:", error);
+        return;
+      }
+
+      if (data) {
+        setTitle(data.title);
+        setContent(data.content);
+        setCategory(data.category);
+      }
+    };
+
+    fetchPost();
   }, [mode, postId]);
 
-  // submit
+  //  submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // 🔥 DB에 실제 어떤 id들이 있는지 확인
+  const { data } = await supabase
+    .from("posts")
+    .select("id");
+
+  console.log("🔥 ALL IDS:", data);
+
+    console.log("SUBMIT UUID:", postId);
 
     if (!title || !content || !category) {
       alert("모든 필드를 입력하세요");
       return;
     }
 
+    // CREATE
     if (mode === "create") {
-      const { error } = await supabase.from("posts").insert([
-        { title, content, category },
-      ]);
-
-      if (error) return alert("글 저장 실패");
-
-      router.push(`/category/${category}`);
-    }
-
-    if (mode === "edit" && postId) {
       const { error } = await supabase
         .from("posts")
-        .update({ title, content, category })
-        .eq("id", postId);
+        .insert([{ title, content, category }]);
 
-      if (error) return alert("수정 실패");
+      if (error) {
+        console.error(error);
+        return alert("글 저장 실패");
+      }
+
+      router.push(`/category/${category}`);
+      return;
+    }
+
+    // EDIT
+    if (mode === "edit" && postId) {
+      const { data, error } = await supabase
+        .from("posts")
+        .update({ title, content, category })
+        .eq("id", postId) // ✅ UUID 그대로
+        .select();
+
+      console.log("updated:", data);
+
+      if (error) {
+        console.error(error);
+        return alert("수정 실패");
+      }
+
+      if (!data || data.length === 0) {
+        alert("업데이트 실패: id mismatch");
+        return;
+      }
 
       router.push(`/post/${postId}`);
+      router.refresh();
     }
   };
 
@@ -117,7 +151,7 @@ export default function PostForm({ mode, postId }: Props) {
         />
       </div>
 
-      {/* Markdown + Insert Image */}
+      {/* 내용 */}
       <MarkdownImageManager content={content} setContent={setContent} />
 
       <button
