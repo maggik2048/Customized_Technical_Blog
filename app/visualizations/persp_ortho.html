@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>3D Cube World</title>
+<style>
+body { margin:0; overflow:hidden; background:black; }
+button { position:absolute; top:10px; left:10px; z-index:10; }
+</style>
+</head>
+<body>
+<button id="respawnBtn">Respawn</button>
+<button id="switchCamBtn" style="left:120px;">Switch Camera</button>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.154.0/build/three.min.js"></script>
+<script>
+let scene, renderer;
+let perspectiveCamera, orthographicCamera, activeCamera;
+let cubes = [];
+let player, playerBox;
+let seed = 1;
+
+const GREEN_PROB = 0.6; // green cube probability
+let keys = {};
+
+// ===== 랜덤 함수 =====
+function rand() {
+    let x = Math.sin(seed++) * 10000;
+    return x - Math.floor(x);
+}
+
+// ===== 초기화 =====
+function init() {
+    scene = new THREE.Scene();
+
+    renderer = new THREE.WebGLRenderer({antialias:true});
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    // 카메라
+    let aspect = window.innerWidth / window.innerHeight;
+    perspectiveCamera = new THREE.PerspectiveCamera(60, aspect, 0.1, 1000);
+    perspectiveCamera.position.set(0, 20, 30);
+    perspectiveCamera.lookAt(0,0,0);
+
+    orthographicCamera = new THREE.OrthographicCamera(-40*aspect,40*aspect,40,-40,0.1,1000);
+    orthographicCamera.position.set(0,20,30);
+    orthographicCamera.lookAt(0,0,0);
+
+    activeCamera = perspectiveCamera;
+
+    // 라이트
+    scene.add(new THREE.AmbientLight(0xffffff, 0.8));
+    let dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
+    dirLight.position.set(10,20,10);
+    scene.add(dirLight);
+
+    // 큐브 생성
+    generateCubes();
+
+    // 플레이어
+    createPlayer();
+
+    // 이벤트
+    window.addEventListener('resize', onWindowResize);
+    document.getElementById("respawnBtn").addEventListener("click", ()=>{ seed=1; clearCubes(); generateCubes(); placePlayerOnGreen(); });
+    document.getElementById("switchCamBtn").addEventListener("click", ()=>{ activeCamera = (activeCamera===perspectiveCamera)? orthographicCamera:perspectiveCamera; });
+    document.addEventListener('keydown', e=>keys[e.key.toLowerCase()]=true);
+    document.addEventListener('keyup', e=>keys[e.key.toLowerCase()]=false);
+}
+
+// ===== 큐브 생성 =====
+function generateCubes() {
+    for(let i=0;i<150;i++){
+        let size = 2 + rand()*2;
+        let geom = new THREE.BoxGeometry(size,size,size);
+        let color = (rand()<GREEN_PROB) ? 0x00ff88 : 0x0066ff;
+        let mat = new THREE.MeshStandardMaterial({color:color});
+        let cube = new THREE.Mesh(geom, mat);
+        cube.position.set(
+            (rand()-0.5)*40,
+            size/2,
+            (rand()-0.5)*40
+        );
+        cube.userData.isGreen = (color===0x00ff88);
+        scene.add(cube);
+        cubes.push(cube);
+    }
+}
+
+// ===== 큐브 제거 =====
+function clearCubes() {
+    cubes.forEach(c=>scene.remove(c));
+    cubes=[];
+}
+
+// ===== 플레이어 생성 =====
+function createPlayer() {
+    let geom = new THREE.SphereGeometry(0.5,12,12);
+    let mat = new THREE.MeshStandardMaterial({color:0xffffff});
+    player = new THREE.Mesh(geom, mat);
+    scene.add(player);
+    placePlayerOnGreen();
+}
+
+// ===== 플레이어를 첫 초록 큐브 위로 배치 =====
+function placePlayerOnGreen() {
+    let firstGreen = cubes.find(c=>c.userData.isGreen);
+    if(firstGreen){
+        player.position.set(firstGreen.position.x, firstGreen.position.y + 0.5, firstGreen.position.z);
+    } else {
+        player.position.set(0,1,0);
+    }
+}
+
+// ===== 리사이즈 =====
+function onWindowResize() {
+    let aspect = window.innerWidth / window.innerHeight;
+    perspectiveCamera.aspect = aspect;
+    perspectiveCamera.updateProjectionMatrix();
+
+    orthographicCamera.left = -40*aspect;
+    orthographicCamera.right = 40*aspect;
+    orthographicCamera.updateProjectionMatrix();
+
+    renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+// ===== 플레이어 이동 =====
+function movePlayer(delta) {
+    let speed = 10*delta;
+    let dx=0,dz=0;
+    if(keys["w"]) dz -= speed;
+    if(keys["s"]) dz += speed;
+    if(keys["a"]) dx -= speed;
+    if(keys["d"]) dx += speed;
+
+    if(dx===0 && dz===0) return;
+
+    let nextPos = player.position.clone();
+    nextPos.x += dx;
+    nextPos.z += dz;
+
+    let onGreen = false;
+    cubes.forEach(c=>{
+        if(c.userData.isGreen){
+            let box = new THREE.Box3().setFromObject(c);
+            if(nextPos.x>box.min.x && nextPos.x<box.max.x && nextPos.z>box.min.z && nextPos.z<box.max.z){
+                onGreen = true;
+            }
+        }
+    });
+
+    if(onGreen){
+        player.position.x = nextPos.x;
+        player.position.z = nextPos.z;
+    }
+}
+
+// ===== 애니메이션 =====
+let clock = new THREE.Clock();
+function animate() {
+    requestAnimationFrame(animate);
+    let delta = clock.getDelta();
+    movePlayer(delta);
+    activeCamera.lookAt(player.position);
+    renderer.render(scene, activeCamera);
+}
+
+init();
+animate();
+</script>
+</body>
+</html>
