@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Simple Grid</title>
+<style>
+body { margin:0; background:#111; }
+canvas { display:block; }
+</style>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+
+<script>
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+
+function resize(){
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.addEventListener("resize", resize);
+resize();
+
+// ===== 좌표 → 화면 변환 =====
+function toScreen(x, y){
+  return {
+    x: canvas.width/2 + x * 50,
+    y: canvas.height/2 - y * 50
+  };
+}
+
+// ===== grid =====
+function drawGrid(){
+  ctx.strokeStyle = "#333";
+  ctx.lineWidth = 1;
+
+  for(let x = -20; x <= 20; x++){
+    drawLine(x, -20, x, 20);
+  }
+  for(let y = -20; y <= 20; y++){
+    drawLine(-20, y, 20, y);
+  }
+}
+
+// ===== 축 (x, y axis 강조) =====
+function drawAxis(){
+  ctx.strokeStyle = "#888";
+  ctx.lineWidth = 2;
+
+  drawLine(-20, 0, 20, 0); // x-axis
+  drawLine(0, -20, 0, 20); // y-axis
+}
+
+// ===== 선 =====
+function drawLine(x1, y1, x2, y2){
+  const p1 = toScreen(x1, y1);
+  const p2 = toScreen(x2, y2);
+
+  ctx.beginPath();
+  ctx.moveTo(p1.x, p1.y);
+  ctx.lineTo(p2.x, p2.y);
+  ctx.stroke();
+}
+
+// ===== 원점 =====
+function drawOrigin(){
+  const p = toScreen(0, 0);
+
+  ctx.fillStyle = "red";
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+// ===== 노란 점 =====
+function drawPoint(){
+  const point = {x: 2, y: 1}; // 여기 바꾸면 위치 바뀜
+  const p = toScreen(point.x, point.y);
+
+  ctx.fillStyle = "yellow";
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+// ===== 메인 =====
+function draw(){
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  drawGrid();
+  drawAxis();
+  drawOrigin();
+  drawPoint();
+}
+
+draw();
+</script>
+
+</body>
+</html>
