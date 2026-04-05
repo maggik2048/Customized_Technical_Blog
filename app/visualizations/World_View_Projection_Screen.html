@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>World View Projection Demo</title>
+<style>
+  body { margin: 0; background: black; }
+  canvas { display: block; }
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const width = canvas.width;
+const height = canvas.height;
+
+// ----------------------
+// Matrix utilities
+// ----------------------
+function multiplyMatrixVector(m, v) {
+  let r = [0,0,0,0];
+  for (let i = 0; i < 4; i++) {
+    r[i] =
+      m[i][0]*v[0] +
+      m[i][1]*v[1] +
+      m[i][2]*v[2] +
+      m[i][3]*v[3];
+  }
+  return r;
+}
+
+function multiplyMatrices(a, b) {
+  let result = Array(4).fill(0).map(()=>Array(4).fill(0));
+  for (let i=0;i<4;i++){
+    for (let j=0;j<4;j++){
+      for (let k=0;k<4;k++){
+        result[i][j]+=a[i][k]*b[k][j];
+      }
+    }
+  }
+  return result;
+}
+
+// ----------------------
+// Projection matrix
+// ----------------------
+function perspective(fov, aspect, near, far) {
+  let f = 1 / Math.tan(fov / 2);
+  return [
+    [f/aspect,0,0,0],
+    [0,f,0,0],
+    [0,0,(far+near)/(near-far),(2*far*near)/(near-far)],
+    [0,0,-1,0]
+  ];
+}
+
+// ----------------------
+// Simple camera (view matrix)
+// ----------------------
+function viewMatrix(cameraPos) {
+  return [
+    [1,0,0,-cameraPos.x],
+    [0,1,0,-cameraPos.y],
+    [0,0,1,-cameraPos.z],
+    [0,0,0,1]
+  ];
+}
+
+// ----------------------
+// Cube geometry
+// ----------------------
+const points = [
+  [-1,-1,-1,1],[1,-1,-1,1],[1,1,-1,1],[-1,1,-1,1],
+  [-1,-1,1,1],[1,-1,1,1],[1,1,1,1],[-1,1,1,1]
+];
+
+const edges = [
+  [0,1],[1,2],[2,3],[3,0],
+  [4,5],[5,6],[6,7],[7,4],
+  [0,4],[1,5],[2,6],[3,7]
+];
+
+// ----------------------
+// Camera
+// ----------------------
+let camera = { x: 0, y: 0, z: 5 };
+
+// ----------------------
+// Render loop
+// ----------------------
+function draw() {
+  ctx.clearRect(0,0,width,height);
+
+  let proj = perspective(Math.PI/3, width/height, 0.1, 100);
+  let view = viewMatrix(camera);
+  let vp = multiplyMatrices(proj, view);
+
+  let projected = [];
+
+  // Transform all points
+  for (let p of points) {
+    let clip = multiplyMatrixVector(vp, p);
+
+    // perspective divide
+    let ndc = [
+      clip[0]/clip[3],
+      clip[1]/clip[3],
+      clip[2]/clip[3]
+    ];
+
+    let screen = {
+      x: (ndc[0]+1)*0.5*width,
+      y: (1-ndc[1])*0.5*height
+    };
+
+    projected.push(screen);
+  }
+
+  // Draw edges
+  ctx.strokeStyle = "white";
+  for (let e of edges) {
+    let a = projected[e[0]];
+    let b = projected[e[1]];
+
+    ctx.beginPath();
+    ctx.moveTo(a.x, a.y);
+    ctx.lineTo(b.x, b.y);
+    ctx.stroke();
+  }
+
+  requestAnimationFrame(draw);
+}
+
+draw();
+
+// ----------------------
+// Controls
+// ----------------------
+window.addEventListener("keydown", (e)=>{
+  if (e.key === "w") camera.z -= 0.2;
+  if (e.key === "s") camera.z += 0.2;
+  if (e.key === "a") camera.x -= 0.2;
+  if (e.key === "d") camera.x += 0.2;
+  if (e.key === "q") camera.y -= 0.2;
+  if (e.key === "e") camera.y += 0.2;
+});
+</script>
+</body>
+</html>

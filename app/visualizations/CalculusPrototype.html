@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  body {
+    background: #000;
+    color: white;
+    font-family: sans-serif;
+  }
+  canvas {
+    border: 1px solid #333;
+  }
+</style>
+</head>
+<body>
+
+<h3>Calc Visualization (Derivative + Integral)</h3>
+<input type="range" min="-5" max="5" step="0.1" value="1" id="slider">
+<span id="val"></span>
+
+<canvas id="c" width="800" height="500"></canvas>
+
+<script>
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+
+let a = 1;
+const slider = document.getElementById("slider");
+const valText = document.getElementById("val");
+
+slider.oninput = () => {
+  a = parseFloat(slider.value);
+};
+
+function f(x){
+  return a * x * x;
+}
+
+// derivative (numerical)
+function derivative(x){
+  const h = 0.0001;
+  return (f(x+h) - f(x)) / h;
+}
+
+// integral (numerical)
+function integral(x){
+  let sum = 0;
+  const step = 0.01;
+  for(let i=0;i<x;i+=step){
+    sum += f(i) * step;
+  }
+  return sum;
+}
+
+// coordinate transform
+function mapX(x){
+  return canvas.width/2 + x*40;
+}
+function mapY(y){
+  return canvas.height/2 - y*40;
+}
+
+// draw axis
+function drawAxis(){
+  ctx.strokeStyle = "#555";
+  ctx.beginPath();
+  ctx.moveTo(0, canvas.height/2);
+  ctx.lineTo(canvas.width, canvas.height/2);
+  ctx.moveTo(canvas.width/2, 0);
+  ctx.lineTo(canvas.width/2, canvas.height);
+  ctx.stroke();
+}
+
+// draw function
+function drawGraph(fn, color){
+  ctx.strokeStyle = color;
+  ctx.beginPath();
+  for(let x=-10;x<=10;x+=0.05){
+    let px = mapX(x);
+    let py = mapY(fn(x));
+    if(x === -10) ctx.moveTo(px, py);
+    else ctx.lineTo(px, py);
+  }
+  ctx.stroke();
+}
+
+// draw integral area
+function drawIntegral(){
+  ctx.fillStyle = "rgba(0,150,255,0.2)";
+  ctx.beginPath();
+  ctx.moveTo(mapX(0), mapY(0));
+  for(let x=0;x<=5;x+=0.05){
+    ctx.lineTo(mapX(x), mapY(f(x)));
+  }
+  ctx.lineTo(mapX(5), mapY(0));
+  ctx.closePath();
+  ctx.fill();
+}
+
+// animation loop
+function loop(){
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  drawAxis();
+
+  drawIntegral();
+  drawGraph(f, "#FFD700");      // function
+  drawGraph(derivative, "#FF4444"); // derivative
+
+  valText.innerText = "a = " + a;
+
+  requestAnimationFrame(loop);
+}
+
+loop();
+</script>
+
+</body>
+</html>
