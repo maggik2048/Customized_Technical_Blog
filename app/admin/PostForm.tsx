@@ -5,14 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getMenu } from "@/app/components/sidebarData";
 import { Item } from "@/app/components/types";
-
-import ReactMarkdown from "react-markdown";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
-import "katex/dist/katex.min.css";
-
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import MarkdownImageManager from "@/app/components/MarkdownImageManager";
 
 type Props = {
   mode: "create" | "edit";
@@ -27,7 +20,7 @@ export default function PostForm({ mode, postId }: Props) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
-  // 🔥 메뉴 로드
+  // 메뉴 로드
   useEffect(() => {
     const loadMenu = async () => {
       const data = await getMenu();
@@ -40,7 +33,7 @@ export default function PostForm({ mode, postId }: Props) {
     loadMenu();
   }, []);
 
-  // 🔥 edit일 때 기존 글 불러오기
+  // edit일 때 기존 글 불러오기
   useEffect(() => {
     if (mode === "edit" && postId) {
       const fetchPost = async () => {
@@ -61,7 +54,7 @@ export default function PostForm({ mode, postId }: Props) {
     }
   }, [mode, postId]);
 
-  // 🔥 submit 통합
+  // submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -124,85 +117,8 @@ export default function PostForm({ mode, postId }: Props) {
         />
       </div>
 
-      {/* 🔥 에디터 + 프리뷰 (그대로 유지) */}
-      <div style={{ display: "flex", gap: 20 }}>
-        <textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder="Write Markdown with KaTeX..."
-          style={{
-            width: "50%",
-            height: 400,
-            padding: 10,
-            fontFamily: "monospace",
-          }}
-        />
-
-        <div
-          style={{
-            width: "50%",
-            height: 400,
-            overflow: "auto",
-            padding: 10,
-            background: "#111",
-            color: "#fff",
-            borderRadius: 8,
-          }}
-        >
-          <ReactMarkdown
-            remarkPlugins={[remarkMath]}
-            rehypePlugins={[rehypeKatex]}
-            components={{
-              code({ inline, className, children, ...props }) {
-                const match = /language-(\w+)/.exec(className || "");
-
-                if (inline) {
-                  return (
-                    <code
-                      style={{
-                        background: "#333",
-                        padding: "2px 6px",
-                        borderRadius: 4,
-                      }}
-                      {...props}
-                    >
-                      {children}
-                    </code>
-                  );
-                }
-
-                return (
-                  <SyntaxHighlighter
-                    style={oneDark}
-                    language={match?.[1] || "text"}
-                    PreTag="div"
-                  >
-                    {String(children).replace(/\n$/, "")}
-                  </SyntaxHighlighter>
-                );
-              },
-              img({ src, alt, ...props }) {
-                return (
-                  <img
-                    src={src}
-                    alt={alt}
-                    style={{
-                      maxWidth: "100%",
-                      maxHeight: 300,
-                      display: "block",
-                      margin: "10px 0",
-                      borderRadius: 6,
-                    }}
-                    {...props}
-                  />
-                );
-              },
-            }}
-          >
-            {content || "Preview will appear here..."}
-          </ReactMarkdown>
-        </div>
-      </div>
+      {/* Markdown + 이미지 에디터 */}
+      <MarkdownImageManager content={content} setContent={setContent} />
 
       <button
         type="submit"

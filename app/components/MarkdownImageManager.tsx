@@ -15,136 +15,120 @@ type Props = {
 };
 
 export default function MarkdownImageManager({ content, setContent }: Props) {
-  // 드래그&드롭 처리
-  const handleDrop = async (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    const files = Array.from(e.dataTransfer.files);
+  // 단순 Insert Image 버튼
+  const handleInsertImage = async () => {
+    const url = prompt("Insert image URL:");
+    if (!url) return;
 
-    for (const file of files) {
-      if (!file.type.startsWith("image/")) continue;
-
-      const fileName = `${Date.now()}_${file.name}`;
-      const { data, error } = await supabase.storage
-        .from("images")
-        .upload(fileName, file);
-
-      if (error) {
-        console.error("Upload error:", error);
-        continue;
-      }
-
-      const { publicUrl } = supabase.storage
-        .from("images")
-        .getPublicUrl(fileName);
-
-      // Markdown 링크 자동 삽입
-      setContent((prev) => prev + `\n![${file.name}](${publicUrl})\n`);
-    }
+    // Supabase 업로드를 원하면 fetch + upload 가능
+    // 현재는 URL을 그대로 Markdown에 삽입
+    setContent((prev) => prev + `\n![](${url})\n`);
   };
 
-  // 단순 URL도 이미지로 처리
+  // 단순 URL도 이미지로 렌더링
   const renderContent = content.replace(
     /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp))$/gm,
     "![]($1)"
   );
 
   return (
-    <div style={{ display: "flex", gap: 20 }}>
-      <div
-        onDrop={handleDrop}
-        onDragOver={(e) => e.preventDefault()}
-        style={{
-          width: "50%",
-          height: 400,
-          padding: 10,
-          border: "2px dashed #888",
-          borderRadius: 6,
-          textAlign: "center",
-          color: "#888",
-          cursor: "pointer",
-        }}
-      >
-        Drop images here to upload
+    <div>
+      {/* Insert Image 버튼 */}
+      <div style={{ marginBottom: 10 }}>
+        <button
+          type="button"
+          onClick={handleInsertImage}
+          style={{
+            padding: "6px 12px",
+            background: "#1e40af",
+            color: "#fff",
+            borderRadius: 4,
+            cursor: "pointer",
+            marginBottom: 8,
+          }}
+        >
+          Insert Image
+        </button>
+      </div>
+
+      {/* 에디터 + 프리뷰 */}
+      <div style={{ display: "flex", gap: 20 }}>
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="Write Markdown with KaTeX..."
           style={{
-            width: "100%",
-            height: "100%",
+            width: "50%",
+            height: 400,
             padding: 10,
             fontFamily: "monospace",
-            border: "none",
-            background: "transparent",
-            color: "#fff",
-            resize: "none",
           }}
         />
-      </div>
 
-      <div
-        style={{
-          width: "50%",
-          height: 400,
-          overflow: "auto",
-          padding: 10,
-          background: "#111",
-          color: "#fff",
-          borderRadius: 8,
-        }}
-      >
-        <ReactMarkdown
-          remarkPlugins={[remarkMath]}
-          rehypePlugins={[rehypeKatex]}
-          components={{
-            code({ inline, className, children, ...props }) {
-              const match = /language-(\w+)/.exec(className || "");
-
-              if (inline) {
-                return (
-                  <code
-                    style={{
-                      background: "#333",
-                      padding: "2px 6px",
-                      borderRadius: 4,
-                    }}
-                    {...props}
-                  >
-                    {children}
-                  </code>
-                );
-              }
-
-              return (
-                <SyntaxHighlighter
-                  style={oneDark}
-                  language={match?.[1] || "text"}
-                  PreTag="div"
-                >
-                  {String(children).replace(/\n$/, "")}
-                </SyntaxHighlighter>
-              );
-            },
-            img({ src, alt, ...props }) {
-              return (
-                <img
-                  src={src}
-                  alt={alt}
-                  style={{
-                    maxWidth: "100%",
-                    maxHeight: 300,
-                    display: "block",
-                    margin: "10px 0",
-                    borderRadius: 6,
-                  }}
-                  {...props}
-                />
-              );
-            },
+        <div
+          style={{
+            width: "50%",
+            height: 400,
+            overflow: "auto",
+            padding: 10,
+            background: "#111",
+            color: "#fff",
+            borderRadius: 8,
           }}
         >
-          {renderContent || "Preview will appear here..."}
-        </ReactMarkdown>
+          <ReactMarkdown
+            remarkPlugins={[remarkMath]}
+            rehypePlugins={[rehypeKatex]}
+            components={{
+              code({ inline, className, children, ...props }) {
+                const match = /language-(\w+)/.exec(className || "");
+
+                if (inline) {
+                  return (
+                    <code
+                      style={{
+                        background: "#333",
+                        padding: "2px 6px",
+                        borderRadius: 4,
+                      }}
+                      {...props}
+                    >
+                      {children}
+                    </code>
+                  );
+                }
+
+                return (
+                  <SyntaxHighlighter
+                    style={oneDark}
+                    language={match?.[1] || "text"}
+                    PreTag="div"
+                  >
+                    {String(children).replace(/\n$/, "")}
+                  </SyntaxHighlighter>
+                );
+              },
+              img({ src, alt, ...props }) {
+                return (
+                  <img
+                    src={src}
+                    alt={alt}
+                    style={{
+                      maxWidth: "100%",
+                      maxHeight: 300,
+                      display: "block",
+                      margin: "10px 0",
+                      borderRadius: 6,
+                    }}
+                    {...props}
+                  />
+                );
+              },
+            }}
+          >
+            {renderContent || "Preview will appear here..."}
+          </ReactMarkdown>
+        </div>
       </div>
     </div>
   );
