@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Matrix Visualizer</title>
+<style>
+body { margin:0; background:black; }
+canvas { display:block; }
+</style>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+
+<script>
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+// ===== MATRIX =====
+let a = 1, b = 0, c = 0, d = 1;
+
+// ===== TRANSFORM =====
+function transform(x,y){
+  return {
+    x: a*x + b*y,
+    y: c*x + d*y
+  };
+}
+
+// ===== SCREEN =====
+function toScreen(x,y){
+  return {
+    x: canvas.width/2 + x*40,
+    y: canvas.height/2 - y*40
+  };
+}
+
+// ===== GRID =====
+function drawGrid(){
+  ctx.strokeStyle = "white";
+
+  for(let x=-10;x<=10;x++){
+    let p1 = transform(x,-10);
+    let p2 = transform(x,10);
+
+    let s1 = toScreen(p1.x,p1.y);
+    let s2 = toScreen(p2.x,p2.y);
+
+    ctx.beginPath();
+    ctx.moveTo(s1.x,s1.y);
+    ctx.lineTo(s2.x,s2.y);
+    ctx.stroke();
+  }
+
+  for(let y=-10;y<=10;y++){
+    let p1 = transform(-10,y);
+    let p2 = transform(10,y);
+
+    let s1 = toScreen(p1.x,p1.y);
+    let s2 = toScreen(p2.x,p2.y);
+
+    ctx.beginPath();
+    ctx.moveTo(s1.x,s1.y);
+    ctx.lineTo(s2.x,s2.y);
+    ctx.stroke();
+  }
+}
+
+// ===== POINT =====
+function drawPoint(){
+  let p = transform(2,1);
+  let s = toScreen(p.x,p.y);
+
+  ctx.fillStyle = "yellow";
+  ctx.beginPath();
+  ctx.arc(s.x,s.y,8,0,Math.PI*2);
+  ctx.fill();
+}
+
+// ===== MATRIX DISPLAY =====
+function drawMatrix(){
+  ctx.fillStyle = "white";
+  ctx.font = "20px monospace";
+
+  const A = a.toFixed(1);
+  const B = b.toFixed(1);
+  const C = c.toFixed(1);
+  const D = d.toFixed(1);
+
+  let x = 50;
+  let y = 100;
+
+  // label
+  ctx.fillText("Matrix", x, y-50);
+
+  // brackets
+  ctx.fillText("[", x-20, y);
+  ctx.fillText("]", x+120, y);
+
+  // values
+  ctx.fillText(A + "   " + B, x, y-20);
+  ctx.fillText(C + "   " + D, x, y+20);
+}
+
+// ===== KEY CONTROL =====
+window.addEventListener("keydown", (e)=>{
+  const step = 0.1;
+
+  if(e.key === "q") a += step;
+  if(e.key === "a") a -= step;
+
+  if(e.key === "w") b += step;
+  if(e.key === "s") b -= step;
+
+  if(e.key === "e") c += step;
+  if(e.key === "d") c -= step;
+
+  if(e.key === "r") d += step;
+  if(e.key === "f") d -= step;
+});
+
+// ===== MAIN LOOP =====
+function draw(){
+  ctx.fillStyle = "black";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  drawGrid();
+  drawPoint();
+  drawMatrix();
+
+  requestAnimationFrame(draw);
+}
+
+draw();
+</script>
+
+</body>
+</html>
