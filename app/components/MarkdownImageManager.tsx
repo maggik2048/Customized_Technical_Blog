@@ -15,17 +15,60 @@ type Props = {
 };
 
 export default function MarkdownImageManager({ content, setContent }: Props) {
-  // 단순 Insert Image 버튼
-  const handleInsertImage = async () => {
-    const url = prompt("Insert image URL:");
-    if (!url) return;
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-    // Supabase 업로드를 원하면 fetch + upload 가능
-    // 현재는 URL을 그대로 Markdown에 삽입
-    setContent((prev) => prev + `\n![](${url})\n`);
+  // Trigger file picker
+  const handleInsertImage = () => {
+    fileInputRef.current?.click();
   };
 
-  // 단순 URL도 이미지로 렌더링
+  // Handle file selection and upload
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      alert("Please select an image file.");
+      return;
+    }
+
+    try {
+      const fileName = `${Date.now()}_${file.name}`;
+
+      // Upload to Supabase Storage
+      const { error: uploadError } = await supabase.storage
+        .from("imagebucket") // your public bucket
+        .upload(fileName, file);
+
+      if (uploadError) {
+        console.error("Upload failed:", uploadError.message);
+        alert("Image upload failed: " + uploadError.message);
+        return;
+      }
+
+      // Get public URL
+      const { data: urlData, error: urlError } = supabase.storage
+        .from("imagebucket")
+        .getPublicUrl(fileName);
+
+      if (urlError || !urlData?.publicUrl) {
+        console.error("Failed to get public URL:", urlError);
+        alert("Failed to get public URL after upload.");
+        return;
+      }
+
+      // Insert Markdown image link
+      setContent((prev) => prev + `\n![](${urlData.publicUrl})\n`);
+
+      // Reset file input so same file can be selected again
+      e.target.value = "";
+    } catch (err) {
+      console.error(err);
+      alert("Unexpected error during upload.");
+    }
+  };
+
+  // Convert plain image URLs to Markdown links automatically
   const renderContent = content.replace(
     /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp))$/gm,
     "![]($1)"
@@ -33,7 +76,7 @@ export default function MarkdownImageManager({ content, setContent }: Props) {
 
   return (
     <div>
-      {/* Insert Image 버튼 */}
+      {/* Insert Image Button */}
       <div style={{ marginBottom: 10 }}>
         <button
           type="button"
@@ -49,9 +92,17 @@ export default function MarkdownImageManager({ content, setContent }: Props) {
         >
           Insert Image
         </button>
+
+        <input
+          type="file"
+          accept="image/*"
+          style={{ display: "none" }}
+          ref={fileInputRef}
+          onChange={handleFileChange}
+        />
       </div>
 
-      {/* 에디터 + 프리뷰 */}
+      {/* Markdown Editor + Preview */}
       <div style={{ display: "flex", gap: 20 }}>
         <textarea
           value={content}
@@ -82,7 +133,6 @@ export default function MarkdownImageManager({ content, setContent }: Props) {
             components={{
               code({ inline, className, children, ...props }) {
                 const match = /language-(\w+)/.exec(className || "");
-
                 if (inline) {
                   return (
                     <code
@@ -97,7 +147,6 @@ export default function MarkdownImageManager({ content, setContent }: Props) {
                     </code>
                   );
                 }
-
                 return (
                   <SyntaxHighlighter
                     style={oneDark}
