@@ -30,12 +30,29 @@ const customLight = {
 // 🔹 공통 버튼 스타일
 const btnStyle = { padding: "6px 12px", borderRadius: 4, cursor: "pointer" };
 
-// 🔹 코드 블록 컴포넌트
+// 🔹 코드 블록 컴포넌트 (한 줄 인라인 코드 → 박스 없이 강조, 긴 코드 → SyntaxHighlighter)
 function CodeBlock({ inline, className, children, codeDark }: any) {
+  const text = String(children);
   const match = /language-(\w+)/.exec(className || "");
-  if (inline) return <code>{children}</code>;
 
-  const bgColor = codeDark ? "#1e1e1e" : "#f3f4f6";
+  // 한 줄짜리 짧은 코드 또는 inline 코드 → 강조만
+  if (inline || (text.length < 80 && !text.includes("\n"))) {
+    return (
+      <code
+        style={{
+          background: codeDark ? "#222" : "#ccc",
+          color: codeDark ? "#eee" : "#111",
+          padding: "1px 4px",
+          borderRadius: 4,
+        }}
+      >
+        {children}
+      </code>
+    );
+  }
+
+  // 긴 코드 블록 → SyntaxHighlighter
+  const bgColor = codeDark ? "#121212" : "#e0e0e0";
   const borderColor = codeDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.18)";
 
   return (
@@ -44,15 +61,29 @@ function CodeBlock({ inline, className, children, codeDark }: any) {
       transition={{ duration: 0.5 }}
       style={{ borderRadius: 6, overflowX: "auto", border: `1px solid ${borderColor}` }}
     >
-      <SyntaxHighlighter style={codeDark ? oneDark : customLight} language={match?.[1] || "text"}>
-        {String(children).replace(/\n$/, "")}
+      <SyntaxHighlighter
+        style={codeDark ? oneDark : customLight}
+        language={match?.[1] || "text"}
+        PreTag="div"
+      >
+        {text.replace(/\n$/, "")}
       </SyntaxHighlighter>
     </motion.div>
   );
 }
 
 // 🔹 헤더 이미지 + 제목 + 날짜 컴포넌트
-function HeaderWithTitle({ src, title, date, children }: { src: string; title: string; date?: string; children?: React.ReactNode }) {
+function HeaderWithTitle({
+  src,
+  title,
+  date,
+  children,
+}: {
+  src: string;
+  title: string;
+  date?: string;
+  children?: React.ReactNode;
+}) {
   return (
     <motion.div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: 260, zIndex: 0 }}>
       <img src={src} alt="header" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -75,8 +106,15 @@ export default function PostPage() {
 
   useEffect(() => {
     if (!id) return setLoading(false);
-    supabase.from("posts").select("*").eq("id", id).single()
-      .then(({ data: post, error }) => { if (!error) setData(post); setLoading(false); });
+    supabase
+      .from("posts")
+      .select("*")
+      .eq("id", id)
+      .single()
+      .then(({ data: post, error }) => {
+        if (!error) setData(post);
+        setLoading(false);
+      });
   }, [id]);
 
   if (loading) return <div style={{ padding: 40 }}>Loading...</div>;
@@ -105,12 +143,20 @@ export default function PostPage() {
     >
       {/* 버튼 */}
       <div style={{ position: "relative", zIndex: 10, display: "flex", gap: 16, marginBottom: 12 }}>
-        <button onClick={togglePageMode} style={btnStyle}>Toggle Dark Mode (Whole)</button>
-        <button onClick={() => setCodeDark(!codeDark)} style={btnStyle}>Toggle Dark Code Snippet</button>
+        <button onClick={togglePageMode} style={btnStyle}>
+          Toggle Dark Mode (Whole)
+        </button>
+        <button onClick={() => setCodeDark(!codeDark)} style={btnStyle}>
+          Toggle Dark Code Snippet
+        </button>
       </div>
 
       {/* 헤더 이미지 + 제목 + 관리 버튼 */}
-      <HeaderWithTitle src={headerImage} title={data.title} date={displayDate ? new Date(displayDate).toLocaleString("ko-KR") : ""}>
+      <HeaderWithTitle
+        src={headerImage}
+        title={data.title}
+        date={displayDate ? new Date(displayDate).toLocaleString("ko-KR") : ""}
+      >
         <div style={{ position: "absolute", top: 10, right: 40, zIndex: 10 }}>
           <PostAdminActions postId={id} />
         </div>
@@ -125,7 +171,9 @@ export default function PostPage() {
             ...markdownComponents,
             code: (props) => <CodeBlock {...props} codeDark={codeDark} />,
             table: ({ node, ...props }) => <table style={{ borderCollapse: "collapse", width: "100%" }} {...props} />,
-            th: ({ node, ...props }) => <th style={{ border: "1px solid #ccc", padding: 6, backgroundColor: "#f5f5f5" }} {...props} />,
+            th: ({ node, ...props }) => (
+              <th style={{ border: "1px solid #ccc", padding: 6, backgroundColor: "#f5f5f5" }} {...props} />
+            ),
             td: ({ node, ...props }) => <td style={{ border: "1px solid #ccc", padding: 6 }} {...props} />,
           }}
         >

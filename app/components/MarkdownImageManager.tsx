@@ -3,7 +3,7 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
-import remarkGfm from "remark-gfm"; // ✅ 추가
+import remarkGfm from "remark-gfm";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -147,12 +147,14 @@ export default function MarkdownImageManager({ content, setContent }: Props) {
           }}
         >
           <ReactMarkdown
-            remarkPlugins={[remarkMath, remarkGfm]} // ✅ 여기만 변경
+            remarkPlugins={[remarkMath, remarkGfm]}
             rehypePlugins={[rehypeKatex]}
             components={{
               code({ inline, className, children, ...props }) {
-                const match = /language-(\w+)/.exec(className || "");
-                if (inline) {
+                const text = String(children);
+
+                // 한 줄짜리 짧은 코드 또는 inline 코드 → 박스 없이 강조
+                if (inline || (text.length < 80 && !text.includes("\n"))) {
                   return (
                     <code
                       style={{
@@ -166,13 +168,16 @@ export default function MarkdownImageManager({ content, setContent }: Props) {
                     </code>
                   );
                 }
+
+                // 긴 코드 블록 → SyntaxHighlighter 사용
+                const match = /language-(\w+)/.exec(className || "");
                 return (
                   <SyntaxHighlighter
                     style={oneDark}
                     language={match?.[1] || "text"}
                     PreTag="div"
                   >
-                    {String(children).replace(/\n$/, "")}
+                    {text}
                   </SyntaxHighlighter>
                 );
               },
