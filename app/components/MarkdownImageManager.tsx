@@ -17,12 +17,34 @@ type Props = {
 export default function MarkdownImageManager({ content, setContent }: Props) {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  // Trigger file picker
+  // 이미지 리사이즈 함수
+  const resizeImage = (file: File, maxSize = 1000): Promise<Blob> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.src = URL.createObjectURL(file);
+      img.onload = () => {
+        let { width, height } = img;
+        if (width > maxSize || height > maxSize) {
+          const scale = Math.min(maxSize / width, maxSize / height);
+          width *= scale;
+          height *= scale;
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d")!;
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob((blob) => {
+          if (blob) resolve(blob);
+        }, file.type);
+      };
+    });
+  };
+
   const handleInsertImage = () => {
     fileInputRef.current?.click();
   };
 
-  // Handle file selection and upload
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -33,12 +55,12 @@ export default function MarkdownImageManager({ content, setContent }: Props) {
     }
 
     try {
+      const resizedBlob = await resizeImage(file, 1000);
       const fileName = `${Date.now()}_${file.name}`;
 
-      // Upload to Supabase Storage
       const { error: uploadError } = await supabase.storage
-        .from("imagebucket") // your public bucket
-        .upload(fileName, file);
+        .from("imagebucket")
+        .upload(fileName, resizedBlob);
 
       if (uploadError) {
         console.error("Upload failed:", uploadError.message);
@@ -46,7 +68,6 @@ export default function MarkdownImageManager({ content, setContent }: Props) {
         return;
       }
 
-      // Get public URL
       const { data: urlData, error: urlError } = supabase.storage
         .from("imagebucket")
         .getPublicUrl(fileName);
@@ -57,10 +78,7 @@ export default function MarkdownImageManager({ content, setContent }: Props) {
         return;
       }
 
-      // Insert Markdown image link
       setContent((prev) => prev + `\n![](${urlData.publicUrl})\n`);
-
-      // Reset file input so same file can be selected again
       e.target.value = "";
     } catch (err) {
       console.error(err);
@@ -68,15 +86,15 @@ export default function MarkdownImageManager({ content, setContent }: Props) {
     }
   };
 
-  // Convert plain image URLs to Markdown links automatically
+  // 🔹 순수 이미지 URL 자동 Markdown 변환
   const renderContent = content.replace(
-    /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp))$/gm,
+    /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|webp|bmp|svg))$/gm,
     "![]($1)"
   );
 
   return (
     <div>
-      {/* Insert Image Button */}
+      {/* Insert Image 버튼 */}
       <div style={{ marginBottom: 10 }}>
         <button
           type="button"
