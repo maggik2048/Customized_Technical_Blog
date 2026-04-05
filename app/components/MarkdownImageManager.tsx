@@ -3,6 +3,7 @@
 import React from "react";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
+import remarkGfm from "remark-gfm"; // ✅ 추가
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -146,7 +147,7 @@ export default function MarkdownImageManager({ content, setContent }: Props) {
           }}
         >
           <ReactMarkdown
-            remarkPlugins={[remarkMath]}
+            remarkPlugins={[remarkMath, remarkGfm]} // ✅ 여기만 변경
             rehypePlugins={[rehypeKatex]}
             components={{
               code({ inline, className, children, ...props }) {
