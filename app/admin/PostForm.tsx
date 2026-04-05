@@ -117,7 +117,7 @@ export default function PostForm({ mode, postId }: Props) {
         />
       </div>
 
-      {/* Markdown + 이미지 에디터 */}
+      {/* Markdown + Insert Image */}
       <MarkdownImageManager content={content} setContent={setContent} />
 
       <button
