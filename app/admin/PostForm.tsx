@@ -33,9 +33,7 @@ export default function PostForm({ mode, postId }: Props) {
       const data = await getMenu();
       setMenu(data);
 
-      const first =
-        data[0]?.children?.[0]?.href?.split("/").pop() || "";
-
+      const first = data[0]?.children?.[0]?.href?.split("/").pop() || "";
       setCategory(first);
     };
 
@@ -181,6 +179,22 @@ export default function PostForm({ mode, postId }: Props) {
                   >
                     {String(children).replace(/\n$/, "")}
                   </SyntaxHighlighter>
+                );
+              },
+              img({ src, alt, ...props }) {
+                return (
+                  <img
+                    src={src}
+                    alt={alt}
+                    style={{
+                      maxWidth: "100%",
+                      maxHeight: 300,
+                      display: "block",
+                      margin: "10px 0",
+                      borderRadius: 6,
+                    }}
+                    {...props}
+                  />
                 );
               },
             }}

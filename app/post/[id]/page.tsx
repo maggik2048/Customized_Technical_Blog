@@ -51,7 +51,7 @@ function CodeBlock({ inline, className, children, codeDark }: any) {
   );
 }
 
-// 🔹 헤더 이미지 + 제목 컴포넌트
+// 🔹 헤더 이미지 + 제목 + 날짜 컴포넌트
 function HeaderWithTitle({ src, title, date, children }: { src: string; title: string; date?: string; children?: React.ReactNode }) {
   return (
     <motion.div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: 260, zIndex: 0 }}>
