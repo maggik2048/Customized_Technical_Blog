@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Projection Puzzle Respawn</title>
+<style>
+body { margin:0; background:black; overflow:hidden;}
+canvas { display:block;}
+button { position:absolute; top:10px; left:10px; z-index:10; }
+</style>
+</head>
+<body>
+<button id="respawnBtn">Respawn</button>
+<canvas id="c"></canvas>
+<script>
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+// ===== 상태 =====
+let t = 0;              // 현재 projection 상태
+let targetT = 0;        // 목표 (0=persp, 1=ortho)
+
+let cam = {x:0,y:0,z:10};
+let player = {x:0,y:0,z:0};
+
+let nodes = [];
+let seed = 1;
+
+// ===== 랜덤 함수 (seedable) =====
+function random() {
+  let x = Math.sin(seed++) * 10000;
+  return x - Math.floor(x);
+}
+
+// ===== 월드 생성 =====
+function generateNodes() {
+  nodes = [];
+  for(let i=0;i<150;i++){
+    nodes.push({
+      x:(random()-0.5)*20,
+      y:(random()-0.5)*10,
+      z:(random()-0.5)*20,
+      type: random() > 0.5 ? "green" : "blue"  // 초록 비율 높임 50%
+    });
+  }
+}
+generateNodes();
+
+// ===== 수학 =====
+function lerp(a,b,t){ return a+(b-a)*t; }
+
+function project(p){
+  let dx = p.x - cam.x;
+  let dy = p.y - cam.y;
+  let dz = p.z - cam.z;
+
+  let f = 300;
+
+  // perspective
+  let px = (dx / -dz) * f;
+  let py = (dy / -dz) * f;
+
+  // orthographic
+  let ox = dx * 60;
+  let oy = dy * 60;
+
+  let sx = lerp(px, ox, t);
+  let sy = lerp(py, oy, t);
+
+  return { x: canvas.width/2 + sx, y: canvas.height/2 + sy, depth: -dz };
+}
+
+function dist(a,b){ return Math.hypot(a.x-b.x, a.y-b.y); }
+
+// ===== 이동 =====
+let debugDist = 0;
+function tryMove(dx, dz){
+  if(t < 0.8) return;
+
+  let next = {x: player.x + dx, y: player.y, z: player.z + dz};
+  let sp = project(next);
+
+  let best = null;
+  let bestDist = Infinity;
+
+  for(let n of nodes){
+    if(n.type !== "green") continue;
+
+    let sn = project(n);
+    let d = dist(sp, sn);
+
+    // ✔ 앞쪽 너무 가까운 노드 삭제
+    if(sn.depth < 1) continue;
+
+    if(d < bestDist){
+      bestDist = d;
+      best = n;
+    }
+  }
+
+  debugDist = bestDist;
+
+  if(best && bestDist < 80){
+    player.x = best.x;
+    player.y = best.y;
+    player.z = best.z;
+  }
+}
+
+// ===== 입력 =====
+window.addEventListener("keydown", e=>{
+  if(e.key===" ") targetT = targetT===0 ? 1 : 0;
+
+  if(e.key==="w") tryMove(0,-1);
+  if(e.key==="s") tryMove(0,1);
+  if(e.key==="a") tryMove(-1,0);
+  if(e.key==="d") tryMove(1,0);
+});
+
+// ===== Respawn 버튼 =====
+document.getElementById("respawnBtn").addEventListener("click", ()=>{
+  seed = 1;          // seed 초기화
+  generateNodes();   // 노드 재배치
+  player = {x:0,y:0,z:0};
+});
+
+// ===== 렌더 =====
+function draw(){
+  ctx.fillStyle="black";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  t += (targetT - t)*0.08;
+
+  // depth sorting
+  let sorted = nodes.map(n=>({n,s:project(n)}))
+                    .sort((a,b)=>b.s.depth - a.s.depth);
+
+  for(let obj of sorted){
+    let {n,s} = obj;
+    let size = Math.max(2, 20 / (s.depth*0.1));
+    let light = Math.max(0.2, 1 - s.depth*0.05);
+
+    ctx.fillStyle = n.type==="green" ? `rgba(0,255,150,${light})` : `rgba(0,100,255,${light})`;
+
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, size, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  // player
+  let sp = project(player);
+  ctx.fillStyle="white";
+  ctx.beginPath();
+  ctx.arc(sp.x, sp.y, 10, 0, Math.PI*2);
+  ctx.fill();
+
+  // UI
+  ctx.fillStyle="white";
+  ctx.fillText("Space: Perspective ↔ Ortho",20,30);
+  ctx.fillText("Move: WASD (Ortho에서만 이동 가능)",20,50);
+  ctx.fillText("closestDist: "+debugDist.toFixed(1),20,70);
+
+  requestAnimationFrame(draw);
+}
+draw();
+</script>
+</body>
+</html>
