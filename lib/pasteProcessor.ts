@@ -1,11 +1,13 @@
+// /lib/pasteProcessor.ts
+
+import TurndownService from "turndown";
 import { convertHtmlWithMath } from "./katexParser";
 import { processMath } from "./mathParser";
-import TurndownService from "turndown";
 
 const turndownService = new TurndownService();
 
 export function processPaste(html: string, text: string): string {
-  // 🔥 1순위: KaTeX HTML
+  // 🔥 1순위: KaTeX HTML (완벽 복원)
   if (html && html.includes("katex")) {
     return convertHtmlWithMath(html);
   }

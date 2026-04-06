@@ -21,16 +21,16 @@ type Props = {
 export default function MarkdownImageManager({ content, setContent }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // 🔹 붙여넣기
+  //  붙여넣기 (핵심 교체)
   const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
     e.preventDefault();
 
     const html = e.clipboardData.getData("text/html");
     const text = e.clipboardData.getData("text/plain");
 
-    const markdown = processPaste(html, text);
+    const result = processPaste(html, text);
 
-    setContent((prev) => prev + "\n" + markdown + "\n");
+    setContent((prev) => prev + "\n" + result + "\n");
   };
 
   // 🔹 이미지
