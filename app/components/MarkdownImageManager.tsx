@@ -3,8 +3,8 @@
 import React, { useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
-import remarkGfm from "remark-gfm";
 import rehypeKatex from "rehype-katex";
+import remarkGfm from "remark-gfm";
 import "katex/dist/katex.min.css";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
@@ -20,25 +20,61 @@ export default function MarkdownImageManager({ content, setContent }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const turndownService = new TurndownService();
 
-  // 🔹 붙여넣기 이벤트 처리 (HTML → Markdown + 자동 코드 블록)
+  // 🔹 수식 자동 감싸기
+  const autoWrapMath = (text: string) => {
+    const mathPattern = /(\\frac|\\rightarrow|dydx|\\[a-zA-Z]+|[a-zA-Z]\([a-zA-Z0-9,]+\))/;
+
+    const lines = text.split("\n").map((line) => {
+      if (mathPattern.test(line)) {
+        if (!line.startsWith("$$") && !line.endsWith("$$")) {
+          return "$$\n" + line + "\n$$";
+        }
+      }
+      return line;
+    });
+
+    return lines.join("\n");
+  };
+
+  // 🔹 붙여넣기 이벤트 처리 (HTML/Text → Markdown + 코드 + 자동 수식)
   const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    e.preventDefault();
     const html = e.clipboardData.getData("text/html");
     const text = e.clipboardData.getData("text/plain");
-    e.preventDefault();
+
+    let markdown = "";
 
     if (html) {
-      const markdown = turndownService.turndown(html);
-      setContent((prev) => prev + "\n" + markdown + "\n");
+      markdown = turndownService.turndown(html);
+
+      // Unicode / ChatGPT 수식 → LaTeX
+      markdown = markdown
+        .replace(/\\=/g, "=")
+        .replace(/\\\\/g, "\\")
+        .replace(/dydx/g, "\\frac{dy}{dx}")
+        .replace(/→/g, "\\rightarrow")
+        .replace(/𝑥/g, "x")
+        .replace(/𝑦/g, "y")
+        .replace(/𝑓/g, "f");
+
+      // 🔹 자동 수식 감싸기
+      markdown = autoWrapMath(markdown);
+
+      // 🔹 HTML 코드 블록 감지 시 wrapping
+      if (!/```/.test(markdown) && /<pre>|<code>/.test(html)) {
+        markdown = "```\n" + markdown + "\n```";
+      }
+
     } else if (text) {
-      // 🔹 언어 자동 감지
+      // 일반 텍스트 → 코드 블록 + 언어 감지
       let lang = "";
       if (text.includes("import") || text.includes("const") || text.includes("function")) lang = "ts";
       else if (text.includes("def") || text.includes("import ")) lang = "python";
-      // 필요한 경우 추가 키워드로 언어 감지 확장 가능
 
-      const codeMarkdown = "```" + lang + "\n" + text + "\n```";
-      setContent((prev) => prev + "\n" + codeMarkdown + "\n");
+      markdown = "```" + lang + "\n" + text + "\n```";
     }
+
+    setContent((prev) => prev + "\n" + markdown + "\n");
   };
 
   // 🔹 이미지 업로드
@@ -109,7 +145,6 @@ export default function MarkdownImageManager({ content, setContent }: Props) {
 
   return (
     <div>
-      {/* 이미지 버튼 */}
       <div style={{ marginBottom: 10 }}>
         <button
           type="button"
@@ -134,13 +169,12 @@ export default function MarkdownImageManager({ content, setContent }: Props) {
         />
       </div>
 
-      {/* Markdown Editor + Preview */}
       <div style={{ display: "flex", gap: 20 }}>
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
+          onPaste={handlePaste}
           placeholder="Write Markdown with KaTeX..."
-          onPaste={handlePaste} // 붙여넣기 이벤트 연결
           style={{
             width: "50%",
             height: 400,
@@ -148,15 +182,13 @@ export default function MarkdownImageManager({ content, setContent }: Props) {
             fontFamily: "monospace",
           }}
         />
-
         <div
           style={{
             width: "50%",
             height: 400,
             overflow: "auto",
             padding: 10,
-            background: "#111",
-            color: "#fff",
+            background: "#f5f5f5",
             borderRadius: 8,
           }}
         >
@@ -173,6 +205,7 @@ export default function MarkdownImageManager({ content, setContent }: Props) {
                         background: "#333",
                         padding: "2px 6px",
                         borderRadius: 4,
+                        color: "#fff",
                       }}
                       {...props}
                     >
@@ -180,7 +213,6 @@ export default function MarkdownImageManager({ content, setContent }: Props) {
                     </code>
                   );
                 }
-
                 const match = /language-(\w+)/.exec(className || "");
                 return (
                   <SyntaxHighlighter
