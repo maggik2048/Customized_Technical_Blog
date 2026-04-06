@@ -18,20 +18,30 @@ type Props = {
 
 export default function MarkdownImageManager({ content, setContent }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
-
   const turndownService = new TurndownService();
 
-  // 🔹 HTML 붙여넣기 이벤트 처리
+  // 🔹 붙여넣기 이벤트 처리 (HTML → Markdown + 자동 코드 블록)
   const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
     const html = e.clipboardData.getData("text/html");
+    const text = e.clipboardData.getData("text/plain");
+    e.preventDefault();
+
     if (html) {
-      e.preventDefault(); // 원본 붙여넣기 막기
       const markdown = turndownService.turndown(html);
       setContent((prev) => prev + "\n" + markdown + "\n");
+    } else if (text) {
+      // 🔹 언어 자동 감지
+      let lang = "";
+      if (text.includes("import") || text.includes("const") || text.includes("function")) lang = "ts";
+      else if (text.includes("def") || text.includes("import ")) lang = "python";
+      // 필요한 경우 추가 키워드로 언어 감지 확장 가능
+
+      const codeMarkdown = "```" + lang + "\n" + text + "\n```";
+      setContent((prev) => prev + "\n" + codeMarkdown + "\n");
     }
   };
 
-  // 🔹 이미지 업로드 및 삽입
+  // 🔹 이미지 업로드
   const resizeImage = (file: File, maxSize = 1000): Promise<Blob> => {
     return new Promise((resolve) => {
       const img = new Image();
@@ -55,9 +65,7 @@ export default function MarkdownImageManager({ content, setContent }: Props) {
     });
   };
 
-  const handleInsertImage = () => {
-    fileInputRef.current?.click();
-  };
+  const handleInsertImage = () => fileInputRef.current?.click();
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -126,7 +134,7 @@ export default function MarkdownImageManager({ content, setContent }: Props) {
         />
       </div>
 
-      {/* 마크다운 에디터 + 붙여넣기 지원 */}
+      {/* Markdown Editor + Preview */}
       <div style={{ display: "flex", gap: 20 }}>
         <textarea
           value={content}
@@ -158,7 +166,6 @@ export default function MarkdownImageManager({ content, setContent }: Props) {
             components={{
               code({ inline, className, children, ...props }) {
                 const text = String(children);
-
                 if (inline || (text.length < 80 && !text.includes("\n"))) {
                   return (
                     <code
