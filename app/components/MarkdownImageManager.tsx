@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import remarkGfm from "remark-gfm";
@@ -8,6 +8,7 @@ import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import TurndownService from "turndown";
 import { supabase } from "@/lib/supabase";
 
 type Props = {
@@ -16,9 +17,21 @@ type Props = {
 };
 
 export default function MarkdownImageManager({ content, setContent }: Props) {
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // 이미지 리사이즈 함수
+  const turndownService = new TurndownService();
+
+  // 🔹 HTML 붙여넣기 이벤트 처리
+  const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const html = e.clipboardData.getData("text/html");
+    if (html) {
+      e.preventDefault(); // 원본 붙여넣기 막기
+      const markdown = turndownService.turndown(html);
+      setContent((prev) => prev + "\n" + markdown + "\n");
+    }
+  };
+
+  // 🔹 이미지 업로드 및 삽입
   const resizeImage = (file: File, maxSize = 1000): Promise<Blob> => {
     return new Promise((resolve) => {
       const img = new Image();
@@ -48,12 +61,7 @@ export default function MarkdownImageManager({ content, setContent }: Props) {
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith("image/")) {
-      alert("Please select an image file.");
-      return;
-    }
+    if (!file || !file.type.startsWith("image/")) return;
 
     try {
       const resizedBlob = await resizeImage(file, 1000);
@@ -64,17 +72,15 @@ export default function MarkdownImageManager({ content, setContent }: Props) {
         .upload(fileName, resizedBlob);
 
       if (uploadError) {
-        console.error("Upload failed:", uploadError.message);
         alert("Image upload failed: " + uploadError.message);
         return;
       }
 
-      const { data: urlData, error: urlError } = supabase.storage
+      const { data: urlData } = supabase.storage
         .from("imagebucket")
         .getPublicUrl(fileName);
 
-      if (urlError || !urlData?.publicUrl) {
-        console.error("Failed to get public URL:", urlError);
+      if (!urlData?.publicUrl) {
         alert("Failed to get public URL after upload.");
         return;
       }
@@ -95,7 +101,7 @@ export default function MarkdownImageManager({ content, setContent }: Props) {
 
   return (
     <div>
-      {/* Insert Image 버튼 */}
+      {/* 이미지 버튼 */}
       <div style={{ marginBottom: 10 }}>
         <button
           type="button"
@@ -111,7 +117,6 @@ export default function MarkdownImageManager({ content, setContent }: Props) {
         >
           Insert Image
         </button>
-
         <input
           type="file"
           accept="image/*"
@@ -121,12 +126,13 @@ export default function MarkdownImageManager({ content, setContent }: Props) {
         />
       </div>
 
-      {/* Markdown Editor + Preview */}
+      {/* 마크다운 에디터 + 붙여넣기 지원 */}
       <div style={{ display: "flex", gap: 20 }}>
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="Write Markdown with KaTeX..."
+          onPaste={handlePaste} // 붙여넣기 이벤트 연결
           style={{
             width: "50%",
             height: 400,
@@ -153,7 +159,6 @@ export default function MarkdownImageManager({ content, setContent }: Props) {
               code({ inline, className, children, ...props }) {
                 const text = String(children);
 
-                // 한 줄짜리 짧은 코드 또는 inline 코드 → 박스 없이 강조
                 if (inline || (text.length < 80 && !text.includes("\n"))) {
                   return (
                     <code
@@ -169,7 +174,6 @@ export default function MarkdownImageManager({ content, setContent }: Props) {
                   );
                 }
 
-                // 긴 코드 블록 → SyntaxHighlighter 사용
                 const match = /language-(\w+)/.exec(className || "");
                 return (
                   <SyntaxHighlighter
