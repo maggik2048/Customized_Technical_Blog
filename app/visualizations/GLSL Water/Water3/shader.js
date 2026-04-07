@@ -24,7 +24,6 @@ void main(){
     vec3 pos = a_position + vec3(0.0, height, 0.0);
     v_worldPos = pos;
 
-    // approximate normal via central differences
     float eps = 0.001;
     float hL = fbm((a_uv + vec2(-eps,0.0))*3.0 + vec2(t,t)) * 0.3;
     float hR = fbm((a_uv + vec2( eps,0.0))*3.0 + vec2(t,t)) * 0.3;
@@ -38,37 +37,38 @@ void main(){
 
 export const fragmentShaderSource = `
 precision highp float;
-varying vec2 v_uv;
 varying vec3 v_normal;
 varying vec3 v_worldPos;
-
 uniform vec3 u_cameraPos;
 uniform vec3 u_lightDir;
+uniform bool u_showNormal;
 
 void main(){
+    if(u_showNormal){
+        vec3 N = normalize(v_normal);
+        gl_FragColor = vec4(N*0.5 + 0.5,1.0); // 노멀 시각화
+        return;
+    }
+
     vec3 N = normalize(v_normal);
     vec3 V = normalize(u_cameraPos - v_worldPos);
     vec3 L = normalize(u_lightDir);
 
-    // Fresnel
     float fresnel = pow(1.0 - max(dot(V,N),0.0), 3.0) * 0.7 + 0.3;
-
-    // Diffuse
-    float diff = max(dot(N, L), 0.0);
-
-    // Specular (Blinn-Phong)
+    float diff = max(dot(N,L),0.0);
     vec3 H = normalize(L + V);
-    float spec = pow(max(dot(N,H),0.0), 32.0); // shininess 32
+    float spec = pow(max(dot(N,H),0.0),32.0);
 
     vec3 waterColor = vec3(0.0,0.4,0.7);
     vec3 reflectionColor = vec3(0.8,0.9,1.0);
 
     vec3 color = mix(waterColor, reflectionColor, fresnel);
     color = color * diff + spec;
-    color = clamp(color, 0.0, 1.0); // ensure valid color
+    color = clamp(color,0.0,1.0);
 
     gl_FragColor = vec4(color,1.0);
 }
+
 `;
 
 export function createShader(gl,type,source){
