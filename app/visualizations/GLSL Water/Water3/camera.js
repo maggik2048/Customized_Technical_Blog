@@ -1,4 +1,3 @@
-// camera.js
 export class Camera {
     constructor(radius=3){
         this.radius = radius;
@@ -41,7 +40,7 @@ export class Camera {
     }
 }
 
-// Matrix helpers (same as 이전)
+// helpers
 function lookAt(eye,target,up){
     const z = normalize(sub(eye,target));
     const x = normalize(cross(up,z));

@@ -1,4 +1,3 @@
-// mesh.js
 export function createPlaneMesh(grid=128){
     const positions=[], uvs=[], indices=[];
     for(let y=0;y<=grid;y++){
