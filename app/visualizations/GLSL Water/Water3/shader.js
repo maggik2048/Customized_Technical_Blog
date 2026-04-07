@@ -10,7 +10,6 @@ uniform mat4 u_model;
 uniform mat4 u_view;
 uniform mat4 u_proj;
 
-// FBM noise
 float hash(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
 float noise(vec2 p){ vec2 i=floor(p); vec2 f=fract(p); vec2 u=f*f*(3.0-2.0*f);
     return mix(mix(hash(i+vec2(0.0,0.0)), hash(i+vec2(1.0,0.0)), u.x),
@@ -20,16 +19,20 @@ float fbm(vec2 p){ float v=0.0; float a=0.5; float f=1.0; for(int i=0;i<5;i++){ 
 void main(){
     v_uv = a_uv;
     float t = u_time*0.2;
+
     float height = fbm(a_uv*3.0 + vec2(t,t)) * 0.3;
     vec3 pos = a_position + vec3(0.0, height, 0.0);
     v_worldPos = pos;
 
-    float eps = 0.001;
+    float eps = 0.0005;
     float hL = fbm((a_uv + vec2(-eps,0.0))*3.0 + vec2(t,t)) * 0.3;
     float hR = fbm((a_uv + vec2( eps,0.0))*3.0 + vec2(t,t)) * 0.3;
     float hD = fbm((a_uv + vec2(0.0,-eps))*3.0 + vec2(t,t)) * 0.3;
     float hU = fbm((a_uv + vec2(0.0, eps))*3.0 + vec2(t,t)) * 0.3;
-    v_normal = normalize(vec3(hL - hR, 2.0, hD - hU));
+
+    vec3 dx = vec3(2.0*eps, hR - hL, 0.0);
+    vec3 dz = vec3(0.0, hU - hD, 2.0*eps);
+    v_normal = normalize(cross(dz, dx));
 
     gl_Position = u_proj * u_view * u_model * vec4(pos,1.0);
 }
@@ -46,7 +49,7 @@ uniform bool u_showNormal;
 void main(){
     if(u_showNormal){
         vec3 N = normalize(v_normal);
-        gl_FragColor = vec4(N*0.5 + 0.5,1.0); // 노멀 시각화
+        gl_FragColor = vec4(N*0.5 + 0.5, 1.0);
         return;
     }
 
@@ -57,7 +60,7 @@ void main(){
     float fresnel = pow(1.0 - max(dot(V,N),0.0), 3.0) * 0.7 + 0.3;
     float diff = max(dot(N,L),0.0);
     vec3 H = normalize(L + V);
-    float spec = pow(max(dot(N,H),0.0),32.0);
+    float spec = pow(max(dot(N,H),0.0), 32.0);
 
     vec3 waterColor = vec3(0.0,0.4,0.7);
     vec3 reflectionColor = vec3(0.8,0.9,1.0);
@@ -68,7 +71,6 @@ void main(){
 
     gl_FragColor = vec4(color,1.0);
 }
-
 `;
 
 export function createShader(gl,type,source){

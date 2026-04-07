@@ -21,7 +21,7 @@ gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(mesh.indices), gl.STATIC_
 const camera = new Camera(3);
 camera.attach(canvas);
 
-// attribute 연결
+// attribute
 const a_pos = gl.getAttribLocation(program,'a_position');
 gl.bindBuffer(gl.ARRAY_BUFFER,posBuffer);
 gl.enableVertexAttribArray(a_pos);
@@ -71,7 +71,6 @@ function render(time){
 
     requestAnimationFrame(render);
 }
-
 requestAnimationFrame(render);
 
 function perspective(fov,aspect,near,far){
