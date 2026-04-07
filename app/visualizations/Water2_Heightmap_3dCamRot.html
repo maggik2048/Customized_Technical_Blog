@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>3D FBM Water with Fresnel</title>
+<style>
+  body { margin:0; overflow:hidden; background:#000; }
+  canvas { display:block; }
+</style>
+</head>
+<body>
+<canvas id="glcanvas"></canvas>
+<script>
+// ====================================================
+// 기본 WebGL 셋업
+// ====================================================
+const canvas = document.getElementById('glcanvas');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+const gl = canvas.getContext('webgl');
+if(!gl){ alert("WebGL 지원 필요"); }
+
+gl.enable(gl.DEPTH_TEST);
+
+// ====================================================
+// Vertex Shader (FBM + heightmap + normal 계산)
+// ====================================================
+const vertexShaderSource = `
+attribute vec3 a_position;
+attribute vec2 a_uv;
+varying vec2 v_uv;
+varying vec3 v_normal;
+varying vec3 v_worldPos;
+
+uniform float u_time;
+uniform mat4 u_model;
+uniform mat4 u_view;
+uniform mat4 u_proj;
+
+// FBM 함수
+float hash(vec2 p){ return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453); }
+float noise(vec2 p){ vec2 i=floor(p); vec2 f=fract(p); vec2 u=f*f*(3.0-2.0*f);
+    return mix(mix(hash(i+vec2(0.0,0.0)), hash(i+vec2(1.0,0.0)), u.x),
+               mix(hash(i+vec2(0.0,1.0)), hash(i+vec2(1.0,1.0)), u.x), u.y); }
+float fbm(vec2 p){ float v=0.0; float a=0.5; float f=1.0; for(int i=0;i<5;i++){ v+=a*noise(p*f); f*=2.0; a*=0.5; } return v; }
+
+void main(){
+    v_uv = a_uv;
+
+    // FBM로 높이 계산
+    float t = u_time*0.2;
+    float height = fbm(a_uv*3.0 + vec2(t,t)) * 0.3;
+
+    vec3 pos = a_position + vec3(0.0, height, 0.0);
+    v_worldPos = pos;
+
+    // 간단 normal 계산 (finite difference)
+    float eps = 0.001;
+    float hL = fbm((a_uv + vec2(-eps,0.0))*3.0 + vec2(t,t)) * 0.3;
+    float hR = fbm((a_uv + vec2( eps,0.0))*3.0 + vec2(t,t)) * 0.3;
+    float hD = fbm((a_uv + vec2(0.0,-eps))*3.0 + vec2(t,t)) * 0.3;
+    float hU = fbm((a_uv + vec2(0.0, eps))*3.0 + vec2(t,t)) * 0.3;
+    v_normal = normalize(vec3(hL - hR, 2.0, hD - hU));
+
+    gl_Position = u_proj * u_view * u_model * vec4(pos,1.0);
+}
+`;
+
+// ====================================================
+// Fragment Shader (Fresnel 반사 + 물 색상)
+// ====================================================
+const fragmentShaderSource = `
+precision highp float;
+varying vec2 v_uv;
+varying vec3 v_normal;
+varying vec3 v_worldPos;
+
+uniform vec3 u_cameraPos;
+
+void main(){
+    // 프레넬 계산
+    vec3 viewDir = normalize(u_cameraPos - v_worldPos);
+    float fresnel = pow(1.0 - max(dot(viewDir, normalize(v_normal)),0.0), 3.0) * 0.7 + 0.3;
+
+    vec3 waterColor = vec3(0.0,0.4,0.7);
+    vec3 reflectionColor = vec3(0.8,0.9,1.0); // 하늘 흰색 반사
+    vec3 color = mix(waterColor, reflectionColor, fresnel);
+
+    gl_FragColor = vec4(color,1.0);
+}
+`;
+
+// ====================================================
+// Shader Helper
+// ====================================================
+function createShader(gl,type,source){
+    const s = gl.createShader(type);
+    gl.shaderSource(s,source); gl.compileShader(s);
+    if(!gl.getShaderParameter(s,gl.COMPILE_STATUS)){ console.error(gl.getShaderInfoLog(s)); return null; }
+    return s;
+}
+function createProgram(gl,vsSrc,fsSrc){
+    const p = gl.createProgram();
+    const vs = createShader(gl,gl.VERTEX_SHADER,vsSrc);
+    const fs = createShader(gl,gl.FRAGMENT_SHADER,fsSrc);
+    gl.attachShader(p,vs); gl.attachShader(p,fs);
+    gl.linkProgram(p);
+    if(!gl.getProgramParameter(p,gl.LINK_STATUS)){ console.error(gl.getProgramInfoLog(p)); return null; }
+    return p;
+}
+
+const program = createProgram(gl,vertexShaderSource,fragmentShaderSource);
+gl.useProgram(program);
+
+// ====================================================
+// Plane mesh 생성
+// ====================================================
+const GRID = 128;
+let positions=[], uvs=[], indices=[];
+for(let y=0;y<=GRID;y++){
+    for(let x=0;x<=GRID;x++){
+        let u = x/GRID;
+        let v = y/GRID;
+        positions.push(u*2-1,0,v*2-1); // x, y=0, z
+        uvs.push(u,v);
+    }
+}
+for(let y=0;y<GRID;y++){
+    for(let x=0;x<GRID;x++){
+        let i = y*(GRID+1)+x;
+        indices.push(i,i+1,i+GRID+1);
+        indices.push(i+1,i+GRID+2,i+GRID+1);
+    }
+}
+
+// Buffer
+function createBuffer(data,type){ const b=gl.createBuffer(); gl.bindBuffer(type,b); gl.bufferData(type,new Float32Array(data),gl.STATIC_DRAW); return b; }
+const posBuffer = createBuffer(positions,gl.ARRAY_BUFFER);
+const uvBuffer = createBuffer(uvs,gl.ARRAY_BUFFER);
+const indexBuffer = gl.createBuffer();
+gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,indexBuffer);
+gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,new Uint16Array(indices),gl.STATIC_DRAW);
+
+// Attribute
+const a_pos = gl.getAttribLocation(program,'a_position');
+gl.bindBuffer(gl.ARRAY_BUFFER,posBuffer);
+gl.enableVertexAttribArray(a_pos);
+gl.vertexAttribPointer(a_pos,3,gl.FLOAT,false,0,0);
+
+const a_uv = gl.getAttribLocation(program,'a_uv');
+gl.bindBuffer(gl.ARRAY_BUFFER,uvBuffer);
+gl.enableVertexAttribArray(a_uv);
+gl.vertexAttribPointer(a_uv,2,gl.FLOAT,false,0,0);
+
+// Uniform
+const u_time = gl.getUniformLocation(program,'u_time');
+const u_model = gl.getUniformLocation(program,'u_model');
+const u_view = gl.getUniformLocation(program,'u_view');
+const u_proj = gl.getUniformLocation(program,'u_proj');
+const u_cameraPos = gl.getUniformLocation(program,'u_cameraPos');
+
+// ====================================================
+// 기본 행렬 헬퍼
+// ====================================================
+function perspective(fov,aspect,near,far){
+    const f = 1.0/Math.tan(fov/2);
+    return [
+        f/aspect,0,0,0,
+        0,f,0,0,
+        0,0,(far+near)/(near-far),-1,
+        0,0,(2*far*near)/(near-far),0
+    ];
+}
+function lookAt(eye,target,up){
+    const z = normalize(sub(eye,target));
+    const x = normalize(cross(up,z));
+    const y = cross(z,x);
+    return [
+        x[0],y[0],z[0],0,
+        x[1],y[1],z[1],0,
+        x[2],y[2],z[2],0,
+        -dot(x,eye),-dot(y,eye),-dot(z,eye),1
+    ];
+}
+function sub(a,b){return[a[0]-b[0],a[1]-b[1],a[2]-b[2]];}
+function cross(a,b){return[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];}
+function dot(a,b){return a[0]*b[0]+a[1]*b[1]+a[2]*b[2];}
+function normalize(v){ const len=Math.hypot(v[0],v[1],v[2]); return[len? v[0]/len:0,len? v[1]/len:0,len? v[2]/len:0];}
+
+// ====================================================
+// 카메라 컨트롤 (마우스 드래그로 회전)
+// ====================================================
+let camAngleX=0, camAngleY=0;
+let isDragging=false;
+let lastX,lastY;
+canvas.addEventListener('mousedown', e=>{isDragging=true; lastX=e.clientX; lastY=e.clientY;});
+canvas.addEventListener('mouseup', ()=>{isDragging=false;});
+canvas.addEventListener('mousemove', e=>{
+    if(!isDragging) return;
+    const dx = e.clientX - lastX;
+    const dy = e.clientY - lastY;
+    camAngleY += dx*0.01;
+    camAngleX += dy*0.01;
+    lastX = e.clientX; lastY = e.clientY;
+});
+
+// ====================================================
+// Render Loop
+// ====================================================
+function render(time){
+    time *= 0.001;
+    gl.viewport(0,0,canvas.width,canvas.height);
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    gl.uniform1f(u_time,time);
+
+    const model = [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1];
+    gl.uniformMatrix4fv(u_model,false,new Float32Array(model));
+
+    const radius=3;
+    const eye = [Math.sin(camAngleY)*radius, Math.sin(camAngleX)*radius, Math.cos(camAngleY)*radius];
+    const target = [0,0,0];
+    const up=[0,1,0];
+    const view = lookAt(eye,target,up);
+    gl.uniformMatrix4fv(u_view,false,new Float32Array(view));
+    gl.uniform3fv(u_cameraPos,new Float32Array(eye));
+
+    const proj = perspective(Math.PI/4,canvas.width/canvas.height,0.1,100);
+    gl.uniformMatrix4fv(u_proj,false,new Float32Array(proj));
+
+    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,indexBuffer);
+    gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+
+    requestAnimationFrame(render);
+}
+
+requestAnimationFrame(render);
+</script>
+</body>
+</html>
