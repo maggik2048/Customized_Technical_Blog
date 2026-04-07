@@ -1,0 +1,60 @@
+/* 기본 텍스트 */
+.markdown-body {
+  font-size: 14px;
+  font-weight: 400; /* 일반 글자 */
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* 헤딩 */
+.markdown-body h1 {
+  font-size: 2em;
+  font-weight: 700; /* 굵게 */
+  margin: 0.5em 0;
+}
+
+.markdown-body h2 {
+  font-size: 1.5em;
+  font-weight: 600; /* h2는 조금 덜 굵게 */
+  margin: 0.5em 0;
+}
+
+.markdown-body h3 {
+  font-size: 1.2em;
+  font-weight: 500;
+  margin: 0.5em 0;
+}
+
+/* 코드블록 */
+.markdown-body pre {
+  margin: 0.5em 0;
+}
+
+
+.markdown-body {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* 헤딩 */
+.markdown-body h1 { font-size: 2em; font-weight: 700; margin: 0.5em 0; }
+.markdown-body h2 { font-size: 1.5em; font-weight: 600; margin: 0.5em 0; }
+.markdown-body h3 { font-size: 1.2em; font-weight: 500; margin: 0.5em 0; }
+
+/* inline code 스타일 */
+.markdown-body code {
+  background-color: #f5f5f5;
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  font-size: 0.95em;
+  font-weight: 500;
+}
+
+/* block code 별도 처리 */
+.markdown-body pre {
+  margin: 0.5em 0;
+}

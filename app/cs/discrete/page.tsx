@@ -4,7 +4,7 @@ import { InlineMath, BlockMath } from "react-katex";
 import dynamic from "next/dynamic";
 
 // Correct import path relative to page.tsx
-const Cube = dynamic(() => import("../../components/Cube"), { ssr: false });
+const Cube = dynamic(() => import("../../visualizations/Cube"), { ssr: false });
 
 export default function DiscreteMathPage() {
   return (

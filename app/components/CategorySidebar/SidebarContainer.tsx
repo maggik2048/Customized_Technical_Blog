@@ -1,5 +1,5 @@
 import Sidebar from "./Sidebar";
-import { getMenu } from "./sidebarData";
+import { getMenu } from "../sidebarData";
 
 // ❗ Server Component (절대 "use client" 넣지 마라)
 export default async function SidebarContainer() {

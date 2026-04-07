@@ -1,7 +1,7 @@
 // menuService.ts
 import { supabase } from "./supabaseClient";
-import { CATEGORY_TREE } from "./categoryTree";
-import { Item } from "./types";
+import { CATEGORY_TREE } from "./CategoryTree";
+import { Item } from "../types";
 
 export async function getMenu(): Promise<Item[]> {
   const { data: posts, error } = await supabase

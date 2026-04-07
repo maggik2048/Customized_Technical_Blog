@@ -13,7 +13,8 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark, prism } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { motion } from "framer-motion";
 
-import PostAdminActions from "@/app/components/PostAdminActions";
+import PostAdminActions from "@/app/admin/PostAdminActions";
+
 import { markdownComponents } from "@/lib/markdownComponents";
 import { useDarkMode } from "@/app/context/DarkModeContext";
 import { getHeaderImage } from "@/lib/getHeaderImage";

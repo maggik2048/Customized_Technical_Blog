@@ -1,17 +1,10 @@
 "use client";
 
 import React, { useRef } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
-import remarkGfm from "remark-gfm";
-import "katex/dist/katex.min.css";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { supabase } from "@/lib/supabase";
-
 import { processPaste } from "@/lib/pasteProcessor";
 import { resizeImage } from "@/lib/imageHandler";
+import MarkdownRenderer from "./MarkdownRenderer";
 
 type Props = {
   content: string;
@@ -21,19 +14,16 @@ type Props = {
 export default function MarkdownImageManager({ content, setContent }: Props) {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  //  붙여넣기 (핵심 교체)
+  // 붙여넣기
   const handlePaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
     e.preventDefault();
-
     const html = e.clipboardData.getData("text/html");
     const text = e.clipboardData.getData("text/plain");
-
     const result = processPaste(html, text);
-
     setContent((prev) => prev + "\n" + result + "\n");
   };
 
-  // 🔹 이미지
+  // 이미지 업로드
   const handleInsertImage = () => fileInputRef.current?.click();
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -46,7 +36,6 @@ export default function MarkdownImageManager({ content, setContent }: Props) {
     const { error } = await supabase.storage
       .from("imagebucket")
       .upload(fileName, blob);
-
     if (error) return alert(error.message);
 
     const { data } = supabase.storage
@@ -76,29 +65,7 @@ export default function MarkdownImageManager({ content, setContent }: Props) {
       </div>
 
       <div style={{ width: 400 }}>
-        <ReactMarkdown
-          remarkPlugins={[remarkMath, remarkGfm]}
-          rehypePlugins={[rehypeKatex]}
-          components={{
-            code({ inline, className, children }) {
-              const text = String(children);
-              if (inline) return <code>{text}</code>;
-
-              const match = /language-(\w+)/.exec(className || "");
-
-              return (
-                <SyntaxHighlighter
-                  style={oneDark}
-                  language={match?.[1] || "text"}
-                >
-                  {text}
-                </SyntaxHighlighter>
-              );
-            },
-          }}
-        >
-          {content}
-        </ReactMarkdown>
+        <MarkdownRenderer content={content} />
       </div>
     </div>
   );

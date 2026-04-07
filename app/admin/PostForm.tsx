@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { getMenu } from "@/app/components/sidebarData";
+import { getMenu } from "@/app/components/CategorySidebar/sidebarData";
 import { Item } from "@/app/components/types";
 import MarkdownImageManager from "@/app/components/MarkdownImageManager";
 

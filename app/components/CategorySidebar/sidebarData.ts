@@ -1,5 +1,5 @@
 // sidebarData.ts
-import { supabase } from "../../lib/supabase"; // 기존 경로 그대로
+import { supabase } from "../../../lib/supabase"; // 기존 경로 그대로
 import { CATEGORY_TREE } from "./CategoryTree";
 import { Item } from "./types";
 
