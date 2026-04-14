@@ -12,7 +12,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="en">
-      <body style={{ margin: 0 }}>
+      {/*  폰트 로드 (핵심) */}
+      <head>
+        <link
+          href="https://cdn.jsdelivr.net/npm/latin-modern-web@1.1.0/fonts.css"
+          rel="stylesheet"
+        />
+      </head>
+
+      {/*  전역 폰트 적용 */}
+      <body className="font-lm m-0">
         <DarkModeProvider>
           {isHome ? (
             <div

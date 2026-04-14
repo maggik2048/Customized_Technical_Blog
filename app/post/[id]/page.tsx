@@ -17,11 +17,10 @@ import PostAdminActions from "@/app/components/PostAdminActions";
 import { markdownComponents } from "@/lib/markdownComponents";
 import { useDarkMode } from "@/app/context/DarkModeContext";
 import { getHeaderImage } from "@/lib/getHeaderImage";
-
-// 🔥 추가
 import { visualizationRegistry } from "@/lib/visualizationRegistry";
 
-// 🔹 Light 모드 코드 스타일
+/* ---------------------- 스타일 ---------------------- */
+
 const customLight = {
   ...prism,
   'code[class*="language-"]': { ...prism['code[class*="language-"]'], fontWeight: 510 },
@@ -30,10 +29,29 @@ const customLight = {
   string: { ...prism.string, fontWeight: 600 },
 };
 
-// 🔹 공통 버튼 스타일
 const btnStyle = { padding: "6px 12px", borderRadius: 4, cursor: "pointer" };
 
-// 🔹 코드 블록
+/* ---------------------- Interactive Wrapper (핵심) ---------------------- */
+
+function InteractiveWrapper({ children }: { children: React.ReactNode }) {
+  return (
+    <div
+      style={{
+        background: "#000",
+        color: "#fff",
+        padding: 20,
+        margin: "24px 0",
+        borderRadius: 12,
+        border: "1px solid rgba(255,255,255,0.15)",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+/* ---------------------- Code Block ---------------------- */
+
 function CodeBlock({ inline, className, children, codeDark }: any) {
   const text = String(children);
   const match = /language-(\w+)/.exec(className || "");
@@ -73,7 +91,8 @@ function CodeBlock({ inline, className, children, codeDark }: any) {
   );
 }
 
-// 🔹 헤더
+/* ---------------------- Header ---------------------- */
+
 function HeaderWithTitle({
   src,
   title,
@@ -98,15 +117,19 @@ function HeaderWithTitle({
   );
 }
 
+/* ---------------------- Page ---------------------- */
+
 export default function PostPage() {
   const { id } = useParams() as { id: string };
   const { mode: pageMode, toggle: togglePageMode } = useDarkMode();
+
   const [codeDark, setCodeDark] = useState(false);
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!id) return setLoading(false);
+
     supabase
       .from("posts")
       .select("*")
@@ -143,12 +166,12 @@ export default function PostPage() {
       className="document-font"
     >
       {/* 버튼 */}
-      <div style={{ position: "relative", zIndex: 10, display: "flex", gap: 16, marginBottom: 12 }}>
+      <div style={{ display: "flex", gap: 16, marginBottom: 12 }}>
         <button onClick={togglePageMode} style={btnStyle}>
           Toggle Dark Mode (Whole)
         </button>
         <button onClick={() => setCodeDark(!codeDark)} style={btnStyle}>
-          Toggle Dark Code Snippet
+          Toggle Code Dark
         </button>
       </div>
 
@@ -158,12 +181,12 @@ export default function PostPage() {
         title={data.title}
         date={displayDate ? new Date(displayDate).toLocaleString("ko-KR") : ""}
       >
-        <div style={{ position: "absolute", top: 10, right: 40, zIndex: 10 }}>
+        <div style={{ position: "absolute", top: 10, right: 40 }}>
           <PostAdminActions postId={id} />
         </div>
       </HeaderWithTitle>
 
-      {/* 🔥 본문 (여기만 바뀜) */}
+      {/* 본문 */}
       <div style={{ marginTop: 260 }}>
         {(() => {
           const regex = /\[(\w+)\]/g;
@@ -175,23 +198,19 @@ export default function PostPage() {
             components: {
               ...markdownComponents,
               code: (props: any) => <CodeBlock {...props} codeDark={codeDark} />,
-              table: (props: any) => (
-                <table style={{ borderCollapse: "collapse", width: "100%" }} {...props} />
-              ),
-              th: (props: any) => (
-                <th style={{ border: "1px solid #ccc", padding: 6, backgroundColor: "#f5f5f5" }} {...props} />
-              ),
-              td: (props: any) => (
-                <td style={{ border: "1px solid #ccc", padding: 6 }} {...props} />
-              ),
             },
           };
 
           return parts.map((part: string, i: number) => {
             const Component = visualizationRegistry[part];
 
+            /* ---------------- 핵심 변경 ---------------- */
             if (Component) {
-              return <Component key={i} />;
+              return (
+                <InteractiveWrapper key={i}>
+                  <Component />
+                </InteractiveWrapper>
+              );
             }
 
             return (

@@ -7,7 +7,11 @@ module.exports = {
     "./app/components/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        lm: ['"Latin Modern"', 'serif'],
+      },
+    },
   },
   plugins: [],
 };
