@@ -18,6 +18,9 @@ import { markdownComponents } from "@/lib/markdownComponents";
 import { useDarkMode } from "@/app/context/DarkModeContext";
 import { getHeaderImage } from "@/lib/getHeaderImage";
 
+// 🔥 추가
+import { visualizationRegistry } from "@/lib/visualizationRegistry";
+
 // 🔹 Light 모드 코드 스타일
 const customLight = {
   ...prism,
@@ -30,12 +33,11 @@ const customLight = {
 // 🔹 공통 버튼 스타일
 const btnStyle = { padding: "6px 12px", borderRadius: 4, cursor: "pointer" };
 
-// 🔹 코드 블록 컴포넌트 (한 줄 인라인 코드 → 박스 없이 강조, 긴 코드 → SyntaxHighlighter)
+// 🔹 코드 블록
 function CodeBlock({ inline, className, children, codeDark }: any) {
   const text = String(children);
   const match = /language-(\w+)/.exec(className || "");
 
-  // 한 줄짜리 짧은 코드 또는 inline 코드 → 강조만
   if (inline || (text.length < 80 && !text.includes("\n"))) {
     return (
       <code
@@ -51,7 +53,6 @@ function CodeBlock({ inline, className, children, codeDark }: any) {
     );
   }
 
-  // 긴 코드 블록 → SyntaxHighlighter
   const bgColor = codeDark ? "#121212" : "#e0e0e0";
   const borderColor = codeDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.18)";
 
@@ -72,7 +73,7 @@ function CodeBlock({ inline, className, children, codeDark }: any) {
   );
 }
 
-// 🔹 헤더 이미지 + 제목 + 날짜 컴포넌트
+// 🔹 헤더
 function HeaderWithTitle({
   src,
   title,
@@ -151,7 +152,7 @@ export default function PostPage() {
         </button>
       </div>
 
-      {/* 헤더 이미지 + 제목 + 관리 버튼 */}
+      {/* 헤더 */}
       <HeaderWithTitle
         src={headerImage}
         title={data.title}
@@ -162,23 +163,44 @@ export default function PostPage() {
         </div>
       </HeaderWithTitle>
 
-      {/* 본문 */}
+      {/* 🔥 본문 (여기만 바뀜) */}
       <div style={{ marginTop: 260 }}>
-        <ReactMarkdown
-          remarkPlugins={[remarkMath, remarkGfm]}
-          rehypePlugins={[rehypeKatex, rehypeRaw]}
-          components={{
-            ...markdownComponents,
-            code: (props) => <CodeBlock {...props} codeDark={codeDark} />,
-            table: ({ node, ...props }) => <table style={{ borderCollapse: "collapse", width: "100%" }} {...props} />,
-            th: ({ node, ...props }) => (
-              <th style={{ border: "1px solid #ccc", padding: 6, backgroundColor: "#f5f5f5" }} {...props} />
-            ),
-            td: ({ node, ...props }) => <td style={{ border: "1px solid #ccc", padding: 6 }} {...props} />,
-          }}
-        >
-          {data.content}
-        </ReactMarkdown>
+        {(() => {
+          const regex = /\[(\w+)\]/g;
+          const parts = data.content.split(regex);
+
+          const markdownProps = {
+            remarkPlugins: [remarkMath, remarkGfm],
+            rehypePlugins: [rehypeKatex, rehypeRaw],
+            components: {
+              ...markdownComponents,
+              code: (props: any) => <CodeBlock {...props} codeDark={codeDark} />,
+              table: (props: any) => (
+                <table style={{ borderCollapse: "collapse", width: "100%" }} {...props} />
+              ),
+              th: (props: any) => (
+                <th style={{ border: "1px solid #ccc", padding: 6, backgroundColor: "#f5f5f5" }} {...props} />
+              ),
+              td: (props: any) => (
+                <td style={{ border: "1px solid #ccc", padding: 6 }} {...props} />
+              ),
+            },
+          };
+
+          return parts.map((part: string, i: number) => {
+            const Component = visualizationRegistry[part];
+
+            if (Component) {
+              return <Component key={i} />;
+            }
+
+            return (
+              <ReactMarkdown key={i} {...markdownProps}>
+                {part}
+              </ReactMarkdown>
+            );
+          });
+        })()}
       </div>
     </motion.div>
   );
