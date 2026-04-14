@@ -9,6 +9,14 @@ function normalize(v) {
   return { x: v.x / len, y: v.y / len };
 }
 
+function sub(a, b) {
+  return { x: a.x - b.x, y: a.y - b.y };
+}
+
+function perp(v) {
+  return { x: -v.y, y: v.x };
+}
+
 function project(points, axis) {
   let min = dot(points[0], axis);
   let max = min;
@@ -45,7 +53,7 @@ function createBox(cx, cy, w, h, angle) {
 export default function App() {
   const [angleA, setAngleA] = useState(0);
   const [angleB, setAngleB] = useState(0);
-  const [axisAngle, setAxisAngle] = useState(0);
+  const [axisIndex, setAxisIndex] = useState(0);
 
   const [posAx, setPosAx] = useState(200);
   const [posAy, setPosAy] = useState(200);
@@ -55,17 +63,27 @@ export default function App() {
   const boxA = createBox(posAx, posAy, 120, 80, angleA);
   const boxB = createBox(posBx, posBy, 120, 80, angleB);
 
-  const axis = normalize({
-    x: Math.cos(axisAngle),
-    y: Math.sin(axisAngle),
-  });
+  const edgeA0 = normalize(sub(boxA[1], boxA[0]));
+  const edgeA1 = normalize(sub(boxA[3], boxA[0]));
+
+  const edgeB0 = normalize(sub(boxB[1], boxB[0]));
+  const edgeB1 = normalize(sub(boxB[3], boxB[0]));
+
+  const axes = [
+    normalize(perp(edgeA0)),
+    normalize(perp(edgeA1)),
+    normalize(perp(edgeB0)),
+    normalize(perp(edgeB1)),
+  ];
+
+  const axis = axes[axisIndex];
 
   const projA = project(boxA, axis);
   const projB = project(boxB, axis);
 
   const overlap = !(projA.max < projB.min || projB.max < projA.min);
 
-  // 투영된 선분을 실제 좌표로 변환
+  // 원래 방식 (수학 좌표 그대로)
   const toPoint = (t) => ({
     x: axis.x * t,
     y: axis.y * t,
@@ -78,7 +96,19 @@ export default function App() {
 
   return (
     <div className="p-4">
-      <h1 className="text-xl font-bold mb-2">SAT 투영 시각화</h1>
+      <h1 className="text-xl font-bold mb-2">SAT 축 + 외적(엣지 기반) 시각화</h1>
+
+      <div className="mb-2">
+        <label>축 선택: {axisIndex}</label>
+        <input
+          type="range"
+          min="0"
+          max="3"
+          step="1"
+          value={axisIndex}
+          onChange={(e) => setAxisIndex(+e.target.value)}
+        />
+      </div>
 
       <div className="mb-2">
         <label>Box A 회전: {angleA.toFixed(2)}</label>
@@ -88,11 +118,6 @@ export default function App() {
       <div className="mb-2">
         <label>Box B 회전: {angleB.toFixed(2)}</label>
         <input type="range" min="0" max="6.28" step="0.01" value={angleB} onChange={(e) => setAngleB(+e.target.value)} />
-      </div>
-
-      <div className="mb-2">
-        <label>투영 축 각도: {axisAngle.toFixed(2)}</label>
-        <input type="range" min="0" max="6.28" step="0.01" value={axisAngle} onChange={(e) => setAxisAngle(+e.target.value)} />
       </div>
 
       <div className="mb-2">
@@ -118,48 +143,32 @@ export default function App() {
       <p className="mb-2">충돌 여부: {overlap ? "겹침" : "분리됨"}</p>
 
       <svg width="500" height="400" style={{ border: "1px solid black" }}>
-        {/* 박스 A */}
         <polygon
           points={boxA.map((p) => `${p.x},${p.y}`).join(" ")}
           fill="rgba(0,0,255,0.3)"
           stroke="blue"
         />
 
-        {/* 박스 B */}
         <polygon
           points={boxB.map((p) => `${p.x},${p.y}`).join(" ")}
           fill="rgba(255,0,0,0.3)"
           stroke="red"
         />
 
-        {/* 축 */}
-        <line
-          x1={250 - axis.x * 300}
-          y1={200 - axis.y * 300}
-          x2={250 + axis.x * 300}
-          y2={200 + axis.y * 300}
-          stroke="green"
-        />
+        {axes.map((ax, i) => (
+          <line
+            key={i}
+            x1={250 - ax.x * 300}
+            y1={200 - ax.y * 300}
+            x2={250 + ax.x * 300}
+            y2={200 + ax.y * 300}
+            stroke={i === axisIndex ? "green" : "gray"}
+            strokeWidth={i === axisIndex ? 3 : 1}
+          />
+        ))}
 
-        {/* 투영 선분 A (노란색) */}
-        <line
-          x1={A1.x}
-          y1={A1.y}
-          x2={A2.x}
-          y2={A2.y}
-          stroke="yellow"
-          strokeWidth="6"
-        />
-
-        {/* 투영 선분 B (노란색) */}
-        <line
-          x1={B1.x}
-          y1={B1.y}
-          x2={B2.x}
-          y2={B2.y}
-          stroke="orange"
-          strokeWidth="6"
-        />
+        <line x1={A1.x} y1={A1.y} x2={A2.x} y2={A2.y} stroke="yellow" strokeWidth="6" />
+        <line x1={B1.x} y1={B1.y} x2={B2.x} y2={B2.y} stroke="orange" strokeWidth="6" />
       </svg>
 
       <div className="mt-4">
@@ -169,4 +178,3 @@ export default function App() {
     </div>
   );
 }
-
