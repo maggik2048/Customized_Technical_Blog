@@ -43,7 +43,7 @@ function InteractiveWrapper({ children }: any) {
   return (
     <div
       style={{
-        background: "#000",
+        background: "rgba(0,0,0,0.85)",
         color: "#fff",
         padding: 20,
         margin: "24px 0",
@@ -66,7 +66,7 @@ function CodeBlock({ inline, className, children, codeDark }: any) {
     return (
       <code
         style={{
-          background: codeDark ? "#222" : "#ccc",
+          background: codeDark ? "#222" : "#ddd",
           color: codeDark ? "#eee" : "#111",
           padding: "1px 4px",
           borderRadius: 4,
@@ -77,9 +77,9 @@ function CodeBlock({ inline, className, children, codeDark }: any) {
     );
   }
 
-  const bgColor = codeDark ? "#121212" : "#e0e0e0";
+  const bgColor = codeDark ? "#121212" : "#eaeaea";
   const borderColor =
-    codeDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.18)";
+    codeDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.15)";
 
   return (
     <motion.div
@@ -87,7 +87,7 @@ function CodeBlock({ inline, className, children, codeDark }: any) {
         backgroundColor: bgColor,
         color: codeDark ? "#eee" : "#111",
       }}
-      transition={{ duration: 0.5 }}
+      transition={{ duration: 0.4 }}
       style={{
         borderRadius: 6,
         overflowX: "auto",
@@ -109,19 +109,22 @@ function CodeBlock({ inline, className, children, codeDark }: any) {
 
 function HeaderWithTitle({ src, title, date, children }: any) {
   return (
-    <motion.div
+    <div
       style={{
         position: "absolute",
         top: 0,
         left: 0,
         width: "100%",
         height: 260,
-        zIndex: 0,
       }}
     >
       <img
         src={src}
-        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+        }}
       />
 
       <div
@@ -143,14 +146,14 @@ function HeaderWithTitle({ src, title, date, children }: any) {
       >
         <h1 style={{ fontSize: 36, margin: 0 }}>{title}</h1>
         {date && (
-          <p style={{ marginTop: 4, fontSize: 14, color: "rgba(255,255,255,0.8)" }}>
+          <p style={{ marginTop: 4, fontSize: 14, opacity: 0.85 }}>
             {date}
           </p>
         )}
       </div>
 
       {children}
-    </motion.div>
+    </div>
   );
 }
 
@@ -169,7 +172,6 @@ export default function PDFPage({ data }: any) {
 
   const textColor = mode === "dark" ? "#eee" : "#111";
 
-  /* ✅ 핵심 수정: 좌우 여백 추가 */
   const pageStyle: React.CSSProperties = {
     width: 860,
     minHeight: 1100,
@@ -178,7 +180,7 @@ export default function PDFPage({ data }: any) {
     transform: `scale(${SCALE})`,
     transformOrigin: "top left",
 
-    background: "transparent",
+    background: "transparent", // 🔥 핵심 (절대 white 금지)
 
     paddingLeft: 64,
     paddingRight: 64,
@@ -196,73 +198,87 @@ export default function PDFPage({ data }: any) {
   };
 
   return (
-    <motion.div
-      style={{
-        minHeight: "100vh",
-        padding: 40,
-        backgroundImage: `url("${bgImage}")`,
-        backgroundSize: "1500px 1500px",
-        color: textColor,
-      }}
-    >
-      {/* buttons */}
-      <div style={{ display: "flex", gap: 16, marginBottom: 12 }}>
-        <button onClick={toggle} style={btnStyle}>
-          Toggle Dark Mode
-        </button>
+    <>
+      {/* 🔥 FIXED BACKGROUND LAYER */}
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          backgroundImage: `url("${bgImage}")`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          zIndex: -1,
+        }}
+      />
 
-        <button
-          onClick={() => setCodeDark(v => !v)}
-          style={btnStyle}
-        >
-          Toggle Code Dark
-        </button>
-      </div>
+      {/* PAGE WRAPPER */}
+      <motion.div
+        style={{
+          minHeight: "100vh",
+          padding: 40,
+          color: textColor,
+        }}
+      >
+        {/* buttons */}
+        <div style={{ display: "flex", gap: 16, marginBottom: 12 }}>
+          <button onClick={toggle} style={btnStyle}>
+            Toggle Dark Mode
+          </button>
 
-      {/* PAGE */}
-      <div style={pageStyle}>
-        
-        <HeaderWithTitle
-          src={headerImage}
-          title={data.title}
-          date={
-            data.project_date
-              ? new Date(data.project_date).toLocaleString("ko-KR")
-              : ""
-          }
-        >
-          <div style={{ position: "absolute", top: 10, right: 40 }}>
-            <PostAdminActions postId={data.id} />
-          </div>
-        </HeaderWithTitle>
-
-        {/* CONTENT */}
-        <div style={{ paddingTop: 260 }}>
-          {(() => {
-            const regex = /\[(\w+)\]/g;
-            const parts = data.content.split(regex);
-
-            return parts.map((part: string, i: number) => {
-              const Component = visualizationRegistry[part];
-
-              if (Component) {
-                return (
-                  <InteractiveWrapper key={i}>
-                    <Component />
-                  </InteractiveWrapper>
-                );
-              }
-
-              return (
-                <ReactMarkdown key={i} {...markdownProps}>
-                  {part}
-                </ReactMarkdown>
-              );
-            });
-          })()}
+          <button
+            onClick={() => setCodeDark(v => !v)}
+            style={btnStyle}
+          >
+            Toggle Code Dark
+          </button>
         </div>
 
-      </div>
-    </motion.div>
+        {/* PDF PAGE */}
+        <div style={pageStyle}>
+          
+          <HeaderWithTitle
+            src={headerImage}
+            title={data.title}
+            date={
+              data.project_date
+                ? new Date(data.project_date).toLocaleString("ko-KR")
+                : ""
+            }
+          >
+            <div style={{ position: "absolute", top: 10, right: 40 }}>
+              <PostAdminActions postId={data.id} />
+            </div>
+          </HeaderWithTitle>
+
+          {/* CONTENT */}
+          <div style={{ paddingTop: 260 }}>
+            {(() => {
+              const regex = /\[(\w+)\]/g;
+              const parts = data.content.split(regex);
+
+              return parts.map((part: string, i: number) => {
+                const Component = visualizationRegistry[part];
+
+                if (Component) {
+                  return (
+                    <InteractiveWrapper key={i}>
+                      <Component />
+                    </InteractiveWrapper>
+                  );
+                }
+
+                return (
+                  <ReactMarkdown key={i} {...markdownProps}>
+                    {part}
+                  </ReactMarkdown>
+                );
+              });
+            })()}
+          </div>
+
+        </div>
+      </motion.div>
+    </>
   );
 }

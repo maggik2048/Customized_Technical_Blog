@@ -91,7 +91,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <main
                 style={{
                   flex: 1,
-                  background: "var(--bg-color)",
+                  background: "transparent",
                   padding: "24px",
                   overflow: "auto",
                   color: "var(--fg-color)",
