@@ -19,7 +19,7 @@ export default function OverlayCanvas({
   height,
   lines,
   setLines,
-  penColor = "rgba(255, 255, 255, 1)", // 연필 느낌
+  penColor = "rgba(255,255,255,0.35)", // 검은 배경용
   penWidth = 3,
   enabled = true,
 }: OverlayCanvasProps) {
@@ -27,7 +27,7 @@ export default function OverlayCanvas({
   const [drawing, setDrawing] = useState(false);
   const [currentLine, setCurrentLine] = useState<Line | null>(null);
 
-  // ===== 입력 처리 =====
+  // ===== 좌표 계산 =====
   const getPos = (e: React.MouseEvent | React.TouchEvent) => {
     const rect = canvasRef.current!.getBoundingClientRect();
     return "touches" in e
@@ -80,25 +80,54 @@ export default function OverlayCanvas({
 
     ctx.clearRect(0, 0, width, height);
 
-    // 연필 느낌 기본 세팅
     ctx.lineJoin = "round";
     ctx.lineCap = "round";
-    ctx.globalCompositeOperation = "multiply";
+    ctx.globalCompositeOperation = "lighter"; // 검은 배경 최적
 
-    // 속도 기반 두께 변화
+    // ===== 두께 변화 =====
     const getLineWidth = (p1: Point, p2: Point, baseWidth: number) => {
       const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
-      return Math.max(1, baseWidth - dist * 0.8);
+      const speed = Math.min(dist / 10, 1);
+
+      const minWidth = baseWidth * 0.2;
+      const maxWidth = baseWidth * 0.7;
+
+      return maxWidth - (maxWidth - minWidth) * speed;
     };
 
-    // 미세한 흔들림
+    // ===== jitter =====
     const jitter = (val: number) =>
-      val + (Math.random() - 0.5) * 1.2;
+      val + (Math.random() - 0.5) * 3.2;
 
+    // ===== grain (강화 버전) =====
+    const addGrain = (line: Line) => {
+      const density = 10; // 입자 수
+
+      line.points.forEach((p) => {
+        for (let i = 0; i < density; i++) {
+          const spread = line.width * 4; // 퍼짐 범위
+
+          const offsetX = (Math.random() - 0.5) * spread;
+          const offsetY = (Math.random() - 0.5) * spread;
+
+          const dist = Math.hypot(offsetX, offsetY);
+          const falloff = Math.max(0, 1 - dist / spread);
+
+          const alpha = Math.random() * 0.7 * falloff;
+
+          const size = Math.random() * 1.8;
+
+          ctx.fillStyle = `rgba(255,255,255,${alpha})`;
+          ctx.fillRect(p.x + offsetX, p.y + offsetY, size, size);
+        }
+      });
+    };
+
+    // ===== 라인 드로잉 =====
     const drawLine = (line: Line) => {
       ctx.strokeStyle = line.color;
 
-      // 연필처럼 여러 번 덧칠
+      // 덧칠
       for (let k = 0; k < 3; k++) {
         ctx.beginPath();
 
@@ -117,6 +146,9 @@ export default function OverlayCanvas({
 
         ctx.stroke();
       }
+
+      // grain 추가
+      addGrain(line);
     };
 
     lines.forEach(drawLine);
@@ -124,7 +156,6 @@ export default function OverlayCanvas({
 
   }, [lines, currentLine, width, height]);
 
-  // ===== UI =====
   return (
     <canvas
       ref={canvasRef}
@@ -136,7 +167,7 @@ export default function OverlayCanvas({
         left: 0,
         pointerEvents: enabled ? "auto" : "none",
         zIndex: 10,
-        background: "transparent", // 실제 배포용
+        background: "transparent",
       }}
       onMouseDown={startDrawing}
       onMouseMove={draw}
