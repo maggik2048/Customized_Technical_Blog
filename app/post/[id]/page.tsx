@@ -29,9 +29,13 @@ const customLight = {
   string: { ...prism.string, fontWeight: 600 },
 };
 
-const btnStyle = { padding: "6px 12px", borderRadius: 4, cursor: "pointer" };
+const btnStyle = {
+  padding: "6px 12px",
+  borderRadius: 4,
+  cursor: "pointer",
+};
 
-/* ---------------------- Interactive Wrapper (핵심) ---------------------- */
+/* ---------------------- Interactive Wrapper ---------------------- */
 
 function InteractiveWrapper({ children }: { children: React.ReactNode }) {
   return (
@@ -56,6 +60,9 @@ function CodeBlock({ inline, className, children, codeDark }: any) {
   const text = String(children);
   const match = /language-(\w+)/.exec(className || "");
 
+  // 🔥 LOG
+  console.log("CodeBlock render → codeDark:", codeDark);
+
   if (inline || (text.length < 80 && !text.includes("\n"))) {
     return (
       <code
@@ -72,13 +79,22 @@ function CodeBlock({ inline, className, children, codeDark }: any) {
   }
 
   const bgColor = codeDark ? "#121212" : "#e0e0e0";
-  const borderColor = codeDark ? "rgba(255,255,255,0.25)" : "rgba(0,0,0,0.18)";
+  const borderColor = codeDark
+    ? "rgba(255,255,255,0.25)"
+    : "rgba(0,0,0,0.18)";
 
   return (
     <motion.div
-      animate={{ backgroundColor: bgColor, color: codeDark ? "#eee" : "#111" }}
+      animate={{
+        backgroundColor: bgColor,
+        color: codeDark ? "#eee" : "#111",
+      }}
       transition={{ duration: 0.5 }}
-      style={{ borderRadius: 6, overflowX: "auto", border: `1px solid ${borderColor}` }}
+      style={{
+        borderRadius: 6,
+        overflowX: "auto",
+        border: `1px solid ${borderColor}`,
+      }}
     >
       <SyntaxHighlighter
         style={codeDark ? oneDark : customLight}
@@ -105,13 +121,45 @@ function HeaderWithTitle({
   children?: React.ReactNode;
 }) {
   return (
-    <motion.div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: 260, zIndex: 0 }}>
-      <img src={src} alt="header" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.4))" }} />
-      <div style={{ position: "absolute", bottom: 20, left: 40, color: "#fff" }}>
+    <motion.div
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: 260,
+        zIndex: 0,
+      }}
+    >
+      <img
+        src={src}
+        alt="header"
+        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.4))",
+        }}
+      />
+      <div
+        style={{
+          position: "absolute",
+          bottom: 20,
+          left: 40,
+          color: "#fff",
+        }}
+      >
         <h1 style={{ fontSize: 36, margin: 0 }}>{title}</h1>
-        {date && <p style={{ marginTop: 4, fontSize: 14, color: "rgba(255,255,255,0.8)" }}>{date}</p>}
+        {date && (
+          <p style={{ marginTop: 4, fontSize: 14, color: "rgba(255,255,255,0.8)" }}>
+            {date}
+          </p>
+        )}
       </div>
+
       {children}
     </motion.div>
   );
@@ -127,6 +175,11 @@ export default function PostPage() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  // 🔥 LOG 1
+  useEffect(() => {
+    console.log("POST PAGE → codeDark changed:", codeDark);
+  }, [codeDark]);
+
   useEffect(() => {
     if (!id) return setLoading(false);
 
@@ -141,6 +194,9 @@ export default function PostPage() {
       });
   }, [id]);
 
+  // 🔥 LOG 2
+  console.log("POST PAGE render → codeDark:", codeDark);
+
   if (loading) return <div style={{ padding: 40 }}>Loading...</div>;
   if (!data) return <div style={{ padding: 40 }}>Post not found</div>;
 
@@ -149,6 +205,17 @@ export default function PostPage() {
 
   const bgImage = pageMode === "dark" ? "/images/tri3.jpg" : "/images/geo2.jpg";
   const textColor = pageMode === "dark" ? "#eee" : "#111";
+
+  const markdownProps = {
+    remarkPlugins: [remarkMath, remarkGfm],
+    rehypePlugins: [rehypeKatex, rehypeRaw],
+    components: {
+      ...markdownComponents,
+      code: (props: any) => (
+        <CodeBlock {...props} codeDark={codeDark} />
+      ),
+    },
+  };
 
   return (
     <motion.div
@@ -165,12 +232,27 @@ export default function PostPage() {
       transition={{ duration: 0.5 }}
       className="document-font"
     >
-      {/* 버튼 */}
-      <div style={{ display: "flex", gap: 16, marginBottom: 12 }}>
+      {/* 버튼 (🔥 클릭 막힘 해결: zIndex 추가) */}
+      <div
+        style={{
+          display: "flex",
+          gap: 16,
+          marginBottom: 12,
+          position: "relative",
+          zIndex: 9999,
+        }}
+      >
         <button onClick={togglePageMode} style={btnStyle}>
           Toggle Dark Mode (Whole)
         </button>
-        <button onClick={() => setCodeDark(!codeDark)} style={btnStyle}>
+
+        <button
+          onClick={() => {
+            console.log("BUTTON CLICKED");
+            setCodeDark(v => !v);
+          }}
+          style={btnStyle}
+        >
           Toggle Code Dark
         </button>
       </div>
@@ -179,7 +261,11 @@ export default function PostPage() {
       <HeaderWithTitle
         src={headerImage}
         title={data.title}
-        date={displayDate ? new Date(displayDate).toLocaleString("ko-KR") : ""}
+        date={
+          displayDate
+            ? new Date(displayDate).toLocaleString("ko-KR")
+            : ""
+        }
       >
         <div style={{ position: "absolute", top: 10, right: 40 }}>
           <PostAdminActions postId={id} />
@@ -192,19 +278,9 @@ export default function PostPage() {
           const regex = /\[(\w+)\]/g;
           const parts = data.content.split(regex);
 
-          const markdownProps = {
-            remarkPlugins: [remarkMath, remarkGfm],
-            rehypePlugins: [rehypeKatex, rehypeRaw],
-            components: {
-              ...markdownComponents,
-              code: (props: any) => <CodeBlock {...props} codeDark={codeDark} />,
-            },
-          };
-
           return parts.map((part: string, i: number) => {
             const Component = visualizationRegistry[part];
 
-            /* ---------------- 핵심 변경 ---------------- */
             if (Component) {
               return (
                 <InteractiveWrapper key={i}>

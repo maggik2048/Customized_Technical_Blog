@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import MathVisualizer from "../MathematicVisualizer/MathVisualizer";
 
 function dot(a, b) {
   return a.x * b.x + a.y * b.y;
@@ -50,7 +51,7 @@ function createBox(cx, cy, w, h, angle) {
   }));
 }
 
-export default function App() {
+export default function SatProjection() {
   const [angleA, setAngleA] = useState(0);
   const [angleB, setAngleB] = useState(0);
   const [axisIndex, setAxisIndex] = useState(0);
@@ -83,7 +84,14 @@ export default function App() {
 
   const overlap = !(projA.max < projB.min || projB.max < projA.min);
 
-  // 원래 방식 (수학 좌표 그대로)
+  const mathData = {
+    projA,
+    projB,
+    overlap,
+    axisIndex,
+    axis,
+  };
+
   const toPoint = (t) => ({
     x: axis.x * t,
     y: axis.y * t,
@@ -95,86 +103,137 @@ export default function App() {
   const B2 = toPoint(projB.max);
 
   return (
-    <div className="p-4">
-      <h1 className="text-xl font-bold mb-2">SAT 축 + 외적(엣지 기반) 시각화</h1>
+    <div style={{ display: "flex", gap: 24 }}>
+      
+      {/* LEFT: ENGINE */}
+      <div className="p-4">
+        <h1 className="text-xl font-bold mb-2">
+          SAT Axis + CrossProduct:: OBB Collision Algorithm Interaction
+        </h1>
 
-      <div className="mb-2">
-        <label>축 선택: {axisIndex}</label>
-        <input
-          type="range"
-          min="0"
-          max="3"
-          step="1"
-          value={axisIndex}
-          onChange={(e) => setAxisIndex(+e.target.value)}
-        />
-      </div>
-
-      <div className="mb-2">
-        <label>Box A 회전: {angleA.toFixed(2)}</label>
-        <input type="range" min="0" max="6.28" step="0.01" value={angleA} onChange={(e) => setAngleA(+e.target.value)} />
-      </div>
-
-      <div className="mb-2">
-        <label>Box B 회전: {angleB.toFixed(2)}</label>
-        <input type="range" min="0" max="6.28" step="0.01" value={angleB} onChange={(e) => setAngleB(+e.target.value)} />
-      </div>
-
-      <div className="mb-2">
-        <label>Box A X: {posAx}</label>
-        <input type="range" min="0" max="500" value={posAx} onChange={(e) => setPosAx(+e.target.value)} />
-      </div>
-
-      <div className="mb-2">
-        <label>Box A Y: {posAy}</label>
-        <input type="range" min="0" max="400" value={posAy} onChange={(e) => setPosAy(+e.target.value)} />
-      </div>
-
-      <div className="mb-2">
-        <label>Box B X: {posBx}</label>
-        <input type="range" min="0" max="500" value={posBx} onChange={(e) => setPosBx(+e.target.value)} />
-      </div>
-
-      <div className="mb-2">
-        <label>Box B Y: {posBy}</label>
-        <input type="range" min="0" max="400" value={posBy} onChange={(e) => setPosBy(+e.target.value)} />
-      </div>
-
-      <p className="mb-2">충돌 여부: {overlap ? "겹침" : "분리됨"}</p>
-
-      <svg width="500" height="400" style={{ border: "1px solid black" }}>
-        <polygon
-          points={boxA.map((p) => `${p.x},${p.y}`).join(" ")}
-          fill="rgba(0,0,255,0.3)"
-          stroke="blue"
-        />
-
-        <polygon
-          points={boxB.map((p) => `${p.x},${p.y}`).join(" ")}
-          fill="rgba(255,0,0,0.3)"
-          stroke="red"
-        />
-
-        {axes.map((ax, i) => (
-          <line
-            key={i}
-            x1={250 - ax.x * 300}
-            y1={200 - ax.y * 300}
-            x2={250 + ax.x * 300}
-            y2={200 + ax.y * 300}
-            stroke={i === axisIndex ? "green" : "gray"}
-            strokeWidth={i === axisIndex ? 3 : 1}
+        {/* AXIS */}
+        <div className="mb-2">
+          <label>Current Axis: {axisIndex}</label>
+          <input
+            type="range"
+            min="0"
+            max="3"
+            step="1"
+            value={axisIndex}
+            onChange={(e) => setAxisIndex(+e.target.value)}
           />
-        ))}
+        </div>
 
-        <line x1={A1.x} y1={A1.y} x2={A2.x} y2={A2.y} stroke="yellow" strokeWidth="6" />
-        <line x1={B1.x} y1={B1.y} x2={B2.x} y2={B2.y} stroke="orange" strokeWidth="6" />
-      </svg>
+        {/* ROTATION */}
+        <div className="mb-2">
+          <label>Box A Rotation: {angleA.toFixed(2)}</label>
+          <input
+            type="range"
+            min="0"
+            max="6.28"
+            step="0.01"
+            value={angleA}
+            onChange={(e) => setAngleA(+e.target.value)}
+          />
+        </div>
 
-      <div className="mt-4">
-        <p>Projection A: [{projA.min.toFixed(2)}, {projA.max.toFixed(2)}]</p>
-        <p>Projection B: [{projB.min.toFixed(2)}, {projB.max.toFixed(2)}]</p>
+        <div className="mb-2">
+          <label>Box B Rotation: {angleB.toFixed(2)}</label>
+          <input
+            type="range"
+            min="0"
+            max="6.28"
+            step="0.01"
+            value={angleB}
+            onChange={(e) => setAngleB(+e.target.value)}
+          />
+        </div>
+
+        {/* POSITION */}
+        <div className="mb-2">
+          <label>Box A X Translation: {posAx}</label>
+          <input type="range" min="0" max="500" value={posAx}
+            onChange={(e) => setPosAx(+e.target.value)} />
+        </div>
+
+        <div className="mb-2">
+          <label>Box A Y Translation: {posAy}</label>
+          <input type="range" min="0" max="400" value={posAy}
+            onChange={(e) => setPosAy(+e.target.value)} />
+        </div>
+
+        <div className="mb-2">
+          <label>Box B X Translation: {posBx}</label>
+          <input type="range" min="0" max="500" value={posBx}
+            onChange={(e) => setPosBx(+e.target.value)} />
+        </div>
+
+        <div className="mb-2">
+          <label>Box B Y Translation: {posBy}</label>
+          <input type="range" min="0" max="400" value={posBy}
+            onChange={(e) => setPosBy(+e.target.value)} />
+        </div>
+
+        <p className="mb-2">
+          IsCollide?: {overlap ? "YES, there is Collision" : "No,Seperated"}
+        </p>
+
+        {/* SVG */}
+        <svg width="500" height="400" style={{ border: "1px solid black" }}>
+
+          {/* BOX A */}
+          <polygon
+            points={boxA.map((p) => `${p.x},${p.y}`).join(" ")}
+            fill="rgba(0,0,255,0.3)"
+            stroke="blue"
+          />
+
+          {/* BOX B */}
+          <polygon
+            points={boxB.map((p) => `${p.x},${p.y}`).join(" ")}
+            fill="rgba(255,0,0,0.3)"
+            stroke="red"
+          />
+
+          {/* AXES */}
+          {axes.map((ax, i) => (
+            <line
+              key={i}
+              x1={250 - ax.x * 300}
+              y1={200 - ax.y * 300}
+              x2={250 + ax.x * 300}
+              y2={200 + ax.y * 300}
+              stroke={i === axisIndex ? "green" : "gray"}
+              strokeWidth={i === axisIndex ? 3 : 1}
+            />
+          ))}
+
+          {/* PROJECTION LINES (RESTORED) */}
+          <line
+            x1={A1.x}
+            y1={A1.y}
+            x2={A2.x}
+            y2={A2.y}
+            stroke="yellow"
+            strokeWidth="6"
+          />
+
+          <line
+            x1={B1.x}
+            y1={B1.y}
+            x2={B2.x}
+            y2={B2.y}
+            stroke="orange"
+            strokeWidth="6"
+          />
+        </svg>
       </div>
+
+      {/* RIGHT: MATH UI ONLY */}
+      <div style={{ width: 420 }}>
+        <MathVisualizer data={mathData} />
+      </div>
+
     </div>
   );
 }
