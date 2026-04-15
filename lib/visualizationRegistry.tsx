@@ -17,8 +17,17 @@ const ModelSlot = dynamic(
   { ssr: false }
 );
 
+
+const DrawingOverlay = dynamic(
+  () => import("@/app/visualizations/DrawingNotation/DrawingOverlay"),
+  { ssr: false }
+);
+
 export const visualizationRegistry: Record<string, any> = {
   SAT: (props: any) => <SatProjection {...props} />,
   TORUS: (props: any) => <Torus {...props} />,
   MODEL: (props: any) => <ModelSlot {...props} />,
+  ANNOTATE: (props: any) => (
+    <DrawingOverlay width={800} height={500} {...props} />
+  ),
 };
