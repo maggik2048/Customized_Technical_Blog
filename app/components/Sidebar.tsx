@@ -10,10 +10,41 @@ export default function Sidebar({ menu }: { menu?: Item[] }) {
   if (!menu) return null;
 
   return (
-    <aside className="w-80 h-screen bg-gray-900 text-white p-4 overflow-y-auto font-sans">
-      {menu.map((item) => (
-        <SidebarItem key={item.name} item={item} pathname={pathname} />
-      ))}
+    <aside
+      style={{
+        width: "320px",
+        height: "100vh",
+        position: "relative",
+        overflowY: "auto",
+        fontFamily: "sans-serif",
+
+        backgroundImage: "url('/images/lee-su-yeon-header-sungchoi2.jpg')",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
+    >
+      {/*  dark overlay (가독성) */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: "rgba(0,0,0,0.2)",
+        }}
+      />
+
+      {/* content layer */}
+      <div
+        style={{
+          position: "relative",
+          zIndex: 1,
+          padding: "16px",
+          color: "white",
+        }}
+      >
+        {menu.map((item) => (
+          <SidebarItem key={item.name} item={item} pathname={pathname} />
+        ))}
+      </div>
     </aside>
   );
 }
