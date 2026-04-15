@@ -1,5 +1,3 @@
-// lib/visualizationRegistry.tsx
-
 import dynamic from "next/dynamic";
 
 // lazy loading
@@ -13,8 +11,14 @@ const Torus = dynamic(
   { ssr: false }
 );
 
-// 🔥 registry
+//  ModelSlot = upload + viewer wrapper
+const ModelSlot = dynamic(
+  () => import("@/app/visualizations/ModelSlot"),
+  { ssr: false }
+);
+
 export const visualizationRegistry: Record<string, any> = {
   SAT: (props: any) => <SatProjection {...props} />,
   TORUS: (props: any) => <Torus {...props} />,
+  MODEL: (props: any) => <ModelSlot {...props} />,
 };
