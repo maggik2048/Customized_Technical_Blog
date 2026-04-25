@@ -5,6 +5,7 @@ export const CATEGORY_TREE: Omit<Item, "href" | "count">[] = [
     name: "University Physics Revisited (대학 물리)",
     slug: "physics_revisited",
     children: [
+      { name: "la langue française(French Language)", slug: "french" },
       { name: "Fluid Mechanics(유체역학)_Munson", slug: "fluid_mechanics" },
       { name: "Thermodynamics(열역학)_Cangel", slug: "thermodynamics" },
     ],
