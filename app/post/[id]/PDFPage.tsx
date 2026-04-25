@@ -17,6 +17,7 @@ import { markdownComponents } from "@/lib/markdownComponents";
 import { useDarkMode } from "@/app/context/DarkModeContext";
 import { getHeaderImage } from "@/lib/getHeaderImage";
 import { visualizationRegistry } from "@/lib/visualizationRegistry";
+import { remarkCarattere } from "@/lib/remarkCarattere";
 
 /* ---------------- styles ---------------- */
 
@@ -187,7 +188,7 @@ export default function PDFPage({ data }: any) {
   };
 
   const markdownProps = {
-    remarkPlugins: [remarkMath, remarkGfm],
+    remarkPlugins: [remarkMath, remarkGfm, remarkCarattere],
     rehypePlugins: [rehypeKatex, rehypeRaw],
     components: {
       ...markdownComponents,

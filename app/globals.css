@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Carattere&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -73,4 +74,14 @@ code {
   background-color: var(--code-bg);
   padding: 2px 6px;
   border-radius: 4px;
+}
+
+
+
+.font-carattere {
+  font-family: 'Carattere', cursive !important;
+}
+
+.font-carattere * {
+  font-family: 'Carattere', cursive !important;
 }
