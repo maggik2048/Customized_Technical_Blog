@@ -180,9 +180,7 @@ export default function PDFPage({ data }: any) {
     position: "relative",
     transform: `scale(${SCALE})`,
     transformOrigin: "top left",
-
-    background: "transparent", // 🔥 핵심 (절대 white 금지)
-
+    background: "transparent",
     paddingLeft: 64,
     paddingRight: 64,
   };
@@ -200,7 +198,7 @@ export default function PDFPage({ data }: any) {
 
   return (
     <>
-      {/* 🔥 FIXED BACKGROUND LAYER */}
+      {/* BACKGROUND */}
       <div
         style={{
           position: "fixed",
@@ -208,12 +206,10 @@ export default function PDFPage({ data }: any) {
           backgroundImage: `url("${bgImage}")`,
           backgroundSize: "cover",
           backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
           zIndex: -1,
         }}
       />
 
-      {/* PAGE WRAPPER */}
       <motion.div
         style={{
           minHeight: "100vh",
@@ -221,7 +217,6 @@ export default function PDFPage({ data }: any) {
           color: textColor,
         }}
       >
-        {/* buttons */}
         <div style={{ display: "flex", gap: 16, marginBottom: 12 }}>
           <button onClick={toggle} style={btnStyle}>
             Toggle Dark Mode
@@ -235,9 +230,7 @@ export default function PDFPage({ data }: any) {
           </button>
         </div>
 
-        {/* PDF PAGE */}
         <div style={pageStyle}>
-          
           <HeaderWithTitle
             src={headerImage}
             title={data.title}
@@ -252,11 +245,32 @@ export default function PDFPage({ data }: any) {
             </div>
           </HeaderWithTitle>
 
-          {/* CONTENT */}
+          {/* 🔥 핵심 수정 부분 */}
           <div style={{ paddingTop: 260 }}>
             {(() => {
-              const regex = /\[(\w+)\]/g;
-              const parts = data.content.split(regex);
+              // ✅ 1. regex 수정 (숫자 제외)
+              const regex = /\[([A-Za-z_][A-Za-z0-9_]*)\]/g;
+
+              // ✅ 2. 코드블록 보호
+              const codeBlocks: string[] = [];
+
+              const protectedContent = data.content.replace(
+                /```[\s\S]*?```/g,
+                (match: string) => {
+                  codeBlocks.push(match);
+                  return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
+                }
+              );
+
+              // ✅ 3. split 유지
+              const parts = protectedContent.split(regex);
+
+              // ✅ 4. 복원
+              const restore = (text: string) =>
+                text.replace(
+                  /__CODE_BLOCK_(\d+)__/g,
+                  (_, i) => codeBlocks[Number(i)]
+                );
 
               return parts.map((part: string, i: number) => {
                 const Component = visualizationRegistry[part];
@@ -271,13 +285,12 @@ export default function PDFPage({ data }: any) {
 
                 return (
                   <ReactMarkdown key={i} {...markdownProps}>
-                    {part}
+                    {restore(part)}
                   </ReactMarkdown>
                 );
               });
             })()}
           </div>
-
         </div>
       </motion.div>
     </>
