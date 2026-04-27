@@ -13,7 +13,7 @@ export default function LidarVisualization() {
   const [phi, setPhi] = useState(Math.PI / 6);
   const [r, setR] = useState(1.5);
 
-  // 1️⃣ INIT (한 번만)
+  // 1️⃣ INIT
   useEffect(() => {
     if (!mountRef.current) return;
 
@@ -69,7 +69,7 @@ export default function LidarVisualization() {
     };
   }, []);
 
-  // 2️⃣ UPDATE ONLY
+  // 2️⃣ UPDATE
   useEffect(() => {
     if (!pointRef.current || !lineRef.current) return;
 
@@ -87,11 +87,23 @@ export default function LidarVisualization() {
 
   return (
     <div style={{ display: "flex", gap: 12 }}>
-      
-      {/* CONTROL */}
-      <div style={{ width: 220, background: "#fff", padding: 10 }}>
-        <div>
-          theta: {theta.toFixed(2)}
+
+      {/* CONTROL PANEL */}
+      <div
+        style={{
+          width: 220,
+          background: "#ffffff",
+          padding: 12,
+          borderRight: "1px solid #ddd",
+          color: "#111",
+          fontFamily: "sans-serif",
+          fontSize: 14,
+        }}
+      >
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontWeight: 600 }}>
+            theta: {theta.toFixed(2)}
+          </div>
           <input
             type="range"
             min={-Math.PI}
@@ -99,11 +111,14 @@ export default function LidarVisualization() {
             step={0.01}
             value={theta}
             onChange={(e) => setTheta(+e.target.value)}
+            style={{ width: "100%" }}
           />
         </div>
 
-        <div>
-          phi: {phi.toFixed(2)}
+        <div style={{ marginBottom: 12 }}>
+          <div style={{ fontWeight: 600 }}>
+            phi: {phi.toFixed(2)}
+          </div>
           <input
             type="range"
             min={-Math.PI / 2}
@@ -111,11 +126,14 @@ export default function LidarVisualization() {
             step={0.01}
             value={phi}
             onChange={(e) => setPhi(+e.target.value)}
+            style={{ width: "100%" }}
           />
         </div>
 
         <div>
-          r: {r.toFixed(2)}
+          <div style={{ fontWeight: 600 }}>
+            r: {r.toFixed(2)}
+          </div>
           <input
             type="range"
             min={0}
@@ -123,6 +141,7 @@ export default function LidarVisualization() {
             step={0.01}
             value={r}
             onChange={(e) => setR(+e.target.value)}
+            style={{ width: "100%" }}
           />
         </div>
       </div>
@@ -135,6 +154,7 @@ export default function LidarVisualization() {
           height: 400,
           overflow: "hidden",
           border: "1px solid #ccc",
+          background: "#000", // contrast 확보 (중요)
         }}
       />
     </div>
