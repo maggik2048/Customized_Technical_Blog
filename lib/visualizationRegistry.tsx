@@ -1,27 +1,10 @@
 import dynamic from "next/dynamic";
 
-// lazy loading
-const SatProjection = dynamic(
-  () => import("@/app/visualizations/SatProjection"),
-  { ssr: false }
-);
-
-const Torus = dynamic(
-  () => import("@/app/visualizations/TorusWithNormals"),
-  { ssr: false }
-);
-
-//  ModelSlot = upload + viewer wrapper
-const ModelSlot = dynamic(
-  () => import("@/app/visualizations/ModelSlot"),
-  { ssr: false }
-);
-
-
-const DrawingOverlay = dynamic(
-  () => import("@/app/visualizations/DrawingNotation/DrawingOverlay"),
-  { ssr: false }
-);
+const SatProjection = dynamic(() => import("@/app/visualizations/SatProjection"), { ssr: false });
+const Torus = dynamic(() => import("@/app/visualizations/TorusWithNormals"), { ssr: false });
+const ModelSlot = dynamic(() => import("@/app/visualizations/ModelSlot"), { ssr: false });
+const DrawingOverlay = dynamic(() => import("@/app/visualizations/DrawingNotation/DrawingOverlay"), { ssr: false });
+const Lidar = dynamic(() => import("@/app/visualizations/SphericalToCartesianCoordinates"), { ssr: false });
 
 export const visualizationRegistry: Record<string, any> = {
   SAT: (props: any) => <SatProjection {...props} />,
@@ -30,4 +13,5 @@ export const visualizationRegistry: Record<string, any> = {
   ANNOTATE: (props: any) => (
     <DrawingOverlay width={800} height={500} {...props} />
   ),
+  LIDAR: (props: any) => <Lidar {...props} />,
 };

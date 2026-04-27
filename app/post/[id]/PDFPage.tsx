@@ -245,13 +245,13 @@ export default function PDFPage({ data }: any) {
             </div>
           </HeaderWithTitle>
 
-          {/* 🔥 핵심 수정 부분 */}
+          {/*  핵심 수정 부분 */}
           <div style={{ paddingTop: 260 }}>
             {(() => {
-              // ✅ 1. regex 수정 (숫자 제외)
+              //  1. regex 수정 (숫자 제외)
               const regex = /\[([A-Za-z_][A-Za-z0-9_]*)\]/g;
 
-              // ✅ 2. 코드블록 보호
+              //  2. 코드블록 보호
               const codeBlocks: string[] = [];
 
               const protectedContent = data.content.replace(
@@ -262,10 +262,10 @@ export default function PDFPage({ data }: any) {
                 }
               );
 
-              // ✅ 3. split 유지
+              //  3. split 유지
               const parts = protectedContent.split(regex);
 
-              // ✅ 4. 복원
+              //  4. 복원
               const restore = (text: string) =>
                 text.replace(
                   /__CODE_BLOCK_(\d+)__/g,

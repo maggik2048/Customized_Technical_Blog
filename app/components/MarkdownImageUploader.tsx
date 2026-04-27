@@ -42,7 +42,7 @@ export default function MarkdownImageUploader({
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
 
-      // 1️⃣ 일반 파일 이미지 처리 (PNG/JPG)
+      // 1️ 일반 파일 이미지 처리 (PNG/JPG)
       if (item.kind === "file") {
         const file = item.getAsFile();
         if (!file) continue;
@@ -64,7 +64,7 @@ export default function MarkdownImageUploader({
         setContent((prev) => `${prev}\n![이미지](${url})\n`);
       }
 
-      // 2️⃣ Snip & Sketch 등에서 붙여넣는 HTML 이미지 처리
+      // 2️ Snip & Sketch 등에서 붙여넣는 HTML 이미지 처리
       else if (item.kind === "string" && item.type === "text/html") {
         item.getAsString(async (html) => {
           const match = html.match(
