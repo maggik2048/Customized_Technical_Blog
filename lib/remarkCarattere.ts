@@ -15,7 +15,7 @@ export function remarkCarattere() {
 
       parent.children.splice(index, 1, {
         type: "html",
-        value: `<span style="font-family: 'Carattere', cursive;">${content}</span>`,
+        value: `<span style="font-family: 'Carattere', cursive; font-size: 26px;">${content}</span>`,
       });
     });
   };

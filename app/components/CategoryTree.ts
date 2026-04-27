@@ -38,6 +38,7 @@ export const CATEGORY_TREE: Omit<Item, "href" | "count">[] = [
       { name: "Systems Programming(컴퓨터구조)", slug: "systems" },
       { name: "DataStructure & Algorithm", slug: "dsa" },
       { name: "C++", slug: "cpp" },
+      { name: "ObjectOrientedProgramming(OOP) & Design Pattern", slug: "oop" },
       { name: "Software Engineering(소프트웨어공학)", slug: "se" },
       { name: "Security(정보보안)", slug: "security" },
       { name: "Multithreading & Concurrency(동시성)", slug: "mt_concurrency" },
