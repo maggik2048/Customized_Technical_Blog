@@ -1,4 +1,4 @@
-import { Item } from "./types";
+import { Item } from "../types";
 
 export const CATEGORY_TREE: Omit<Item, "href" | "count">[] = [
   {

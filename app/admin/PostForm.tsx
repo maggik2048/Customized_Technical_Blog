@@ -3,13 +3,13 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { getMenu } from "@/app/components/sidebarData";
+import { getMenu } from "@/app/components/SidebarCategory/sidebarData";
 import { Item } from "@/app/components/types";
-import MarkdownImageManager from "@/app/components/MarkdownImageManager";
+import MarkdownImageManager from "@/app/components/Markdown/MarkdownImageManager";
 
 type Props = {
   mode: "create" | "edit";
-  postId?: string; // ✅ UUID
+  postId?: string; //  UUID
 };
 
 export default function PostForm({ mode, postId }: Props) {

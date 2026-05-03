@@ -2,7 +2,7 @@
 
 import "./globals.css";
 import { usePathname } from "next/navigation";
-import SidebarWrapper from "./components/SidebarWrapper";
+import SidebarWrapper from "./components/SidebarCategory/SidebarWrapper";
 import ClickableImageBox from "./components/ClickableImageBox";
 import { DarkModeProvider } from "./context/DarkModeContext.tsx";
 

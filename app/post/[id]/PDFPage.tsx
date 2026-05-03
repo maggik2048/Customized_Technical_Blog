@@ -12,9 +12,9 @@ import { motion } from "framer-motion";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark, prism } from "react-syntax-highlighter/dist/esm/styles/prism";
 
-import PostAdminActions from "@/app/components/PostAdminActions";
+import PostAdminActions from "@/app/admin/PostAdminActions";
 import { markdownComponents } from "@/lib/markdownComponents";
-import { sciFiMarkdownComponents } from "@/app/components/SciFiMarkdownComponents";
+import { sciFiMarkdownComponents } from "@/app/components/Markdown/SciFiMarkdownComponents";
 import { useDarkMode } from "@/app/context/DarkModeContext";
 import { getHeaderImage } from "@/lib/getHeaderImage";
 import { visualizationRegistry } from "@/lib/visualizationRegistry";
@@ -45,7 +45,7 @@ function InteractiveWrapper({ children }: any) {
   return (
     <div
       style={{
-        background: "rgba(0,0,0,0.85)",
+        background: "rgba(0,0,0,0.55)",
         color: "#fff",
         padding: 20,
         margin: "24px 0",

@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import CategoryCard from "./components/CategoryCard";
+import CategoryCard from "./components/SidebarCategory/CategoryCard";
 import TopHeaderText from "./components/TopHeaderText";
 import SocialIcons from "./components/SocialIcons";
 import LatestPosts from "./components/LatestPosts";
 import Link from "next/link";
 import ClickableImageBox from "./components/ClickableImageBox";
-import { CATEGORY_TREE } from "./components/CategoryTree";
+import { CATEGORY_TREE } from "./components/SidebarCategory/CategoryTree";
 
 export default function HomePage() {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
