@@ -80,20 +80,14 @@ function CodeBlock({ inline, className, children, codeDark }: any) {
   }
 
   const bgColor = codeDark ? "#121212" : "#eaeaea";
-  const borderColor =
-    codeDark ? "rgba(255,255,255,0.2)" : "rgba(0,0,0,0.15)";
 
   return (
     <motion.div
-      animate={{
-        backgroundColor: bgColor,
-        color: codeDark ? "#eee" : "#111",
-      }}
+      animate={{ backgroundColor: bgColor }}
       transition={{ duration: 0.4 }}
       style={{
         borderRadius: 6,
         overflowX: "auto",
-        border: `1px solid ${borderColor}`,
       }}
     >
       <SyntaxHighlighter
@@ -161,24 +155,18 @@ function HeaderWithTitle({ src, title, date, children }: any) {
 
 /* ---------------- PDF PAGE ---------------- */
 
-const SCALE = 1.25;
+const SCALE = 1.0;
 
-export default function PDFPage({ data }: any) {
+export default function PDFPage({ data, isStandalone = false }: any) {
   const { mode, toggle } = useDarkMode();
   const [codeDark, setCodeDark] = useState(false);
 
   const isDark = mode === "dark";
-
   const headerImage = getHeaderImage(data);
-
-  const bgImage =
-    isDark ? "/images/horizon.jpg" : "/images/medimath.jpeg";
-
   const textColor = isDark ? "#eee" : "#111";
 
   const pageStyle: React.CSSProperties = {
     width: 860,
-    minHeight: 1100,
     margin: "40px auto",
     position: "relative",
     transform: `scale(${SCALE})`,
@@ -188,7 +176,7 @@ export default function PDFPage({ data }: any) {
       ? "rgba(60,60,60,0.6)"
       : "rgba(255,255,255,0.7)",
 
-    backdropFilter: isDark ? "blur(6px)" : "blur(4px)",
+    backdropFilter: "blur(6px)",
 
     paddingLeft: 64,
     paddingRight: 64,
@@ -200,13 +188,12 @@ export default function PDFPage({ data }: any) {
       : "0 8px 30px rgba(0,0,0,0.15)",
   };
 
-  // 🔥 핵심: 다크모드일 때만 sci-fi 적용
   const markdownProps = {
     remarkPlugins: [remarkMath, remarkGfm, remarkCarattere],
     rehypePlugins: [rehypeKatex, rehypeRaw],
     components: {
       ...markdownComponents,
-      ...(isDark ? sciFiMarkdownComponents : {}), // ✅ 여기
+      ...(isDark ? sciFiMarkdownComponents : {}),
       code: (props: any) => (
         <CodeBlock {...props} codeDark={codeDark} />
       ),
@@ -214,25 +201,15 @@ export default function PDFPage({ data }: any) {
   };
 
   return (
-    <>
-      <div
-        style={{
-          position: "fixed",
-          inset: 0,
-          backgroundImage: `url("${bgImage}")`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          zIndex: -1,
-        }}
-      />
-
-      <motion.div
-        style={{
-          minHeight: "100vh",
-          padding: 40,
-          color: textColor,
-        }}
-      >
+    <motion.div
+      style={{
+        minHeight: "auto",
+        padding: 0,
+        color: textColor,
+      }}
+    >
+      {/* standalone일 때만 버튼 */}
+      {isStandalone && (
         <div style={{ display: "flex", gap: 16, marginBottom: 12 }}>
           <button onClick={toggle} style={btnStyle}>
             Toggle Dark Mode
@@ -245,65 +222,64 @@ export default function PDFPage({ data }: any) {
             Toggle Code Dark
           </button>
         </div>
+      )}
 
-        <div style={pageStyle}>
-          <HeaderWithTitle
-            src={headerImage}
-            title={data.title}
-            date={
-              data.project_date
-                ? new Date(data.project_date).toLocaleString("ko-KR")
-                : ""
-            }
-          >
-            <div style={{ position: "absolute", top: 10, right: 40 }}>
-              <PostAdminActions postId={data.id} />
-            </div>
-          </HeaderWithTitle>
+      <div style={pageStyle}>
+        <HeaderWithTitle
+          src={headerImage}
+          title={data.title}
+          date={
+            data.project_date
+              ? new Date(data.project_date).toLocaleString("ko-KR")
+              : ""
+          }
+        >
+          <div style={{ position: "absolute", top: 10, right: 40 }}>
+            <PostAdminActions postId={data.id} />
+          </div>
+        </HeaderWithTitle>
 
-          <div style={{ paddingTop: 260 }}>
-            {(() => {
-              const regex = /\[([A-Za-z_][A-Za-z0-9_]*)\]/g;
+        <div style={{ paddingTop: 260 }}>
+          {(() => {
+            const regex = /\[([A-Za-z_][A-Za-z0-9_]*)\]/g;
+            const codeBlocks: string[] = [];
 
-              const codeBlocks: string[] = [];
+            const protectedContent = data.content.replace(
+              /```[\s\S]*?```/g,
+              (match: string) => {
+                codeBlocks.push(match);
+                return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
+              }
+            );
 
-              const protectedContent = data.content.replace(
-                /```[\s\S]*?```/g,
-                (match: string) => {
-                  codeBlocks.push(match);
-                  return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
-                }
+            const parts = protectedContent.split(regex);
+
+            const restore = (text: string) =>
+              text.replace(
+                /__CODE_BLOCK_(\d+)__/g,
+                (_, i) => codeBlocks[Number(i)]
               );
 
-              const parts = protectedContent.split(regex);
+            return parts.map((part: string, i: number) => {
+              const Component = visualizationRegistry[part];
 
-              const restore = (text: string) =>
-                text.replace(
-                  /__CODE_BLOCK_(\d+)__/g,
-                  (_, i) => codeBlocks[Number(i)]
-                );
-
-              return parts.map((part: string, i: number) => {
-                const Component = visualizationRegistry[part];
-
-                if (Component) {
-                  return (
-                    <InteractiveWrapper key={i}>
-                      <Component />
-                    </InteractiveWrapper>
-                  );
-                }
-
+              if (Component) {
                 return (
-                  <ReactMarkdown key={i} {...markdownProps}>
-                    {restore(part)}
-                  </ReactMarkdown>
+                  <InteractiveWrapper key={i}>
+                    <Component />
+                  </InteractiveWrapper>
                 );
-              });
-            })()}
-          </div>
+              }
+
+              return (
+                <ReactMarkdown key={i} {...markdownProps}>
+                  {restore(part)}
+                </ReactMarkdown>
+              );
+            });
+          })()}
         </div>
-      </motion.div>
-    </>
+      </div>
+    </motion.div>
   );
 }

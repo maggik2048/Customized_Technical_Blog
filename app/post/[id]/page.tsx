@@ -8,25 +8,98 @@ import PDFPage from "./PDFPage";
 export default function PostPage() {
   const { id } = useParams() as { id: string };
 
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [current, setCurrent] = useState<any>(null);
+  const [prev, setPrev] = useState<any>(null);
+  const [next, setNext] = useState<any>(null);
 
   useEffect(() => {
     if (!id) return;
 
-    supabase
-      .from("posts")
-      .select("*")
-      .eq("id", id)
-      .single()
-      .then(({ data }) => {
-        setData(data);
-        setLoading(false);
-      });
+    const load = async () => {
+      const { data: currentData } = await supabase
+        .from("posts")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      setCurrent(currentData);
+      if (!currentData) return;
+
+      const { data: prevData } = await supabase
+        .from("posts")
+        .select("*")
+        .eq("category", currentData.category)
+        .lt("created_at", currentData.created_at)
+        .order("created_at", { ascending: false })
+        .limit(1);
+
+      if (prevData?.length) setPrev(prevData[0]);
+
+      const { data: nextData } = await supabase
+        .from("posts")
+        .select("*")
+        .eq("category", currentData.category)
+        .gt("created_at", currentData.created_at)
+        .order("created_at", { ascending: true })
+        .limit(1);
+
+      if (nextData?.length) setNext(nextData[0]);
+    };
+
+    load();
   }, [id]);
 
-  if (loading) return <div style={{ padding: 40 }}>Loading...</div>;
-  if (!data) return <div style={{ padding: 40 }}>Post not found</div>;
+  if (!current) {
+    return <div style={{ padding: 40 }}>Loading...</div>;
+  }
 
-  return <PDFPage data={data} />;
+  return (
+    <div
+      style={{
+        position: "relative",
+        display: "flex",
+        justifyContent: "center",
+        marginTop: 40,
+      }}
+    >
+      {/*  현재 글 (기준) */}
+      <div style={{ position: "relative", zIndex: 2 }}>
+        <PDFPage data={current} isStandalone={false} />
+      </div>
+
+      {/*  이전 글 (왼쪽 뒤) */}
+      {prev && (
+        <div
+          style={{
+            position: "absolute",
+            left: "50%",
+            transform: "translateX(-120%) scale(0.9) rotate(-2deg)",
+            top: 20,
+            opacity: 0.4,
+            zIndex: 1,
+            pointerEvents: "none",
+          }}
+        >
+          <PDFPage data={prev} isStandalone={false} />
+        </div>
+      )}
+
+      {/*  다음 글 (오른쪽 뒤) */}
+      {next && (
+        <div
+          style={{
+            position: "absolute",
+            left: "50%",
+            transform: "translateX(20%) scale(0.9) rotate(2deg)",
+            top: 20,
+            opacity: 0.4,
+            zIndex: 1,
+            pointerEvents: "none",
+          }}
+        >
+          <PDFPage data={next} isStandalone={false} />
+        </div>
+      )}
+    </div>
+  );
 }
