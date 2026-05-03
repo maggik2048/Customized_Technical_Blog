@@ -16,6 +16,7 @@ export default function PostPage() {
     if (!id) return;
 
     const load = async () => {
+      // 현재 글
       const { data: currentData } = await supabase
         .from("posts")
         .select("*")
@@ -25,6 +26,7 @@ export default function PostPage() {
       setCurrent(currentData);
       if (!currentData) return;
 
+      // 이전 글
       const { data: prevData } = await supabase
         .from("posts")
         .select("*")
@@ -35,6 +37,7 @@ export default function PostPage() {
 
       if (prevData?.length) setPrev(prevData[0]);
 
+      // 다음 글
       const { data: nextData } = await supabase
         .from("posts")
         .select("*")
@@ -62,7 +65,7 @@ export default function PostPage() {
         marginTop: 40,
       }}
     >
-      {/*  현재 글 (기준) */}
+      {/*  현재 글 */}
       <div style={{ position: "relative", zIndex: 2 }}>
         <PDFPage data={current} isStandalone={false} />
       </div>
@@ -73,8 +76,8 @@ export default function PostPage() {
           style={{
             position: "absolute",
             left: "50%",
-            transform: "translateX(-120%) scale(0.9) rotate(-2deg)",
-            top: 20,
+            transform:
+              "translateX(-60%) translateY(-50px) scale(0.9) rotate(-2deg)",
             opacity: 0.4,
             zIndex: 1,
             pointerEvents: "none",
@@ -90,8 +93,8 @@ export default function PostPage() {
           style={{
             position: "absolute",
             left: "50%",
-            transform: "translateX(20%) scale(0.9) rotate(2deg)",
-            top: 20,
+            transform:
+              "translateX(20%) translateY(-50px) scale(0.9) rotate(2deg)",
             opacity: 0.4,
             zIndex: 1,
             pointerEvents: "none",
