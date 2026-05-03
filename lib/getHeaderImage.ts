@@ -33,6 +33,7 @@ const categoryHeaderMap: Record<string, string> = {
   security: "/images/headers/security.jpg",
   mt_concurrency: "/images/headers/mt_concurrency.jpg",
   graphics_pipeline: "/images/headers/graphics_pipeline.jpg",
+  unreal: "/images/headers/unrealengine.jpg",
 
   // ===== fallback =====
   default: "/images/headers/default.jpg",

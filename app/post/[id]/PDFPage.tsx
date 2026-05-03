@@ -172,7 +172,7 @@ export default function PDFPage({ data }: any) {
   const headerImage = getHeaderImage(data);
 
   const bgImage =
-    isDark ? "/images/detroit.jpg" : "/images/medimath.jpeg";
+    isDark ? "/images/horizon.jpg" : "/images/medimath.jpeg";
 
   const textColor = isDark ? "#eee" : "#111";
 
