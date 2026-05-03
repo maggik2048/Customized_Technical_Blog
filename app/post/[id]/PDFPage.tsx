@@ -169,7 +169,7 @@ export default function PDFPage({ data }: any) {
   const headerImage = getHeaderImage(data);
 
   const bgImage =
-    mode === "dark" ? "/images/tri3.jpg" : "/images/geo2.jpg";
+    mode === "dark" ? "/images/detroit.jpg" : "/images/medimath.jpeg";
 
   const textColor = mode === "dark" ? "#eee" : "#111";
 
@@ -180,9 +180,14 @@ export default function PDFPage({ data }: any) {
     position: "relative",
     transform: `scale(${SCALE})`,
     transformOrigin: "top left",
-    background: "transparent",
+
+    background: "rgba(255,255,255,0.7)",  // 거의 완전 흰색
+    backdropFilter: "blur(4px)",           // 살짝 유리 느낌 
     paddingLeft: 64,
     paddingRight: 64,
+
+    borderRadius: 12,
+    boxShadow: "0 8px 30px rgba(0,0,0,0.15)",
   };
 
   const markdownProps = {
