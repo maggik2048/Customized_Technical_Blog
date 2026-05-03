@@ -14,6 +14,7 @@ import { oneDark, prism } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 import PostAdminActions from "@/app/components/PostAdminActions";
 import { markdownComponents } from "@/lib/markdownComponents";
+import { sciFiMarkdownComponents } from "@/app/components/SciFiMarkdownComponents";
 import { useDarkMode } from "@/app/context/DarkModeContext";
 import { getHeaderImage } from "@/lib/getHeaderImage";
 import { visualizationRegistry } from "@/lib/visualizationRegistry";
@@ -166,12 +167,14 @@ export default function PDFPage({ data }: any) {
   const { mode, toggle } = useDarkMode();
   const [codeDark, setCodeDark] = useState(false);
 
+  const isDark = mode === "dark";
+
   const headerImage = getHeaderImage(data);
 
   const bgImage =
-    mode === "dark" ? "/images/detroit.jpg" : "/images/medimath.jpeg";
+    isDark ? "/images/detroit.jpg" : "/images/medimath.jpeg";
 
-  const textColor = mode === "dark" ? "#eee" : "#111";
+  const textColor = isDark ? "#eee" : "#111";
 
   const pageStyle: React.CSSProperties = {
     width: 860,
@@ -181,20 +184,29 @@ export default function PDFPage({ data }: any) {
     transform: `scale(${SCALE})`,
     transformOrigin: "top left",
 
-    background: "rgba(255,255,255,0.7)",  // 거의 완전 흰색
-    backdropFilter: "blur(4px)",           // 살짝 유리 느낌 
+    background: isDark
+      ? "rgba(60,60,60,0.6)"
+      : "rgba(255,255,255,0.7)",
+
+    backdropFilter: isDark ? "blur(6px)" : "blur(4px)",
+
     paddingLeft: 64,
     paddingRight: 64,
 
     borderRadius: 12,
-    boxShadow: "0 8px 30px rgba(0,0,0,0.15)",
+
+    boxShadow: isDark
+      ? "0 8px 30px rgba(0,0,0,0.6)"
+      : "0 8px 30px rgba(0,0,0,0.15)",
   };
 
+  // 🔥 핵심: 다크모드일 때만 sci-fi 적용
   const markdownProps = {
     remarkPlugins: [remarkMath, remarkGfm, remarkCarattere],
     rehypePlugins: [rehypeKatex, rehypeRaw],
     components: {
       ...markdownComponents,
+      ...(isDark ? sciFiMarkdownComponents : {}), // ✅ 여기
       code: (props: any) => (
         <CodeBlock {...props} codeDark={codeDark} />
       ),
@@ -203,7 +215,6 @@ export default function PDFPage({ data }: any) {
 
   return (
     <>
-      {/* BACKGROUND */}
       <div
         style={{
           position: "fixed",
@@ -250,13 +261,10 @@ export default function PDFPage({ data }: any) {
             </div>
           </HeaderWithTitle>
 
-          {/*  핵심 수정 부분 */}
           <div style={{ paddingTop: 260 }}>
             {(() => {
-              //  1. regex 수정 (숫자 제외)
               const regex = /\[([A-Za-z_][A-Za-z0-9_]*)\]/g;
 
-              //  2. 코드블록 보호
               const codeBlocks: string[] = [];
 
               const protectedContent = data.content.replace(
@@ -267,10 +275,8 @@ export default function PDFPage({ data }: any) {
                 }
               );
 
-              //  3. split 유지
               const parts = protectedContent.split(regex);
 
-              //  4. 복원
               const restore = (text: string) =>
                 text.replace(
                   /__CODE_BLOCK_(\d+)__/g,
