@@ -43,7 +43,46 @@ export default function RemarkPageRenderer({
         </p>
       ),
 
-      /*  리스트 → 박스 + 들여쓰기 + 오른쪽 확장 */
+      /*  h2 = 왼쪽 바깥까지 튀어나가는 박스 */
+      h2: ({ children }: any) => (
+        <div
+          style={{
+            marginLeft: -64,
+            width: "calc(100% + 64px)",
+
+            marginTop: 18,
+            marginBottom: 10,
+
+            padding: "10px 16px",
+            borderRadius: 10,
+
+            background: isDark
+              ? "rgba(120,120,120,0.25)"
+              : "rgba(0,0,0,0.06)",
+
+            border: isDark
+              ? "1px solid rgba(200,200,200,0.4)"
+              : "1px solid rgba(0,0,0,0.12)",
+
+            boxShadow: isDark
+              ? "0 3px 12px rgba(0,0,0,0.35)"
+              : "0 2px 6px rgba(0,0,0,0.08)",
+
+            boxSizing: "border-box",
+          }}
+        >
+          <h2
+            style={{
+              margin: 0,
+              fontWeight: 700,
+            }}
+          >
+            {children}
+          </h2>
+        </div>
+      ),
+
+      /*  리스트 → 박스 + 들여쓰기 */
       ul: ({ children }: any) => (
         <div
           style={{
@@ -52,14 +91,13 @@ export default function RemarkPageRenderer({
             maxWidth: "100%",
 
             margin: "8px 0",
-            marginLeft: 16,          //  들여쓰기
+            marginLeft: 16,
 
             padding: "6px 14px",
-            paddingRight: 302,        //  오른쪽 더 길게
+            paddingRight: 36,
 
             borderRadius: 8,
-
-            minWidth: "240px",       //  너무 작아지지 않게
+            minWidth: "260px",
 
             background: isDark
               ? "rgba(120,120,120,0.22)"
@@ -87,7 +125,7 @@ export default function RemarkPageRenderer({
         </div>
       ),
 
-      /* 🔥 ordered list 동일 스타일 */
+      /*  ordered list 동일 */
       ol: ({ children }: any) => (
         <div
           style={{
@@ -99,10 +137,10 @@ export default function RemarkPageRenderer({
             marginLeft: 16,
 
             padding: "6px 14px",
-            paddingRight: 22,
+            paddingRight: 36,
 
             borderRadius: 8,
-            minWidth: "240px",
+            minWidth: "260px",
 
             background: isDark
               ? "rgba(120,120,120,0.22)"
@@ -128,7 +166,7 @@ export default function RemarkPageRenderer({
         </div>
       ),
 
-      /* 🔥 리스트 간격 */
+      /*  리스트 아이템 */
       li: ({ children }: any) => (
         <li
           style={{
