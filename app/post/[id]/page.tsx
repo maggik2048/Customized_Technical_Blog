@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import PDFPage from "./PDFPage";
+import StackedPostViewer from "@/app/components/papers/StackedPostViewer";
 
 export default function PostPage() {
   const { id } = useParams() as { id: string };
@@ -57,52 +57,10 @@ export default function PostPage() {
   }
 
   return (
-    <div
-      style={{
-        position: "relative",
-        display: "flex",
-        justifyContent: "center",
-        marginTop: 40,
-      }}
-    >
-      {/*  현재 글 */}
-      <div style={{ position: "relative", zIndex: 2 }}>
-        <PDFPage data={current} isStandalone={false} />
-      </div>
-
-      {/*  이전 글 (왼쪽 뒤) */}
-      {prev && (
-        <div
-          style={{
-            position: "absolute",
-            left: "50%",
-            transform:
-              "translateX(-60%) translateY(-50px) scale(0.9) rotate(-2deg)",
-            opacity: 0.4,
-            zIndex: 1,
-            pointerEvents: "none",
-          }}
-        >
-          <PDFPage data={prev} isStandalone={false} />
-        </div>
-      )}
-
-      {/*  다음 글 (오른쪽 뒤) */}
-      {next && (
-        <div
-          style={{
-            position: "absolute",
-            left: "50%",
-            transform:
-              "translateX(20%) translateY(-50px) scale(0.9) rotate(2deg)",
-            opacity: 0.4,
-            zIndex: 1,
-            pointerEvents: "none",
-          }}
-        >
-          <PDFPage data={next} isStandalone={false} />
-        </div>
-      )}
-    </div>
+    <StackedPostViewer
+      current={current}
+      prev={prev}
+      next={next}
+    />
   );
 }
