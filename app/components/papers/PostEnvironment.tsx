@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import { useDarkMode } from "@/app/context/DarkModeContext";
 
 export default function PostEnvironment({
@@ -8,8 +8,7 @@ export default function PostEnvironment({
 }: {
   children: React.ReactNode;
 }) {
-  const { mode, toggle } = useDarkMode();
-  const [codeDark, setCodeDark] = useState(false);
+  const { mode, toggle, toggleCode } = useDarkMode();
 
   const isDark = mode === "dark";
 
@@ -17,11 +16,8 @@ export default function PostEnvironment({
     ? "/images/horizon.jpg"
     : "/images/medimath.jpeg";
 
-  const textColor = isDark ? "#eee" : "#111";
-
   return (
     <>
-      {/*  BACKGROUND LAYER */}
       <div
         style={{
           position: "fixed",
@@ -30,44 +26,15 @@ export default function PostEnvironment({
           backgroundSize: "cover",
           backgroundPosition: "center",
           zIndex: -1,
-          transition: "0.4s ease",
         }}
       />
 
-      {/*  CONTROL PANEL */}
-      <div
-        style={{
-          position: "fixed",
-          top: 20,
-          left: 20,
-          display: "flex",
-          gap: 10,
-          zIndex: 50,
-        }}
-      >
-        <button onClick={toggle} style={btnStyle}>
-          Dark Mode
-        </button>
-
-        <button
-          onClick={() => setCodeDark((v) => !v)}
-          style={btnStyle}
-        >
-          Code Theme
-        </button>
+      <div style={{ position: "fixed", top: 20, left: 20, zIndex: 50 }}>
+        <button onClick={toggle}>Dark Mode</button>
+        <button onClick={toggleCode}>Code Theme</button>
       </div>
 
-      {/*  CONTENT AREA */}
-      <div style={{ color: textColor }}>{children}</div>
+      {children}
     </>
   );
 }
-
-const btnStyle: React.CSSProperties = {
-  padding: "6px 12px",
-  borderRadius: 6,
-  cursor: "pointer",
-  background: "rgba(0,0,0,0.6)",
-  color: "#fff",
-  border: "1px solid rgba(255,255,255,0.2)",
-};
