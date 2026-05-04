@@ -59,7 +59,7 @@ export default function StackedPostViewer({
                 y: -40,
                 scale: 0.9,
                 rotate: 3,
-                opacity: 0.4,
+                opacity: 0.7,
                 zIndex: 2,
               }
             : offset < 0
