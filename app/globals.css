@@ -18,7 +18,7 @@ body.dark-mode {
   --code-bg: #222;
 }
 
-/* ✅ 전역 적용 (핵심) */
+/*  전역 적용 (핵심) */
 body {
   margin: 0;
   font-family: 'Latin Modern', serif;
@@ -84,4 +84,13 @@ code {
 
 .font-carattere * {
   font-family: 'Carattere', cursive !important;
+}
+
+
+.paren-highlight {
+  color: #ffcc88;
+  font-weight: 500;
+
+  white-space: nowrap;       /* ⭐ 핵심 */
+  display: inline-block;     /* ⭐ 안정화 */
 }

@@ -23,6 +23,9 @@ import { remarkCarattere } from "@/lib/remarkCarattere";
 /* 🔥 추가 */
 import NotepageLines from "@/app/components/markdown/NotepageLines";
 
+/* 🔥 추가 (핵심) */
+import RemarkPageRenderer from "@/app/components/Markdown/remarkPageRenderer";
+
 /* ---------------- CodeBlock ---------------- */
 
 function CodeBlock({ inline, className, children }: any) {
@@ -92,13 +95,17 @@ export default function PDFPage({ data }: any) {
       : "0 8px 30px rgba(0,0,0,0.15)",
   };
 
+  /* 🔥 그대로 두되 plugin만 추가 */
   const markdownProps = {
-    remarkPlugins: [remarkMath, remarkGfm, remarkCarattere],
+    remarkPlugins: [
+      remarkMath,
+      remarkGfm,
+      remarkCarattere,
+    ],
     rehypePlugins: [rehypeKatex, rehypeRaw],
     components: {
       ...markdownComponents,
       ...(isDark ? sciFiMarkdownComponents : {}),
-
       code: CodeBlock,
     },
   };
@@ -118,7 +125,7 @@ export default function PDFPage({ data }: any) {
         >
           <img
             src={headerImage}
-            style={{ width: "100%", height: "100%", objectFit: "cover", }}
+            style={{ width: "100%", height: "100%", objectFit: "cover" }}
           />
 
           <div
@@ -146,7 +153,7 @@ export default function PDFPage({ data }: any) {
           </div>
         </div>
 
-        {/* CONTENT WRAPPED (핵심 수정) */}
+        {/* CONTENT */}
         <div style={{ paddingTop: 260 }}>
           <NotepageLines>
             {(() => {
@@ -180,10 +187,17 @@ export default function PDFPage({ data }: any) {
                   );
                 }
 
+                /* 🔥 여기만 교체 */
                 return (
-                  <ReactMarkdown key={i} {...markdownProps}>
+                  <RemarkPageRenderer
+                    key={i}
+                    markdownComponents={markdownComponents}
+                    sciFiMarkdownComponents={sciFiMarkdownComponents}
+                    isDark={isDark}
+                    CodeBlock={CodeBlock}
+                  >
                     {restore(part)}
-                  </ReactMarkdown>
+                  </RemarkPageRenderer>
                 );
               });
             })()}
