@@ -118,7 +118,7 @@ export default function PDFPage({ data }: any) {
         >
           <img
             src={headerImage}
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            style={{ width: "100%", height: "100%", objectFit: "cover", }}
           />
 
           <div

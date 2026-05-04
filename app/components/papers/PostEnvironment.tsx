@@ -14,7 +14,7 @@ export default function PostEnvironment({
 
   const bgImage = isDark
     ? "/images/horizon.jpg"
-    : "/images/medimath.jpeg";
+    : "/images/mathdraw2.png";
 
   return (
     <>

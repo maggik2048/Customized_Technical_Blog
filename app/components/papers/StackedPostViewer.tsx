@@ -14,6 +14,8 @@ export default function StackedPostViewer({
   index,
   onChangeIndex,
 }: Props) {
+  const STACK_OFFSET = -520; //  여기 값만 바꾸면 전체 이동량 조절 가능
+
   return (
     <div
       style={{
@@ -22,6 +24,7 @@ export default function StackedPostViewer({
         justifyContent: "center",
         marginTop: 40,
         height: "100vh",
+        transform: `translateX(${STACK_OFFSET}px)`, // 핵심
       }}
     >
       {posts.map((post, i) => {
@@ -47,7 +50,7 @@ export default function StackedPostViewer({
                 y: -40,
                 scale: 0.9,
                 rotate: -3,
-                opacity: 0.4,
+                opacity: 0.7,
                 zIndex: 2,
               }
             : offset === 1

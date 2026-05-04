@@ -31,7 +31,7 @@ const categoryHeaderMap: Record<string, string> = {
   cpp: "/images/headers/cpp.jpg",
   se: "/images/headers/se.jpg",
   security: "/images/headers/security.jpg",
-  mt_concurrency: "/images/headers/mt_concurrency.jpg",
+  mt_concurrency: "/images/headers/concurrency.jpg",
   graphics_pipeline: "/images/headers/graphics_pipeline.jpg",
   unreal: "/images/headers/unrealengine.jpg",
 
