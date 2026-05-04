@@ -20,9 +20,6 @@ import { getHeaderImage } from "@/lib/getHeaderImage";
 import { visualizationRegistry } from "@/lib/visualizationRegistry";
 import { remarkCarattere } from "@/lib/remarkCarattere";
 
-/* 🔥 추가 */
-import NotepageLines from "@/app/components/markdown/NotepageLines";
-
 /* ---------------- CodeBlock ---------------- */
 
 function CodeBlock({ inline, className, children }: any) {
@@ -48,7 +45,10 @@ function CodeBlock({ inline, className, children }: any) {
     <motion.div
       animate={{ backgroundColor: "#121212" }}
       transition={{ duration: 0.3 }}
-      style={{ borderRadius: 6, overflowX: "auto" }}
+      style={{
+        borderRadius: 6,
+        overflowX: "auto",
+      }}
     >
       <SyntaxHighlighter
         style={oneDark}
@@ -70,12 +70,14 @@ export default function PDFPage({ data }: any) {
   const headerImage = getHeaderImage(data);
   const textColor = isDark ? "#eee" : "#111";
 
+  const lineHeight = 28;
+
+  const HEADER_HEIGHT = 260;
+
   const pageStyle: React.CSSProperties = {
     width: 860,
     margin: "40px auto",
     position: "relative",
-    transform: "scale(1)",
-    transformOrigin: "top left",
 
     background: isDark
       ? "rgba(60,60,60,0.6)"
@@ -98,7 +100,6 @@ export default function PDFPage({ data }: any) {
     components: {
       ...markdownComponents,
       ...(isDark ? sciFiMarkdownComponents : {}),
-
       code: CodeBlock,
     },
   };
@@ -113,7 +114,8 @@ export default function PDFPage({ data }: any) {
             top: 0,
             left: 0,
             width: "100%",
-            height: 260,
+            height: HEADER_HEIGHT,
+            zIndex: 2,
           }}
         >
           <img
@@ -146,9 +148,36 @@ export default function PDFPage({ data }: any) {
           </div>
         </div>
 
-        {/* CONTENT WRAPPED (핵심 수정) */}
-        <div style={{ paddingTop: 260 }}>
-          <NotepageLines>
+        {/* CONTENT */}
+        <div
+          style={{
+            paddingTop: HEADER_HEIGHT - 20 + 25, // ✔ 핵심: 여기 줄여서 간격 좁힘
+            position: "relative",
+            lineHeight: `${lineHeight}px`,
+          }}
+        >
+          {/* 노트 라인 */}
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              backgroundImage: `repeating-linear-gradient(
+                to bottom,
+                transparent,
+                transparent ${lineHeight - 1}px,
+                ${
+                  isDark
+                    ? "rgba(255,255,255,0.25)"
+                    : "rgba(120,85,40,0.25)"
+                } ${lineHeight}px
+              )`,
+              pointerEvents: "none",
+              zIndex: 0,
+            }}
+          />
+
+          {/* CONTENT */}
+          <div style={{ position: "relative", zIndex: 1 }}>
             {(() => {
               const regex = /\[([A-Za-z_][A-Za-z0-9_]*)\]/g;
               const codeBlocks: string[] = [];
@@ -172,13 +201,7 @@ export default function PDFPage({ data }: any) {
               return parts.map((part: string, i: number) => {
                 const Component = visualizationRegistry[part];
 
-                if (Component) {
-                  return (
-                    <div key={i}>
-                      <Component />
-                    </div>
-                  );
-                }
+                if (Component) return <Component key={i} />;
 
                 return (
                   <ReactMarkdown key={i} {...markdownProps}>
@@ -187,7 +210,7 @@ export default function PDFPage({ data }: any) {
                 );
               });
             })()}
-          </NotepageLines>
+          </div>
         </div>
       </div>
     </motion.div>
