@@ -5,62 +5,80 @@ import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import StackedPostViewer from "@/app/components/papers/StackedPostViewer";
 
+const WINDOW_SIZE = 2; // prev2 + current + next2
+
 export default function PostPage() {
   const { id } = useParams() as { id: string };
 
-  const [current, setCurrent] = useState<any>(null);
-  const [prev, setPrev] = useState<any>(null);
-  const [next, setNext] = useState<any>(null);
+  const [allPosts, setAllPosts] = useState<any[]>([]);
+  const [index, setIndex] = useState(0);
+  const [cache, setCache] = useState<Record<string, any>>({});
 
+  // 1. 전체 id 리스트 (가벼운 메타만)
   useEffect(() => {
-    if (!id) return;
-
     const load = async () => {
-      // 현재 글
-      const { data: currentData } = await supabase
+      const { data } = await supabase
         .from("posts")
-        .select("*")
-        .eq("id", id)
-        .single();
+        .select("id, created_at")
+        .order("created_at", { ascending: true });
 
-      setCurrent(currentData);
-      if (!currentData) return;
+      if (!data) return;
 
-      // 이전 글
-      const { data: prevData } = await supabase
-        .from("posts")
-        .select("*")
-        .eq("category", currentData.category)
-        .lt("created_at", currentData.created_at)
-        .order("created_at", { ascending: false })
-        .limit(1);
+      setAllPosts(data);
 
-      if (prevData?.length) setPrev(prevData[0]);
-
-      // 다음 글
-      const { data: nextData } = await supabase
-        .from("posts")
-        .select("*")
-        .eq("category", currentData.category)
-        .gt("created_at", currentData.created_at)
-        .order("created_at", { ascending: true })
-        .limit(1);
-
-      if (nextData?.length) setNext(nextData[0]);
+      const idx = data.findIndex((p) => p.id === id);
+      setIndex(idx >= 0 ? idx : 0);
     };
 
     load();
   }, [id]);
 
-  if (!current) {
-    return <div style={{ padding: 40 }}>Loading...</div>;
-  }
+  // 2. window 계산
+  const windowPosts = allPosts.slice(
+    Math.max(0, index - WINDOW_SIZE),
+    index + WINDOW_SIZE + 1
+  );
+
+  // 3. 필요한 것만 fetch (cache)
+  useEffect(() => {
+    const loadVisible = async () => {
+      const ids = windowPosts.map((p) => p.id);
+      if (ids.length === 0) return;
+
+      const { data } = await supabase
+        .from("posts")
+        .select("*")
+        .in("id", ids);
+
+      if (!data) return;
+
+      setCache((prev) => {
+        const next = { ...prev };
+        data.forEach((post) => {
+          next[post.id] = post;
+        });
+        return next;
+      });
+    };
+
+    loadVisible();
+  }, [index, allPosts]);
+
+  // 4. 실제 렌더용 posts
+  const posts = windowPosts
+    .map((p) => cache[p.id])
+    .filter(Boolean);
+
+  if (!posts.length) return <div>Loading...</div>;
 
   return (
     <StackedPostViewer
-      current={current}
-      prev={prev}
-      next={next}
+      posts={posts}
+      index={Math.min(index - Math.max(0, index - WINDOW_SIZE), posts.length - 1)}
+      onChangeIndex={(i) => {
+        const realIndex = index - WINDOW_SIZE + i;
+        setIndex(realIndex);
+      }}
     />
   );
 }
