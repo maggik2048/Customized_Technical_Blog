@@ -24,11 +24,15 @@ export default function RemarkPageRenderer({
     letterSpacing: "0.02em",
   };
 
-  /*  화이트 럭셔리 박스 */
+  /*  오른쪽으로 fade 되는 럭셔리 박스 */
   const luxuryWhiteBox = {
-    background: "linear-gradient(145deg, #ffffff, #f6f3ee)",
+    position: "relative",
 
-    border: "1px solid rgba(212,168,79,0.35)",
+    /* 핵심: 오른쪽으로 투명해지는 배경 */
+    background:
+      "linear-gradient(90deg, rgba(255,255,255,0.98) 0%, rgba(246,243,238,0.92) 60%, rgba(246,243,238,0.35) 85%, rgba(246,243,238,0) 100%)",
+
+    border: "1px solid rgba(212,168,79,0.25)",
 
     boxShadow: `
       0 6px 20px rgba(0,0,0,0.08),
@@ -36,13 +40,16 @@ export default function RemarkPageRenderer({
     `,
 
     borderRadius: 14,
+
+    /* 오른쪽 fade 자연스럽게 */
+    WebkitMaskImage:
+      "linear-gradient(to right, black 70%, transparent 100%)",
+    maskImage:
+      "linear-gradient(to right, black 70%, transparent 100%)",
   };
 
   const markdownProps = {
-    remarkPlugins: [
-      remarkMath,
-      remarkGfm,
-    ],
+    remarkPlugins: [remarkMath, remarkGfm],
     rehypePlugins: [rehypeKatex, rehypeRaw],
 
     components: {
@@ -51,7 +58,6 @@ export default function RemarkPageRenderer({
 
       code: CodeBlock,
 
-      /*  문단 안정화 */
       p: ({ children }: any) => (
         <p
           style={{
@@ -67,21 +73,17 @@ export default function RemarkPageRenderer({
         </p>
       ),
 
-      /*  h2 → 박스 제거 + 골드 라인 */
       h2: ({ children }: any) => (
         <div
           style={{
             marginLeft: -64,
             width: "calc(100% + 64px)",
-
             marginTop: 28,
             marginBottom: 12,
-
             paddingLeft: 14,
             position: "relative",
           }}
         >
-          {/* 골드 라인 */}
           <div
             style={{
               position: "absolute",
@@ -106,17 +108,14 @@ export default function RemarkPageRenderer({
         </div>
       ),
 
-      /*  리스트 박스 (럭셔리 유지) */
+      /* UL - fade box */
       ul: ({ children }: any) => (
         <div
           style={{
             margin: "12px 0",
             marginLeft: 20,
-
             padding: "10px 16px",
-
             minWidth: "260px",
-
             ...luxuryWhiteBox,
           }}
         >
@@ -126,16 +125,14 @@ export default function RemarkPageRenderer({
         </div>
       ),
 
+      /* OL - same fade box */
       ol: ({ children }: any) => (
         <div
           style={{
             margin: "12px 0",
             marginLeft: 20,
-
             padding: "10px 16px",
-
             minWidth: "260px",
-
             ...luxuryWhiteBox,
           }}
         >
@@ -145,7 +142,6 @@ export default function RemarkPageRenderer({
         </div>
       ),
 
-      /*  리스트 아이템 */
       li: ({ children }: any) => (
         <li
           style={{
@@ -169,9 +165,5 @@ export default function RemarkPageRenderer({
     },
   };
 
-  return (
-    <ReactMarkdown {...markdownProps}>
-      {children}
-    </ReactMarkdown>
-  );
+  return <ReactMarkdown {...markdownProps}>{children}</ReactMarkdown>;
 }
