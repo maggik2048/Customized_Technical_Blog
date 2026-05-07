@@ -17,41 +17,50 @@ export default function RemarkPageRenderer({
 }: any) {
 
   /* =========================
-     🎨 HEADING SYSTEM (FULLY DECOUPLED)
+     🎨 HEADING SYSTEM (SUBTLE EMBOSS UPGRADE)
   ========================= */
 
-  // 🪨 H1 = engraved gold (메인 타이틀)
   const h1Style = {
-    background: "linear-gradient(135deg, #85857b, #c5b7b7, #676251)",
+    background: "linear-gradient(135deg, #9a9a8f, #e3d7d7, #6b665a)",
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
-    letterSpacing: "0.02em",
+
+    WebkitTextStroke: "0.4px rgba(0,0,0,0.18)",
+
+    letterSpacing: "0.03em",
     textShadow: `
-      0 1px 0 rgba(255,255,255,0.55),
+      0 1px 0 rgba(255,255,255,0.75),
       0 2px 3px rgba(0,0,0,0.18)
     `,
   };
 
-  // 🪙 H2 = luxury gold foil (섹션 타이틀)
   const h2Style = {
-    background: "linear-gradient(90deg, #f6d36b, #c6b083, #9e7c27)",
+    background: "linear-gradient(90deg, #ffe08a, #c9b27a, #a07d2a)",
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
-    letterSpacing: "0.02em",
+
+    WebkitTextStroke: "0.3px rgba(0,0,0,0.15)",
+
+    letterSpacing: "0.03em",
     textShadow: `
-      0 1px 0 rgba(255,255,255,0.55),
-      0 2px 6px rgba(0,0,0,0.18)
+      0 1px 0 rgba(255,255,255,0.7),
+      0 2px 4px rgba(0,0,0,0.15)
     `,
   };
 
-  // ✨ H3 = soft glow gold (서브 타이틀)
   const h3Style = {
-    background: "linear-gradient(135deg, #ffe9a3, #d2c199, #dfb96b)",
+    background: "linear-gradient(135deg, #fff0b3, #d8caa3, #e2b85e)",
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
+
+    WebkitTextStroke: "0.25px rgba(0,0,0,0.12)",
+
     letterSpacing: "0.03em",
-    filter: "brightness(1.25) saturate(1.3)",
-    textShadow: "0 0 8px rgba(212,168,79,0.25)",
+    filter: "brightness(1.15) saturate(1.15)",
+    textShadow: `
+      0 1px 0 rgba(255,255,255,0.65),
+      0 2px 5px rgba(0,0,0,0.12)
+    `,
   };
 
   /* =========================
@@ -61,21 +70,21 @@ export default function RemarkPageRenderer({
   const luxuryWhiteBox = {
     position: "relative",
     background:
-      "linear-gradient(90deg, rgba(255,255,255,0.98) 0%, rgba(246,243,238,0.92) 60%, rgba(246,243,238,0.35) 85%, rgba(246,243,238,0) 100%)",
-    border: "1px solid rgba(212,168,79,0.25)",
+      "linear-gradient(90deg, rgba(255,255,255,0.97) 0%, rgba(246,243,238,0.9) 70%, rgba(246,243,238,0.35) 100%)",
+    border: "1px solid rgba(212,168,79,0.2)",
     boxShadow: `
-      0 6px 20px rgba(0,0,0,0.08),
+      0 6px 18px rgba(0,0,0,0.07),
       inset 0 1px 0 rgba(255,255,255,0.8)
     `,
     borderRadius: 14,
     WebkitMaskImage:
-      "linear-gradient(to right, black 70%, transparent 100%)",
+      "linear-gradient(to right, black 75%, transparent 100%)",
     maskImage:
-      "linear-gradient(to right, black 70%, transparent 100%)",
+      "linear-gradient(to right, black 75%, transparent 100%)",
   };
 
   /* =========================
-     🧠 HEADING RENDERER (STRUCTURE ONLY)
+     🧠 HEADING RENDERER
   ========================= */
 
   const renderHeading = (level: number) => ({ children }: any) => {
@@ -103,10 +112,9 @@ export default function RemarkPageRenderer({
         style={{
           margin: marginMap[level],
           position: "relative",
-          paddingLeft: level >= 2 ? 14 : 0,
+          paddingLeft: level >= 2 ? 12 : 0,
         }}
       >
-        {/* H2/H3 accent line only */}
         {level >= 2 && (
           <div
             style={{
@@ -120,6 +128,7 @@ export default function RemarkPageRenderer({
                 level === 2
                   ? "linear-gradient(to bottom, #9e7c27, #f2be57)"
                   : "linear-gradient(to bottom, #ffe9a3, #f2c14e)",
+              opacity: 0.9,
             }}
           />
         )}
@@ -130,9 +139,8 @@ export default function RemarkPageRenderer({
             fontWeight: level === 1 ? 800 : 700,
             letterSpacing: level === 1 ? "0.03em" : "0.02em",
             textShadow: `
-              0 1px 0 rgba(255,255,255,0.65),
-              0 2px 0 rgba(0,0,0,0.18),
-              0 3px 6px rgba(0,0,0,0.10)
+              0 1px 0 rgba(255,255,255,0.7),
+              0 2px 2px rgba(0,0,0,0.12)
             `,
           }}
         >
@@ -157,7 +165,6 @@ export default function RemarkPageRenderer({
       ...(isDark ? sciFiMarkdownComponents : {}),
 
       code: CodeBlock,
-
       h1: renderHeading(1),
       h2: renderHeading(2),
       h3: renderHeading(3),
