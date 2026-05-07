@@ -24,10 +24,10 @@ export default function RemarkPageRenderer({
     background: "linear-gradient(135deg, #9a9a8f, #e3d7d7, #6b665a)",
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
-    WebkitTextStroke: "0.4px rgba(0,0,0,0.18)",
+    WebkitTextStroke: "0.9px rgba(0,0,0,0.18)",
     textShadow: `
-      0 3px 0 rgba(255,255,255,0.75),
-      0 1px 3px rgba(0,0,0,0.08)
+      0 3px 0 rgba(255,255,255,0.65),
+      0 1px 0px rgba(0,0,0,0.98)
     `,
   };
 
