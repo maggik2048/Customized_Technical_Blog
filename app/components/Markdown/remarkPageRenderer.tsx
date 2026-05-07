@@ -17,7 +17,7 @@ export default function RemarkPageRenderer({
 }: any) {
 
   /* =========================
-     🎨 HEADINGS
+     🎨 HEADINGS STYLE
   ========================= */
 
   const h1Style = {
@@ -37,8 +37,8 @@ export default function RemarkPageRenderer({
     WebkitTextFillColor: "transparent",
     WebkitTextStroke: "0.6px rgba(0,0,0,0.15)",
     textShadow: `
-      0 2px 0 rgba(255,255,255,0.9),
-      0 2px 7px rgba(0,0,0,0.15)
+      0 1px 0 rgba(255,255,255,0.9),
+      0 1px 7px rgba(0,0,0,0.15)
     `,
   };
 
@@ -75,7 +75,7 @@ export default function RemarkPageRenderer({
   };
 
   /* =========================
-     🌑 FIXED AIRBRUSH DARK BOX
+     🌑 FINAL AIRBRUSH BOX (NO ARTIFACTS)
   ========================= */
 
   const headingDarkFadeBox = {
@@ -89,43 +89,51 @@ export default function RemarkPageRenderer({
     height: "84%",
     borderRadius: 1,
 
-    /* 핵심: 빠르게 사라지는 gradient */
+    /* 🎯 clean fast fade */
     background: `
       linear-gradient(
         90deg,
-        rgba(0,0,0,0.30) 0%,
-        rgba(0,0,0,0.18) 20%,
-        rgba(0,0,0,0.08) 45%,
-        rgba(0,0,0,0.02) 65%,
-        rgba(0,0,0,0) 82%
+        rgba(0,0,0,0.10) 0%,
+        rgba(0,0,0,0.15) 18%,
+        rgba(0,0,0,0.06) 40%,
+        rgba(0,0,0,0.01) 60%,
+        rgba(0,0,0,0) 80%
       )
     `,
 
-    /* shadow는 최소화 + 내부 중심 */
+    /*  ONLY inner shadow (no outer spill) */
     boxShadow: `
-      inset 0 0 35px rgba(0,0,0,0.10),
-      0 8px 20px rgba(0,0,0,0.08)
+      inset 0 0 25px rgba(0,0,0,0.10)
     `,
 
-    /* 핵심: 빠른 cutoff mask */
+    /*  HARD CUT MASK (key fix) */
     WebkitMaskImage: `
       linear-gradient(
         90deg,
         rgba(0,0,0,1) 0%,
-        rgba(0,0,0,0.85) 25%,
-        rgba(0,0,0,0.25) 60%,
-        rgba(0,0,0,0) 82%
+        rgba(0,0,0,0.9) 20%,
+        rgba(0,0,0,0.35) 50%,
+        rgba(0,0,0,0.05) 70%,
+        rgba(0,0,0,0) 80%
       )
     `,
     maskImage: `
       linear-gradient(
         90deg,
         rgba(0,0,0,1) 0%,
-        rgba(0,0,0,0.85) 25%,
-        rgba(0,0,0,0.25) 60%,
-        rgba(0,0,0,0) 82%
+        rgba(0,0,0,0.9) 20%,
+        rgba(0,0,0,0.35) 50%,
+        rgba(0,0,0,0.05) 70%,
+        rgba(0,0,0,0) 80%
       )
     `,
+
+    /*  remove blur artifacts completely */
+    filter: "none",
+
+    /* GPU stability */
+    willChange: "transform, opacity",
+    transform: "translateZ(0) translateY(-50%)",
 
     pointerEvents: "none",
   };
@@ -159,9 +167,8 @@ export default function RemarkPageRenderer({
               style={{
                 position: "absolute",
                 inset: 0,
-                background: "rgba(0,0,0,0.10)",
-                filter: "blur(10px)",
-                opacity: 0.4,
+                background: "rgba(0,0,0,0.08)",
+                opacity: 0.35,
                 borderRadius: 20,
                 pointerEvents: "none",
               }}
