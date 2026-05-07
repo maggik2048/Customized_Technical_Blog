@@ -55,27 +55,45 @@ export default function RemarkPageRenderer({
   };
 
   /* =========================
-     📦 LIST BOX
+     📦 LUXURY BOX (RESTORED FADE)
   ========================= */
 
   const luxuryWhiteBox = {
     position: "relative" as const,
     background:
       "linear-gradient(90deg, rgba(255,255,255,0.97) 0%, rgba(246,243,238,0.9) 70%, rgba(246,243,238,0.35) 100%)",
+
     border: "1px solid rgba(212,168,79,0.2)",
+
     boxShadow: `
       0 6px 18px rgba(0,0,0,0.07),
       inset 0 1px 0 rgba(255,255,255,0.8)
     `,
+
     borderRadius: 14,
+
+    /* 🔥 핵심: 오른쪽 fade out 유지 */
     WebkitMaskImage:
-      "linear-gradient(to right, black 55%, transparent 100%)",
+      "linear-gradient(to right, black 55%, rgba(0,0,0,0.85) 70%, transparent 100%)",
     maskImage:
-      "linear-gradient(to right, black 55%, transparent 100%)",
+      "linear-gradient(to right, black 55%, rgba(0,0,0,0.85) 70%, transparent 100%)",
   };
 
   /* =========================
-     🌑 FINAL AIRBRUSH BOX
+     ✦ CLAUDE-STYLE MARKER
+  ========================= */
+
+  const starMarker = {
+    color: "#a8842a",
+    marginRight: 10,
+    fontSize: 13,
+    display: "inline-block",
+    transform: "translateY(1px)",
+    textShadow: "0 1px 2px rgba(0,0,0,0.25)",
+  };
+
+  /* =========================
+     🧠 HEADINGS FADE LAYER
   ========================= */
 
   const headingDarkFadeBox = {
@@ -86,6 +104,7 @@ export default function RemarkPageRenderer({
     width: "32%",
     height: "84%",
     borderRadius: 1,
+
     background: `
       linear-gradient(
         90deg,
@@ -96,9 +115,9 @@ export default function RemarkPageRenderer({
         rgba(0,0,0,0) 80%
       )
     `,
-    boxShadow: `
-      inset 0 0 25px rgba(0,0,0,0.10)
-    `,
+
+    boxShadow: `inset 0 0 25px rgba(0,0,0,0.10)`,
+
     WebkitMaskImage: `
       linear-gradient(
         90deg,
@@ -119,15 +138,9 @@ export default function RemarkPageRenderer({
         rgba(0,0,0,0) 80%
       )
     `,
-    filter: "none",
-    willChange: "transform, opacity",
-    transform: "translateZ(0) translateY(-50%)",
-    pointerEvents: "none",
-  };
 
-  /* =========================
-     🧠 HEADING RENDER
-  ========================= */
+    pointerEvents: "none" as const,
+  };
 
   const renderHeading = (level: number) => ({ children }: any) => {
     const sizeMap: any = { 1: 30, 2: 22, 3: 18 };
@@ -139,52 +152,20 @@ export default function RemarkPageRenderer({
     const styleMap: any = { 1: h1Style, 2: h2Style, 3: h3Style };
 
     return (
-      <div style={{ margin: marginMap[level], position: "relative", paddingLeft: level >= 2 ? 12 : 0 }}>
-        {level !== 1 && (
-          <>
-            <div style={headingDarkFadeBox} />
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                background: "rgba(0,0,0,0.08)",
-                opacity: 0.35,
-                borderRadius: 20,
-                pointerEvents: "none",
-              }}
-            />
-          </>
-        )}
+      <div style={{ margin: marginMap[level], position: "relative" }}>
+        {level !== 1 && <div style={headingDarkFadeBox} />}
 
-        {level >= 2 && (
-          <div
+        <div style={{ position: "relative", zIndex: 2, padding: "6px 14px" }}>
+          <span
             style={{
-              position: "absolute",
-              left: 0,
-              top: 0,
-              bottom: 0,
-              width: 2,
-              borderRadius: 2,
-              background:
-                level === 2
-                  ? "linear-gradient(to bottom, #9e7c27, #ffe7b6)"
-                  : "linear-gradient(to bottom, #ffe9a3, #f2c14e)",
+              ...styleMap[level],
+              fontSize: sizeMap[level],
+              fontWeight: level === 1 ? 800 : 700,
+              display: "inline-block",
             }}
-          />
-        )}
-
-        <div
-          style={{
-            position: "relative",
-            zIndex: 2,
-            fontSize: sizeMap[level],
-            fontWeight: level === 1 ? 800 : 700,
-            letterSpacing: level === 1 ? "0.03em" : "0.02em",
-            padding: "6px 14px",
-            display: "inline-block",
-          }}
-        >
-          <span style={styleMap[level]}>{children}</span>
+          >
+            {children}
+          </span>
         </div>
       </div>
     );
@@ -213,31 +194,36 @@ export default function RemarkPageRenderer({
         </p>
       ),
 
-      ul: ({ children }: any) => (
-        <div
+      /* =========================
+         ✦ LIST ITEMS (SAFE OVERRIDE)
+      ========================= */
+
+      li: ({ children }: any) => (
+        <li
           style={{
-            margin: "12px 0",
-            marginLeft: 20,
-            padding: "10px 16px",
-            ...luxuryWhiteBox,
-            textShadow: "0 1px 2px rgba(0,0,0,0.18)",
+            display: "flex",
+            alignItems: "flex-start",
+            margin: "6px 0",
           }}
         >
-          <ul style={{ margin: 0, paddingLeft: 18 }}>{children}</ul>
+          <span style={starMarker}>✦</span>
+          <span>{children}</span>
+        </li>
+      ),
+
+      ul: ({ children }: any) => (
+        <div style={{ ...luxuryWhiteBox, margin: "12px 0", marginLeft: 20, padding: "10px 16px" }}>
+          <ul style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
+            {children}
+          </ul>
         </div>
       ),
 
       ol: ({ children }: any) => (
-        <div
-          style={{
-            margin: "12px 0",
-            marginLeft: 20,
-            padding: "10px 16px",
-            ...luxuryWhiteBox,
-            textShadow: "0 1px 2px rgba(0,0,0,0.18)",
-          }}
-        >
-          <ol style={{ margin: 0, paddingLeft: 18 }}>{children}</ol>
+        <div style={{ ...luxuryWhiteBox, margin: "12px 0", marginLeft: 20, padding: "10px 16px" }}>
+          <ol style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
+            {children}
+          </ol>
         </div>
       ),
     },
