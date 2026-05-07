@@ -75,21 +75,17 @@ export default function RemarkPageRenderer({
   };
 
   /* =========================
-     🌑 FINAL AIRBRUSH BOX (NO ARTIFACTS)
+     🌑 FINAL AIRBRUSH BOX
   ========================= */
 
   const headingDarkFadeBox = {
     position: "absolute" as const,
-
     top: "50%",
     left: 0,
     transform: "translateY(-50%)",
-
     width: "32%",
     height: "84%",
     borderRadius: 1,
-
-    /* 🎯 clean fast fade */
     background: `
       linear-gradient(
         90deg,
@@ -100,13 +96,9 @@ export default function RemarkPageRenderer({
         rgba(0,0,0,0) 80%
       )
     `,
-
-    /*  ONLY inner shadow (no outer spill) */
     boxShadow: `
       inset 0 0 25px rgba(0,0,0,0.10)
     `,
-
-    /*  HARD CUT MASK (key fix) */
     WebkitMaskImage: `
       linear-gradient(
         90deg,
@@ -127,14 +119,9 @@ export default function RemarkPageRenderer({
         rgba(0,0,0,0) 80%
       )
     `,
-
-    /*  remove blur artifacts completely */
     filter: "none",
-
-    /* GPU stability */
     willChange: "transform, opacity",
     transform: "translateZ(0) translateY(-50%)",
-
     pointerEvents: "none",
   };
 
@@ -152,17 +139,10 @@ export default function RemarkPageRenderer({
     const styleMap: any = { 1: h1Style, 2: h2Style, 3: h3Style };
 
     return (
-      <div
-        style={{
-          margin: marginMap[level],
-          position: "relative",
-          paddingLeft: level >= 2 ? 12 : 0,
-        }}
-      >
+      <div style={{ margin: marginMap[level], position: "relative", paddingLeft: level >= 2 ? 12 : 0 }}>
         {level !== 1 && (
           <>
             <div style={headingDarkFadeBox} />
-
             <div
               style={{
                 position: "absolute",
@@ -234,13 +214,29 @@ export default function RemarkPageRenderer({
       ),
 
       ul: ({ children }: any) => (
-        <div style={{ margin: "12px 0", marginLeft: 20, padding: "10px 16px", ...luxuryWhiteBox }}>
+        <div
+          style={{
+            margin: "12px 0",
+            marginLeft: 20,
+            padding: "10px 16px",
+            ...luxuryWhiteBox,
+            textShadow: "0 1px 2px rgba(0,0,0,0.18)",
+          }}
+        >
           <ul style={{ margin: 0, paddingLeft: 18 }}>{children}</ul>
         </div>
       ),
 
       ol: ({ children }: any) => (
-        <div style={{ margin: "12px 0", marginLeft: 20, padding: "10px 16px", ...luxuryWhiteBox }}>
+        <div
+          style={{
+            margin: "12px 0",
+            marginLeft: 20,
+            padding: "10px 16px",
+            ...luxuryWhiteBox,
+            textShadow: "0 1px 2px rgba(0,0,0,0.18)",
+          }}
+        >
           <ol style={{ margin: 0, paddingLeft: 18 }}>{children}</ol>
         </div>
       ),
