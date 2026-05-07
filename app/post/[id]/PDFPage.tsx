@@ -1,7 +1,6 @@
 "use client";
 
 import React from "react";
-import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import remarkGfm from "remark-gfm";
 import rehypeKatex from "rehype-katex";
@@ -9,8 +8,6 @@ import rehypeRaw from "rehype-raw";
 import "katex/dist/katex.min.css";
 
 import { motion } from "framer-motion";
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 import PostAdminActions from "@/app/admin/PostAdminActions";
 import { markdownComponents } from "@/lib/markdownComponents";
@@ -20,51 +17,11 @@ import { getHeaderImage } from "@/lib/getHeaderImage";
 import { visualizationRegistry } from "@/lib/visualizationRegistry";
 import { remarkCarattere } from "@/lib/remarkCarattere";
 
-/* 🔥 추가 */
 import NotepageLines from "@/app/components/markdown/NotepageLines";
-
-/* 🔥 추가 (핵심) */
 import RemarkPageRenderer from "@/app/components/Markdown/remarkPageRenderer";
 
-/* ---------------- CodeBlock ---------------- */
-
-function CodeBlock({ inline, className, children }: any) {
-  const text = String(children);
-  const match = /language-(\w+)/.exec(className || "");
-
-  if (inline || (text.length < 80 && !text.includes("\n"))) {
-    return (
-      <code
-        style={{
-          background: "#222",
-          color: "#eee",
-          padding: "1px 4px",
-          borderRadius: 4,
-        }}
-      >
-        {children}
-      </code>
-    );
-  }
-
-  return (
-    <motion.div
-      animate={{ backgroundColor: "#121212" }}
-      transition={{ duration: 0.3 }}
-      style={{ borderRadius: 6, overflowX: "auto" }}
-    >
-      <SyntaxHighlighter
-        style={oneDark}
-        language={match?.[1] || "text"}
-        PreTag="div"
-      >
-        {text.replace(/\n$/, "")}
-      </SyntaxHighlighter>
-    </motion.div>
-  );
-}
-
-/* ---------------- PDF PAGE ---------------- */
+/* ✅ 새 코드블럭 */
+import CodeBlockWithCopy from "@/app/components/Markdown/CodeBlockWithCopy";
 
 export default function PDFPage({ data }: any) {
   const { mode } = useDarkMode();
@@ -85,7 +42,6 @@ export default function PDFPage({ data }: any) {
       : "rgba(255,255,255,0.7)",
 
     backdropFilter: "blur(6px)",
-
     paddingLeft: 64,
     paddingRight: 64,
     borderRadius: 12,
@@ -95,18 +51,15 @@ export default function PDFPage({ data }: any) {
       : "0 8px 30px rgba(0,0,0,0.15)",
   };
 
-  /* 🔥 그대로 두되 plugin만 추가 */
   const markdownProps = {
-    remarkPlugins: [
-      remarkMath,
-      remarkGfm,
-      remarkCarattere,
-    ],
+    remarkPlugins: [remarkMath, remarkGfm, remarkCarattere],
     rehypePlugins: [rehypeKatex, rehypeRaw],
     components: {
       ...markdownComponents,
       ...(isDark ? sciFiMarkdownComponents : {}),
-      code: CodeBlock,
+
+      /*  핵심 교체 */
+      code: CodeBlockWithCopy,
     },
   };
 
@@ -114,37 +67,18 @@ export default function PDFPage({ data }: any) {
     <motion.div style={{ color: textColor }}>
       <div style={pageStyle}>
         {/* HEADER */}
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            width: "100%",
-            height: 260,
-          }}
-        >
-          <img
-            src={headerImage}
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          />
+        <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: 460 }}>
+          <img src={headerImage} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
 
           <div
             style={{
               position: "absolute",
               inset: 0,
-              background:
-                "linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.4))",
+              background: "linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.4))",
             }}
           />
 
-          <div
-            style={{
-              position: "absolute",
-              bottom: 20,
-              left: 40,
-              color: "#fff",
-            }}
-          >
+          <div style={{ position: "absolute", bottom: 20, left: 40, color: "#fff" }}>
             <h1 style={{ fontSize: 36, margin: 0 }}>{data.title}</h1>
           </div>
 
@@ -154,7 +88,7 @@ export default function PDFPage({ data }: any) {
         </div>
 
         {/* CONTENT */}
-        <div style={{ paddingTop: 260 }}>
+        <div style={{ paddingTop: 460 }}>
           <NotepageLines>
             {(() => {
               const regex = /\[([A-Za-z_][A-Za-z0-9_]*)\]/g;
@@ -187,14 +121,13 @@ export default function PDFPage({ data }: any) {
                   );
                 }
 
-                /* 🔥 여기만 교체 */
                 return (
                   <RemarkPageRenderer
                     key={i}
                     markdownComponents={markdownComponents}
                     sciFiMarkdownComponents={sciFiMarkdownComponents}
                     isDark={isDark}
-                    CodeBlock={CodeBlock}
+                    CodeBlock={CodeBlockWithCopy}
                   >
                     {restore(part)}
                   </RemarkPageRenderer>
