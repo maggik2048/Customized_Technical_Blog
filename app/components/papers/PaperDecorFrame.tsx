@@ -41,7 +41,7 @@ export default function PaperDecorFrame({
         background: "rgba(255,255,255,0.005)",
 
         /* 메인 프레임 */
-        border: "2px solid rgba(255,252,246,0.92)",
+        border: "2.5px solid rgba(255,252,246,0.92)",
 
         /* blur/glow 제거 */
         boxShadow: `
@@ -61,9 +61,9 @@ export default function PaperDecorFrame({
         style={{
           position: "absolute",
 
-          inset: 6,
+          inset: 3,
 
-          border: "1.5px solid rgba(255,252,245,0.60)",
+          border: "15px solid rgba(255,252,245,0.60)",
 
           borderRadius: 14,
 
