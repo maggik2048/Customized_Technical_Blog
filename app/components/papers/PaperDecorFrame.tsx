@@ -15,6 +15,7 @@ export default function PaperDecorFrame({
       <div
         style={{
           borderRadius: 14,
+
           overflow: "hidden",
 
           border: "1px solid rgba(255,255,255,0.08)",
@@ -43,7 +44,6 @@ export default function PaperDecorFrame({
         /* 메인 프레임 */
         border: "2.5px solid rgba(255,252,246,0.92)",
 
-        /* blur/glow 제거 */
         boxShadow: `
           0 0 0 1px rgba(255,252,245,0.30),
           0 10px 40px rgba(0,0,0,0.16)
@@ -52,30 +52,68 @@ export default function PaperDecorFrame({
         overflow: "hidden",
 
         willChange: "transform",
+
         backfaceVisibility: "hidden",
+
         transformStyle: "preserve-3d",
       }}
     >
-      {/* 내부 라인 */}
+      {/* layered thin deco lines */}
       <div
         style={{
           position: "absolute",
 
           inset: 3,
 
-          border: "15px solid rgba(255,252,245,0.60)",
-
-          borderRadius: 14,
+          borderRadius: 15,
 
           pointerEvents: "none",
         }}
-      />
+      >
+        {[
+          {
+            inset: 0,
+            opacity: 0.95,
+          },
+
+          {
+            inset: 4,
+            opacity: 0.72,
+          },
+
+          {
+            inset: 8,
+            opacity: 0.58,
+          },
+
+          {
+            inset: 12,
+            opacity: 0.42,
+          },
+        ].map((line, i) => (
+          <div
+            key={i}
+            style={{
+              position: "absolute",
+
+              inset: line.inset,
+
+              border: `1.8px solid rgba(255,255,248,${line.opacity})`,
+
+              borderRadius: 15 - line.inset / 2,
+            }}
+          />
+        ))}
+      </div>
 
       {/* 아르데코 코너 장식 */}
       {[
         { top: 10, left: 10, rotate: "0deg" },
+
         { top: 10, right: 10, rotate: "90deg" },
+
         { bottom: 10, right: 10, rotate: "180deg" },
+
         { bottom: 10, left: 10, rotate: "270deg" },
       ].map((pos, i) => (
         <div
@@ -84,12 +122,24 @@ export default function PaperDecorFrame({
             position: "absolute",
 
             width: 70,
+
             height: 70,
 
-            ...(pos.top !== undefined ? { top: pos.top } : {}),
-            ...(pos.bottom !== undefined ? { bottom: pos.bottom } : {}),
-            ...(pos.left !== undefined ? { left: pos.left } : {}),
-            ...(pos.right !== undefined ? { right: pos.right } : {}),
+            ...(pos.top !== undefined
+              ? { top: pos.top }
+              : {}),
+
+            ...(pos.bottom !== undefined
+              ? { bottom: pos.bottom }
+              : {}),
+
+            ...(pos.left !== undefined
+              ? { left: pos.left }
+              : {}),
+
+            ...(pos.right !== undefined
+              ? { right: pos.right }
+              : {}),
 
             transform: `rotate(${pos.rotate})`,
 
@@ -156,7 +206,7 @@ export default function PaperDecorFrame({
         </div>
       ))}
 
-      {/* subtle sheen only */}
+      {/* subtle sheen */}
       <div
         style={{
           position: "absolute",
@@ -183,6 +233,7 @@ export default function PaperDecorFrame({
       <div
         style={{
           position: "relative",
+
           zIndex: 2,
         }}
       >
