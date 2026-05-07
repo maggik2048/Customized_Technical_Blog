@@ -18,8 +18,8 @@ export default function Sidebar({ menu }: { menu?: Item[] }) {
         overflowY: "auto",
         fontFamily: "sans-serif",
 
-        backgroundImage: "url('/images/lee-su-yeon-header-sungchoi2.jpg')",
-        backgroundSize: "cover",
+        backgroundImage: "url('/images/sidebarRough.png')",
+        backgroundSize: "contain",
         backgroundPosition: "center",
       }}
     >

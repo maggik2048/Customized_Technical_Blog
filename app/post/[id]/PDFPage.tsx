@@ -20,8 +20,11 @@ import { remarkCarattere } from "@/lib/remarkCarattere";
 import NotepageLines from "@/app/components/markdown/NotepageLines";
 import RemarkPageRenderer from "@/app/components/Markdown/remarkPageRenderer";
 
-/* ✅ 새 코드블럭 */
+/* 새 코드블럭 */
 import CodeBlockWithCopy from "@/app/components/Markdown/CodeBlockWithCopy";
+
+/* 새 프레임 */
+import PaperDecorFrame from "@/app/components/papers/PaperDecorFrame";
 
 export default function PDFPage({ data }: any) {
   const { mode } = useDarkMode();
@@ -58,85 +61,118 @@ export default function PDFPage({ data }: any) {
       ...markdownComponents,
       ...(isDark ? sciFiMarkdownComponents : {}),
 
-      /*  핵심 교체 */
+      /* 핵심 교체 */
       code: CodeBlockWithCopy,
     },
   };
 
   return (
     <motion.div style={{ color: textColor }}>
-      <div style={pageStyle}>
-        {/* HEADER */}
-        <div style={{ position: "absolute", top: 0, left: 0, width: "100%", height: 460 }}>
-          <img src={headerImage} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-
+      <PaperDecorFrame>
+        <div style={pageStyle}>
+          {/* HEADER */}
           <div
             style={{
               position: "absolute",
-              inset: 0,
-              background: "linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.4))",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: 460,
             }}
-          />
+          >
+            <img
+              src={headerImage}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+              }}
+            />
 
-          <div style={{ position: "absolute", bottom: 20, left: 40, color: "#fff" }}>
-            <h1 style={{ fontSize: 36, margin: 0 }}>{data.title}</h1>
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background:
+                  "linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.4))",
+              }}
+            />
+
+            <div
+              style={{
+                position: "absolute",
+                bottom: 20,
+                left: 40,
+                color: "#fff",
+              }}
+            >
+              <h1 style={{ fontSize: 36, margin: 0 }}>
+                {data.title}
+              </h1>
+            </div>
+
+            <div
+              style={{
+                position: "absolute",
+                top: 10,
+                right: 40,
+              }}
+            >
+              <PostAdminActions postId={data.id} />
+            </div>
           </div>
 
-          <div style={{ position: "absolute", top: 10, right: 40 }}>
-            <PostAdminActions postId={data.id} />
-          </div>
-        </div>
+          {/* CONTENT */}
+          <div style={{ paddingTop: 460 }}>
+            <NotepageLines>
+              {(() => {
+                const regex = /\[([A-Za-z_][A-Za-z0-9_]*)\]/g;
+                const codeBlocks: string[] = [];
 
-        {/* CONTENT */}
-        <div style={{ paddingTop: 460 }}>
-          <NotepageLines>
-            {(() => {
-              const regex = /\[([A-Za-z_][A-Za-z0-9_]*)\]/g;
-              const codeBlocks: string[] = [];
-
-              const protectedContent = data.content.replace(
-                /```[\s\S]*?```/g,
-                (match: string) => {
-                  codeBlocks.push(match);
-                  return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
-                }
-              );
-
-              const parts = protectedContent.split(regex);
-
-              const restore = (text: string) =>
-                text.replace(
-                  /__CODE_BLOCK_(\d+)__/g,
-                  (_, i) => codeBlocks[Number(i)]
+                const protectedContent = data.content.replace(
+                  /```[\s\S]*?```/g,
+                  (match: string) => {
+                    codeBlocks.push(match);
+                    return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
+                  }
                 );
 
-              return parts.map((part: string, i: number) => {
-                const Component = visualizationRegistry[part];
+                const parts = protectedContent.split(regex);
 
-                if (Component) {
-                  return (
-                    <div key={i}>
-                      <Component />
-                    </div>
+                const restore = (text: string) =>
+                  text.replace(
+                    /__CODE_BLOCK_(\d+)__/g,
+                    (_, i) => codeBlocks[Number(i)]
                   );
-                }
 
-                return (
-                  <RemarkPageRenderer
-                    key={i}
-                    markdownComponents={markdownComponents}
-                    sciFiMarkdownComponents={sciFiMarkdownComponents}
-                    isDark={isDark}
-                    CodeBlock={CodeBlockWithCopy}
-                  >
-                    {restore(part)}
-                  </RemarkPageRenderer>
-                );
-              });
-            })()}
-          </NotepageLines>
+                return parts.map((part: string, i: number) => {
+                  const Component = visualizationRegistry[part];
+
+                  if (Component) {
+                    return (
+                      <div key={i}>
+                        <Component />
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <RemarkPageRenderer
+                      key={i}
+                      markdownComponents={markdownComponents}
+                      sciFiMarkdownComponents={sciFiMarkdownComponents}
+                      isDark={isDark}
+                      CodeBlock={CodeBlockWithCopy}
+                    >
+                      {restore(part)}
+                    </RemarkPageRenderer>
+                  );
+                });
+              })()}
+            </NotepageLines>
+          </div>
         </div>
-      </div>
+      </PaperDecorFrame>
     </motion.div>
   );
 }
