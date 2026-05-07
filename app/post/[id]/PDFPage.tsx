@@ -23,10 +23,19 @@ import RemarkPageRenderer from "@/app/components/Markdown/remarkPageRenderer";
 /* 새 코드블럭 */
 import CodeBlockWithCopy from "@/app/components/Markdown/CodeBlockWithCopy";
 
-/* 새 프레임 */
+/* 프레임 */
 import PaperDecorFrame from "@/app/components/papers/PaperDecorFrame";
 
-export default function PDFPage({ data }: any) {
+type Props = {
+  data: any;
+  isActive?: boolean;
+  isStandalone?: boolean;
+};
+
+export default function PDFPage({
+  data,
+  isActive = true,
+}: Props) {
   const { mode } = useDarkMode();
   const isDark = mode === "dark";
 
@@ -35,9 +44,13 @@ export default function PDFPage({ data }: any) {
 
   const pageStyle: React.CSSProperties = {
     width: 860,
+
     margin: "40px auto",
+
     position: "relative",
+
     transform: "scale(1)",
+
     transformOrigin: "top left",
 
     background: isDark
@@ -45,8 +58,10 @@ export default function PDFPage({ data }: any) {
       : "rgba(255,255,255,0.7)",
 
     backdropFilter: "blur(6px)",
+
     paddingLeft: 64,
     paddingRight: 64,
+
     borderRadius: 12,
 
     boxShadow: isDark
@@ -56,19 +71,32 @@ export default function PDFPage({ data }: any) {
 
   const markdownProps = {
     remarkPlugins: [remarkMath, remarkGfm, remarkCarattere],
+
     rehypePlugins: [rehypeKatex, rehypeRaw],
+
     components: {
       ...markdownComponents,
+
       ...(isDark ? sciFiMarkdownComponents : {}),
 
-      /* 핵심 교체 */
       code: CodeBlockWithCopy,
     },
   };
 
   return (
-    <motion.div style={{ color: textColor }}>
-      <PaperDecorFrame>
+    <motion.div
+      style={{
+        color: textColor,
+
+        willChange: "transform, opacity",
+
+        transformStyle: "preserve-3d",
+
+        backfaceVisibility: "hidden",
+      }}
+    >
+      {/* 현재 페이지일때만 full decor */}
+      <PaperDecorFrame enabled={isActive}>
         <div style={pageStyle}>
           {/* HEADER */}
           <div
@@ -93,6 +121,7 @@ export default function PDFPage({ data }: any) {
               style={{
                 position: "absolute",
                 inset: 0,
+
                 background:
                   "linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.4))",
               }}
@@ -106,7 +135,12 @@ export default function PDFPage({ data }: any) {
                 color: "#fff",
               }}
             >
-              <h1 style={{ fontSize: 36, margin: 0 }}>
+              <h1
+                style={{
+                  fontSize: 36,
+                  margin: 0,
+                }}
+              >
                 {data.title}
               </h1>
             </div>
@@ -127,12 +161,14 @@ export default function PDFPage({ data }: any) {
             <NotepageLines>
               {(() => {
                 const regex = /\[([A-Za-z_][A-Za-z0-9_]*)\]/g;
+
                 const codeBlocks: string[] = [];
 
                 const protectedContent = data.content.replace(
                   /```[\s\S]*?```/g,
                   (match: string) => {
                     codeBlocks.push(match);
+
                     return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
                   }
                 );

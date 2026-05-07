@@ -27,7 +27,6 @@ export default function StackedPostViewer({
 
         transform: `translateX(${STACK_OFFSET}px)`,
 
-        /* GPU compositing 안정화 */
         willChange: "transform",
         transformStyle: "preserve-3d",
         backfaceVisibility: "hidden",
@@ -92,8 +91,6 @@ export default function StackedPostViewer({
             animate={style}
             transition={{
               type: "spring",
-
-              /* glow/glitch 안정화 */
               stiffness: 70,
               damping: 26,
               mass: 0.9,
@@ -105,7 +102,6 @@ export default function StackedPostViewer({
 
               cursor: isCurrent ? "default" : "pointer",
 
-              /* 핵심 */
               willChange: "transform, opacity",
 
               transformStyle: "preserve-3d",
@@ -120,7 +116,11 @@ export default function StackedPostViewer({
             }}
             onClick={() => onChangeIndex(i)}
           >
-            <PDFPage data={post} isStandalone={false} />
+            <PDFPage
+              data={post}
+              isStandalone={false}
+              isActive={isCurrent}
+            />
           </motion.div>
         );
       })}

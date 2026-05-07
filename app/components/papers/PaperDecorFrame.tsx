@@ -4,26 +4,45 @@ import React from "react";
 
 export default function PaperDecorFrame({
   children,
+  enabled = true,
 }: {
   children: React.ReactNode;
+  enabled?: boolean;
 }) {
+  /* 비활성 페이지는 lightweight */
+  if (!enabled) {
+    return (
+      <div
+        style={{
+          borderRadius: 14,
+          overflow: "hidden",
+
+          border: "1px solid rgba(255,255,255,0.08)",
+
+          boxShadow: `
+            0 4px 20px rgba(0,0,0,0.10)
+          `,
+        }}
+      >
+        {children}
+      </div>
+    );
+  }
+
+  /* 현재 페이지만 full glow */
   return (
     <div
       style={{
         position: "relative",
 
-        /* 페이지에 밀착 */
         padding: 12,
 
         borderRadius: 18,
 
-        /* 내부는 거의 안 보이게 */
         background: "rgba(255,255,255,0.006)",
 
-        /* 메인 프레임 */
         border: "2px solid rgba(255,250,242,0.96)",
 
-        /* bloom/glow 강화 */
         boxShadow: `
           0 0 0 1px rgba(255,252,245,0.62),
 
@@ -32,8 +51,6 @@ export default function PaperDecorFrame({
           0 0 40px rgba(255,250,240,0.14),
 
           0 0 85px rgba(255,248,235,0.09),
-
-          0 0 140px rgba(255,255,255,0.04),
 
           0 10px 40px rgba(0,0,0,0.18)
         `,
@@ -57,7 +74,7 @@ export default function PaperDecorFrame({
         }}
       />
 
-      {/* bloom layer */}
+      {/* bloom */}
       <div
         style={{
           position: "absolute",
@@ -73,13 +90,13 @@ export default function PaperDecorFrame({
             )
           `,
 
-          filter: "blur(24px)",
+          filter: "blur(10px)",
 
           pointerEvents: "none",
         }}
       />
 
-      {/* 내부 이중 라인 */}
+      {/* 내부 라인 */}
       <div
         style={{
           position: "absolute",
@@ -88,36 +105,16 @@ export default function PaperDecorFrame({
           border: "1.5px solid rgba(255,252,245,0.82)",
           borderRadius: 14,
 
-          boxShadow: `
-            0 0 10px rgba(255,252,245,0.08)
-          `,
-
           pointerEvents: "none",
         }}
       />
 
-      {/* 아르데코 코너 장식 */}
+      {/* 코너 장식 */}
       {[
-        {
-          top: 10,
-          left: 10,
-          rotate: "0deg",
-        },
-        {
-          top: 10,
-          right: 10,
-          rotate: "90deg",
-        },
-        {
-          bottom: 10,
-          right: 10,
-          rotate: "180deg",
-        },
-        {
-          bottom: 10,
-          left: 10,
-          rotate: "270deg",
-        },
+        { top: 10, left: 10, rotate: "0deg" },
+        { top: 10, right: 10, rotate: "90deg" },
+        { bottom: 10, right: 10, rotate: "180deg" },
+        { bottom: 10, left: 10, rotate: "270deg" },
       ].map((pos, i) => (
         <div
           key={i}
@@ -138,8 +135,7 @@ export default function PaperDecorFrame({
 
             filter: `
               drop-shadow(0 0 6px rgba(255,255,255,0.42))
-              drop-shadow(0 0 20px rgba(255,252,245,0.28))
-              drop-shadow(0 0 40px rgba(255,248,235,0.14))
+              drop-shadow(0 0 20px rgba(255,252,245,0.22))
             `,
           }}
         >
@@ -149,21 +145,18 @@ export default function PaperDecorFrame({
             viewBox="0 0 70 70"
             fill="none"
           >
-            {/* 메인 라인 */}
             <path
               d="M2 35 L2 2 L35 2"
               stroke="rgba(255,253,248,0.99)"
               strokeWidth="3"
             />
 
-            {/* 내부 라인 */}
             <path
               d="M10 35 L10 10 L35 10"
               stroke="rgba(255,250,245,0.82)"
               strokeWidth="1.5"
             />
 
-            {/* 장식 선 */}
             <path
               d="M20 2 L20 20"
               stroke="rgba(255,252,248,0.96)"
@@ -176,7 +169,6 @@ export default function PaperDecorFrame({
               strokeWidth="2"
             />
 
-            {/* 다이아 장식 */}
             <rect
               x="16"
               y="16"
@@ -186,14 +178,12 @@ export default function PaperDecorFrame({
               fill="rgba(255,252,248,0.94)"
             />
 
-            {/* 곡선 deco */}
             <path
               d="M35 2 Q26 8 20 20"
               stroke="rgba(255,252,248,0.60)"
               strokeWidth="1.2"
             />
 
-            {/* 추가 deco */}
             <path
               d="M2 28 Q10 24 16 16"
               stroke="rgba(255,255,255,0.55)"
@@ -203,7 +193,7 @@ export default function PaperDecorFrame({
         </div>
       ))}
 
-      {/* metallic sheen */}
+      {/* sheen */}
       <div
         style={{
           position: "absolute",
@@ -224,7 +214,6 @@ export default function PaperDecorFrame({
         }}
       />
 
-      {/* 콘텐츠 */}
       <div
         style={{
           position: "relative",
