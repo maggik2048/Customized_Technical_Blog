@@ -1,23 +1,34 @@
 "use client";
 
 import React from "react";
+
+import { Bona_Nova_SC } from "next/font/google";
+import { Cormorant_SC } from "next/font/google";
+
 import remarkMath from "remark-math";
 import remarkGfm from "remark-gfm";
 import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
+
 import "katex/dist/katex.min.css";
 
 import { motion } from "framer-motion";
 
 import PostAdminActions from "@/app/admin/PostAdminActions";
+
 import { markdownComponents } from "@/lib/markdownComponents";
 import { sciFiMarkdownComponents } from "@/app/components/Markdown/SciFiMarkdownComponents";
+
 import { useDarkMode } from "@/app/context/DarkModeContext";
+
 import { getHeaderImage } from "@/lib/getHeaderImage";
+
 import { visualizationRegistry } from "@/lib/visualizationRegistry";
+
 import { remarkCarattere } from "@/lib/remarkCarattere";
 
 import NotepageLines from "@/app/components/markdown/NotepageLines";
+
 import RemarkPageRenderer from "@/app/components/Markdown/remarkPageRenderer";
 
 /* 새 코드블럭 */
@@ -32,14 +43,31 @@ type Props = {
   isStandalone?: boolean;
 };
 
+/* 헤더 전용 폰트 */
+const bonaNova = Bona_Nova_SC({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
+const cormorant = Cormorant_SC({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+
+
+
+
 export default function PDFPage({
   data,
   isActive = true,
 }: Props) {
   const { mode } = useDarkMode();
+
   const isDark = mode === "dark";
 
   const headerImage = getHeaderImage(data);
+
   const textColor = isDark ? "#eee" : "#111";
 
   const pageStyle: React.CSSProperties = {
@@ -136,9 +164,14 @@ export default function PDFPage({
               }}
             >
               <h1
+                className={cormorant.className}
                 style={{
-                  fontSize: 36,
+                  fontSize: 38,
                   margin: 0,
+
+                  letterSpacing: "0.02em",
+
+                  textShadow: "0 2px 10px rgba(0,0,0,0.45)",
                 }}
               >
                 {data.title}
