@@ -54,10 +54,6 @@ const cormorant = Cormorant_SC({
   weight: ["400", "500", "600", "700"],
 });
 
-
-
-
-
 export default function PDFPage({
   data,
   isActive = true,
@@ -69,6 +65,9 @@ export default function PDFPage({
   const headerImage = getHeaderImage(data);
 
   const textColor = isDark ? "#eee" : "#111";
+
+  /* 헤더 높이 */
+  const HEADER_HEIGHT = 560;
 
   const pageStyle: React.CSSProperties = {
     width: 860,
@@ -83,7 +82,7 @@ export default function PDFPage({
 
     background: isDark
       ? "rgba(60,60,60,0.6)"
-      : "rgba(255,255,255,0.7)",
+      : "rgba(255,255,255,0.72)",
 
     backdropFilter: "none",
 
@@ -91,6 +90,8 @@ export default function PDFPage({
     paddingRight: 64,
 
     borderRadius: 12,
+
+    overflow: "hidden",
 
     boxShadow: isDark
       ? "0 8px 30px rgba(0,0,0,0.6)"
@@ -133,55 +134,110 @@ export default function PDFPage({
               top: 0,
               left: 0,
               width: "100%",
-              height: 460,
+              height: HEADER_HEIGHT,
+
+              overflow: "hidden",
             }}
           >
+            {/* 헤더 이미지 */}
             <img
               src={headerImage}
               style={{
                 width: "100%",
                 height: "100%",
+
                 objectFit: "cover",
+
+                objectPosition: "center center",
+
+                transform: "scale(1.02)",
               }}
             />
 
+            {/* TOP DARK VIGNETTE + BOTTOM WHITE FADE */}
             <div
               style={{
                 position: "absolute",
                 inset: 0,
 
-                background:
-                  "linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.4))",
+                background: isDark
+                  ? `
+                    linear-gradient(
+                      to bottom,
+                      rgba(0,0,0,0.82) 0%,
+                      rgba(0,0,0,0.38) 22%,
+                      rgba(0,0,0,0.08) 48%,
+                      rgba(20,20,20,0.22) 68%,
+                      rgba(30,30,30,0.82) 100%
+                    )
+                  `
+                  : `
+                    linear-gradient(
+                      to bottom,
+                      rgba(0,0,0,0.58) 0%,
+                      rgba(0,0,0,0.18) 24%,
+                      rgba(255,255,255,0) 68%,
+                      rgba(255,255,255,0.78) 95%,
+                      rgba(255,255,255,1) 100%
+                    )
+                  `,
               }}
             />
 
+            {/* 추가 soft glow */}
             <div
               style={{
                 position: "absolute",
-                bottom: 20,
-                left: 40,
+                inset: 0,
+
+                background: `
+                  radial-gradient(
+                    circle at top,
+                    rgba(255,255,255,0.08),
+                    transparent 60%
+                  )
+                `,
+
+                mixBlendMode: "screen",
+
+                pointerEvents: "none",
+              }}
+            />
+
+            {/* TITLE */}
+            <div
+              style={{
+                position: "absolute",
+                bottom: 38,
+                left: 48,
+                right: 48,
+
                 color: "#fff",
               }}
             >
               <h1
                 className={cormorant.className}
                 style={{
-                  fontSize: 38,
+                  fontSize: 42,
+
                   margin: 0,
+
+                  lineHeight: 1.08,
 
                   letterSpacing: "0.02em",
 
-                  textShadow: "0 2px 10px rgba(0,0,0,0.45)",
+                  textShadow: "0 3px 18px rgba(0,0,0,0.55)",
                 }}
               >
                 {data.title}
               </h1>
             </div>
 
+            {/* ADMIN */}
             <div
               style={{
                 position: "absolute",
-                top: 10,
+                top: 16,
                 right: 40,
               }}
             >
@@ -190,7 +246,7 @@ export default function PDFPage({
           </div>
 
           {/* CONTENT */}
-          <div style={{ paddingTop: 460 }}>
+          <div style={{ paddingTop: HEADER_HEIGHT }}>
             <NotepageLines>
               {(() => {
                 const regex = /\[([A-Za-z_][A-Za-z0-9_]*)\]/g;
@@ -202,7 +258,9 @@ export default function PDFPage({
                   (match: string) => {
                     codeBlocks.push(match);
 
-                    return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
+                    return `__CODE_BLOCK_${
+                      codeBlocks.length - 1
+                    }__`;
                   }
                 );
 
@@ -229,7 +287,9 @@ export default function PDFPage({
                     <RemarkPageRenderer
                       key={i}
                       markdownComponents={markdownComponents}
-                      sciFiMarkdownComponents={sciFiMarkdownComponents}
+                      sciFiMarkdownComponents={
+                        sciFiMarkdownComponents
+                      }
                       isDark={isDark}
                       CodeBlock={CodeBlockWithCopy}
                     >
