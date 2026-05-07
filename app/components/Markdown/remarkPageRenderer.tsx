@@ -183,11 +183,11 @@ export default function RemarkPageRenderer({
               left: 0,
               top: 0,
               bottom: 0,
-              width: 3,
+              width: 2,
               borderRadius: 2,
               background:
                 level === 2
-                  ? "linear-gradient(to bottom, #9e7c27, #f2be57)"
+                  ? "linear-gradient(to bottom, #9e7c27, #ffe7b6)"
                   : "linear-gradient(to bottom, #ffe9a3, #f2c14e)",
             }}
           />
