@@ -55,11 +55,12 @@ export default function RemarkPageRenderer({
   };
 
   /* =========================
-     📦 LUXURY BOX (RESTORED FADE)
+     📦 LUXURY BOX (RESTORED)
   ========================= */
 
   const luxuryWhiteBox = {
     position: "relative" as const,
+
     background:
       "linear-gradient(90deg, rgba(255,255,255,0.97) 0%, rgba(246,243,238,0.9) 70%, rgba(246,243,238,0.35) 100%)",
 
@@ -72,15 +73,15 @@ export default function RemarkPageRenderer({
 
     borderRadius: 14,
 
-    /* 🔥 핵심: 오른쪽 fade out 유지 */
+    /* fade out right */
     WebkitMaskImage:
-      "linear-gradient(to right, black 55%, rgba(0,0,0,0.85) 70%, transparent 100%)",
+      "linear-gradient(to right, black 55%, rgba(0,0,0,0.85) 75%, transparent 100%)",
     maskImage:
-      "linear-gradient(to right, black 55%, rgba(0,0,0,0.85) 70%, transparent 100%)",
+      "linear-gradient(to right, black 55%, rgba(0,0,0,0.85) 75%, transparent 100%)",
   };
 
   /* =========================
-     ✦ CLAUDE-STYLE MARKER
+     ✦ MARKER
   ========================= */
 
   const starMarker = {
@@ -90,6 +91,24 @@ export default function RemarkPageRenderer({
     display: "inline-block",
     transform: "translateY(1px)",
     textShadow: "0 1px 2px rgba(0,0,0,0.25)",
+  };
+
+  /* =========================
+     🟨 GOLD BAR (RESTORED)
+  ========================= */
+
+  const goldBar = {
+    position: "absolute" as const,
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 2,
+
+    borderRadius: 2,
+
+    background: "linear-gradient(to bottom, #9e7c27, #ffe7b6)",
+
+    boxShadow: "0 0 6px rgba(212,168,79,0.35)",
   };
 
   /* =========================
@@ -142,6 +161,10 @@ export default function RemarkPageRenderer({
     pointerEvents: "none" as const,
   };
 
+  /* =========================
+     🧠 HEADING RENDER
+  ========================= */
+
   const renderHeading = (level: number) => ({ children }: any) => {
     const sizeMap: any = { 1: 30, 2: 22, 3: 18 };
     const marginMap: any = {
@@ -161,7 +184,6 @@ export default function RemarkPageRenderer({
               ...styleMap[level],
               fontSize: sizeMap[level],
               fontWeight: level === 1 ? 800 : 700,
-              display: "inline-block",
             }}
           >
             {children}
@@ -188,14 +210,25 @@ export default function RemarkPageRenderer({
       h2: renderHeading(2),
       h3: renderHeading(3),
 
+      /* =========================
+         ✦ TEXT (SHADOW RESTORED)
+      ========================= */
+
       p: ({ children }: any) => (
-        <p style={{ lineHeight: 1.65, margin: "6px 0", color: "#222" }}>
+        <p
+          style={{
+            lineHeight: 1.65,
+            margin: "6px 0",
+            color: "#222",
+            textShadow: "0 1px 2px rgba(0,0,0,0.08)",
+          }}
+        >
           {children}
         </p>
       ),
 
       /* =========================
-         ✦ LIST ITEMS (SAFE OVERRIDE)
+         ✦ LIST ITEM
       ========================= */
 
       li: ({ children }: any) => (
@@ -207,12 +240,15 @@ export default function RemarkPageRenderer({
           }}
         >
           <span style={starMarker}>✦</span>
-          <span>{children}</span>
+          <span style={{ textShadow: "0 1px 2px rgba(0,0,0,0.08)" }}>
+            {children}
+          </span>
         </li>
       ),
 
       ul: ({ children }: any) => (
         <div style={{ ...luxuryWhiteBox, margin: "12px 0", marginLeft: 20, padding: "10px 16px" }}>
+          <div style={goldBar} />
           <ul style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
             {children}
           </ul>
@@ -221,6 +257,7 @@ export default function RemarkPageRenderer({
 
       ol: ({ children }: any) => (
         <div style={{ ...luxuryWhiteBox, margin: "12px 0", marginLeft: 20, padding: "10px 16px" }}>
+          <div style={goldBar} />
           <ol style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
             {children}
           </ol>
