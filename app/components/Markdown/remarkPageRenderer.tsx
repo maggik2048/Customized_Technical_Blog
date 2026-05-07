@@ -17,25 +17,24 @@ export default function RemarkPageRenderer({
 }: any) {
 
   /* =========================
-     🎨 TYPOGRAPHY SYSTEM
+     🎨 HEADING SYSTEM (FULLY DECOUPLED)
   ========================= */
 
-  // 🪨 h1 = engraved metal (가장 무겁고 깊은 느낌)
-  const goldEngraved = {
-    background: "linear-gradient(135deg, #3a2f12, #6b510f, #2b220c)",
+  // 🪨 H1 = engraved gold (메인 타이틀)
+  const h1Style = {
+    background: "linear-gradient(135deg, #85857b, #c5b7b7, #676251)",
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
-    letterSpacing: "0.03em",
+    letterSpacing: "0.02em",
     textShadow: `
-      0 1px 0 rgba(255,255,255,0.4),
-      0 2px 2px rgba(0,0,0,0.35),
-      0 4px 8px rgba(0,0,0,0.25)
+      0 1px 0 rgba(255,255,255,0.55),
+      0 2px 3px rgba(0,0,0,0.18)
     `,
   };
 
-  // 🪙 h2 = gold foil (luxury + flat but rich)
-  const goldFoil = {
-    background: "linear-gradient(90deg, #f6d36b, #d4a84f, #9e7c27)",
+  // 🪙 H2 = luxury gold foil (섹션 타이틀)
+  const h2Style = {
+    background: "linear-gradient(90deg, #f6d36b, #c6b083, #9e7c27)",
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
     letterSpacing: "0.02em",
@@ -45,9 +44,9 @@ export default function RemarkPageRenderer({
     `,
   };
 
-  // ✨ h3 = glow gold (lighter, more alive)
-  const goldGlow = {
-    background: "linear-gradient(135deg, #ffe9a3, #f2c14e, #b8892d)",
+  // ✨ H3 = soft glow gold (서브 타이틀)
+  const h3Style = {
+    background: "linear-gradient(135deg, #ffe9a3, #d2c199, #dfb96b)",
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
     letterSpacing: "0.03em",
@@ -76,99 +75,70 @@ export default function RemarkPageRenderer({
   };
 
   /* =========================
-     🧠 HEADINGS
+     🧠 HEADING RENDERER (STRUCTURE ONLY)
   ========================= */
 
   const renderHeading = (level: number) => ({ children }: any) => {
+
     const sizeMap: any = {
       1: 30,
       2: 22,
       3: 18,
     };
 
-    /* ---------- H2 (full bleed gold foil) ---------- */
-    if (level === 2) {
-      return (
-        <div
-          style={{
-            marginLeft: -64,
-            width: "calc(100% + 64px)",
-            marginTop: 28,
-            marginBottom: 12,
-            paddingLeft: 14,
-            position: "relative",
-          }}
-        >
-          <div
-            style={{
-              position: "absolute",
-              left: 0,
-              top: 0,
-              bottom: 0,
-              width: 3,
-              borderRadius: 2,
-              background: "linear-gradient(to bottom, #f6d36b, #d4a84f)",
-            }}
-          />
+    const marginMap: any = {
+      1: "36px 0 18px",
+      2: "28px 0 12px",
+      3: "20px 0 10px",
+    };
 
-          <div
-            style={{
-              fontSize: sizeMap[2],
-              fontWeight: 700,
-              letterSpacing: "0.02em",
-            }}
-          >
-            <span style={goldFoil}>{children}</span>
-          </div>
-        </div>
-      );
-    }
+    const styleMap: any = {
+      1: h1Style,
+      2: h2Style,
+      3: h3Style,
+    };
 
-    /* ---------- H3 (glow gold) ---------- */
-    if (level === 3) {
-      return (
-        <div
-          style={{
-            margin: "20px 0 10px",
-            position: "relative",
-            paddingLeft: 14,
-            opacity: 0.95,
-          }}
-        >
-          <div
-            style={{
-              position: "absolute",
-              left: 0,
-              top: 0,
-              bottom: 0,
-              width: 3,
-              borderRadius: 2,
-              background: "linear-gradient(to bottom, #ffe9a3, #f2c14e)",
-            }}
-          />
-
-          <div
-            style={{
-              fontSize: sizeMap[3],
-              fontWeight: 600,
-            }}
-          >
-            <span style={goldGlow}>{children}</span>
-          </div>
-        </div>
-      );
-    }
-
-    /* ---------- H1 (engraved metal) ---------- */
     return (
-      <div style={{ margin: "36px 0 18px" }}>
+      <div
+        style={{
+          margin: marginMap[level],
+          position: "relative",
+          paddingLeft: level >= 2 ? 14 : 0,
+        }}
+      >
+        {/* H2/H3 accent line only */}
+        {level >= 2 && (
+          <div
+            style={{
+              position: "absolute",
+              left: 0,
+              top: 0,
+              bottom: 0,
+              width: 3,
+              borderRadius: 2,
+              background:
+                level === 2
+                  ? "linear-gradient(to bottom, #9e7c27, #f2be57)"
+                  : "linear-gradient(to bottom, #ffe9a3, #f2c14e)",
+            }}
+          />
+        )}
+
         <div
           style={{
-            fontSize: sizeMap[1],
-            fontWeight: 800,
+            fontSize: sizeMap[level],
+            fontWeight: level === 1 ? 800 : 700,
+            letterSpacing: level === 1 ? "0.03em" : "0.02em",
+            textShadow: `
+              0 1px 0 rgba(255,255,255,0.65),
+              0 2px 0 rgba(0,0,0,0.18),
+              0 3px 6px rgba(0,0,0,0.10)
+            `,
           }}
         >
-          <span style={goldEngraved}>{children}</span>
+          <span style={styleMap[level]}>
+            {children}
+          </span>
         </div>
       </div>
     );
@@ -207,20 +177,48 @@ export default function RemarkPageRenderer({
       ),
 
       ul: ({ children }: any) => (
-        <div style={{ margin: "12px 0", marginLeft: 20, padding: "10px 16px", minWidth: "260px", ...luxuryWhiteBox }}>
+        <div
+          style={{
+            margin: "12px 0",
+            marginLeft: 20,
+            padding: "10px 16px",
+            minWidth: "260px",
+            ...luxuryWhiteBox,
+          }}
+        >
           <ul style={{ margin: 0, paddingLeft: 18 }}>{children}</ul>
         </div>
       ),
 
       ol: ({ children }: any) => (
-        <div style={{ margin: "12px 0", marginLeft: 20, padding: "10px 16px", minWidth: "260px", ...luxuryWhiteBox }}>
+        <div
+          style={{
+            margin: "12px 0",
+            marginLeft: 20,
+            padding: "10px 16px",
+            minWidth: "260px",
+            ...luxuryWhiteBox,
+          }}
+        >
           <ol style={{ margin: 0, paddingLeft: 18 }}>{children}</ol>
         </div>
       ),
 
       li: ({ children }: any) => (
-        <li style={{ marginBottom: 4, lineHeight: 1.6, color: "#333" }}>
-          <span style={{ color: "#d4a84f", marginRight: 6, fontWeight: 700 }}>
+        <li
+          style={{
+            marginBottom: 4,
+            lineHeight: 1.6,
+            color: "#333",
+          }}
+        >
+          <span
+            style={{
+              color: "#d4a84f",
+              marginRight: 6,
+              fontWeight: 700,
+            }}
+          >
             •
           </span>
           {children}
