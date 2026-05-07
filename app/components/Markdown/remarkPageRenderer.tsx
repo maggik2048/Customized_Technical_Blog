@@ -55,7 +55,7 @@ export default function RemarkPageRenderer({
   };
 
   /* =========================
-     📦 LUXURY BOX (RESTORED)
+     📦 LUXURY BOX
   ========================= */
 
   const luxuryWhiteBox = {
@@ -73,7 +73,6 @@ export default function RemarkPageRenderer({
 
     borderRadius: 14,
 
-    /* fade out right */
     WebkitMaskImage:
       "linear-gradient(to right, black 55%, rgba(0,0,0,0.85) 75%, transparent 100%)",
     maskImage:
@@ -90,11 +89,11 @@ export default function RemarkPageRenderer({
     fontSize: 13,
     display: "inline-block",
     transform: "translateY(1px)",
-    textShadow: "0 1px 2px rgba(0,0,0,0.25)",
+    textShadow: "0 2px 2px rgba(0,0,0,0.5)",
   };
 
   /* =========================
-     🟨 GOLD BAR (RESTORED)
+     🟨 GOLD BAR
   ========================= */
 
   const goldBar = {
@@ -103,16 +102,13 @@ export default function RemarkPageRenderer({
     top: 0,
     bottom: 0,
     width: 2,
-
     borderRadius: 2,
-
     background: "linear-gradient(to bottom, #9e7c27, #ffe7b6)",
-
     boxShadow: "0 0 6px rgba(212,168,79,0.35)",
   };
 
   /* =========================
-     🧠 HEADINGS FADE LAYER
+     🧠 HEADINGS FADE
   ========================= */
 
   const headingDarkFadeBox = {
@@ -162,7 +158,7 @@ export default function RemarkPageRenderer({
   };
 
   /* =========================
-     🧠 HEADING RENDER
+     🧠 RENDER
   ========================= */
 
   const renderHeading = (level: number) => ({ children }: any) => {
@@ -197,6 +193,8 @@ export default function RemarkPageRenderer({
      🧾 MARKDOWN
   ========================= */
 
+  const textShadow = "0 1px 2px rgba(0,0,0,0.22)";
+
   const markdownProps = {
     remarkPlugins: [remarkMath, remarkGfm],
     rehypePlugins: [rehypeKatex, rehypeRaw],
@@ -211,7 +209,7 @@ export default function RemarkPageRenderer({
       h3: renderHeading(3),
 
       /* =========================
-         ✦ TEXT (SHADOW RESTORED)
+         📜 PARAGRAPH (DARK BROWN)
       ========================= */
 
       p: ({ children }: any) => (
@@ -219,8 +217,8 @@ export default function RemarkPageRenderer({
           style={{
             lineHeight: 1.65,
             margin: "6px 0",
-            color: "#222",
-            textShadow: "0 1px 2px rgba(0,0,0,0.08)",
+            color: "#5a3f1a", // deep brown
+            textShadow,
           }}
         >
           {children}
@@ -228,7 +226,7 @@ export default function RemarkPageRenderer({
       ),
 
       /* =========================
-         ✦ LIST ITEM
+         ✦ LIST ITEM (GOLD BROWN)
       ========================= */
 
       li: ({ children }: any) => (
@@ -240,7 +238,12 @@ export default function RemarkPageRenderer({
           }}
         >
           <span style={starMarker}>✦</span>
-          <span style={{ textShadow: "0 1px 2px rgba(0,0,0,0.08)" }}>
+          <span
+            style={{
+              color: "#b48f46", // golden brown
+              textShadow,
+            }}
+          >
             {children}
           </span>
         </li>
