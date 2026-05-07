@@ -12,21 +12,23 @@ export default function PaperDecorFrame({
       style={{
         position: "relative",
 
-        /* 페이지에 더 붙게 */
+        /* 페이지에 더 밀착 */
         padding: 12,
 
         borderRadius: 18,
 
-        /* 내부 거의 투명 */
-        background: "rgba(255,255,255,0.008)",
+        /* 내부는 거의 안 보이게 */
+        background: "rgba(255,255,255,0.006)",
 
-        /* 메인 프레임 */
-        border: "2px solid rgba(255,245,210,0.94)",
+        /* 화이트 골드 메인 프레임 */
+        border: "2px solid rgba(255,250,242,0.96)",
 
+        /* glow 강화 + white ivory 느낌 */
         boxShadow: `
-          0 0 0 1px rgba(255,240,200,0.45),
-          0 0 12px rgba(255,245,220,0.14),
-          0 0 26px rgba(255,235,180,0.08),
+          0 0 0 1px rgba(255,250,240,0.52),
+          0 0 14px rgba(255,252,245,0.16),
+          0 0 34px rgba(255,248,235,0.10),
+          0 0 60px rgba(255,248,240,0.05),
           0 10px 40px rgba(0,0,0,0.18)
         `,
 
@@ -41,8 +43,8 @@ export default function PaperDecorFrame({
           borderRadius: 18,
 
           boxShadow: `
-            inset 0 0 18px rgba(255,245,220,0.05),
-            0 0 18px rgba(255,245,220,0.05)
+            inset 0 0 18px rgba(255,250,245,0.05),
+            0 0 22px rgba(255,252,248,0.06)
           `,
 
           pointerEvents: "none",
@@ -55,11 +57,11 @@ export default function PaperDecorFrame({
           position: "absolute",
           inset: 6,
 
-          border: "1.5px solid rgba(255,248,225,0.78)",
+          border: "1.5px solid rgba(255,252,245,0.82)",
           borderRadius: 14,
 
           boxShadow: `
-            0 0 8px rgba(255,245,220,0.06)
+            0 0 10px rgba(255,252,245,0.08)
           `,
 
           pointerEvents: "none",
@@ -107,8 +109,8 @@ export default function PaperDecorFrame({
             pointerEvents: "none",
 
             filter: `
-              drop-shadow(0 0 4px rgba(255,255,240,0.32))
-              drop-shadow(0 0 12px rgba(255,240,200,0.16))
+              drop-shadow(0 0 5px rgba(255,255,255,0.34))
+              drop-shadow(0 0 18px rgba(255,250,240,0.22))
             `,
           }}
         >
@@ -121,27 +123,27 @@ export default function PaperDecorFrame({
             {/* 메인 라인 */}
             <path
               d="M2 35 L2 2 L35 2"
-              stroke="rgba(255,250,235,0.98)"
+              stroke="rgba(255,253,248,0.99)"
               strokeWidth="3"
             />
 
             {/* 내부 라인 */}
             <path
               d="M10 35 L10 10 L35 10"
-              stroke="rgba(255,245,220,0.75)"
+              stroke="rgba(255,250,245,0.82)"
               strokeWidth="1.5"
             />
 
             {/* 장식 선 */}
             <path
               d="M20 2 L20 20"
-              stroke="rgba(255,248,230,0.95)"
+              stroke="rgba(255,252,248,0.96)"
               strokeWidth="2"
             />
 
             <path
               d="M2 20 L20 20"
-              stroke="rgba(255,248,230,0.95)"
+              stroke="rgba(255,252,248,0.96)"
               strokeWidth="2"
             />
 
@@ -152,14 +154,21 @@ export default function PaperDecorFrame({
               width="8"
               height="8"
               transform="rotate(45 20 20)"
-              fill="rgba(255,248,230,0.92)"
+              fill="rgba(255,252,248,0.94)"
             />
 
-            {/* 추가 deco */}
+            {/* 곡선 deco */}
             <path
               d="M35 2 Q26 8 20 20"
-              stroke="rgba(255,248,230,0.55)"
+              stroke="rgba(255,252,248,0.60)"
               strokeWidth="1.2"
+            />
+
+            {/* 추가 deco line */}
+            <path
+              d="M2 28 Q10 24 16 16"
+              stroke="rgba(255,255,255,0.55)"
+              strokeWidth="1"
             />
           </svg>
         </div>
@@ -175,10 +184,10 @@ export default function PaperDecorFrame({
           background: `
             linear-gradient(
               135deg,
-              rgba(255,255,255,0.045),
+              rgba(255,255,255,0.05),
               transparent 18%,
               transparent 82%,
-              rgba(255,248,220,0.03)
+              rgba(255,252,245,0.035)
             )
           `,
 
