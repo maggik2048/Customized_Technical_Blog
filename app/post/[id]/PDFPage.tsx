@@ -57,7 +57,7 @@ export default function PDFPage({
       ? "rgba(60,60,60,0.6)"
       : "rgba(255,255,255,0.7)",
 
-    backdropFilter: "blur(6px)",
+    backdropFilter: "none",
 
     paddingLeft: 64,
     paddingRight: 64,
