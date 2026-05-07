@@ -11,20 +11,22 @@ export default function PaperDecorFrame({
     <div
       style={{
         position: "relative",
-        borderRadius: 20,
-        padding: 30,
 
-        /* 내부는 거의 안 보이게 */
-        background: "rgba(255,255,255,0.01)",
+        /* 페이지에 더 붙게 */
+        padding: 12,
+
+        borderRadius: 18,
+
+        /* 내부 거의 투명 */
+        background: "rgba(255,255,255,0.008)",
 
         /* 메인 프레임 */
-        border: "2px solid rgba(255,245,210,0.92)",
+        border: "2px solid rgba(255,245,210,0.94)",
 
-        /* 밝은 화이트골드 glow */
         boxShadow: `
           0 0 0 1px rgba(255,240,200,0.45),
-          0 0 10px rgba(255,245,220,0.14),
-          0 0 22px rgba(255,235,180,0.08),
+          0 0 12px rgba(255,245,220,0.14),
+          0 0 26px rgba(255,235,180,0.08),
           0 10px 40px rgba(0,0,0,0.18)
         `,
 
@@ -36,81 +38,131 @@ export default function PaperDecorFrame({
         style={{
           position: "absolute",
           inset: 0,
-          borderRadius: 20,
+          borderRadius: 18,
 
           boxShadow: `
             inset 0 0 18px rgba(255,245,220,0.05),
-            0 0 18px rgba(255,245,220,0.06)
+            0 0 18px rgba(255,245,220,0.05)
           `,
 
           pointerEvents: "none",
         }}
       />
 
-      {/* 내부 라인 */}
+      {/* 내부 이중 라인 */}
       <div
         style={{
           position: "absolute",
-          inset: 10,
+          inset: 6,
 
-          border: "2px solid rgba(255,248,225,0.75)",
-          borderRadius: 15,
+          border: "1.5px solid rgba(255,248,225,0.78)",
+          borderRadius: 14,
 
           boxShadow: `
-            0 0 10px rgba(255,245,220,0.08)
+            0 0 8px rgba(255,245,220,0.06)
           `,
 
           pointerEvents: "none",
         }}
       />
 
-      {/* 코너 장식 */}
+      {/* 아르데코 코너 장식 */}
       {[
-        { top: 14, left: 14 },
-        { top: 14, right: 14 },
-        { bottom: 14, left: 14 },
-        { bottom: 14, right: 14 },
+        {
+          top: 10,
+          left: 10,
+          rotate: "0deg",
+        },
+        {
+          top: 10,
+          right: 10,
+          rotate: "90deg",
+        },
+        {
+          bottom: 10,
+          right: 10,
+          rotate: "180deg",
+        },
+        {
+          bottom: 10,
+          left: 10,
+          rotate: "270deg",
+        },
       ].map((pos, i) => (
         <div
           key={i}
           style={{
             position: "absolute",
-            width: 54,
-            height: 54,
 
-            pointerEvents: "none",
+            width: 70,
+            height: 70,
 
             ...(pos.top !== undefined ? { top: pos.top } : {}),
             ...(pos.bottom !== undefined ? { bottom: pos.bottom } : {}),
             ...(pos.left !== undefined ? { left: pos.left } : {}),
             ...(pos.right !== undefined ? { right: pos.right } : {}),
 
-            borderTop:
-              pos.top !== undefined
-                ? "3px solid rgba(255,250,235,0.98)"
-                : undefined,
+            transform: `rotate(${pos.rotate})`,
 
-            borderLeft:
-              pos.left !== undefined
-                ? "3px solid rgba(255,250,235,0.98)"
-                : undefined,
-
-            borderRight:
-              pos.right !== undefined
-                ? "3px solid rgba(255,250,235,0.98)"
-                : undefined,
-
-            borderBottom:
-              pos.bottom !== undefined
-                ? "3px solid rgba(255,250,235,0.98)"
-                : undefined,
+            pointerEvents: "none",
 
             filter: `
-              drop-shadow(0 0 4px rgba(255,255,240,0.35))
-              drop-shadow(0 0 10px rgba(255,240,200,0.18))
+              drop-shadow(0 0 4px rgba(255,255,240,0.32))
+              drop-shadow(0 0 12px rgba(255,240,200,0.16))
             `,
           }}
-        />
+        >
+          <svg
+            width="70"
+            height="70"
+            viewBox="0 0 70 70"
+            fill="none"
+          >
+            {/* 메인 라인 */}
+            <path
+              d="M2 35 L2 2 L35 2"
+              stroke="rgba(255,250,235,0.98)"
+              strokeWidth="3"
+            />
+
+            {/* 내부 라인 */}
+            <path
+              d="M10 35 L10 10 L35 10"
+              stroke="rgba(255,245,220,0.75)"
+              strokeWidth="1.5"
+            />
+
+            {/* 장식 선 */}
+            <path
+              d="M20 2 L20 20"
+              stroke="rgba(255,248,230,0.95)"
+              strokeWidth="2"
+            />
+
+            <path
+              d="M2 20 L20 20"
+              stroke="rgba(255,248,230,0.95)"
+              strokeWidth="2"
+            />
+
+            {/* 다이아 장식 */}
+            <rect
+              x="16"
+              y="16"
+              width="8"
+              height="8"
+              transform="rotate(45 20 20)"
+              fill="rgba(255,248,230,0.92)"
+            />
+
+            {/* 추가 deco */}
+            <path
+              d="M35 2 Q26 8 20 20"
+              stroke="rgba(255,248,230,0.55)"
+              strokeWidth="1.2"
+            />
+          </svg>
+        </div>
       ))}
 
       {/* metallic sheen */}
@@ -118,15 +170,15 @@ export default function PaperDecorFrame({
         style={{
           position: "absolute",
           inset: 0,
-          borderRadius: 20,
+          borderRadius: 18,
 
           background: `
             linear-gradient(
               135deg,
-              rgba(255,255,255,0.05),
+              rgba(255,255,255,0.045),
               transparent 18%,
               transparent 82%,
-              rgba(255,248,220,0.04)
+              rgba(255,248,220,0.03)
             )
           `,
 
