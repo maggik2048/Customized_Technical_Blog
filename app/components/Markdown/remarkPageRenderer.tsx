@@ -86,11 +86,11 @@ export default function RemarkPageRenderer({
             style={{
               position: "absolute",
               left: 0,
-              top: 6,
-              bottom: 6,
+              top: 0.01,
+              bottom: 0.01,
               width: 3,
               borderRadius: 2,
-              background: "linear-gradient(to bottom, #f5d27a, #d4a84f)",
+              background: "linear-gradient(to bottom, #9e7c27, #f2be57)",
             }}
           />
 
