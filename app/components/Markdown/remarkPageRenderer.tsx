@@ -29,8 +29,8 @@ export default function RemarkPageRenderer({
 
     letterSpacing: "0.03em",
     textShadow: `
-      0 1px 0 rgba(255,255,255,0.75),
-      0 2px 3px rgba(0,0,0,0.18)
+      0 3px 0 rgba(255,255,255,0.75),
+      0 1px 3px rgba(0,0,0,0.08)
     `,
   };
 
@@ -39,12 +39,12 @@ export default function RemarkPageRenderer({
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
 
-    WebkitTextStroke: "0.3px rgba(0,0,0,0.15)",
+    WebkitTextStroke: "0.6px rgba(0,0,0,0.15)",
 
     letterSpacing: "0.03em",
     textShadow: `
-      0 1px 0 rgba(255,255,255,0.7),
-      0 2px 4px rgba(0,0,0,0.15)
+      0 2px 0 rgba(255,255,255,0.9),
+      0 2px 7px rgba(0,0,0,0.15)
     `,
   };
 
