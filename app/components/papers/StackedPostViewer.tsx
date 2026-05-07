@@ -14,7 +14,7 @@ export default function StackedPostViewer({
   index,
   onChangeIndex,
 }: Props) {
-  const STACK_OFFSET = -520; //  여기 값만 바꾸면 전체 이동량 조절 가능
+  const STACK_OFFSET = -520;
 
   return (
     <div
@@ -24,7 +24,13 @@ export default function StackedPostViewer({
         justifyContent: "center",
         marginTop: 40,
         height: "100vh",
-        transform: `translateX(${STACK_OFFSET}px)`, // 핵심
+
+        transform: `translateX(${STACK_OFFSET}px)`,
+
+        /* GPU compositing 안정화 */
+        willChange: "transform",
+        transformStyle: "preserve-3d",
+        backfaceVisibility: "hidden",
       }}
     >
       {posts.map((post, i) => {
@@ -86,14 +92,31 @@ export default function StackedPostViewer({
             animate={style}
             transition={{
               type: "spring",
-              stiffness: 90,
-              damping: 18,
+
+              /* glow/glitch 안정화 */
+              stiffness: 70,
+              damping: 26,
+              mass: 0.9,
             }}
             style={{
               position: "absolute",
               left: "50%",
               transform: "translateX(-50%)",
+
               cursor: isCurrent ? "default" : "pointer",
+
+              /* 핵심 */
+              willChange: "transform, opacity",
+
+              transformStyle: "preserve-3d",
+
+              backfaceVisibility: "hidden",
+
+              WebkitBackfaceVisibility: "hidden",
+
+              WebkitFontSmoothing: "antialiased",
+
+              contain: "layout paint style",
             }}
             onClick={() => onChangeIndex(i)}
           >

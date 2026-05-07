@@ -12,7 +12,7 @@ export default function PaperDecorFrame({
       style={{
         position: "relative",
 
-        /* 페이지에 더 밀착 */
+        /* 페이지에 밀착 */
         padding: 12,
 
         borderRadius: 18,
@@ -20,15 +20,21 @@ export default function PaperDecorFrame({
         /* 내부는 거의 안 보이게 */
         background: "rgba(255,255,255,0.006)",
 
-        /* 화이트 골드 메인 프레임 */
+        /* 메인 프레임 */
         border: "2px solid rgba(255,250,242,0.96)",
 
-        /* glow 강화 + white ivory 느낌 */
+        /* bloom/glow 강화 */
         boxShadow: `
-          0 0 0 1px rgba(255,250,240,0.52),
-          0 0 14px rgba(255,252,245,0.16),
-          0 0 34px rgba(255,248,235,0.10),
-          0 0 60px rgba(255,248,240,0.05),
+          0 0 0 1px rgba(255,252,245,0.62),
+
+          0 0 16px rgba(255,255,250,0.20),
+
+          0 0 40px rgba(255,250,240,0.14),
+
+          0 0 85px rgba(255,248,235,0.09),
+
+          0 0 140px rgba(255,255,255,0.04),
+
           0 10px 40px rgba(0,0,0,0.18)
         `,
 
@@ -46,6 +52,28 @@ export default function PaperDecorFrame({
             inset 0 0 18px rgba(255,250,245,0.05),
             0 0 22px rgba(255,252,248,0.06)
           `,
+
+          pointerEvents: "none",
+        }}
+      />
+
+      {/* bloom layer */}
+      <div
+        style={{
+          position: "absolute",
+          inset: -20,
+          borderRadius: 30,
+
+          background: `
+            radial-gradient(
+              circle,
+              rgba(255,255,255,0.05),
+              rgba(255,248,235,0.025),
+              transparent 70%
+            )
+          `,
+
+          filter: "blur(24px)",
 
           pointerEvents: "none",
         }}
@@ -109,8 +137,9 @@ export default function PaperDecorFrame({
             pointerEvents: "none",
 
             filter: `
-              drop-shadow(0 0 5px rgba(255,255,255,0.34))
-              drop-shadow(0 0 18px rgba(255,250,240,0.22))
+              drop-shadow(0 0 6px rgba(255,255,255,0.42))
+              drop-shadow(0 0 20px rgba(255,252,245,0.28))
+              drop-shadow(0 0 40px rgba(255,248,235,0.14))
             `,
           }}
         >
@@ -164,7 +193,7 @@ export default function PaperDecorFrame({
               strokeWidth="1.2"
             />
 
-            {/* 추가 deco line */}
+            {/* 추가 deco */}
             <path
               d="M2 28 Q10 24 16 16"
               stroke="rgba(255,255,255,0.55)"
