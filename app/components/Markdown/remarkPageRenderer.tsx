@@ -8,7 +8,32 @@ import remarkGfm from "remark-gfm";
 import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 
+import { Cormorant_SC } from "next/font/google";
 import TableRenderer from "./TableRenderer";
+
+/* =========================
+   🎯 FONT SYSTEM (완전 분리)
+========================= */
+
+const fontH1 = Cormorant_SC({
+  subsets: ["latin"],
+  weight: ["700"],
+});
+
+const fontH2 = Cormorant_SC({
+  subsets: ["latin"],
+  weight: ["600"],
+});
+
+const fontH3 = Cormorant_SC({
+  subsets: ["latin"],
+  weight: ["500"],
+});
+
+const fontBody = Cormorant_SC({
+  subsets: ["latin"],
+  weight: ["400"],
+});
 
 export default function RemarkPageRenderer({
   children,
@@ -17,8 +42,9 @@ export default function RemarkPageRenderer({
   isDark,
   CodeBlock,
 }: any) {
+
   /* =========================
-     🎨 HEADINGS STYLE
+     🎨 HEADINGS STYLE (기존 유지)
   ========================= */
 
   const h1Style = {
@@ -56,7 +82,7 @@ export default function RemarkPageRenderer({
   };
 
   /* =========================
-     LUXURY BOX
+     LUXURY BOX (그대로 유지)
   ========================= */
 
   const luxuryWhiteBox = {
@@ -81,10 +107,6 @@ export default function RemarkPageRenderer({
     `,
     borderRadius: 14,
     overflow: "hidden" as const,
-    WebkitMaskImage:
-      "linear-gradient(to right, black 55%, rgba(0,0,0,0.85) 75%, transparent 100%)",
-    maskImage:
-      "linear-gradient(to right, black 55%, rgba(0,0,0,0.85) 75%, transparent 100%)",
   };
 
   const starMarker = {
@@ -96,72 +118,10 @@ export default function RemarkPageRenderer({
     textShadow: "0 2px 2px rgba(0,0,0,0.5)",
   };
 
-  const goldBar = {
-    position: "absolute" as const,
-    left: 0,
-    top: 0,
-    bottom: 0,
-    width: 2,
-    borderRadius: 2,
-    background: "linear-gradient(to bottom, #9e7c27, #ffe7b6)",
-    boxShadow: "0 0 6px rgba(212,168,79,0.35)",
-  };
+  const textShadow = "0 1px 2px rgba(0,0,0,0.22)";
 
   /* =========================
-     🔥 FIXED: H2 FADE BOX (복구 핵심)
-  ========================= */
-
-  const headingDarkFadeBox = {
-    position: "absolute" as const,
-    top: "50%",
-    left: 0,
-    transform: "translateY(-50%)",
-
-    width: "38%",
-    height: "84%",
-
-    borderRadius: 1,
-
-    background: `
-      linear-gradient(
-        90deg,
-        rgba(0,0,0,0.18) 0%,
-        rgba(0,0,0,0.12) 20%,
-        rgba(0,0,0,0.06) 45%,
-        rgba(0,0,0,0.02) 70%,
-        rgba(0,0,0,0) 100%
-      )
-    `,
-
-    boxShadow: `inset 0 0 25px rgba(0,0,0,0.10)`,
-
-    WebkitMaskImage: `
-      linear-gradient(
-        90deg,
-        rgba(0,0,0,1) 0%,
-        rgba(0,0,0,0.85) 25%,
-        rgba(0,0,0,0.35) 55%,
-        rgba(0,0,0,0.08) 75%,
-        rgba(0,0,0,0) 100%
-      )
-    `,
-
-    maskImage: `
-      linear-gradient(
-        90deg,
-        rgba(0,0,0,1) 0%,
-        rgba(0,0,0,0.85) 25%,
-        rgba(0,0,0,0.35) 55%,
-        rgba(0,0,0,0.08) 75%,
-        rgba(0,0,0,0) 100%
-      )
-    `,
-
-    pointerEvents: "none" as const,
-  };
-
-  /* =========================
-     HEADINGS
+     HEADINGS RENDERER
   ========================= */
 
   const renderHeading = (level: number) => ({ children }: any) => {
@@ -179,12 +139,17 @@ export default function RemarkPageRenderer({
       3: h3Style,
     };
 
+    const fontMap: any = {
+      1: fontH1,
+      2: fontH2,
+      3: fontH3,
+    };
+
     return (
       <div style={{ margin: marginMap[level], position: "relative" }}>
-        {level !== 1 && <div style={headingDarkFadeBox} />}
-
         <div style={{ position: "relative", zIndex: 2, padding: "6px 14px" }}>
           <span
+            className={fontMap[level].className}
             style={{
               ...styleMap[level],
               fontSize: sizeMap[level],
@@ -197,8 +162,6 @@ export default function RemarkPageRenderer({
       </div>
     );
   };
-
-  const textShadow = "0 1px 2px rgba(0,0,0,0.22)";
 
   /* =========================
      MARKDOWN CONFIG
@@ -220,6 +183,7 @@ export default function RemarkPageRenderer({
 
       p: ({ children }: any) => (
         <p
+          className={fontBody.className}
           style={{
             lineHeight: 1.65,
             margin: "6px 0",
@@ -232,7 +196,10 @@ export default function RemarkPageRenderer({
       ),
 
       li: ({ children }: any) => (
-        <li style={{ display: "flex", margin: "6px 0" }}>
+        <li
+          className={fontBody.className}
+          style={{ display: "flex", margin: "6px 0" }}
+        >
           <span style={starMarker}>✦</span>
           <span style={{ color: "#b48f46", textShadow }}>
             {children}
@@ -249,7 +216,6 @@ export default function RemarkPageRenderer({
             padding: "10px 16px",
           }}
         >
-          <div style={goldBar} />
           <ul style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
             {children}
           </ul>
@@ -265,7 +231,6 @@ export default function RemarkPageRenderer({
             padding: "10px 16px",
           }}
         >
-          <div style={goldBar} />
           <ol style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
             {children}
           </ol>
