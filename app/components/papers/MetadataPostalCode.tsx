@@ -25,41 +25,30 @@ export default function MetadataPostalCode({
     : null;
 
   const dateString = createdDate
-    ? createdDate.toLocaleDateString(
-        "en-US",
-        {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        }
-      )
+    ? createdDate.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
     : "Unknown";
 
   const timeString = createdDate
-    ? createdDate.toLocaleTimeString(
-        "en-US",
-        {
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-        }
-      )
+    ? createdDate.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      })
     : "";
 
   return (
     <div
       style={{
         display: "flex",
-
         alignItems: "center",
-
         justifyContent: "flex-start",
-
-        gap: 34,
-
-        marginTop: 28,
-
-        marginBottom: 44,
+        gap: 18,
+        marginTop: 20,
+        marginBottom: 32,
       }}
     >
       {/* GOLDEN RATIO */}
@@ -67,156 +56,67 @@ export default function MetadataPostalCode({
         src="/images/headers/goldenratio.jpg"
         alt="golden ratio"
         style={{
-          width: 170,
-
-          height: 170,
-
+          width: 135,
+          height: 135,
           objectFit: "contain",
-
-          opacity: isDark ? 0.88 : 0.82,
-
+          opacity: isDark ? 0.9 : 0.82,
           flexShrink: 0,
-
-          filter: `
-            contrast(1.04)
-            saturate(0.9)
-          `,
         }}
       />
 
-      {/* MAIN POSTAL STAMP */}
+      {/* STAMP */}
       <div
         style={{
           position: "relative",
-
-          padding: "24px 30px",
-
-          border:
-            "3px solid rgba(35,75,170,0.72)",
-
-          borderRadius: 4,
-
-          transform: "rotate(-1.35deg)",
-
+          padding: "12px 14px",
+          border: "2px solid rgba(35,75,170,0.72)",
+          borderRadius: 3,
+          transform: "rotate(-1.1deg)",
           overflow: "hidden",
-
           width: "fit-content",
-
-          background: `
-            linear-gradient(
-              to bottom,
-              rgba(255,255,255,0.03),
-              rgba(255,255,255,0.01)
-            )
-          `,
-
+          background:
+            "linear-gradient(to bottom, rgba(255,255,255,0.02), rgba(255,255,255,0.01))",
           boxShadow: `
-            0 0 1px rgba(35,75,170,0.7),
-            0 0 6px rgba(35,75,170,0.18),
-            inset 0 0 18px rgba(35,75,170,0.08)
+            0 0 1px rgba(35,75,170,0.65),
+            0 0 4px rgba(35,75,170,0.12),
+            inset 0 0 10px rgba(35,75,170,0.06)
           `,
-
-          opacity: 0.92,
         }}
       >
-        {/* PAPER INK BLEED */}
+        {/* INK BLEED */}
         <div
           style={{
             position: "absolute",
-
             inset: 0,
-
             background: `
-              radial-gradient(
-                circle at 12% 18%,
-                rgba(35,75,170,0.12),
-                transparent 28%
-              ),
-
-              radial-gradient(
-                circle at 78% 62%,
-                rgba(35,75,170,0.08),
-                transparent 22%
-              ),
-
-              radial-gradient(
-                circle at 40% 82%,
-                rgba(35,75,170,0.06),
-                transparent 18%
-              )
+              radial-gradient(circle at 20% 20%, rgba(35,75,170,0.12), transparent 35%),
+              radial-gradient(circle at 80% 70%, rgba(35,75,170,0.08), transparent 30%)
             `,
-
             mixBlendMode: "multiply",
-
             pointerEvents: "none",
           }}
         />
 
-        {/* HORIZONTAL INK IMPERFECTION */}
-        <div
-          style={{
-            position: "absolute",
-
-            inset: 0,
-
-            background: `
-              repeating-linear-gradient(
-                0deg,
-                rgba(35,75,170,0.08) 0px,
-                rgba(35,75,170,0.025) 1px,
-                transparent 2px,
-                transparent 5px
-              )
-            `,
-
-            opacity: 0.6,
-
-            mixBlendMode: "multiply",
-
-            pointerEvents: "none",
-          }}
-        />
-
-        {/* FADED EDGE */}
-        <div
-          style={{
-            position: "absolute",
-
-            inset: 0,
-
-            boxShadow: `
-              inset 0 0 14px rgba(255,255,255,0.14),
-              inset 0 0 2px rgba(35,75,170,0.25)
-            `,
-
-            pointerEvents: "none",
-          }}
-        />
-
-        {/* NOISY STAMP BORDER */}
+        {/* BORDER NOISE */}
         <svg
           width="100%"
           height="100%"
           style={{
             position: "absolute",
             inset: 0,
-
             pointerEvents: "none",
-
-            opacity: 0.45,
+            opacity: 0.35,
           }}
         >
           <filter id="noise">
             <feTurbulence
               type="fractalNoise"
-              baseFrequency="0.9"
+              baseFrequency="0.8"
               numOctaves="2"
-              stitchTiles="stitch"
             />
-
             <feDisplacementMap
               in="SourceGraphic"
-              scale="1.8"
+              scale="1.4"
             />
           </filter>
 
@@ -225,13 +125,11 @@ export default function MetadataPostalCode({
             y="2"
             width="98%"
             height="96%"
-            rx="2"
-            ry="2"
             fill="none"
             stroke="rgba(35,75,170,0.7)"
-            strokeWidth="1.5"
+            strokeWidth="1.3"
             filter="url(#noise)"
-            strokeDasharray="1 0.8"
+            strokeDasharray="1 1.2"
           />
         </svg>
 
@@ -239,62 +137,61 @@ export default function MetadataPostalCode({
         <div
           className={cormorant.className}
           style={{
-            position: "relative",
-
             display: "flex",
-
             flexDirection: "column",
+            gap: 4,
 
-            color: "rgba(35,75,170,0.92)",
+            color: "rgba(35,75,170,0.95)",
+
+            textTransform: "uppercase",
+            letterSpacing: "0.11em",
+
+            fontWeight: 800,
+            fontSize: 16,
 
             filter: `
-              blur(0.18px)
-              contrast(1.08)
+              blur(0.22px)
+              contrast(1.15)
+              saturate(1.1)
+            `,
+
+            textShadow: `
+              0 0 0.6px rgba(35,75,170,0.6),
+              0 0 1.2px rgba(35,75,170,0.3)
             `,
           }}
         >
-          {/* CREATED DATE */}
+          {/* CREATED AT - FULL WIDTH STRIP */}
           <div
             style={{
+              margin: "-12px -14px 6px -14px",
+
+              padding: "10px 14px",
+
+              background: "rgba(18,48,120,0.95)",
+
+              color: "#fff",
+
               display: "flex",
-
               flexDirection: "column",
+              gap: 2,
 
-              gap: 3,
+              letterSpacing: "0.13em",
 
-              marginBottom: 14,
-
-              textTransform: "uppercase",
-
-              letterSpacing: "0.11em",
-
-              fontWeight: 700,
+              fontWeight: 900,
 
               fontSize: 17,
 
-              opacity: 0.94,
-
-              textShadow: `
-                0 0 0.4px rgba(35,75,170,0.5),
-                0 0 1px rgba(35,75,170,0.25)
-              `,
+              textShadow: "0 0 2px rgba(0,0,0,0.35)",
             }}
           >
-            <div>
-              Created At: {dateString}
-            </div>
+            <div>Created At: {dateString}</div>
 
-            {/* TIME */}
             <div
               style={{
-                fontSize: 13,
-
+                fontSize: 11,
+                opacity: 0.85,
                 letterSpacing: "0.18em",
-
-                opacity: 0.48,
-
-                marginLeft: 2,
-
                 fontWeight: 600,
               }}
             >
@@ -305,24 +202,9 @@ export default function MetadataPostalCode({
           {/* DIVIDER */}
           <div
             style={{
-              width: "100%",
-
               height: 1,
-
-              marginBottom: 14,
-
-              background: `
-                linear-gradient(
-                  to right,
-                  transparent 0%,
-                  rgba(35,75,170,0.12) 12%,
-                  rgba(35,75,170,0.35) 50%,
-                  rgba(35,75,170,0.12) 88%,
-                  transparent 100%
-                )
-              `,
-
-              opacity: 0.7,
+              background: "rgba(35,75,170,0.25)",
+              margin: "2px 0 6px",
             }}
           />
 
@@ -331,31 +213,14 @@ export default function MetadataPostalCode({
             <div
               style={{
                 display: "flex",
-
-                alignItems: "center",
-
-                gap: 12,
-
-                textTransform: "uppercase",
-
-                letterSpacing: "0.12em",
-
-                fontWeight: 700,
-
-                fontSize: 16,
-
-                marginBottom: 10,
-
-                opacity: 0.82,
+                gap: 8,
+                fontSize: 15,
+                fontWeight: 800,
+                opacity: 0.9,
               }}
             >
               <span>Category:</span>
-
-              <span
-                style={{
-                  opacity: 0.9,
-                }}
-              >
+              <span style={{ opacity: 0.95 }}>
                 {data.category}
               </span>
             </div>
@@ -366,27 +231,14 @@ export default function MetadataPostalCode({
             <div
               style={{
                 display: "flex",
-
-                alignItems: "center",
-
-                gap: 12,
-
-                textTransform: "uppercase",
-
-                letterSpacing: "0.14em",
-
-                fontWeight: 800,
-
-                fontSize: 17,
-
-                opacity: 0.9,
+                gap: 8,
+                fontSize: 15,
+                fontWeight: 900,
+                opacity: 0.95,
               }}
             >
               <span>Document:</span>
-
-              <span>
-                #{data.documentNumber}
-              </span>
+              <span>#{data.documentNumber}</span>
             </div>
           )}
         </div>
