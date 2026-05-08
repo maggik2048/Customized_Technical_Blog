@@ -15,7 +15,6 @@ export default function RemarkPageRenderer({
   isDark,
   CodeBlock,
 }: any) {
-
   /* =========================
      🎨 HEADINGS STYLE
   ========================= */
@@ -32,7 +31,7 @@ export default function RemarkPageRenderer({
   };
 
   const h2Style = {
-    background: "linear-gradient(90deg, #ffe08a, #c9b27a, #a07d2a)",
+    background: "linear-gradient(90deg, #fff6dd, #cbc0a3, #a08a57)",
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
     WebkitTextStroke: "0.6px rgba(0,0,0,0.15)",
@@ -55,14 +54,29 @@ export default function RemarkPageRenderer({
   };
 
   /* =========================
-     📦 LUXURY BOX
+      LUXURY BOX
+     기존 흰색 gradient 대신
+     tess4.png 렌더링
   ========================= */
 
   const luxuryWhiteBox = {
     position: "relative" as const,
 
-    background:
-      "linear-gradient(90deg, rgba(255,255,255,0.97) 0%, rgba(246,243,238,0.9) 70%, rgba(246,243,238,0.35) 100%)",
+    /*  여기 변경 */
+    backgroundImage: `
+      linear-gradient(
+        90deg,
+        rgba(255,255,255,0.92) 0%,
+        rgba(255,255,255,0.78) 45%,
+        rgba(255,255,255,0.45) 75%,
+        rgba(255,255,255,0.15) 100%
+      ),
+      url("/images/tess4.png")
+    `,
+
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "repeat",
 
     border: "1px solid rgba(212,168,79,0.2)",
 
@@ -73,8 +87,11 @@ export default function RemarkPageRenderer({
 
     borderRadius: 14,
 
+    overflow: "hidden" as const,
+
     WebkitMaskImage:
       "linear-gradient(to right, black 55%, rgba(0,0,0,0.85) 75%, transparent 100%)",
+
     maskImage:
       "linear-gradient(to right, black 55%, rgba(0,0,0,0.85) 75%, transparent 100%)",
   };
@@ -143,6 +160,7 @@ export default function RemarkPageRenderer({
         rgba(0,0,0,0) 80%
       )
     `,
+
     maskImage: `
       linear-gradient(
         90deg,
@@ -163,18 +181,30 @@ export default function RemarkPageRenderer({
 
   const renderHeading = (level: number) => ({ children }: any) => {
     const sizeMap: any = { 1: 30, 2: 22, 3: 18 };
+
     const marginMap: any = {
       1: "36px 0 18px",
       2: "28px 0 12px",
       3: "20px 0 10px",
     };
-    const styleMap: any = { 1: h1Style, 2: h2Style, 3: h3Style };
+
+    const styleMap: any = {
+      1: h1Style,
+      2: h2Style,
+      3: h3Style,
+    };
 
     return (
       <div style={{ margin: marginMap[level], position: "relative" }}>
         {level !== 1 && <div style={headingDarkFadeBox} />}
 
-        <div style={{ position: "relative", zIndex: 2, padding: "6px 14px" }}>
+        <div
+          style={{
+            position: "relative",
+            zIndex: 2,
+            padding: "6px 14px",
+          }}
+        >
           <span
             style={{
               ...styleMap[level],
@@ -204,12 +234,13 @@ export default function RemarkPageRenderer({
       ...(isDark ? sciFiMarkdownComponents : {}),
 
       code: CodeBlock,
+
       h1: renderHeading(1),
       h2: renderHeading(2),
       h3: renderHeading(3),
 
       /* =========================
-         📜 PARAGRAPH (DARK BROWN)
+         📜 PARAGRAPH
       ========================= */
 
       p: ({ children }: any) => (
@@ -217,7 +248,7 @@ export default function RemarkPageRenderer({
           style={{
             lineHeight: 1.65,
             margin: "6px 0",
-            color: "#5a3f1a", // deep brown
+            color: "#5a3f1a",
             textShadow,
           }}
         >
@@ -226,7 +257,7 @@ export default function RemarkPageRenderer({
       ),
 
       /* =========================
-         ✦ LIST ITEM (GOLD BROWN)
+         ✦ LIST ITEM
       ========================= */
 
       li: ({ children }: any) => (
@@ -238,9 +269,10 @@ export default function RemarkPageRenderer({
           }}
         >
           <span style={starMarker}>✦</span>
+
           <span
             style={{
-              color: "#b48f46", // golden brown
+              color: "#b48f46",
               textShadow,
             }}
           >
@@ -250,18 +282,50 @@ export default function RemarkPageRenderer({
       ),
 
       ul: ({ children }: any) => (
-        <div style={{ ...luxuryWhiteBox, margin: "12px 0", marginLeft: 20, padding: "10px 16px" }}>
+        <div
+          style={{
+            ...luxuryWhiteBox,
+            margin: "12px 0",
+            marginLeft: 20,
+            padding: "10px 16px",
+          }}
+        >
           <div style={goldBar} />
-          <ul style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
+
+          <ul
+            style={{
+              margin: 0,
+              paddingLeft: 0,
+              listStyle: "none",
+              position: "relative",
+              zIndex: 2,
+            }}
+          >
             {children}
           </ul>
         </div>
       ),
 
       ol: ({ children }: any) => (
-        <div style={{ ...luxuryWhiteBox, margin: "12px 0", marginLeft: 20, padding: "10px 16px" }}>
+        <div
+          style={{
+            ...luxuryWhiteBox,
+            margin: "12px 0",
+            marginLeft: 20,
+            padding: "10px 16px",
+          }}
+        >
           <div style={goldBar} />
-          <ol style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
+
+          <ol
+            style={{
+              margin: 0,
+              paddingLeft: 0,
+              listStyle: "none",
+              position: "relative",
+              zIndex: 2,
+            }}
+          >
             {children}
           </ol>
         </div>
@@ -269,5 +333,9 @@ export default function RemarkPageRenderer({
     },
   };
 
-  return <ReactMarkdown {...markdownProps}>{children}</ReactMarkdown>;
+  return (
+    <ReactMarkdown {...markdownProps}>
+      {children}
+    </ReactMarkdown>
+  );
 }
