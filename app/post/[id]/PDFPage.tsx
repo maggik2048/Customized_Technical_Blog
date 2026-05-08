@@ -208,70 +208,93 @@ export default function PDFPage({
               isDark={isDark}
             />
 
+            {/* 🔥 첫 몇 줄만 golden ratio 오른쪽에서 시작 */}
+            <div
+              style={{
+                float: "left",
+
+                width: 165,
+
+                // 이 높이 동안만 우측 흐름
+                height: 110,
+
+                pointerEvents: "none",
+              }}
+            />
+
             {/* BODY */}
-            <NotepageLines>
-              {(() => {
-                const regex =
-                  /\[([A-Za-z_][A-Za-z0-9_]*)\]/g;
+            <div
+              style={{
+                marginTop: -2,
+              }}
+            >
+              <NotepageLines>
+                {(() => {
+                  const regex =
+                    /\[([A-Za-z_][A-Za-z0-9_]*)\]/g;
 
-                const codeBlocks: string[] = [];
+                  const codeBlocks: string[] = [];
 
-                const protectedContent =
-                  data.content.replace(
-                    /```[\s\S]*?```/g,
-                    (match: string) => {
-                      codeBlocks.push(match);
+                  const protectedContent =
+                    data.content.replace(
+                      /```[\s\S]*?```/g,
+                      (match: string) => {
+                        codeBlocks.push(match);
 
-                      return `__CODE_BLOCK_${
-                        codeBlocks.length - 1
-                      }__`;
-                    }
-                  );
+                        return `__CODE_BLOCK_${
+                          codeBlocks.length - 1
+                        }__`;
+                      }
+                    );
 
-                const parts =
-                  protectedContent.split(regex);
+                  const parts =
+                    protectedContent.split(regex);
 
-                const restore = (text: string) =>
-                  text.replace(
-                    /__CODE_BLOCK_(\d+)__/g,
-                    (_, i) =>
-                      codeBlocks[Number(i)]
-                  );
+                  const restore = (text: string) =>
+                    text.replace(
+                      /__CODE_BLOCK_(\d+)__/g,
+                      (_, i) =>
+                        codeBlocks[Number(i)]
+                    );
 
-                return parts.map(
-                  (part: string, i: number) => {
-                    const Component =
-                      visualizationRegistry[part];
+                  return parts.map(
+                    (part: string, i: number) => {
+                      const Component =
+                        visualizationRegistry[part];
 
-                    if (Component) {
+                      if (Component) {
+                        return (
+                          <div key={i}>
+                            <Component />
+                          </div>
+                        );
+                      }
+
                       return (
-                        <div key={i}>
-                          <Component />
-                        </div>
+                        <RemarkPageRenderer
+                          key={i}
+                          markdownComponents={
+                            markdownComponents
+                          }
+                          sciFiMarkdownComponents={
+                            sciFiMarkdownComponents
+                          }
+                          isDark={isDark}
+                          CodeBlock={
+                            CodeBlockWithCopy
+                          }
+                        >
+                          {restore(part)}
+                        </RemarkPageRenderer>
                       );
                     }
+                  );
+                })()}
+              </NotepageLines>
+            </div>
 
-                    return (
-                      <RemarkPageRenderer
-                        key={i}
-                        markdownComponents={
-                          markdownComponents
-                        }
-                        sciFiMarkdownComponents={
-                          sciFiMarkdownComponents
-                        }
-                        isDark={isDark}
-                        CodeBlock={
-                          CodeBlockWithCopy
-                        }
-                      >
-                        {restore(part)}
-                      </RemarkPageRenderer>
-                    );
-                  }
-                );
-              })()}
-            </NotepageLines>
+            {/* float 해제 */}
+            <div style={{ clear: "both" }} />
           </div>
         </div>
       </PaperDecorFrame>

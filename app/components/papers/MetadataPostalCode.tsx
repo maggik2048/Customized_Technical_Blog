@@ -13,9 +13,6 @@ function seededRandom(seed: number) {
   return x - Math.floor(x);
 }
 
-/**
- * 🔥 Ink stamp renderer
- */
 function renderNoisyText(text: string, seed: number) {
   return String(text).split("").map((char, i) => {
     const r = seededRandom(seed + i * 13);
@@ -23,10 +20,10 @@ function renderNoisyText(text: string, seed: number) {
     const opacity = 0.58 + r * 0.42;
 
     const shiftY =
-      (seededRandom(seed + i * 7) - 0.5) * 0.7;
+      (seededRandom(seed + i * 7) - 0.5) * 0.6;
 
     const shiftX =
-      (seededRandom(seed + i * 5) - 0.5) * 0.45;
+      (seededRandom(seed + i * 5) - 0.5) * 0.4;
 
     const bleedStrength =
       seededRandom(seed + i * 29);
@@ -48,16 +45,15 @@ function renderNoisyText(text: string, seed: number) {
             ? `
               0 0 1px rgba(35,75,170,0.55),
               0 0 2px rgba(35,75,170,0.42),
-              0 0 4px rgba(35,75,170,0.28),
-              0 0 8px rgba(35,75,170,0.14)
+              0 0 4px rgba(35,75,170,0.28)
             `
             : `
               0 0 0.5px rgba(35,75,170,0.18)
             `,
 
           filter: strongBleed
-            ? `blur(${0.18 + r * 0.22}px)`
-            : `blur(${r * 0.05}px)`,
+            ? `blur(${0.15 + r * 0.2}px)`
+            : `blur(${r * 0.04}px)`,
         }}
       >
         {char === " " ? "\u00A0" : char}
@@ -93,21 +89,28 @@ export default function MetadataPostalCode({
     <div
       style={{
         position: "relative",
-        display: "flex",
-        alignItems: "center",
-        marginTop: 20,
-        marginBottom: 32,
 
-        // overlap 공간 확보
+        display: "flex",
+        alignItems: "flex-start",
+
         paddingLeft: 8,
+
+        marginTop: 0,
+
+        // 아래 본문과 최소 간격만
+        marginBottom: 10,
       }}
     >
       {/* IMAGE + STAMP GROUP */}
       <div
         style={{
           position: "relative",
+
           width: 470,
-          height: 250,
+
+          // 🔥 핵심:
+          // 실제 레이아웃 공간 제거
+          height: 0,
         }}
       >
         {/* GOLDEN RATIO IMAGE */}
@@ -116,8 +119,9 @@ export default function MetadataPostalCode({
           alt="golden ratio"
           style={{
             position: "absolute",
+
             left: 0,
-            top: 18,
+            top: 12,
 
             width: 145,
             height: 145,
@@ -126,7 +130,10 @@ export default function MetadataPostalCode({
 
             opacity: isDark ? 0.85 : 0.78,
 
-            filter: "contrast(1.05) saturate(0.95)",
+            filter:
+              "contrast(1.05) saturate(0.95)",
+
+            pointerEvents: "none",
           }}
         />
 
@@ -135,18 +142,19 @@ export default function MetadataPostalCode({
           style={{
             position: "absolute",
 
-            //  golden ratio 오른쪽 아래로 겹치게
             left: 42,
-            top: 20,
+            top: 12,
 
             width: 380,
-            height: 220,
+            height: 190,
 
             transform: "rotate(-3.2deg)",
 
             isolation: "isolate",
 
             zIndex: 2,
+
+            pointerEvents: "none",
           }}
         >
           {/* STAMP IMAGE */}
@@ -169,7 +177,7 @@ export default function MetadataPostalCode({
               filter: `
                 contrast(1.02)
                 saturate(0.82)
-                blur(0.12px)
+                blur(0.1px)
               `,
             }}
           />
@@ -181,12 +189,13 @@ export default function MetadataPostalCode({
               position: "absolute",
               inset: 0,
 
-              paddingTop: 58,
-              paddingLeft: 92,
+              paddingTop: 44,
+              paddingLeft: 88,
 
               display: "flex",
               flexDirection: "column",
-              gap: 8,
+
+              gap: 6,
 
               color: "rgba(35,75,170,0.92)",
 
@@ -195,8 +204,6 @@ export default function MetadataPostalCode({
               letterSpacing: "0.05em",
 
               fontWeight: 800,
-
-              pointerEvents: "none",
             }}
           >
             {/* CREATED AT */}
@@ -215,7 +222,7 @@ export default function MetadataPostalCode({
 
               <div
                 style={{
-                  marginTop: 4,
+                  marginTop: 3,
                   fontSize: 16,
                 }}
               >
@@ -243,7 +250,7 @@ export default function MetadataPostalCode({
 
                 <div
                   style={{
-                    marginTop: 4,
+                    marginTop: 3,
                     fontSize: 15,
                   }}
                 >
