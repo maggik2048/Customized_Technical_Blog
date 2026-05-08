@@ -61,14 +61,9 @@ export default function PostAdminActions({
 
     borderRadius: 999,
 
-    border: "1px solid rgba(255,255,255,0.10)",
+    border: "1px solid rgba(255,255,255,0.22)",
 
-    background:
-      "linear-gradient(to bottom, rgba(255,255,255,0.005), rgba(255,255,255,0.002))",
-
-    backdropFilter: "blur(14px)",
-
-    WebkitBackdropFilter: "blur(14px)",
+    background: "transparent",
 
     color: "rgba(255,255,255,0.92)",
 
@@ -79,8 +74,7 @@ export default function PostAdminActions({
     transition: "all 0.24s ease",
 
     boxShadow: `
-      0 8px 24px rgba(0,0,0,0.18),
-      inset 0 1px 0 rgba(255,255,255,0.04)
+      inset 0 1px 0 rgba(255,255,255,0.03)
     `,
   };
 
@@ -91,7 +85,7 @@ export default function PostAdminActions({
 
     borderRadius: 999,
 
-    border: "1px solid rgba(255,255,255,0.05)",
+    border: "1px solid rgba(255,255,255,0.06)",
 
     pointerEvents: "none",
   };
@@ -127,14 +121,12 @@ export default function PostAdminActions({
 
     justifyContent: "center",
 
-    border: "1px solid rgba(255,255,255,0.24)",
+    border: "1px solid rgba(255,255,255,0.26)",
 
-    background:
-      "linear-gradient(to bottom, rgba(255,255,255,0.08), rgba(255,255,255,0.015))",
+    background: "transparent",
 
     boxShadow: `
-      inset 0 1px 0 rgba(255,255,255,0.08),
-      0 0 10px rgba(255,255,255,0.05)
+      inset 0 1px 0 rgba(255,255,255,0.06)
     `,
   };
 
@@ -156,14 +148,11 @@ export default function PostAdminActions({
               "translateY(-1px) scale(1.02)";
 
             e.currentTarget.style.border =
-              "1px solid rgba(255,255,255,0.16)";
-
-            e.currentTarget.style.background =
-              "linear-gradient(to bottom, rgba(255,255,255,0.08), rgba(255,255,255,0.02))";
+              "1px solid rgba(255,255,255,0.38)";
 
             e.currentTarget.style.boxShadow = `
-              0 12px 32px rgba(0,0,0,0.24),
-              inset 0 1px 0 rgba(255,255,255,0.06)
+              inset 0 1px 0 rgba(255,255,255,0.06),
+              0 0 18px rgba(255,255,255,0.04)
             `;
           }}
           onMouseLeave={(e) => {
@@ -171,14 +160,10 @@ export default function PostAdminActions({
               "translateY(0) scale(1)";
 
             e.currentTarget.style.border =
-              "1px solid rgba(255,255,255,0.10)";
-
-            e.currentTarget.style.background =
-              "linear-gradient(to bottom, rgba(255,255,255,0.015), rgba(255,255,255,0.002))";
+              "1px solid rgba(255,255,255,0.22)";
 
             e.currentTarget.style.boxShadow = `
-              0 8px 24px rgba(0,0,0,0.18),
-              inset 0 1px 0 rgba(255,255,255,0.04)
+              inset 0 1px 0 rgba(255,255,255,0.03)
             `;
           }}
         >
@@ -207,14 +192,11 @@ export default function PostAdminActions({
             "translateY(-1px) scale(1.02)";
 
           e.currentTarget.style.border =
-            "1px solid rgba(255,255,255,0.16)";
-
-          e.currentTarget.style.background =
-            "linear-gradient(to bottom, rgba(255,255,255,0.08), rgba(255,255,255,0.02))";
+            "1px solid rgba(255,255,255,0.38)";
 
           e.currentTarget.style.boxShadow = `
-            0 12px 32px rgba(0,0,0,0.24),
-            inset 0 1px 0 rgba(255,255,255,0.06)
+            inset 0 1px 0 rgba(255,255,255,0.06),
+            0 0 18px rgba(255,255,255,0.04)
           `;
         }}
         onMouseLeave={(e) => {
@@ -222,14 +204,10 @@ export default function PostAdminActions({
             "translateY(0) scale(1)";
 
           e.currentTarget.style.border =
-            "1px solid rgba(255,255,255,0.10)";
-
-          e.currentTarget.style.background =
-            "linear-gradient(to bottom, rgba(255,255,255,0.055), rgba(255,255,255,0.012))";
+            "1px solid rgba(255,255,255,0.22)";
 
           e.currentTarget.style.boxShadow = `
-            0 8px 24px rgba(0,0,0,0.18),
-            inset 0 1px 0 rgba(255,255,255,0.04)
+            inset 0 1px 0 rgba(255,255,255,0.03)
           `;
         }}
       >
