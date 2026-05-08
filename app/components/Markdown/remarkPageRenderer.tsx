@@ -8,6 +8,8 @@ import remarkGfm from "remark-gfm";
 import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 
+import TableRenderer from "./TableRenderer";
+
 export default function RemarkPageRenderer({
   children,
   markdownComponents,
@@ -54,15 +56,11 @@ export default function RemarkPageRenderer({
   };
 
   /* =========================
-      LUXURY BOX
-     기존 흰색 gradient 대신
-     tess4.png 렌더링
+     LUXURY BOX
   ========================= */
 
   const luxuryWhiteBox = {
     position: "relative" as const,
-
-    /*  여기 변경 */
     backgroundImage: `
       linear-gradient(
         90deg,
@@ -73,32 +71,21 @@ export default function RemarkPageRenderer({
       ),
       url("/images/tess4.png")
     `,
-
     backgroundSize: "cover",
     backgroundPosition: "center",
     backgroundRepeat: "repeat",
-
     border: "1px solid rgba(212,168,79,0.2)",
-
     boxShadow: `
       0 6px 18px rgba(0,0,0,0.07),
       inset 0 1px 0 rgba(255,255,255,0.8)
     `,
-
     borderRadius: 14,
-
     overflow: "hidden" as const,
-
     WebkitMaskImage:
       "linear-gradient(to right, black 55%, rgba(0,0,0,0.85) 75%, transparent 100%)",
-
     maskImage:
       "linear-gradient(to right, black 55%, rgba(0,0,0,0.85) 75%, transparent 100%)",
   };
-
-  /* =========================
-     ✦ MARKER
-  ========================= */
 
   const starMarker = {
     color: "#a8842a",
@@ -108,10 +95,6 @@ export default function RemarkPageRenderer({
     transform: "translateY(1px)",
     textShadow: "0 2px 2px rgba(0,0,0,0.5)",
   };
-
-  /* =========================
-     🟨 GOLD BAR
-  ========================= */
 
   const goldBar = {
     position: "absolute" as const,
@@ -125,7 +108,7 @@ export default function RemarkPageRenderer({
   };
 
   /* =========================
-     🧠 HEADINGS FADE
+     🔥 FIXED: H2 FADE BOX (복구 핵심)
   ========================= */
 
   const headingDarkFadeBox = {
@@ -133,18 +116,20 @@ export default function RemarkPageRenderer({
     top: "50%",
     left: 0,
     transform: "translateY(-50%)",
-    width: "32%",
+
+    width: "38%",
     height: "84%",
+
     borderRadius: 1,
 
     background: `
       linear-gradient(
         90deg,
-        rgba(0,0,0,0.10) 0%,
-        rgba(0,0,0,0.15) 18%,
-        rgba(0,0,0,0.06) 40%,
-        rgba(0,0,0,0.01) 60%,
-        rgba(0,0,0,0) 80%
+        rgba(0,0,0,0.18) 0%,
+        rgba(0,0,0,0.12) 20%,
+        rgba(0,0,0,0.06) 45%,
+        rgba(0,0,0,0.02) 70%,
+        rgba(0,0,0,0) 100%
       )
     `,
 
@@ -154,10 +139,10 @@ export default function RemarkPageRenderer({
       linear-gradient(
         90deg,
         rgba(0,0,0,1) 0%,
-        rgba(0,0,0,0.9) 20%,
-        rgba(0,0,0,0.35) 50%,
-        rgba(0,0,0,0.05) 70%,
-        rgba(0,0,0,0) 80%
+        rgba(0,0,0,0.85) 25%,
+        rgba(0,0,0,0.35) 55%,
+        rgba(0,0,0,0.08) 75%,
+        rgba(0,0,0,0) 100%
       )
     `,
 
@@ -165,10 +150,10 @@ export default function RemarkPageRenderer({
       linear-gradient(
         90deg,
         rgba(0,0,0,1) 0%,
-        rgba(0,0,0,0.9) 20%,
-        rgba(0,0,0,0.35) 50%,
-        rgba(0,0,0,0.05) 70%,
-        rgba(0,0,0,0) 80%
+        rgba(0,0,0,0.85) 25%,
+        rgba(0,0,0,0.35) 55%,
+        rgba(0,0,0,0.08) 75%,
+        rgba(0,0,0,0) 100%
       )
     `,
 
@@ -176,7 +161,7 @@ export default function RemarkPageRenderer({
   };
 
   /* =========================
-     🧠 RENDER
+     HEADINGS
   ========================= */
 
   const renderHeading = (level: number) => ({ children }: any) => {
@@ -198,13 +183,7 @@ export default function RemarkPageRenderer({
       <div style={{ margin: marginMap[level], position: "relative" }}>
         {level !== 1 && <div style={headingDarkFadeBox} />}
 
-        <div
-          style={{
-            position: "relative",
-            zIndex: 2,
-            padding: "6px 14px",
-          }}
-        >
+        <div style={{ position: "relative", zIndex: 2, padding: "6px 14px" }}>
           <span
             style={{
               ...styleMap[level],
@@ -219,11 +198,11 @@ export default function RemarkPageRenderer({
     );
   };
 
-  /* =========================
-     🧾 MARKDOWN
-  ========================= */
-
   const textShadow = "0 1px 2px rgba(0,0,0,0.22)";
+
+  /* =========================
+     MARKDOWN CONFIG
+  ========================= */
 
   const markdownProps = {
     remarkPlugins: [remarkMath, remarkGfm],
@@ -239,10 +218,6 @@ export default function RemarkPageRenderer({
       h2: renderHeading(2),
       h3: renderHeading(3),
 
-      /* =========================
-         📜 PARAGRAPH
-      ========================= */
-
       p: ({ children }: any) => (
         <p
           style={{
@@ -256,26 +231,10 @@ export default function RemarkPageRenderer({
         </p>
       ),
 
-      /* =========================
-         ✦ LIST ITEM
-      ========================= */
-
       li: ({ children }: any) => (
-        <li
-          style={{
-            display: "flex",
-            alignItems: "flex-start",
-            margin: "6px 0",
-          }}
-        >
+        <li style={{ display: "flex", margin: "6px 0" }}>
           <span style={starMarker}>✦</span>
-
-          <span
-            style={{
-              color: "#b48f46",
-              textShadow,
-            }}
-          >
+          <span style={{ color: "#b48f46", textShadow }}>
             {children}
           </span>
         </li>
@@ -291,16 +250,7 @@ export default function RemarkPageRenderer({
           }}
         >
           <div style={goldBar} />
-
-          <ul
-            style={{
-              margin: 0,
-              paddingLeft: 0,
-              listStyle: "none",
-              position: "relative",
-              zIndex: 2,
-            }}
-          >
+          <ul style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
             {children}
           </ul>
         </div>
@@ -316,20 +266,18 @@ export default function RemarkPageRenderer({
           }}
         >
           <div style={goldBar} />
-
-          <ol
-            style={{
-              margin: 0,
-              paddingLeft: 0,
-              listStyle: "none",
-              position: "relative",
-              zIndex: 2,
-            }}
-          >
+          <ol style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
             {children}
           </ol>
         </div>
       ),
+
+      table: TableRenderer,
+      thead: TableRenderer.Thead,
+      tbody: TableRenderer.Tbody,
+      tr: TableRenderer.Tr,
+      th: TableRenderer.Th,
+      td: TableRenderer.Td,
     },
   };
 

@@ -80,15 +80,20 @@ export default function CodeBlockWithCopy({
     return (
       <code
         style={{
-          background: "rgba(255,255,255,0.08)",
+          background: "rgba(255,255,255,0.06)",
 
-          color: "#f3f3f3",
+          color: "rgba(255,255,255,0.88)",
 
           padding: "2px 6px",
 
           borderRadius: 6,
 
           fontSize: "0.95em",
+
+          border:
+            "1px solid rgba(255,255,255,0.05)",
+
+          backdropFilter: "blur(8px)",
 
           fontFamily:
             "ui-monospace, SFMono-Regular, Menlo, monospace",
@@ -110,13 +115,18 @@ export default function CodeBlockWithCopy({
 
         overflow: "hidden",
 
-        background: "#282c34",
+        background:
+          "rgba(40,44,52,0.78)",
+
+        backdropFilter: "blur(14px)",
+
+        WebkitBackdropFilter: "blur(14px)",
 
         border:
-          "1px solid rgba(255,255,255,0.06)",
+          "1px solid rgba(255,255,255,0.07)",
 
         boxShadow:
-          "0 10px 28px rgba(0,0,0,0.32)",
+          "0 10px 28px rgba(0,0,0,0.22)",
       }}
     >
       {/* COPY BUTTON */}
@@ -154,7 +164,7 @@ export default function CodeBlockWithCopy({
             ? "rgba(255,255,255,0.08)"
             : hovered
             ? "rgba(255,255,255,0.14)"
-            : "rgba(255,255,255,0.06)",
+            : "rgba(255,255,255,0.05)",
 
           color: copied
             ? "rgba(255,255,255,0.72)"
@@ -163,6 +173,9 @@ export default function CodeBlockWithCopy({
             : "rgba(255,255,255,0.42)",
 
           backdropFilter: "blur(10px)",
+
+          WebkitBackdropFilter:
+            "blur(10px)",
 
           cursor: "pointer",
 
@@ -192,6 +205,8 @@ export default function CodeBlockWithCopy({
             ...oneDark['code[class*="language-"]'],
 
             background: "transparent",
+
+            color: "rgba(255,255,255,0.92)",
           },
         }}
         customStyle={{
@@ -204,6 +219,8 @@ export default function CodeBlockWithCopy({
           fontSize: 14,
 
           lineHeight: 1.72,
+
+          opacity: 0.96,
 
           fontFamily:
             "ui-monospace, SFMono-Regular, Menlo, monospace",
