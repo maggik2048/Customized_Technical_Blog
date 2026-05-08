@@ -91,7 +91,7 @@ export default function CodeBlockWithCopy({
           fontSize: "0.95em",
 
           fontFamily:
-            'ui-monospace, SFMono-Regular, Menlo, monospace',
+            "ui-monospace, SFMono-Regular, Menlo, monospace",
         }}
       >
         {children}
@@ -124,9 +124,11 @@ export default function CodeBlockWithCopy({
         onClick={handleCopy}
         initial={false}
         animate={{
-          opacity: hovered || copied ? 1 : 0,
+          opacity: hovered || copied ? 1 : 0.45,
 
-          y: hovered || copied ? 0 : -5,
+          y: hovered || copied ? 0 : -2,
+
+          scale: copied ? 1.02 : 1,
         }}
         transition={{
           duration: 0.16,
@@ -149,10 +151,16 @@ export default function CodeBlockWithCopy({
           borderRadius: 9,
 
           background: copied
-            ? "rgba(120,255,180,0.16)"
-            : "rgba(255,255,255,0.08)",
+            ? "rgba(255,255,255,0.08)"
+            : hovered
+            ? "rgba(255,255,255,0.14)"
+            : "rgba(255,255,255,0.06)",
 
-          color: copied ? "#8CFFB8" : "#ddd",
+          color: copied
+            ? "rgba(255,255,255,0.72)"
+            : hovered
+            ? "#f5f5f5"
+            : "rgba(255,255,255,0.42)",
 
           backdropFilter: "blur(10px)",
 
@@ -198,7 +206,7 @@ export default function CodeBlockWithCopy({
           lineHeight: 1.72,
 
           fontFamily:
-            'ui-monospace, SFMono-Regular, Menlo, monospace',
+            "ui-monospace, SFMono-Regular, Menlo, monospace",
         }}
       >
         {text.replace(/\n$/, "")}

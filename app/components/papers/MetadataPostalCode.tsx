@@ -162,14 +162,14 @@ export default function MetadataPostalCode({
         >
           {/* STAMP IMAGE */}
           <img
-            src="/images/marks/stamp.png"
+            src="/images/marks/stamp4.png"
             alt="stamp"
             style={{
               position: "absolute",
               inset: 0,
 
               width: "100%",
-              height: "100%",
+              height: "50%",
 
               objectFit: "contain",
 
