@@ -11,6 +11,8 @@ import rehypeRaw from "rehype-raw";
 import { Cormorant_SC } from "next/font/google";
 import TableRenderer from "./TableRenderer";
 
+import KaTeXPostProcessor from "./KaTeXPostProcessor";
+
 /* =========================
    🎯 FONT SYSTEM (완전 분리)
 ========================= */
@@ -247,8 +249,12 @@ export default function RemarkPageRenderer({
   };
 
   return (
-    <ReactMarkdown {...markdownProps}>
-      {children}
-    </ReactMarkdown>
+    <>
+      <KaTeXPostProcessor />
+
+      <ReactMarkdown {...markdownProps}>
+        {children}
+      </ReactMarkdown>
+    </>
   );
 }

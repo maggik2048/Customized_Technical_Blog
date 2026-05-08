@@ -99,7 +99,7 @@ code {
 
 .katex,
 .katex * {
-  opacity: 0.94 !important;
-  text-shadow: 0 0.25px 0.9px rgba(0, 0, 0, 0.92);
+  opacity: 0.94;
+  text-shadow: 0 0.25px 0.9px rgba(0, 60, 80, 0.92);
 }
 

@@ -18,7 +18,7 @@ const categoryHeaderMap: Record<string, string> = {
   optimization: "/images/headers/optimization.jpg",
 
   // ===== CS =====
-  network: "/images/headers/network.jpg",
+  network: "/images/headers/network.png",
   ai: "/images/headers/ai.jpg",
   sqldb: "/images/headers/sqldb.jpg",
   compiler: "/images/headers/compiler.jpg",

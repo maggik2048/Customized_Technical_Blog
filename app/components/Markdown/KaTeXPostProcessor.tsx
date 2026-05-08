@@ -4,25 +4,38 @@ import { useEffect } from "react";
 
 export default function KaTeXPostProcessor() {
   useEffect(() => {
-    const elements = document.querySelectorAll(".katex");
+    const apply = () => {
 
-    elements.forEach((el) => {
-      const scripts = el.querySelectorAll(
-        ".msub, .msup, .msubsup"
+      // subscript 내부 실제 텍스트 span
+      const targets = document.querySelectorAll(
+        ".katex .msub span, .katex .msubsup span"
       );
 
-      scripts.forEach((node) => {
-        (node as HTMLElement).style.color =
-          "rgba(250, 205, 70, 0.9)";
-      });
+      targets.forEach((node) => {
+        const el = node as HTMLElement;
 
-      const funcs = el.querySelectorAll(".mop");
+        el.style.color =
+          "rgba(245, 210, 80, 0.98)";
 
-      funcs.forEach((node) => {
-        (node as HTMLElement).style.color =
-          "rgba(255, 220, 120, 0.85)";
+        el.style.opacity = "1";
+
+        el.style.textShadow =
+          "0 0.3px 0.6px rgba(0,0,0,0.45)";
       });
+    };
+
+    apply();
+
+    const observer = new MutationObserver(() => {
+      apply();
     });
+
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+    });
+
+    return () => observer.disconnect();
   }, []);
 
   return null;
