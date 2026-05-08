@@ -205,15 +205,15 @@ export default function PDFPage({
               style={{
                 display: "flex",
 
-                flexDirection: "column",
-
                 alignItems: "center",
 
-                justifyContent: "center",
+                justifyContent: "flex-start",
 
-                marginTop: 18,
+                gap: 28,
 
-                marginBottom: 26,
+                marginTop: 28,
+
+                marginBottom: 34,
               }}
             >
               {/* GOLDEN RATIO IMAGE */}
@@ -221,17 +221,15 @@ export default function PDFPage({
                 src="/images/headers/goldenratio.jpg"
                 alt="golden ratio"
                 style={{
-                  width: "100%",
+                  width: 160,
 
-                  maxWidth: 90,
-
-                  maxHeight: 90,
+                  height: 160,
 
                   objectFit: "contain",
 
-                  opacity: isDark ? 0.82 : 0.72,
+                  opacity: isDark ? 0.9 : 0.82,
 
-                  marginBottom: 14,
+                  flexShrink: 0,
                 }}
               />
 
@@ -242,17 +240,24 @@ export default function PDFPage({
 
                   flexDirection: "column",
 
-                  alignItems: "center",
+                  justifyContent: "center",
 
-                  gap: 6,
+                  gap: 12,
 
                   fontSize: 15,
 
-                  lineHeight: 1.5,
+                  lineHeight: 1.7,
 
-                  opacity: 0.82,
+                  letterSpacing: "0.08em",
 
-                  letterSpacing: "0.04em",
+                  color: isDark
+                    ? "rgba(120,180,255,0.95)"
+                    : "rgba(40,90,180,0.95)",
+
+                  textTransform: "uppercase",
+
+                  fontFamily:
+                    "'Courier New', monospace",
                 }}
               >
                 {/* CREATED AT */}
@@ -261,7 +266,7 @@ export default function PDFPage({
                     style={{
                       fontWeight: 700,
 
-                      marginRight: 6,
+                      marginRight: 8,
                     }}
                   >
                     Created At:
@@ -288,7 +293,7 @@ export default function PDFPage({
                       style={{
                         fontWeight: 700,
 
-                        marginRight: 6,
+                        marginRight: 8,
                       }}
                     >
                       Category:
@@ -305,7 +310,7 @@ export default function PDFPage({
                       style={{
                         fontWeight: 700,
 
-                        marginRight: 6,
+                        marginRight: 8,
                       }}
                     >
                       Document:

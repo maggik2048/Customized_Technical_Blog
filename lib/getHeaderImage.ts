@@ -10,7 +10,7 @@ const categoryHeaderMap: Record<string, string> = {
 
   // ===== Math =====
   linear_algebra: "/images/headers/linear_algebra.jpg",
-  diff_eq: "/images/headers/diffEQ.png",
+  diff_eq: "/images/headers/diffEQ2.png",
   complex_analysis: "/images/headers/complex_analysis.jpg",
   prob_stats: "/images/headers/prob_stats.jpg",
   comp_geometry: "/images/headers/comp_geometry.jpg",
