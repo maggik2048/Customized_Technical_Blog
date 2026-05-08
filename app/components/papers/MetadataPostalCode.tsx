@@ -13,28 +13,54 @@ function seededRandom(seed: number) {
   return x - Math.floor(x);
 }
 
-// 🔥 refined stamp text renderer
+/**
+ * 🔥 Ink stamp renderer
+ * - per-character opacity variation
+ * - subtle jitter
+ * - airbrush-like bleed
+ */
 function renderNoisyText(text: string, seed: number) {
   return String(text).split("").map((char, i) => {
     const r = seededRandom(seed + i * 13);
 
-    // 최소 opacity 보장
-    const opacity = 0.55 + r * 0.45;
+    const opacity = 0.58 + r * 0.42;
 
-    // 매우 미세한 jitter
-    const shiftY = (seededRandom(seed + i * 7) - 0.5) * 0.8;
-    const shiftX = (seededRandom(seed + i * 5) - 0.5) * 0.5;
+    const shiftY =
+      (seededRandom(seed + i * 7) - 0.5) * 0.7;
+
+    const shiftX =
+      (seededRandom(seed + i * 5) - 0.5) * 0.45;
+
+    const bleedStrength =
+      seededRandom(seed + i * 29);
+
+    const strongBleed = bleedStrength > 0.72;
 
     return (
       <span
         key={i}
         style={{
+          position: "relative",
           display: "inline-block",
+
           opacity,
+
           transform: `translate(${shiftX}px, ${shiftY}px)`,
 
-          // 아주 미세한 잉크 퍼짐
-          filter: `blur(${r * 0.08}px)`,
+          textShadow: strongBleed
+            ? `
+              0 0 1px rgba(35,75,170,0.55),
+              0 0 2px rgba(35,75,170,0.42),
+              0 0 4px rgba(35,75,170,0.28),
+              0 0 8px rgba(35,75,170,0.14)
+            `
+            : `
+              0 0 0.5px rgba(35,75,170,0.18)
+            `,
+
+          filter: strongBleed
+            ? `blur(${0.18 + r * 0.22}px)`
+            : `blur(${r * 0.05}px)`,
         }}
       >
         {char === " " ? "\u00A0" : char}
@@ -64,14 +90,6 @@ export default function MetadataPostalCode({
       })
     : "Unknown";
 
-  const timeString = createdDate
-    ? createdDate.toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-      })
-    : "";
-
   const seed = data?.documentNumber || 1234;
 
   return (
@@ -97,113 +115,119 @@ export default function MetadataPostalCode({
         }}
       />
 
-      {/* STAMP */}
+      {/* 🔥 STAMP IMAGE WRAPPER */}
       <div
         style={{
-          padding: "12px 14px",
-          border: "2px solid rgba(35,75,170,0.7)",
-          borderRadius: 3,
-          transform: "rotate(-1.1deg)",
-          width: "fit-content",
-
-          background:
-            "linear-gradient(to bottom, rgba(255,255,255,0.03), rgba(255,255,255,0.01))",
-
-          boxShadow: `
-            0 0 1px rgba(35,75,170,0.22),
-            inset 0 0 8px rgba(35,75,170,0.03)
-          `,
+          position: "relative",
+          width: 380,
+          height: 220,
+          
+          
+          transform: "rotate(-1.2deg)",
         }}
       >
-        {/* CONTENT */}
+        {/* STAMP IMAGE */}
+        <img
+          src="/images/marks/stamp.png"
+          alt="stamp"
+          style={{
+            position: "absolute",
+            inset: 0,
+
+            width: "100%",
+            height: "100%",
+
+            objectFit: "contain",
+
+            opacity: isDark ? 0.82 : 0.75,
+
+            mixBlendMode: "multiply",
+
+            filter: `
+              contrast(1.02)
+              saturate(0.95)
+            `,
+          }}
+        />
+
+        {/* 🔥 TEXT OVERLAY */}
         <div
           className={cormorant.className}
           style={{
+            position: "absolute",
+            inset: 0,
+
+            paddingTop: 58,
+            paddingLeft: 92,
+
             display: "flex",
             flexDirection: "column",
-            gap: 4,
+            gap: 8,
 
-            color: "rgba(35,75,170,0.9)",
+            color: "rgba(35,75,170,0.92)",
+
             textTransform: "uppercase",
-            letterSpacing: "0.11em",
+
+            letterSpacing: "0.05em",
+
             fontWeight: 800,
-            fontSize: 16,
+
+            pointerEvents: "none",
           }}
         >
-          {/* HEADER */}
+          {/* CREATED AT */}
           <div
             style={{
-              margin: "-12px -14px 6px -14px",
-              padding: "10px 14px",
-              background: "rgba(18,48,120,0.84)",
-              color: "white",
-              fontWeight: 900,
-              fontSize: 17,
+              fontSize: 18,
+              lineHeight: 1.15,
             }}
           >
             <div>
-              {renderNoisyText("Created At: ", seed)}
-              {renderNoisyText(dateString, seed + 10)}
+              {renderNoisyText(
+                "Created At:",
+                seed
+              )}
             </div>
 
             <div
               style={{
-                fontSize: 11,
-                opacity: 0.9,
+                marginTop: 4,
+                fontSize: 16,
               }}
             >
-              {renderNoisyText(timeString, seed + 999)}
+              {renderNoisyText(
+                dateString,
+                seed + 10
+              )}
             </div>
           </div>
-
-          {/* divider */}
-          <div
-            style={{
-              height: 1,
-              background: "rgba(35,75,170,0.18)",
-              margin: "2px 0 6px",
-            }}
-          />
 
           {/* CATEGORY */}
           {data.category && (
             <div
               style={{
-                display: "flex",
-                gap: 8,
-                fontSize: 15,
+                fontSize: 17,
+                lineHeight: 1.1,
               }}
             >
-              <span>
-                {renderNoisyText("Category:", seed + 77)}
-              </span>
-
-              <span>
-                {renderNoisyText(data.category, seed + 78)}
-              </span>
-            </div>
-          )}
-
-          {/* DOCUMENT */}
-          {data.documentNumber && (
-            <div
-              style={{
-                display: "flex",
-                gap: 8,
-                fontSize: 15,
-              }}
-            >
-              <span>
-                {renderNoisyText("Document:", seed + 88)}
-              </span>
-
-              <span>
-                #
+              <div>
                 {renderNoisyText(
-                  String(data.documentNumber),
-                  seed + 89
+                  "Category:",
+                  seed + 77
                 )}
-              </span>
+              </div>
+
+              <div
+                style={{
+                  marginTop: 4,
+                  fontSize: 15,
+                }}
+              >
+                {renderNoisyText(
+                  data.category,
+                  seed + 78
+                )}
+              </div>
             </div>
           )}
         </div>
