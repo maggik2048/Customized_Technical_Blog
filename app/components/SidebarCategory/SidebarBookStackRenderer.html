@@ -14,6 +14,7 @@ html, body {
   height: 100%;
   overflow: hidden;
   background: #0f1115;
+  font-family: Georgia, serif;
 }
 
 canvas {
@@ -60,7 +61,7 @@ const camera = new THREE.OrthographicCamera(
 
 camera.position.set(10, 11, 30);
 
-camera.lookAt(0, 2, 0);
+camera.lookAt(0, 4, 0);
 
 
 
@@ -96,8 +97,6 @@ document.body.appendChild(
    LIGHTING
 ========================= */
 
-/* soft global darkness */
-
 const ambient =
   new THREE.AmbientLight(
     0xffffff,
@@ -106,8 +105,6 @@ const ambient =
 
 scene.add(ambient);
 
-
-/* dramatic spotlight */
 
 const light =
   new THREE.DirectionalLight(
@@ -169,31 +166,83 @@ scene.add(floor);
 
 const colors = [
 
-  // piano black
   0x0a0a0b,
-
-  // obsidian
   0x111315,
-
-  // rich charcoal
   0x1a1d22,
-
-  // oxford black blue
   0x131c28,
-
-  // midnight navy
   0x182433,
-
-  // dark graphite
   0x242830,
-
-  // leather brown
   0x2a1d17,
-
-  // deep espresso
   0x1c1412
 
 ];
+
+
+
+/* =========================
+   UNIVERSITY MATH TITLES
+========================= */
+
+const bookTitles = [
+
+  "Advanced Calculus",
+  "Linear Algebra",
+  "Real Analysis",
+  "Complex Variables",
+  "Abstract Algebra",
+  "Differential Geometry",
+  "Topology",
+  "Functional Analysis",
+  "Tensor Calculus",
+  "Partial Differential Equations",
+  "Probability Theory",
+  "Mathematical Statistics",
+  "Numerical Analysis",
+  "Discrete Mathematics",
+  "Dynamical Systems",
+  "Fourier Analysis",
+  "Set Theory",
+  "Number Theory"
+
+];
+
+
+/* =========================
+   TEXT TEXTURE
+========================= */
+
+function createTextTexture(title) {
+
+  const canvas = document.createElement("canvas");
+
+  canvas.width = 1024;
+  canvas.height = 128;
+
+  const ctx = canvas.getContext("2d");
+
+  ctx.fillStyle = "#111";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  ctx.font = "bold 54px Georgia";
+
+  ctx.fillStyle = "#d4af37";
+
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+
+  ctx.fillText(
+    title,
+    canvas.width / 2,
+    canvas.height / 2
+  );
+
+  const texture =
+    new THREE.CanvasTexture(canvas);
+
+  texture.anisotropy = 16;
+
+  return texture;
+}
 
 
 
@@ -213,13 +262,6 @@ for (let i = 0; i < 18; i++) {
 
   const depth = 1.35;
 
-  const geometry =
-    new THREE.BoxGeometry(
-      width,
-      height,
-      depth
-    );
-
   const color =
     colors[
       Math.floor(
@@ -227,21 +269,53 @@ for (let i = 0; i < 18; i++) {
       )
     ];
 
-  const material =
+  const title =
+    bookTitles[i];
+
+  const textTexture =
+    createTextTexture(title);
+
+  const materials = [
+
     new THREE.MeshStandardMaterial({
+      color: color
+    }),
 
-      color: color,
+    new THREE.MeshStandardMaterial({
+      color: color
+    }),
 
-      roughness: 0.28,
+    new THREE.MeshStandardMaterial({
+      color: color
+    }),
 
-      metalness: 0.18
+    new THREE.MeshStandardMaterial({
+      color: color
+    }),
 
-    });
+    new THREE.MeshStandardMaterial({
+      map: textTexture,
+      roughness: 0.3,
+      metalness: 0.15
+    }),
+
+    new THREE.MeshStandardMaterial({
+      color: color
+    })
+
+  ];
+
+  const geometry =
+    new THREE.BoxGeometry(
+      width,
+      height,
+      depth
+    );
 
   const book =
     new THREE.Mesh(
       geometry,
-      material
+      materials
     );
 
   book.position.y = y;
