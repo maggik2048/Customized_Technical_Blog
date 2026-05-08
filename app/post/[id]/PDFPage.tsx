@@ -34,6 +34,8 @@ import CodeBlockWithCopy from "@/app/components/Markdown/CodeBlockWithCopy";
 
 import PaperDecorFrame from "@/app/components/papers/PaperDecorFrame";
 
+import MetadataPostalCode from "@/app/components/papers/MetadataPostalCode";
+
 type Props = {
   data: any;
   isActive?: boolean;
@@ -200,127 +202,11 @@ export default function PDFPage({
               paddingTop: HEADER_HEIGHT - 36,
             }}
           >
-            {/* 🔥 INTRO */}
-            <div
-              style={{
-                display: "flex",
-
-                alignItems: "center",
-
-                justifyContent: "flex-start",
-
-                gap: 28,
-
-                marginTop: 28,
-
-                marginBottom: 34,
-              }}
-            >
-              {/* GOLDEN RATIO IMAGE */}
-              <img
-                src="/images/headers/goldenratio.jpg"
-                alt="golden ratio"
-                style={{
-                  width: 160,
-
-                  height: 160,
-
-                  objectFit: "contain",
-
-                  opacity: isDark ? 0.9 : 0.82,
-
-                  flexShrink: 0,
-                }}
-              />
-
-              {/* METADATA */}
-              <div
-                style={{
-                  display: "flex",
-
-                  flexDirection: "column",
-
-                  justifyContent: "center",
-
-                  gap: 12,
-
-                  fontSize: 15,
-
-                  lineHeight: 1.7,
-
-                  letterSpacing: "0.08em",
-
-                  color: isDark
-                    ? "rgba(120,180,255,0.95)"
-                    : "rgba(40,90,180,0.95)",
-
-                  textTransform: "uppercase",
-
-                  fontFamily:
-                    "'Courier New', monospace",
-                }}
-              >
-                {/* CREATED AT */}
-                <div>
-                  <span
-                    style={{
-                      fontWeight: 700,
-
-                      marginRight: 8,
-                    }}
-                  >
-                    Created At:
-                  </span>
-
-                  {data.created_at
-                    ? new Date(
-                        data.created_at
-                      ).toLocaleDateString(
-                        "en-US",
-                        {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        }
-                      )
-                    : "Unknown"}
-                </div>
-
-                {/* CATEGORY */}
-                {data.category && (
-                  <div>
-                    <span
-                      style={{
-                        fontWeight: 700,
-
-                        marginRight: 8,
-                      }}
-                    >
-                      Category:
-                    </span>
-
-                    {data.category}
-                  </div>
-                )}
-
-                {/* DOCUMENT NUMBER */}
-                {data.documentNumber && (
-                  <div>
-                    <span
-                      style={{
-                        fontWeight: 700,
-
-                        marginRight: 8,
-                      }}
-                    >
-                      Document:
-                    </span>
-
-                    #{data.documentNumber}
-                  </div>
-                )}
-              </div>
-            </div>
+            {/* POSTAL METADATA */}
+            <MetadataPostalCode
+              data={data}
+              isDark={isDark}
+            />
 
             {/* BODY */}
             <NotepageLines>
