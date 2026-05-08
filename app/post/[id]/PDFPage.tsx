@@ -176,7 +176,7 @@ export default function PDFPage({
                   letterSpacing: "0.02em",
 
                   textShadow:
-                    "0 3px 18px rgba(0,0,0,0.55)",
+                    "0 3px 18px rgba(0,0,0,0.5)",
                 }}
               >
                 {data.title}
