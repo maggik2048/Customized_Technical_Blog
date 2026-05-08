@@ -15,9 +15,6 @@ function seededRandom(seed: number) {
 
 /**
  * 🔥 Ink stamp renderer
- * - per-character opacity variation
- * - subtle jitter
- * - airbrush-like bleed
  */
 function renderNoisyText(text: string, seed: number) {
   return String(text).split("").map((char, i) => {
@@ -95,141 +92,169 @@ export default function MetadataPostalCode({
   return (
     <div
       style={{
+        position: "relative",
         display: "flex",
         alignItems: "center",
-        gap: 18,
         marginTop: 20,
         marginBottom: 32,
+
+        // overlap 공간 확보
+        paddingLeft: 8,
       }}
     >
-      {/* LEFT IMAGE */}
-      <img
-        src="/images/headers/goldenratio.jpg"
-        alt="golden ratio"
-        style={{
-          width: 135,
-          height: 135,
-          objectFit: "contain",
-          opacity: isDark ? 0.85 : 0.78,
-          filter: "contrast(1.05) saturate(0.95)",
-        }}
-      />
-
-      {/* 🔥 STAMP IMAGE WRAPPER */}
+      {/* IMAGE + STAMP GROUP */}
       <div
         style={{
           position: "relative",
-          width: 380,
-          height: 220,
-          
-          
-          transform: "rotate(-1.2deg)",
+          width: 470,
+          height: 250,
         }}
       >
-        {/* STAMP IMAGE */}
+        {/* GOLDEN RATIO IMAGE */}
         <img
-          src="/images/marks/stamp.png"
-          alt="stamp"
+          src="/images/headers/goldenratio.jpg"
+          alt="golden ratio"
           style={{
             position: "absolute",
-            inset: 0,
+            left: 0,
+            top: 18,
 
-            width: "100%",
-            height: "100%",
+            width: 145,
+            height: 145,
 
             objectFit: "contain",
 
-            opacity: isDark ? 0.82 : 0.75,
+            opacity: isDark ? 0.85 : 0.78,
 
-            mixBlendMode: "multiply",
-
-            filter: `
-              contrast(1.02)
-              saturate(0.95)
-            `,
+            filter: "contrast(1.05) saturate(0.95)",
           }}
         />
 
-        {/* 🔥 TEXT OVERLAY */}
+        {/* STAMP WRAPPER */}
         <div
-          className={cormorant.className}
           style={{
             position: "absolute",
-            inset: 0,
 
-            paddingTop: 58,
-            paddingLeft: 92,
+            //  golden ratio 오른쪽 아래로 겹치게
+            left: 42,
+            top: 20,
 
-            display: "flex",
-            flexDirection: "column",
-            gap: 8,
+            width: 380,
+            height: 220,
 
-            color: "rgba(35,75,170,0.92)",
+            transform: "rotate(-3.2deg)",
 
-            textTransform: "uppercase",
+            isolation: "isolate",
 
-            letterSpacing: "0.05em",
-
-            fontWeight: 800,
-
-            pointerEvents: "none",
+            zIndex: 2,
           }}
         >
-          {/* CREATED AT */}
-          <div
+          {/* STAMP IMAGE */}
+          <img
+            src="/images/marks/stamp.png"
+            alt="stamp"
             style={{
-              fontSize: 18,
-              lineHeight: 1.15,
+              position: "absolute",
+              inset: 0,
+
+              width: "100%",
+              height: "100%",
+
+              objectFit: "contain",
+
+              opacity: isDark ? 0.72 : 0.67,
+
+              mixBlendMode: "multiply",
+
+              filter: `
+                contrast(1.02)
+                saturate(0.82)
+                blur(0.12px)
+              `,
+            }}
+          />
+
+          {/* TEXT OVERLAY */}
+          <div
+            className={cormorant.className}
+            style={{
+              position: "absolute",
+              inset: 0,
+
+              paddingTop: 58,
+              paddingLeft: 92,
+
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+
+              color: "rgba(35,75,170,0.92)",
+
+              textTransform: "uppercase",
+
+              letterSpacing: "0.05em",
+
+              fontWeight: 800,
+
+              pointerEvents: "none",
             }}
           >
-            <div>
-              {renderNoisyText(
-                "Created At:",
-                seed
-              )}
-            </div>
-
+            {/* CREATED AT */}
             <div
               style={{
-                marginTop: 4,
-                fontSize: 16,
-              }}
-            >
-              {renderNoisyText(
-                dateString,
-                seed + 10
-              )}
-            </div>
-          </div>
-
-          {/* CATEGORY */}
-          {data.category && (
-            <div
-              style={{
-                fontSize: 17,
-                lineHeight: 1.1,
+                fontSize: 18,
+                lineHeight: 1.15,
               }}
             >
               <div>
                 {renderNoisyText(
-                  "Category:",
-                  seed + 77
+                  "Created At:",
+                  seed
                 )}
               </div>
 
               <div
                 style={{
                   marginTop: 4,
-                  fontSize: 15,
+                  fontSize: 16,
                 }}
               >
                 {renderNoisyText(
-                  data.category,
-                  seed + 78
+                  dateString,
+                  seed + 10
                 )}
               </div>
             </div>
-          )}
+
+            {/* CATEGORY */}
+            {data.category && (
+              <div
+                style={{
+                  fontSize: 17,
+                  lineHeight: 1.1,
+                }}
+              >
+                <div>
+                  {renderNoisyText(
+                    "Category:",
+                    seed + 77
+                  )}
+                </div>
+
+                <div
+                  style={{
+                    marginTop: 4,
+                    fontSize: 15,
+                  }}
+                >
+                  {renderNoisyText(
+                    data.category,
+                    seed + 78
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
