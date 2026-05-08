@@ -44,14 +44,14 @@ export default function RemarkPageRenderer({
   };
 
   const h3Style = {
-    background: "linear-gradient(135deg, #fff0b3, #d8caa3, #e2b85e)",
+    background: "linear-gradient(135deg, #76756b, #c5c3bd, #6d634a)",
     WebkitBackgroundClip: "text",
     WebkitTextFillColor: "transparent",
     WebkitTextStroke: "0.25px rgba(0,0,0,0.12)",
     filter: "brightness(1.15) saturate(1.15)",
     textShadow: `
       0 1px 0 rgba(255,255,255,0.65),
-      0 2px 5px rgba(0,0,0,0.12)
+      0 1px 5px rgba(0,0,0,0.12)
     `,
   };
 
