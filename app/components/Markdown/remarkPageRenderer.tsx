@@ -125,7 +125,7 @@ export default function RemarkPageRenderer({
   ========================= */
 
   const renderHeading = (level: number) => ({ children }: any) => {
-    const sizeMap: any = { 1: 30, 2: 22, 3: 18 };
+    const sizeMap: any = { 1: 30, 2: 23, 3: 18 };
 
     const marginMap: any = {
       1: "36px 0 18px",

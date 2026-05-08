@@ -91,6 +91,15 @@ code {
   color: #ffcc88;
   font-weight: 500;
 
-  white-space: nowrap;       /* ⭐ 핵심 */
-  display: inline-block;     /* ⭐ 안정화 */
+  white-space: nowrap;       /*  핵심 */
+  display: inline-block;     /*  안정화 */
 }
+
+
+
+.katex,
+.katex * {
+  opacity: 0.94 !important;
+  text-shadow: 0 0.25px 0.9px rgba(0, 0, 0, 0.92);
+}
+
