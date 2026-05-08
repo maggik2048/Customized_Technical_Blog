@@ -93,11 +93,10 @@ export default function MetadataPostalCode({
         display: "flex",
         alignItems: "flex-start",
 
-        paddingLeft: 8,
+        //  전체 그룹 더 왼쪽
+        paddingLeft: 0,
 
         marginTop: 0,
-
-        // 아래 본문과 최소 간격만
         marginBottom: 10,
       }}
     >
@@ -108,8 +107,7 @@ export default function MetadataPostalCode({
 
           width: 470,
 
-          // 🔥 핵심:
-          // 실제 레이아웃 공간 제거
+          // 레이아웃 공간 제거
           height: 0,
         }}
       >
@@ -120,7 +118,9 @@ export default function MetadataPostalCode({
           style={{
             position: "absolute",
 
-            left: 0,
+            //  더 왼쪽
+            left: -58,
+
             top: 12,
 
             width: 145,
@@ -142,8 +142,11 @@ export default function MetadataPostalCode({
           style={{
             position: "absolute",
 
-            left: 42,
-            top: 12,
+            //  같이 왼쪽 이동
+            left: -24,
+
+            //  stamp만 살짝 위로
+            top: -22,
 
             width: 380,
             height: 190,
