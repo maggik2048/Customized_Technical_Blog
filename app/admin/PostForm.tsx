@@ -33,7 +33,7 @@ export default function PostForm({ mode, postId }: Props) {
     loadMenu();
   }, []);
 
-  // 🔥 기존 글 불러오기 (UUID)
+  //  기존 글 불러오기 (UUID)
   useEffect(() => {
     if (mode !== "edit" || !postId) return;
 
@@ -43,7 +43,7 @@ export default function PostForm({ mode, postId }: Props) {
       const { data, error } = await supabase
         .from("posts")
         .select("*")
-        .eq("id", postId) // ✅ 핵심
+        .eq("id", postId) //  핵심
         .single();
 
       if (error) {
@@ -65,12 +65,12 @@ export default function PostForm({ mode, postId }: Props) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 🔥 DB에 실제 어떤 id들이 있는지 확인
+    //  DB에 실제 어떤 id들이 있는지 확인
   const { data } = await supabase
     .from("posts")
     .select("id");
 
-  console.log("🔥 ALL IDS:", data);
+  console.log(" ALL IDS:", data);
 
     console.log("SUBMIT UUID:", postId);
 
@@ -99,7 +99,7 @@ export default function PostForm({ mode, postId }: Props) {
       const { data, error } = await supabase
         .from("posts")
         .update({ title, content, category })
-        .eq("id", postId) // ✅ UUID 그대로
+        .eq("id", postId) //  UUID 그대로
         .select();
 
       console.log("updated:", data);

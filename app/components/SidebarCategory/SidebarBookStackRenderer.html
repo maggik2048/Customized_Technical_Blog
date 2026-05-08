@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>Dark Academia Library</title>
+
+<style>
+
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #0f1115;
+}
+
+canvas {
+  display: block;
+}
+
+</style>
+</head>
+
+<body>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<script>
+
+/* =========================
+   SCENE
+========================= */
+
+const scene = new THREE.Scene();
+
+scene.background = new THREE.Color(0x0f1115);
+
+scene.fog = new THREE.Fog(
+  0x0f1115,
+  18,
+  42
+);
+
+
+
+/* =========================
+   CAMERA
+========================= */
+
+const camera = new THREE.OrthographicCamera(
+  window.innerWidth / -100,
+  window.innerWidth / 100,
+  window.innerHeight / 100,
+  window.innerHeight / -100,
+  0.1,
+  1000
+);
+
+camera.position.set(10, 11, 30);
+
+camera.lookAt(0, 2, 0);
+
+
+
+/* =========================
+   RENDERER
+========================= */
+
+const renderer = new THREE.WebGLRenderer({
+  antialias: true
+});
+
+renderer.setSize(
+  window.innerWidth,
+  window.innerHeight
+);
+
+renderer.shadowMap.enabled = true;
+
+renderer.outputEncoding = THREE.sRGBEncoding;
+
+renderer.toneMapping =
+  THREE.ACESFilmicToneMapping;
+
+renderer.toneMappingExposure = 0.9;
+
+document.body.appendChild(
+  renderer.domElement
+);
+
+
+
+/* =========================
+   LIGHTING
+========================= */
+
+/* soft global darkness */
+
+const ambient =
+  new THREE.AmbientLight(
+    0xffffff,
+    0.22
+  );
+
+scene.add(ambient);
+
+
+/* dramatic spotlight */
+
+const light =
+  new THREE.DirectionalLight(
+    0xffffff,
+    2.2
+  );
+
+light.position.set(3, 14, 8);
+
+light.castShadow = true;
+
+light.shadow.mapSize.width = 2048;
+light.shadow.mapSize.height = 2048;
+
+light.shadow.camera.near = 1;
+light.shadow.camera.far = 60;
+
+scene.add(light);
+
+
+
+/* =========================
+   FLOOR
+========================= */
+
+const floorGeometry =
+  new THREE.PlaneGeometry(60, 60);
+
+const floorMaterial =
+  new THREE.MeshStandardMaterial({
+
+    color: 0x15171b,
+
+    roughness: 0.92,
+
+    metalness: 0.05
+
+  });
+
+const floor =
+  new THREE.Mesh(
+    floorGeometry,
+    floorMaterial
+  );
+
+floor.rotation.x = -Math.PI / 2;
+
+floor.position.y = -2;
+
+floor.receiveShadow = true;
+
+scene.add(floor);
+
+
+
+/* =========================
+   LUXURY DARK COLORS
+========================= */
+
+const colors = [
+
+  // piano black
+  0x0a0a0b,
+
+  // obsidian
+  0x111315,
+
+  // rich charcoal
+  0x1a1d22,
+
+  // oxford black blue
+  0x131c28,
+
+  // midnight navy
+  0x182433,
+
+  // dark graphite
+  0x242830,
+
+  // leather brown
+  0x2a1d17,
+
+  // deep espresso
+  0x1c1412
+
+];
+
+
+
+/* =========================
+   BOOK STACK
+========================= */
+
+let y = 0;
+
+for (let i = 0; i < 18; i++) {
+
+  const width =
+    4 + Math.random() * 5;
+
+  const height =
+    0.22 + Math.random() * 0.32;
+
+  const depth = 1.35;
+
+  const geometry =
+    new THREE.BoxGeometry(
+      width,
+      height,
+      depth
+    );
+
+  const color =
+    colors[
+      Math.floor(
+        Math.random() * colors.length
+      )
+    ];
+
+  const material =
+    new THREE.MeshStandardMaterial({
+
+      color: color,
+
+      roughness: 0.28,
+
+      metalness: 0.18
+
+    });
+
+  const book =
+    new THREE.Mesh(
+      geometry,
+      material
+    );
+
+  book.position.y = y;
+
+  book.rotation.y =
+    (Math.random() - 0.5) * 0.045;
+
+  book.rotation.z =
+    (Math.random() - 0.5) * 0.01;
+
+  book.castShadow = true;
+
+  book.receiveShadow = true;
+
+  scene.add(book);
+
+
+
+  /* =========================
+     GOLD DETAIL LINE
+  ========================= */
+
+  if (Math.random() > 0.2) {
+
+    const stripeGeometry =
+      new THREE.BoxGeometry(
+        width * 0.96,
+        0.018,
+        depth + 0.01
+      );
+
+    const stripeMaterial =
+      new THREE.MeshStandardMaterial({
+
+        color: 0xd4af37,
+
+        roughness: 0.18,
+
+        metalness: 1
+
+      });
+
+    const stripe =
+      new THREE.Mesh(
+        stripeGeometry,
+        stripeMaterial
+      );
+
+    stripe.position.y =
+      y + height * 0.12;
+
+    stripe.position.z = 0.001;
+
+    stripe.rotation.y =
+      book.rotation.y;
+
+    scene.add(stripe);
+  }
+
+
+
+  /* =========================
+     SECOND GOLD LINE
+  ========================= */
+
+  if (Math.random() > 0.55) {
+
+    const stripe2Geometry =
+      new THREE.BoxGeometry(
+        width * 0.92,
+        0.012,
+        depth + 0.01
+      );
+
+    const stripe2Material =
+      new THREE.MeshStandardMaterial({
+
+        color: 0xc9a227,
+
+        roughness: 0.15,
+
+        metalness: 1
+
+      });
+
+    const stripe2 =
+      new THREE.Mesh(
+        stripe2Geometry,
+        stripe2Material
+      );
+
+    stripe2.position.y =
+      y - height * 0.12;
+
+    stripe2.position.z = 0.001;
+
+    stripe2.rotation.y =
+      book.rotation.y;
+
+    scene.add(stripe2);
+  }
+
+  y += height + 0.03;
+}
+
+
+
+/* =========================
+   ANIMATION
+========================= */
+
+function animate() {
+
+  requestAnimationFrame(animate);
+
+  renderer.render(
+    scene,
+    camera
+  );
+}
+
+animate();
+
+
+
+/* =========================
+   RESIZE
+========================= */
+
+window.addEventListener(
+  'resize',
+  () => {
+
+    camera.left =
+      window.innerWidth / -100;
+
+    camera.right =
+      window.innerWidth / 100;
+
+    camera.top =
+      window.innerHeight / 100;
+
+    camera.bottom =
+      window.innerHeight / -100;
+
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(
+      window.innerWidth,
+      window.innerHeight
+    );
+
+  }
+);
+
+</script>
+
+</body>
+</html>
