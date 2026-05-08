@@ -47,7 +47,7 @@ export default function StackedPostViewer({
                 scale: 1,
                 rotate: 0,
                 opacity: 1,
-                zIndex: 3,
+                zIndex: 30,
               }
             : offset === -1
             ? {
@@ -55,8 +55,8 @@ export default function StackedPostViewer({
                 y: -40,
                 scale: 0.9,
                 rotate: -3,
-                opacity: 0.7,
-                zIndex: 2,
+                opacity: 1,
+                zIndex: 20,
               }
             : offset === 1
             ? {
@@ -64,8 +64,8 @@ export default function StackedPostViewer({
                 y: -40,
                 scale: 0.9,
                 rotate: 3,
-                opacity: 0.7,
-                zIndex: 2,
+                opacity: 1,
+                zIndex: 20,
               }
             : offset < 0
             ? {
@@ -74,7 +74,7 @@ export default function StackedPostViewer({
                 scale: 0.85,
                 rotate: -4,
                 opacity: 0,
-                zIndex: 1,
+                zIndex: 10,
               }
             : {
                 x: 700,
@@ -82,8 +82,11 @@ export default function StackedPostViewer({
                 scale: 0.85,
                 rotate: 4,
                 opacity: 0,
-                zIndex: 1,
+                zIndex: 10,
               };
+
+        const isLeft = offset < 0;
+        const isRight = offset > 0;
 
         return (
           <motion.div
@@ -113,6 +116,70 @@ export default function StackedPostViewer({
               WebkitFontSmoothing: "antialiased",
 
               contain: "layout paint style",
+
+              // 핵심
+              // 가운데쪽으로 갈수록 투명해짐
+              maskImage: isLeft
+                ? `
+                  linear-gradient(
+                    to right,
+                    rgba(0,0,0,1) 0%,
+                    rgba(0,0,0,1) 45%,
+                    rgba(0,0,0,0.85) 60%,
+                    rgba(0,0,0,0.55) 72%,
+                    rgba(0,0,0,0.25) 82%,
+                    rgba(0,0,0,0.08) 92%,
+                    rgba(0,0,0,0) 100%
+                  )
+                `
+                : isRight
+                ? `
+                  linear-gradient(
+                    to left,
+                    rgba(0,0,0,1) 0%,
+                    rgba(0,0,0,1) 45%,
+                    rgba(0,0,0,0.85) 60%,
+                    rgba(0,0,0,0.55) 72%,
+                    rgba(0,0,0,0.25) 82%,
+                    rgba(0,0,0,0.08) 92%,
+                    rgba(0,0,0,0) 100%
+                  )
+                `
+                : "none",
+
+              WebkitMaskImage: isLeft
+                ? `
+                  linear-gradient(
+                    to right,
+                    rgba(0,0,0,1) 0%,
+                    rgba(0,0,0,1) 45%,
+                    rgba(0,0,0,0.85) 60%,
+                    rgba(0,0,0,0.55) 72%,
+                    rgba(0,0,0,0.25) 82%,
+                    rgba(0,0,0,0.08) 92%,
+                    rgba(0,0,0,0) 100%
+                  )
+                `
+                : isRight
+                ? `
+                  linear-gradient(
+                    to left,
+                    rgba(0,0,0,1) 0%,
+                    rgba(0,0,0,1) 45%,
+                    rgba(0,0,0,0.85) 60%,
+                    rgba(0,0,0,0.55) 72%,
+                    rgba(0,0,0,0.25) 82%,
+                    rgba(0,0,0,0.08) 92%,
+                    rgba(0,0,0,0) 100%
+                  )
+                `
+                : "none",
+
+              maskSize: "100% 100%",
+              WebkitMaskSize: "100% 100%",
+
+              maskRepeat: "no-repeat",
+              WebkitMaskRepeat: "no-repeat",
             }}
             onClick={() => onChangeIndex(i)}
           >
