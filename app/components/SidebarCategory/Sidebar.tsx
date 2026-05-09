@@ -40,7 +40,7 @@ type BookItem = {
 };
 
 /* =========================
-   📚 BOOK STYLE VARIANTS
+   🎨 DARK ACADEMIA PALETTE
 ========================= */
 
 const BOOK_FONT_CLASSES = [
@@ -51,18 +51,21 @@ const BOOK_FONT_CLASSES = [
 ];
 
 const BOOK_COLORS = [
-  "#5C4033",
-  "#4A2F27",
-  "#3B2F2F",
-  "#2F3A56",
-  "#4B5320",
-  "#6B4226",
-  "#3E2723",
-  "#5D3A00",
+  "#111111", // obsidian black
+  "#191919", // charcoal
+  "#1E1A1A", // graphite brown-black
+  "#20242B", // dark desaturated blue
+  "#1D2621", // dark forest
+  "#2A1F1F", // dried wine
+  "#2A2420", // aged walnut
+  "#262626", // neutral dark gray
+  "#F1ECE4", // antique ivory
+  "#DDD6CC", // muted parchment
 ];
 
-const BOOK_HEIGHTS = [42, 48, 54, 60];
-const BOOK_WIDTHS = [180, 210, 240, 270];
+const BOOK_HEIGHTS = [42, 46, 52, 58];
+
+const BOOK_WIDTHS = [190, 220, 250, 280];
 
 function randomFrom<T>(arr: T[], seed: number) {
   return arr[seed % arr.length];
@@ -93,6 +96,9 @@ function Book({
 
   const active = pathname.includes(item.slug);
 
+  const isLightBook =
+    color === "#F1ECE4" || color === "#DDD6CC";
+
   return (
     <a
       href={href}
@@ -105,82 +111,162 @@ function Book({
           width: `${width}px`,
           height: `${height}px`,
 
-          background: `
-            linear-gradient(
-              135deg,
-              rgba(255,255,255,0.04),
-              transparent 40%
-            ),
-            ${color}
-          `,
+          position: "relative",
 
-          borderRadius: "6px",
+          overflow: "hidden",
+
+          borderRadius: "4px",
 
           marginBottom: "10px",
 
           display: "flex",
           alignItems: "center",
 
-          paddingLeft: "18px",
+          paddingLeft: "20px",
           paddingRight: "16px",
-
-          position: "relative",
 
           cursor: "pointer",
 
-          borderLeft: active
-            ? "8px solid gold"
-            : "4px solid rgba(255,255,255,0.12)",
+          background: `
+            linear-gradient(
+              180deg,
+              rgba(255,255,255,0.045) 0%,
+              rgba(255,255,255,0.01) 14%,
+              rgba(0,0,0,0.02) 100%
+            ),
+            ${color}
+          `,
+
+          border: active
+            ? "1px solid rgba(201,168,97,0.65)"
+            : isLightBook
+            ? "1px solid rgba(120,110,90,0.16)"
+            : "1px solid rgba(255,255,255,0.045)",
 
           boxShadow: active
             ? `
-                0 0 18px rgba(255,215,0,0.45),
-                inset 0 1px 0 rgba(255,255,255,0.15)
+                0 0 24px rgba(173,140,71,0.16),
+                inset 0 1px 0 rgba(255,255,255,0.06),
+                inset 0 -1px 0 rgba(0,0,0,0.25)
               `
             : `
-                inset 0 2px 4px rgba(255,255,255,0.08),
-                inset 0 -4px 8px rgba(0,0,0,0.25),
-                0 4px 10px rgba(0,0,0,0.35)
+                inset 0 1px 0 rgba(255,255,255,0.025),
+                inset 0 -1px 0 rgba(0,0,0,0.25),
+                0 3px 10px rgba(0,0,0,0.22)
               `,
 
           transform: `rotate(${(index % 5) - 2}deg)`,
 
-          transition: "all 0.25s ease",
+          transition: `
+            transform 0.28s ease,
+            box-shadow 0.28s ease,
+            border 0.28s ease
+          `,
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.transform = `
-            translateX(8px)
-            scale(1.02)
+            translateX(10px)
+            scale(1.015)
+          `;
+
+          e.currentTarget.style.boxShadow = `
+            0 12px 30px rgba(0,0,0,0.34),
+            inset 0 1px 0 rgba(255,255,255,0.05)
           `;
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.transform = `rotate(${
             (index % 5) - 2
           }deg)`;
+
+          e.currentTarget.style.boxShadow = active
+            ? `
+                0 0 24px rgba(173,140,71,0.16),
+                inset 0 1px 0 rgba(255,255,255,0.06),
+                inset 0 -1px 0 rgba(0,0,0,0.25)
+              `
+            : `
+                inset 0 1px 0 rgba(255,255,255,0.025),
+                inset 0 -1px 0 rgba(0,0,0,0.25),
+                0 3px 10px rgba(0,0,0,0.22)
+              `;
         }}
       >
-        {/* top highlight */}
+        {/* subtle cloth/leather texture */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+
+            opacity: 0.06,
+
+            backgroundImage: `
+              radial-gradient(
+                rgba(255,255,255,0.55) 0.4px,
+                transparent 0.8px
+              )
+            `,
+
+            backgroundSize: "5px 5px",
+
+            mixBlendMode: "overlay",
+
+            pointerEvents: "none",
+          }}
+        />
+
+        {/* thin emboss line */}
         <div
           style={{
             position: "absolute",
 
-            left: 0,
-            top: 0,
-            right: 0,
+            left: "11px",
+            top: "7px",
+            bottom: "7px",
 
-            height: "5px",
+            width: "1px",
 
-            background: "rgba(255,255,255,0.10)",
+            background: isLightBook
+              ? "rgba(70,60,40,0.22)"
+              : "rgba(255,255,255,0.08)",
 
-            borderRadius: "6px 6px 0 0",
+            boxShadow: isLightBook
+              ? "1px 0 1px rgba(255,255,255,0.25)"
+              : "1px 0 1px rgba(0,0,0,0.45)",
           }}
         />
 
-        {/* book title */}
+        {/* gold accent line */}
+        <div
+          style={{
+            position: "absolute",
+
+            left: "15px",
+            top: "9px",
+            bottom: "9px",
+
+            width: "1px",
+
+            background: active
+              ? "rgba(201,168,97,0.65)"
+              : "rgba(201,168,97,0.16)",
+
+            boxShadow: `
+              0 0 2px rgba(201,168,97,0.22)
+            `,
+          }}
+        />
+
+        {/* title */}
         <span
           className={fontClass}
           style={{
-            color: "#f5f1e8",
+            position: "relative",
+            zIndex: 2,
+
+            color: isLightBook
+              ? "#2B2622"
+              : "rgba(245,239,228,0.92)",
 
             fontSize: "18px",
 
@@ -196,10 +282,14 @@ function Book({
 
             textOverflow: "ellipsis",
 
-            textShadow: `
-              1px 1px 2px rgba(0,0,0,0.45),
-              0 0 1px rgba(255,255,255,0.15)
-            `,
+            textShadow: isLightBook
+              ? `
+                  0 1px 0 rgba(255,255,255,0.35)
+                `
+              : `
+                  0 1px 1px rgba(0,0,0,0.65),
+                  0 0 1px rgba(255,255,255,0.04)
+                `,
           }}
         >
           {item.name}
@@ -227,25 +317,28 @@ export default function Sidebar() {
 
         overflowY: "auto",
 
-        padding: "28px 18px",
+        padding: "32px 18px",
 
         background: `
           linear-gradient(
             to right,
-            #2d1f17 0%,
-            #3a281d 30%,
-            #241811 100%
+            #161311 0%,
+            #1B1715 28%,
+            #120F0E 100%
           )
         `,
 
-        boxShadow: "inset -12px 0 24px rgba(0,0,0,0.4)",
+        boxShadow: `
+          inset -18px 0 34px rgba(0,0,0,0.52),
+          inset 0 0 120px rgba(0,0,0,0.22)
+        `,
       }}
     >
       {shelfData.map((section, sectionIdx) => (
         <div
           key={section.slug}
           style={{
-            marginBottom: "46px",
+            marginBottom: "52px",
           }}
         >
           {/* section title */}
@@ -256,35 +349,42 @@ export default function Sidebar() {
 
               paddingLeft: "4px",
 
-              color: "#d7c2a3",
+              color: "rgba(219,205,180,0.88)",
 
               fontSize: "24px",
 
-              letterSpacing: "1px",
+              letterSpacing: "1.2px",
 
               textShadow: `
-                1px 1px 3px rgba(0,0,0,0.5),
-                0 0 1px rgba(255,255,255,0.15)
+                0 1px 2px rgba(0,0,0,0.72)
               `,
             }}
           >
             {section.name}
           </div>
 
-          {/* stacked books */}
+          {/* shelf */}
           <div
             style={{
               position: "relative",
 
-              padding: "12px",
+              padding: "14px",
 
               borderRadius: "10px",
 
-              background: "rgba(255,255,255,0.02)",
+              background: `
+                linear-gradient(
+                  180deg,
+                  rgba(255,255,255,0.015),
+                  rgba(255,255,255,0.005)
+                )
+              `,
+
+              border: "1px solid rgba(255,255,255,0.03)",
 
               boxShadow: `
-                inset 0 1px 0 rgba(255,255,255,0.04),
-                0 4px 20px rgba(0,0,0,0.2)
+                inset 0 1px 0 rgba(255,255,255,0.02),
+                0 10px 30px rgba(0,0,0,0.22)
               `,
             }}
           >
@@ -300,25 +400,25 @@ export default function Sidebar() {
             {/* wooden base */}
             <div
               style={{
-                marginTop: "12px",
+                marginTop: "14px",
 
-                height: "12px",
+                height: "10px",
 
                 width: "100%",
+
+                borderRadius: "2px",
 
                 background: `
                   linear-gradient(
                     to bottom,
-                    #6d4c41,
-                    #4e342e
+                    #3A2C25,
+                    #241B17
                   )
                 `,
 
-                borderRadius: "2px",
-
                 boxShadow: `
-                  0 4px 10px rgba(0,0,0,0.45),
-                  inset 0 2px 2px rgba(255,255,255,0.08)
+                  0 5px 14px rgba(0,0,0,0.42),
+                  inset 0 1px 0 rgba(255,255,255,0.04)
                 `,
               }}
             />
