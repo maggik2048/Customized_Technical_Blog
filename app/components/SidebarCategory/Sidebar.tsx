@@ -2,20 +2,52 @@
 
 import { useMemo } from "react";
 import { usePathname } from "next/navigation";
+import { Cormorant_SC } from "next/font/google";
+
 import { CATEGORY_TREE } from "./CategoryTree";
+
+/* =========================
+   🎨 FONT SYSTEM
+========================= */
+
+const cormorant400 = Cormorant_SC({
+  subsets: ["latin"],
+  weight: ["400"],
+});
+
+const cormorant500 = Cormorant_SC({
+  subsets: ["latin"],
+  weight: ["500"],
+});
+
+const cormorant600 = Cormorant_SC({
+  subsets: ["latin"],
+  weight: ["600"],
+});
+
+const cormorant700 = Cormorant_SC({
+  subsets: ["latin"],
+  weight: ["700"],
+});
+
+/* =========================
+   📚 TYPES
+========================= */
 
 type BookItem = {
   name: string;
   slug: string;
 };
 
-const BOOK_FONTS = [
-  `"Cormorant Garamond", serif`,
-  `"Baskerville", serif`,
-  `"Garamond", serif`,
-  `"Times New Roman", serif`,
-  `"Palatino Linotype", serif`,
-  `"Book Antiqua", serif`,
+/* =========================
+   📚 BOOK STYLE VARIANTS
+========================= */
+
+const BOOK_FONT_CLASSES = [
+  cormorant400.className,
+  cormorant500.className,
+  cormorant600.className,
+  cormorant700.className,
 ];
 
 const BOOK_COLORS = [
@@ -36,6 +68,10 @@ function randomFrom<T>(arr: T[], seed: number) {
   return arr[seed % arr.length];
 }
 
+/* =========================
+   📕 BOOK COMPONENT
+========================= */
+
 function Book({
   item,
   index,
@@ -45,13 +81,16 @@ function Book({
   index: number;
   pathname: string;
 }) {
-  const font = randomFrom(BOOK_FONTS, index);
+  const fontClass = randomFrom(BOOK_FONT_CLASSES, index);
+
   const color = randomFrom(BOOK_COLORS, index + 2);
 
   const height = randomFrom(BOOK_HEIGHTS, index + 3);
+
   const width = randomFrom(BOOK_WIDTHS, index + 5);
 
   const href = `/category/${item.slug}`;
+
   const active = pathname.includes(item.slug);
 
   return (
@@ -65,9 +104,18 @@ function Book({
         style={{
           width: `${width}px`,
           height: `${height}px`,
-          background: color,
+
+          background: `
+            linear-gradient(
+              135deg,
+              rgba(255,255,255,0.04),
+              transparent 40%
+            ),
+            ${color}
+          `,
 
           borderRadius: "6px",
+
           marginBottom: "10px",
 
           display: "flex",
@@ -77,6 +125,7 @@ function Book({
           paddingRight: "16px",
 
           position: "relative",
+
           cursor: "pointer",
 
           borderLeft: active
@@ -84,7 +133,10 @@ function Book({
             : "4px solid rgba(255,255,255,0.12)",
 
           boxShadow: active
-            ? "0 0 18px rgba(255,215,0,0.45)"
+            ? `
+                0 0 18px rgba(255,215,0,0.45),
+                inset 0 1px 0 rgba(255,255,255,0.15)
+              `
             : `
                 inset 0 2px 4px rgba(255,255,255,0.08),
                 inset 0 -4px 8px rgba(0,0,0,0.25),
@@ -107,33 +159,47 @@ function Book({
           }deg)`;
         }}
       >
-        {/* 책 위 highlight */}
+        {/* top highlight */}
         <div
           style={{
             position: "absolute",
+
             left: 0,
             top: 0,
             right: 0,
+
             height: "5px",
+
             background: "rgba(255,255,255,0.10)",
+
             borderRadius: "6px 6px 0 0",
           }}
         />
 
-        {/* 책 제목 */}
+        {/* book title */}
         <span
+          className={fontClass}
           style={{
             color: "#f5f1e8",
-            fontFamily: font,
-            fontSize: "15px",
-            letterSpacing: "0.4px",
+
+            fontSize: "18px",
+
+            letterSpacing: "0.6px",
+
             lineHeight: 1.1,
+
             userSelect: "none",
+
             whiteSpace: "nowrap",
+
             overflow: "hidden",
+
             textOverflow: "ellipsis",
 
-            textShadow: "1px 1px 2px rgba(0,0,0,0.4)",
+            textShadow: `
+              1px 1px 2px rgba(0,0,0,0.45),
+              0 0 1px rgba(255,255,255,0.15)
+            `,
           }}
         >
           {item.name}
@@ -142,6 +208,10 @@ function Book({
     </a>
   );
 }
+
+/* =========================
+   🪵 SIDEBAR
+========================= */
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -152,7 +222,9 @@ export default function Sidebar() {
     <aside
       style={{
         width: "340px",
+
         height: "100vh",
+
         overflowY: "auto",
 
         padding: "28px 18px",
@@ -176,27 +248,30 @@ export default function Sidebar() {
             marginBottom: "46px",
           }}
         >
-          {/* 대분류 */}
+          {/* section title */}
           <div
+            className={cormorant700.className}
             style={{
               marginBottom: "18px",
+
               paddingLeft: "4px",
 
               color: "#d7c2a3",
 
-              fontSize: "20px",
-
-              fontFamily: `"Cormorant Garamond", serif`,
+              fontSize: "24px",
 
               letterSpacing: "1px",
 
-              textShadow: "1px 1px 3px rgba(0,0,0,0.5)",
+              textShadow: `
+                1px 1px 3px rgba(0,0,0,0.5),
+                0 0 1px rgba(255,255,255,0.15)
+              `,
             }}
           >
             {section.name}
           </div>
 
-          {/* 책 더미 */}
+          {/* stacked books */}
           <div
             style={{
               position: "relative",
@@ -222,7 +297,7 @@ export default function Sidebar() {
               />
             ))}
 
-            {/* 바닥 나무 */}
+            {/* wooden base */}
             <div
               style={{
                 marginTop: "12px",
