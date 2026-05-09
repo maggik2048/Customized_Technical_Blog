@@ -29,8 +29,8 @@ const BOOK_COLORS = [
   "#5D3A00",
 ];
 
-const BOOK_HEIGHTS = [54, 60, 68, 74, 82];
-const BOOK_WIDTHS = [42, 48, 54, 62];
+const BOOK_HEIGHTS = [42, 48, 54, 60];
+const BOOK_WIDTHS = [180, 210, 240, 270];
 
 function randomFrom<T>(arr: T[], seed: number) {
   return arr[seed % arr.length];
@@ -47,6 +47,7 @@ function Book({
 }) {
   const font = randomFrom(BOOK_FONTS, index);
   const color = randomFrom(BOOK_COLORS, index + 2);
+
   const height = randomFrom(BOOK_HEIGHTS, index + 3);
   const width = randomFrom(BOOK_WIDTHS, index + 5);
 
@@ -65,27 +66,29 @@ function Book({
           width: `${width}px`,
           height: `${height}px`,
           background: color,
-          borderRadius: "4px 4px 2px 2px",
-          marginRight: "6px",
+
+          borderRadius: "6px",
+          marginBottom: "10px",
+
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
-          writingMode: "vertical-rl",
-          textOrientation: "mixed",
-          padding: "8px 4px",
+
+          paddingLeft: "18px",
+          paddingRight: "16px",
+
           position: "relative",
           cursor: "pointer",
 
           borderLeft: active
-            ? "6px solid gold"
-            : "3px solid rgba(255,255,255,0.15)",
+            ? "8px solid gold"
+            : "4px solid rgba(255,255,255,0.12)",
 
           boxShadow: active
-            ? "0 0 14px rgba(255,215,0,0.5)"
+            ? "0 0 18px rgba(255,215,0,0.45)"
             : `
-                inset -4px 0 8px rgba(255,255,255,0.08),
-                inset 4px 0 8px rgba(0,0,0,0.35),
-                2px 3px 10px rgba(0,0,0,0.35)
+                inset 0 2px 4px rgba(255,255,255,0.08),
+                inset 0 -4px 8px rgba(0,0,0,0.25),
+                0 4px 10px rgba(0,0,0,0.35)
               `,
 
           transform: `rotate(${(index % 5) - 2}deg)`,
@@ -93,7 +96,10 @@ function Book({
           transition: "all 0.25s ease",
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.transform = "translateY(-6px)";
+          e.currentTarget.style.transform = `
+            translateX(8px)
+            scale(1.02)
+          `;
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.transform = `rotate(${
@@ -101,26 +107,33 @@ function Book({
           }deg)`;
         }}
       >
+        {/* 책 위 highlight */}
         <div
           style={{
             position: "absolute",
             left: 0,
             top: 0,
-            bottom: 0,
-            width: "6px",
-            background: "rgba(255,255,255,0.12)",
+            right: 0,
+            height: "5px",
+            background: "rgba(255,255,255,0.10)",
+            borderRadius: "6px 6px 0 0",
           }}
         />
 
+        {/* 책 제목 */}
         <span
           style={{
             color: "#f5f1e8",
             fontFamily: font,
-            fontSize: "13px",
-            letterSpacing: "0.8px",
-            textAlign: "center",
+            fontSize: "15px",
+            letterSpacing: "0.4px",
             lineHeight: 1.1,
             userSelect: "none",
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+
+            textShadow: "1px 1px 2px rgba(0,0,0,0.4)",
           }}
         >
           {item.name}
@@ -141,7 +154,9 @@ export default function Sidebar() {
         width: "340px",
         height: "100vh",
         overflowY: "auto",
+
         padding: "28px 18px",
+
         background: `
           linear-gradient(
             to right,
@@ -150,6 +165,7 @@ export default function Sidebar() {
             #241811 100%
           )
         `,
+
         boxShadow: "inset -12px 0 24px rgba(0,0,0,0.4)",
       }}
     >
@@ -157,51 +173,64 @@ export default function Sidebar() {
         <div
           key={section.slug}
           style={{
-            marginBottom: "42px",
+            marginBottom: "46px",
           }}
         >
+          {/* 대분류 */}
           <div
             style={{
-              marginBottom: "14px",
-              paddingLeft: "6px",
+              marginBottom: "18px",
+              paddingLeft: "4px",
+
               color: "#d7c2a3",
-              fontSize: "18px",
+
+              fontSize: "20px",
+
               fontFamily: `"Cormorant Garamond", serif`,
+
               letterSpacing: "1px",
+
               textShadow: "1px 1px 3px rgba(0,0,0,0.5)",
             }}
           >
             {section.name}
           </div>
 
+          {/* 책 더미 */}
           <div
             style={{
               position: "relative",
-              paddingBottom: "16px",
+
+              padding: "12px",
+
+              borderRadius: "10px",
+
+              background: "rgba(255,255,255,0.02)",
+
+              boxShadow: `
+                inset 0 1px 0 rgba(255,255,255,0.04),
+                0 4px 20px rgba(0,0,0,0.2)
+              `,
             }}
           >
-            <div
-              style={{
-                display: "flex",
-                alignItems: "flex-end",
-                minHeight: "120px",
-                paddingLeft: "8px",
-              }}
-            >
-              {section.children?.map((child, idx) => (
-                <Book
-                  key={child.slug}
-                  item={child}
-                  index={idx + sectionIdx * 10}
-                  pathname={pathname}
-                />
-              ))}
-            </div>
+            {section.children?.map((child, idx) => (
+              <Book
+                key={child.slug}
+                item={child}
+                index={idx + sectionIdx * 10}
+                pathname={pathname}
+              />
+            ))}
 
+            {/* 바닥 나무 */}
             <div
               style={{
-                height: "14px",
+                marginTop: "12px",
+
+                height: "12px",
+
                 width: "100%",
+
                 background: `
                   linear-gradient(
                     to bottom,
@@ -209,18 +238,13 @@ export default function Sidebar() {
                     #4e342e
                   )
                 `,
+
                 borderRadius: "2px",
+
                 boxShadow: `
                   0 4px 10px rgba(0,0,0,0.45),
                   inset 0 2px 2px rgba(255,255,255,0.08)
                 `,
-              }}
-            />
-
-            <div
-              style={{
-                marginTop: "16px",
-                borderBottom: "1px solid rgba(255,255,255,0.08)",
               }}
             />
           </div>
