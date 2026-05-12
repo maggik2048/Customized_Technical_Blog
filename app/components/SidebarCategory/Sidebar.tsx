@@ -40,6 +40,37 @@ type BookItem = {
 };
 
 /* =========================
+   ✍️ AUTHOR MAP
+========================= */
+
+const AUTHOR_POOL = [
+  "Harold Bloom",
+  "Susan Sontag",
+  "Michel Foucault",
+  "Edward Said",
+  "Donna Haraway",
+  "Noam Chomsky",
+  "Judith Butler",
+  "Roland Barthes",
+  "Slavoj Žižek",
+  "Thomas Kuhn",
+  "Virginia Woolf",
+  "Jacques Derrida",
+  "Joseph Campbell",
+  "Toni Morrison",
+  "Umberto Eco",
+  "John Rawls",
+  "Simone Weil",
+  "Walter Benjamin",
+  "Carl Jung",
+  "Marshall McLuhan",
+];
+
+function getAuthor(index: number) {
+  return AUTHOR_POOL[index % AUTHOR_POOL.length];
+}
+
+/* =========================
    🎨 DARK ACADEMIA PALETTE
 ========================= */
 
@@ -51,25 +82,31 @@ const BOOK_FONT_CLASSES = [
 ];
 
 const BOOK_COLORS = [
-  "#111111", // obsidian black
-  "#191919", // charcoal
-  "#1E1A1A", // graphite brown-black
-  "#20242B", // dark desaturated blue
-  "#1D2621", // dark forest
-  "#2A1F1F", // dried wine
-  "#2A2420", // aged walnut
-  "#262626", // neutral dark gray
-  "#F1ECE4", // antique ivory
-  "#DDD6CC", // muted parchment
+  "#111111",
+  "#191919",
+  "#1E1A1A",
+  "#20242B",
+  "#1D2621",
+  "#2A1F1F",
+  "#2A2420",
+  "#262626",
+  "#F1ECE4",
+  "#DDD6CC",
 ];
 
-const BOOK_HEIGHTS = [42, 46, 52, 58];
+const BOOK_HEIGHTS = [72, 78, 84, 92];
 
-const BOOK_WIDTHS = [190, 220, 250, 280];
+const BOOK_WIDTHS = [230, 260, 290, 320];
 
 function randomFrom<T>(arr: T[], seed: number) {
   return arr[seed % arr.length];
 }
+
+/* =========================
+   ✨ ELEGANT MARKS
+========================= */
+
+const MARKS = ["✦", "✧", "❖", "✺", "✹", "✢"];
 
 /* =========================
    📕 BOOK COMPONENT
@@ -99,6 +136,10 @@ function Book({
   const isLightBook =
     color === "#F1ECE4" || color === "#DDD6CC";
 
+  const author = getAuthor(index);
+
+  const mark = randomFrom(MARKS, index + 8);
+
   return (
     <a
       href={href}
@@ -115,15 +156,18 @@ function Book({
 
           overflow: "hidden",
 
-          borderRadius: "4px",
+          borderRadius: "6px",
 
-          marginBottom: "10px",
+          marginBottom: "14px",
 
           display: "flex",
-          alignItems: "center",
+          flexDirection: "column",
+          justifyContent: "center",
 
-          paddingLeft: "20px",
-          paddingRight: "16px",
+          paddingLeft: "34px",
+          paddingRight: "34px",
+          paddingTop: "10px",
+          paddingBottom: "10px",
 
           cursor: "pointer",
 
@@ -192,7 +236,7 @@ function Book({
               `;
         }}
       >
-        {/* subtle cloth/leather texture */}
+        {/* texture */}
         <div
           style={{
             position: "absolute",
@@ -215,14 +259,14 @@ function Book({
           }}
         />
 
-        {/* thin emboss line */}
+        {/* emboss line */}
         <div
           style={{
             position: "absolute",
 
             left: "11px",
-            top: "7px",
-            bottom: "7px",
+            top: "8px",
+            bottom: "8px",
 
             width: "1px",
 
@@ -236,7 +280,7 @@ function Book({
           }}
         />
 
-        {/* gold accent line */}
+        {/* gold line */}
         <div
           style={{
             position: "absolute",
@@ -257,6 +301,60 @@ function Book({
           }}
         />
 
+        {/* elegant symbol */}
+        <div
+          style={{
+            position: "absolute",
+
+            left: "20px",
+            top: "50%",
+
+            transform: "translateY(-50%)",
+
+            fontSize: "11px",
+
+            color: active
+              ? "rgba(220,190,120,0.9)"
+              : "rgba(220,190,120,0.38)",
+
+            textShadow: `
+              0 0 4px rgba(201,168,97,0.2)
+            `,
+          }}
+        >
+          {mark}
+        </div>
+
+        {/* vertical author */}
+        <div
+          className={cormorant500.className}
+          style={{
+            position: "absolute",
+
+            right: "8px",
+            top: "8px",
+            bottom: "8px",
+
+            writingMode: "vertical-rl",
+
+            textOrientation: "mixed",
+
+            fontSize: "10px",
+
+            letterSpacing: "1.2px",
+
+            color: isLightBook
+              ? "rgba(60,52,42,0.55)"
+              : "rgba(245,239,228,0.32)",
+
+            userSelect: "none",
+
+            textTransform: "uppercase",
+          }}
+        >
+          {author}
+        </div>
+
         {/* title */}
         <span
           className={fontClass}
@@ -268,11 +366,11 @@ function Book({
               ? "#2B2622"
               : "rgba(245,239,228,0.92)",
 
-            fontSize: "18px",
+            fontSize: "24px",
 
-            letterSpacing: "0.6px",
+            letterSpacing: "0.9px",
 
-            lineHeight: 1.1,
+            lineHeight: 1,
 
             userSelect: "none",
 
@@ -294,6 +392,35 @@ function Book({
         >
           {item.name}
         </span>
+
+        {/* bottom subtitle */}
+        <span
+          className={cormorant400.className}
+          style={{
+            marginTop: "6px",
+
+            position: "relative",
+            zIndex: 2,
+
+            color: isLightBook
+              ? "rgba(45,38,34,0.62)"
+              : "rgba(245,239,228,0.42)",
+
+            fontSize: "13px",
+
+            letterSpacing: "1.3px",
+
+            textTransform: "uppercase",
+
+            whiteSpace: "nowrap",
+
+            overflow: "hidden",
+
+            textOverflow: "ellipsis",
+          }}
+        >
+          {author}
+        </span>
       </div>
     </a>
   );
@@ -311,13 +438,13 @@ export default function Sidebar() {
   return (
     <aside
       style={{
-        width: "340px",
+        width: "390px",
 
         height: "100vh",
 
         overflowY: "auto",
 
-        padding: "32px 18px",
+        padding: "40px 22px",
 
         background: `
           linear-gradient(
@@ -338,22 +465,22 @@ export default function Sidebar() {
         <div
           key={section.slug}
           style={{
-            marginBottom: "52px",
+            marginBottom: "58px",
           }}
         >
           {/* section title */}
           <div
             className={cormorant700.className}
             style={{
-              marginBottom: "18px",
+              marginBottom: "20px",
 
               paddingLeft: "4px",
 
               color: "rgba(219,205,180,0.88)",
 
-              fontSize: "24px",
+              fontSize: "28px",
 
-              letterSpacing: "1.2px",
+              letterSpacing: "1.4px",
 
               textShadow: `
                 0 1px 2px rgba(0,0,0,0.72)
@@ -368,9 +495,9 @@ export default function Sidebar() {
             style={{
               position: "relative",
 
-              padding: "14px",
+              padding: "16px",
 
-              borderRadius: "10px",
+              borderRadius: "12px",
 
               background: `
                 linear-gradient(
@@ -400,9 +527,9 @@ export default function Sidebar() {
             {/* wooden base */}
             <div
               style={{
-                marginTop: "14px",
+                marginTop: "18px",
 
-                height: "10px",
+                height: "12px",
 
                 width: "100%",
 
