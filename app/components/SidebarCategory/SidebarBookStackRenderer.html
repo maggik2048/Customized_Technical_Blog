@@ -41,7 +41,7 @@ scene.background = new THREE.Color(0x0f1115);
 scene.fog = new THREE.Fog(
   0x0f1115,
   18,
-  42
+  52
 );
 
 
@@ -51,17 +51,17 @@ scene.fog = new THREE.Fog(
 ========================= */
 
 const camera = new THREE.OrthographicCamera(
-  window.innerWidth / -100,
-  window.innerWidth / 100,
-  window.innerHeight / 100,
-  window.innerHeight / -100,
+  window.innerWidth / -90,
+  window.innerWidth / 90,
+  window.innerHeight / 90,
+  window.innerHeight / -90,
   0.1,
   1000
 );
 
-camera.position.set(10, 11, 30);
+camera.position.set(11, 13, 32);
 
-camera.lookAt(0, 4, 0);
+camera.lookAt(0, 5, 0);
 
 
 
@@ -85,7 +85,7 @@ renderer.outputEncoding = THREE.sRGBEncoding;
 renderer.toneMapping =
   THREE.ACESFilmicToneMapping;
 
-renderer.toneMappingExposure = 0.9;
+renderer.toneMappingExposure = 0.92;
 
 document.body.appendChild(
   renderer.domElement
@@ -100,7 +100,7 @@ document.body.appendChild(
 const ambient =
   new THREE.AmbientLight(
     0xffffff,
-    0.22
+    0.24
   );
 
 scene.add(ambient);
@@ -109,10 +109,10 @@ scene.add(ambient);
 const light =
   new THREE.DirectionalLight(
     0xffffff,
-    2.2
+    2.4
   );
 
-light.position.set(3, 14, 8);
+light.position.set(5, 18, 10);
 
 light.castShadow = true;
 
@@ -120,7 +120,7 @@ light.shadow.mapSize.width = 2048;
 light.shadow.mapSize.height = 2048;
 
 light.shadow.camera.near = 1;
-light.shadow.camera.far = 60;
+light.shadow.camera.far = 80;
 
 scene.add(light);
 
@@ -131,16 +131,16 @@ scene.add(light);
 ========================= */
 
 const floorGeometry =
-  new THREE.PlaneGeometry(60, 60);
+  new THREE.PlaneGeometry(70, 70);
 
 const floorMaterial =
   new THREE.MeshStandardMaterial({
 
     color: 0x15171b,
 
-    roughness: 0.92,
+    roughness: 0.94,
 
-    metalness: 0.05
+    metalness: 0.04
 
   });
 
@@ -152,7 +152,7 @@ const floor =
 
 floor.rotation.x = -Math.PI / 2;
 
-floor.position.y = -2;
+floor.position.y = -2.4;
 
 floor.receiveShadow = true;
 
@@ -161,7 +161,7 @@ scene.add(floor);
 
 
 /* =========================
-   LUXURY DARK COLORS
+   DARK LUXURY COLORS
 ========================= */
 
 const colors = [
@@ -173,68 +173,288 @@ const colors = [
   0x182433,
   0x242830,
   0x2a1d17,
-  0x1c1412
+  0x1c1412,
+  0x2a2620,
+  0x10161d
 
 ];
 
 
 
 /* =========================
-   UNIVERSITY MATH TITLES
+   BOOK DATA
 ========================= */
 
-const bookTitles = [
+const books = [
 
-  "Advanced Calculus",
-  "Linear Algebra",
-  "Real Analysis",
-  "Complex Variables",
-  "Abstract Algebra",
-  "Differential Geometry",
-  "Topology",
-  "Functional Analysis",
-  "Tensor Calculus",
-  "Partial Differential Equations",
-  "Probability Theory",
-  "Mathematical Statistics",
-  "Numerical Analysis",
-  "Discrete Mathematics",
-  "Dynamical Systems",
-  "Fourier Analysis",
-  "Set Theory",
-  "Number Theory"
+  {
+    title: "Advanced Calculus",
+    author: "Spivak"
+  },
+
+  {
+    title: "Linear Algebra",
+    author: "Strang"
+  },
+
+  {
+    title: "Real Analysis",
+    author: "Rudin"
+  },
+
+  {
+    title: "Complex Variables",
+    author: "Ahlfors"
+  },
+
+  {
+    title: "Abstract Algebra",
+    author: "Dummit & Foote"
+  },
+
+  {
+    title: "Differential Geometry",
+    author: "do Carmo"
+  },
+
+  {
+    title: "Topology",
+    author: "Munkres"
+  },
+
+  {
+    title: "Functional Analysis",
+    author: "Kreyszig"
+  },
+
+  {
+    title: "Tensor Calculus",
+    author: "Schutz"
+  },
+
+  {
+    title: "PDE",
+    author: "Evans"
+  },
+
+  {
+    title: "Probability Theory",
+    author: "Feller"
+  },
+
+  {
+    title: "Statistics",
+    author: "Casella"
+  },
+
+  {
+    title: "Numerical Analysis",
+    author: "Burden"
+  },
+
+  {
+    title: "Discrete Math",
+    author: "Rosen"
+  },
+
+  {
+    title: "Dynamical Systems",
+    author: "Strogatz"
+  },
+
+  {
+    title: "Fourier Analysis",
+    author: "Stein"
+  },
+
+  {
+    title: "Set Theory",
+    author: "Jech"
+  },
+
+  {
+    title: "Number Theory",
+    author: "Hardy & Wright"
+  }
 
 ];
 
 
+
 /* =========================
-   TEXT TEXTURE
+   TEXTURE GENERATOR
 ========================= */
 
-function createTextTexture(title) {
+function createBookTexture(title, author) {
 
   const canvas = document.createElement("canvas");
 
-  canvas.width = 1024;
-  canvas.height = 128;
+  canvas.width = 2048;
+  canvas.height = 256;
 
   const ctx = canvas.getContext("2d");
 
-  ctx.fillStyle = "#111";
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  ctx.font = "bold 54px Georgia";
+
+  /* BACKGROUND */
+
+  const gradient =
+    ctx.createLinearGradient(
+      0,
+      0,
+      canvas.width,
+      0
+    );
+
+  gradient.addColorStop(0, "#111");
+  gradient.addColorStop(1, "#191919");
+
+  ctx.fillStyle = gradient;
+
+  ctx.fillRect(
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+
+
+
+  /* SUBTLE FRAME */
+
+  ctx.strokeStyle =
+    "rgba(212,175,55,0.35)";
+
+  ctx.lineWidth = 4;
+
+  ctx.strokeRect(
+    12,
+    12,
+    canvas.width - 24,
+    canvas.height - 24
+  );
+
+
+
+  /* LEFT ORNAMENT */
 
   ctx.fillStyle = "#d4af37";
 
-  ctx.textAlign = "center";
+  ctx.font =
+    "bold 70px Georgia";
+
+  ctx.textAlign = "left";
+
   ctx.textBaseline = "middle";
 
   ctx.fillText(
-    title,
-    canvas.width / 2,
+    "✦",
+    60,
     canvas.height / 2
   );
+
+
+
+  /* MINI DECOR LINES */
+
+  ctx.fillRect(
+    140,
+    54,
+    12,
+    150
+  );
+
+  ctx.fillRect(
+    165,
+    74,
+    5,
+    110
+  );
+
+
+
+  /* TITLE */
+
+  ctx.font =
+    "bold 84px Georgia";
+
+  ctx.fillStyle = "#d8b85d";
+
+  ctx.textAlign = "center";
+
+  ctx.fillText(
+    title,
+    canvas.width / 2 + 40,
+    108
+  );
+
+
+
+  /* AUTHOR */
+
+  ctx.font =
+    "italic 42px Georgia";
+
+  ctx.fillStyle =
+    "rgba(220,200,150,0.88)";
+
+  ctx.fillText(
+    author,
+    canvas.width / 2 + 40,
+    176
+  );
+
+
+
+  /* RIGHT VERTICAL TEXT */
+
+  ctx.save();
+
+  ctx.translate(
+    canvas.width - 80,
+    canvas.height / 2
+  );
+
+  ctx.rotate(
+    -Math.PI / 2
+  );
+
+  ctx.font =
+    "italic 34px Georgia";
+
+  ctx.fillStyle =
+    "rgba(212,175,55,0.65)";
+
+  ctx.fillText(
+    author.toUpperCase(),
+    0,
+    0
+  );
+
+  ctx.restore();
+
+
+
+  /* GOLD DETAIL */
+
+  ctx.fillStyle =
+    "rgba(212,175,55,0.9)";
+
+  ctx.fillRect(
+    0,
+    18,
+    canvas.width,
+    4
+  );
+
+  ctx.fillRect(
+    0,
+    canvas.height - 22,
+    canvas.width,
+    4
+  );
+
+
 
   const texture =
     new THREE.CanvasTexture(canvas);
@@ -252,15 +472,15 @@ function createTextTexture(title) {
 
 let y = 0;
 
-for (let i = 0; i < 18; i++) {
+for (let i = 0; i < books.length; i++) {
 
   const width =
-    4 + Math.random() * 5;
+    5.5 + Math.random() * 2.5;
 
   const height =
-    0.22 + Math.random() * 0.32;
+    0.34 + Math.random() * 0.34;
 
-  const depth = 1.35;
+  const depth = 1.65;
 
   const color =
     colors[
@@ -269,11 +489,13 @@ for (let i = 0; i < 18; i++) {
       )
     ];
 
-  const title =
-    bookTitles[i];
+  const texture =
+    createBookTexture(
+      books[i].title,
+      books[i].author
+    );
 
-  const textTexture =
-    createTextTexture(title);
+
 
   const materials = [
 
@@ -294,9 +516,13 @@ for (let i = 0; i < 18; i++) {
     }),
 
     new THREE.MeshStandardMaterial({
-      map: textTexture,
-      roughness: 0.3,
-      metalness: 0.15
+
+      map: texture,
+
+      roughness: 0.28,
+
+      metalness: 0.16
+
     }),
 
     new THREE.MeshStandardMaterial({
@@ -304,6 +530,8 @@ for (let i = 0; i < 18; i++) {
     })
 
   ];
+
+
 
   const geometry =
     new THREE.BoxGeometry(
@@ -321,10 +549,10 @@ for (let i = 0; i < 18; i++) {
   book.position.y = y;
 
   book.rotation.y =
-    (Math.random() - 0.5) * 0.045;
+    (Math.random() - 0.5) * 0.05;
 
   book.rotation.z =
-    (Math.random() - 0.5) * 0.01;
+    (Math.random() - 0.5) * 0.012;
 
   book.castShadow = true;
 
@@ -335,16 +563,16 @@ for (let i = 0; i < 18; i++) {
 
 
   /* =========================
-     GOLD DETAIL LINE
+     MAIN GOLD STRIPE
   ========================= */
 
-  if (Math.random() > 0.2) {
+  if (Math.random() > 0.12) {
 
     const stripeGeometry =
       new THREE.BoxGeometry(
         width * 0.96,
-        0.018,
-        depth + 0.01
+        0.022,
+        depth + 0.02
       );
 
     const stripeMaterial =
@@ -352,7 +580,7 @@ for (let i = 0; i < 18; i++) {
 
         color: 0xd4af37,
 
-        roughness: 0.18,
+        roughness: 0.16,
 
         metalness: 1
 
@@ -365,9 +593,9 @@ for (let i = 0; i < 18; i++) {
       );
 
     stripe.position.y =
-      y + height * 0.12;
+      y + height * 0.16;
 
-    stripe.position.z = 0.001;
+    stripe.position.z = 0.002;
 
     stripe.rotation.y =
       book.rotation.y;
@@ -378,22 +606,22 @@ for (let i = 0; i < 18; i++) {
 
 
   /* =========================
-     SECOND GOLD LINE
+     SECOND STRIPE
   ========================= */
 
-  if (Math.random() > 0.55) {
+  if (Math.random() > 0.45) {
 
     const stripe2Geometry =
       new THREE.BoxGeometry(
         width * 0.92,
         0.012,
-        depth + 0.01
+        depth + 0.02
       );
 
     const stripe2Material =
       new THREE.MeshStandardMaterial({
 
-        color: 0xc9a227,
+        color: 0xb8932f,
 
         roughness: 0.15,
 
@@ -408,9 +636,9 @@ for (let i = 0; i < 18; i++) {
       );
 
     stripe2.position.y =
-      y - height * 0.12;
+      y - height * 0.18;
 
-    stripe2.position.z = 0.001;
+    stripe2.position.z = 0.002;
 
     stripe2.rotation.y =
       book.rotation.y;
@@ -418,18 +646,30 @@ for (let i = 0; i < 18; i++) {
     scene.add(stripe2);
   }
 
-  y += height + 0.03;
+
+
+  y += height + 0.04;
 }
 
 
 
 /* =========================
-   ANIMATION
+   CAMERA FLOAT
 ========================= */
 
 function animate() {
 
   requestAnimationFrame(animate);
+
+  const t = performance.now() * 0.0003;
+
+  camera.position.x =
+    Math.sin(t) * 1.1 + 10;
+
+  camera.position.y =
+    12 + Math.cos(t * 1.4) * 0.3;
+
+  camera.lookAt(0, 5, 0);
 
   renderer.render(
     scene,
@@ -446,20 +686,20 @@ animate();
 ========================= */
 
 window.addEventListener(
-  'resize',
+  "resize",
   () => {
 
     camera.left =
-      window.innerWidth / -100;
+      window.innerWidth / -90;
 
     camera.right =
-      window.innerWidth / 100;
+      window.innerWidth / 90;
 
     camera.top =
-      window.innerHeight / 100;
+      window.innerHeight / 90;
 
     camera.bottom =
-      window.innerHeight / -100;
+      window.innerHeight / -90;
 
     camera.updateProjectionMatrix();
 
