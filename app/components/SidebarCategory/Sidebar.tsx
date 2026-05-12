@@ -7,32 +7,24 @@ import { Cormorant_SC } from "next/font/google";
 
 import { CATEGORY_TREE } from "./CategoryTree";
 
+import {
+  onBookEnter,
+  onBookLeave,
+  getDefaultTransform,
+  getDefaultShadow,
+} from "./SidebarBookMotion";
+
 /* =========================
-   🎨 FONT SYSTEM
+   FONT SYSTEM
 ========================= */
 
-const cormorant400 = Cormorant_SC({
-  subsets: ["latin"],
-  weight: ["400"],
-});
-
-const cormorant500 = Cormorant_SC({
-  subsets: ["latin"],
-  weight: ["500"],
-});
-
-const cormorant600 = Cormorant_SC({
-  subsets: ["latin"],
-  weight: ["600"],
-});
-
-const cormorant700 = Cormorant_SC({
-  subsets: ["latin"],
-  weight: ["700"],
-});
+const cormorant400 = Cormorant_SC({ subsets: ["latin"], weight: ["400"] });
+const cormorant500 = Cormorant_SC({ subsets: ["latin"], weight: ["500"] });
+const cormorant600 = Cormorant_SC({ subsets: ["latin"], weight: ["600"] });
+const cormorant700 = Cormorant_SC({ subsets: ["latin"], weight: ["700"] });
 
 /* =========================
-   📚 TYPES
+   TYPES
 ========================= */
 
 type BookItem = {
@@ -41,7 +33,7 @@ type BookItem = {
 };
 
 /* =========================
-   ✍️ AUTHOR POOL
+   AUTHOR (원래 유지)
 ========================= */
 
 const AUTHOR_POOL = [
@@ -72,15 +64,8 @@ function getAuthor(index: number) {
 }
 
 /* =========================
-   🖼 OPTIONAL BOOK COVERS
+   BOOK COVERS
 ========================= */
-
-/*
-  slug 기준으로 원하는 이미지 연결
-
-  예시:
-  philosophy: "/covers/philosophy.jpg"
-*/
 
 const BOOK_IMAGES: Record<string, string> = {
   philosophy: "/covers/philosophy.jpg",
@@ -90,7 +75,7 @@ const BOOK_IMAGES: Record<string, string> = {
 };
 
 /* =========================
-   🎨 PALETTE
+   STYLE SYSTEM (복구 핵심)
 ========================= */
 
 const BOOK_FONT_CLASSES = [
@@ -114,21 +99,16 @@ const BOOK_COLORS = [
 ];
 
 const BOOK_HEIGHTS = [72, 78, 84, 92];
-
 const BOOK_WIDTHS = [230, 260, 290, 320];
+
+const MARKS = ["✦", "✧", "❖", "✺", "✹", "✢"];
 
 function randomFrom<T>(arr: T[], seed: number) {
   return arr[seed % arr.length];
 }
 
 /* =========================
-   ✨ MARKS
-========================= */
-
-const MARKS = ["✦", "✧", "❖", "✺", "✹", "✢"];
-
-/* =========================
-   📕 BOOK
+   BOOK
 ========================= */
 
 function Book({
@@ -141,19 +121,14 @@ function Book({
   pathname: string;
 }) {
   const fontClass = randomFrom(BOOK_FONT_CLASSES, index);
-
   const color = randomFrom(BOOK_COLORS, index + 2);
-
   const height = randomFrom(BOOK_HEIGHTS, index + 3);
-
   const width = randomFrom(BOOK_WIDTHS, index + 5);
 
   const href = `/category/${item.slug}`;
-
   const active = pathname.includes(item.slug);
 
   const author = getAuthor(index);
-
   const mark = randomFrom(MARKS, index + 8);
 
   const imageSrc = BOOK_IMAGES[item.slug];
@@ -162,33 +137,21 @@ function Book({
     color === "#F1ECE4" || color === "#DDD6CC";
 
   return (
-    <a
-      href={href}
-      style={{
-        textDecoration: "none",
-      }}
-    >
+    <a href={href} style={{ textDecoration: "none" }}>
       <div
         style={{
           width: `${width}px`,
           height: `${height}px`,
-
           position: "relative",
-
           overflow: "hidden",
-
           borderRadius: "6px",
-
           marginBottom: "14px",
 
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
 
-          paddingLeft: "34px",
-          paddingRight: "34px",
-          paddingTop: "10px",
-          paddingBottom: "10px",
+          padding: "10px 34px",
 
           cursor: "pointer",
 
@@ -210,66 +173,22 @@ function Book({
             ? "1px solid rgba(120,110,90,0.16)"
             : "1px solid rgba(255,255,255,0.045)",
 
-          boxShadow: active
-            ? `
-                0 0 24px rgba(173,140,71,0.16),
-                inset 0 1px 0 rgba(255,255,255,0.06),
-                inset 0 -1px 0 rgba(0,0,0,0.25)
-              `
-            : `
-                inset 0 1px 0 rgba(255,255,255,0.025),
-                inset 0 -1px 0 rgba(0,0,0,0.25),
-                0 3px 10px rgba(0,0,0,0.22)
-              `,
+          boxShadow: getDefaultShadow(active),
 
-          transform: `rotate(${(index % 5) - 2}deg)`,
+          transform: getDefaultTransform(index),
 
-          transition: `
-            transform 0.28s ease,
-            box-shadow 0.28s ease,
-            border 0.28s ease
-          `,
+          transition: "all 0.28s ease",
         }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = `
-            translateX(10px)
-            scale(1.015)
-          `;
-
-          e.currentTarget.style.boxShadow = `
-            0 12px 30px rgba(0,0,0,0.34),
-            inset 0 1px 0 rgba(255,255,255,0.05)
-          `;
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = `rotate(${
-            (index % 5) - 2
-          }deg)`;
-
-          e.currentTarget.style.boxShadow = active
-            ? `
-                0 0 24px rgba(173,140,71,0.16),
-                inset 0 1px 0 rgba(255,255,255,0.06),
-                inset 0 -1px 0 rgba(0,0,0,0.25)
-              `
-            : `
-                inset 0 1px 0 rgba(255,255,255,0.025),
-                inset 0 -1px 0 rgba(0,0,0,0.25),
-                0 3px 10px rgba(0,0,0,0.22)
-              `;
-        }}
+        onMouseEnter={onBookEnter}
+        onMouseLeave={(e) => onBookLeave(e, index, active)}
       >
-        {/* =========================
-            COVER IMAGE
-        ========================= */}
-
+        {/* IMAGE */}
         {imageSrc && (
           <>
             <Image
               src={imageSrc}
               alt={item.name}
               fill
-              sizes="320px"
               style={{
                 objectFit: "cover",
                 opacity: 0.38,
@@ -277,12 +196,10 @@ function Book({
               }}
             />
 
-            {/* color blend */}
             <div
               style={{
                 position: "absolute",
                 inset: 0,
-
                 background: `
                   linear-gradient(
                     180deg,
@@ -291,207 +208,109 @@ function Book({
                   ),
                   ${color}
                 `,
-
                 mixBlendMode: "multiply",
-
                 opacity: 0.92,
-
                 zIndex: 1,
               }}
             />
           </>
         )}
 
-        {/* texture */}
+        {/* TEXTURE */}
         <div
           style={{
             position: "absolute",
             inset: 0,
-
             opacity: 0.06,
-
             backgroundImage: `
               radial-gradient(
                 rgba(255,255,255,0.55) 0.4px,
                 transparent 0.8px
               )
             `,
-
             backgroundSize: "5px 5px",
-
             mixBlendMode: "overlay",
-
-            pointerEvents: "none",
-
             zIndex: 2,
           }}
         />
 
-        {/* emboss line */}
+        {/* GOLD LINE */}
         <div
           style={{
             position: "absolute",
-
-            left: "11px",
-            top: "8px",
-            bottom: "8px",
-
-            width: "1px",
-
-            background: isLightBook
-              ? "rgba(70,60,40,0.22)"
-              : "rgba(255,255,255,0.08)",
-
-            boxShadow: isLightBook
-              ? "1px 0 1px rgba(255,255,255,0.25)"
-              : "1px 0 1px rgba(0,0,0,0.45)",
-
-            zIndex: 3,
-          }}
-        />
-
-        {/* gold line */}
-        <div
-          style={{
-            position: "absolute",
-
             left: "15px",
             top: "9px",
             bottom: "9px",
-
             width: "1px",
-
-            background: active
-              ? "rgba(201,168,97,0.65)"
-              : "rgba(201,168,97,0.16)",
-
-            boxShadow: `
-              0 0 2px rgba(201,168,97,0.22)
-            `,
-
+            background: "rgba(201,168,97,0.65)",
             zIndex: 3,
           }}
         />
 
-        {/* elegant mark */}
+        {/* MARK (원래 골드톤 복구) */}
         <div
           style={{
             position: "absolute",
-
             left: "20px",
             top: "50%",
-
             transform: "translateY(-50%)",
-
             fontSize: "11px",
-
-            color: active
-              ? "rgba(220,190,120,0.9)"
-              : "rgba(220,190,120,0.38)",
-
-            textShadow: `
-              0 0 4px rgba(201,168,97,0.2)
-            `,
-
+            color: "rgba(220,190,120,0.8)",
             zIndex: 3,
           }}
         >
           {mark}
         </div>
 
-        {/* vertical author */}
+        {/* AUTHOR (파랑 아님 → 원래 톤) */}
         <div
           className={cormorant500.className}
           style={{
             position: "absolute",
-
             right: "8px",
             top: "8px",
             bottom: "8px",
-
             writingMode: "vertical-rl",
-
-            textOrientation: "mixed",
-
             fontSize: "10px",
-
             letterSpacing: "1.2px",
-
             color: isLightBook
               ? "rgba(60,52,42,0.55)"
               : "rgba(245,239,228,0.32)",
-
-            userSelect: "none",
-
             textTransform: "uppercase",
-
             zIndex: 3,
           }}
         >
           {author}
         </div>
 
-        {/* title */}
+        {/* TITLE */}
         <span
           className={fontClass}
           style={{
             position: "relative",
             zIndex: 4,
-
             color: isLightBook
               ? "#2B2622"
               : "rgba(245,239,228,0.94)",
-
             fontSize: "24px",
-
-            letterSpacing: "0.9px",
-
-            lineHeight: 1,
-
-            userSelect: "none",
-
             whiteSpace: "nowrap",
-
             overflow: "hidden",
-
             textOverflow: "ellipsis",
-
-            textShadow: `
-              0 2px 8px rgba(0,0,0,0.72)
-            `,
           }}
         >
           {item.name}
         </span>
 
-        {/* subtitle */}
+        {/* SUB */}
         <span
           className={cormorant400.className}
           style={{
             marginTop: "6px",
-
-            position: "relative",
             zIndex: 4,
-
+            fontSize: "13px",
             color: isLightBook
               ? "rgba(45,38,34,0.62)"
               : "rgba(245,239,228,0.52)",
-
-            fontSize: "13px",
-
-            letterSpacing: "1.3px",
-
-            textTransform: "uppercase",
-
-            whiteSpace: "nowrap",
-
-            overflow: "hidden",
-
-            textOverflow: "ellipsis",
-
-            textShadow: `
-              0 1px 6px rgba(0,0,0,0.55)
-            `,
           }}
         >
           {author}
@@ -502,24 +321,19 @@ function Book({
 }
 
 /* =========================
-   🪵 SIDEBAR
+   SIDEBAR
 ========================= */
 
 export default function Sidebar() {
   const pathname = usePathname();
-
   const shelfData = useMemo(() => CATEGORY_TREE, []);
 
   return (
     <aside
       style={{
         width: "390px",
-
         height: "100vh",
-
         overflowY: "auto",
-
-        padding: "40px 22px",
 
         background: `
           linear-gradient(
@@ -529,67 +343,15 @@ export default function Sidebar() {
             #120F0E 100%
           )
         `,
-
-        boxShadow: `
-          inset -18px 0 34px rgba(0,0,0,0.52),
-          inset 0 0 120px rgba(0,0,0,0.22)
-        `,
       }}
     >
       {shelfData.map((section, sectionIdx) => (
-        <div
-          key={section.slug}
-          style={{
-            marginBottom: "58px",
-          }}
-        >
-          {/* section title */}
-          <div
-            className={cormorant700.className}
-            style={{
-              marginBottom: "20px",
-
-              paddingLeft: "4px",
-
-              color: "rgba(219,205,180,0.88)",
-
-              fontSize: "28px",
-
-              letterSpacing: "1.4px",
-
-              textShadow: `
-                0 1px 2px rgba(0,0,0,0.72)
-              `,
-            }}
-          >
+        <div key={section.slug} style={{ marginBottom: "58px" }}>
+          <div className={cormorant700.className}>
             {section.name}
           </div>
 
-          {/* shelf */}
-          <div
-            style={{
-              position: "relative",
-
-              padding: "16px",
-
-              borderRadius: "12px",
-
-              background: `
-                linear-gradient(
-                  180deg,
-                  rgba(255,255,255,0.015),
-                  rgba(255,255,255,0.005)
-                )
-              `,
-
-              border: "1px solid rgba(255,255,255,0.03)",
-
-              boxShadow: `
-                inset 0 1px 0 rgba(255,255,255,0.02),
-                0 10px 30px rgba(0,0,0,0.22)
-              `,
-            }}
-          >
+          <div>
             {section.children?.map((child, idx) => (
               <Book
                 key={child.slug}
@@ -598,32 +360,6 @@ export default function Sidebar() {
                 pathname={pathname}
               />
             ))}
-
-            {/* wooden base */}
-            <div
-              style={{
-                marginTop: "18px",
-
-                height: "12px",
-
-                width: "100%",
-
-                borderRadius: "2px",
-
-                background: `
-                  linear-gradient(
-                    to bottom,
-                    #3A2C25,
-                    #241B17
-                  )
-                `,
-
-                boxShadow: `
-                  0 5px 14px rgba(0,0,0,0.42),
-                  inset 0 1px 0 rgba(255,255,255,0.04)
-                `,
-              }}
-            />
           </div>
         </div>
       ))}
