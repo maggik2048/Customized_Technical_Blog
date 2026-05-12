@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Cormorant_SC } from "next/font/google";
 
@@ -40,7 +41,7 @@ type BookItem = {
 };
 
 /* =========================
-   ✍️ AUTHOR MAP
+   ✍️ AUTHOR POOL
 ========================= */
 
 const AUTHOR_POOL = [
@@ -71,7 +72,25 @@ function getAuthor(index: number) {
 }
 
 /* =========================
-   🎨 DARK ACADEMIA PALETTE
+   🖼 OPTIONAL BOOK COVERS
+========================= */
+
+/*
+  slug 기준으로 원하는 이미지 연결
+
+  예시:
+  philosophy: "/covers/philosophy.jpg"
+*/
+
+const BOOK_IMAGES: Record<string, string> = {
+  philosophy: "/covers/philosophy.jpg",
+  literature: "/covers/literature.jpg",
+  psychology: "/covers/psychology.jpg",
+  history: "/covers/history.jpg",
+};
+
+/* =========================
+   🎨 PALETTE
 ========================= */
 
 const BOOK_FONT_CLASSES = [
@@ -103,13 +122,13 @@ function randomFrom<T>(arr: T[], seed: number) {
 }
 
 /* =========================
-   ✨ ELEGANT MARKS
+   ✨ MARKS
 ========================= */
 
 const MARKS = ["✦", "✧", "❖", "✺", "✹", "✢"];
 
 /* =========================
-   📕 BOOK COMPONENT
+   📕 BOOK
 ========================= */
 
 function Book({
@@ -133,12 +152,14 @@ function Book({
 
   const active = pathname.includes(item.slug);
 
-  const isLightBook =
-    color === "#F1ECE4" || color === "#DDD6CC";
-
   const author = getAuthor(index);
 
   const mark = randomFrom(MARKS, index + 8);
+
+  const imageSrc = BOOK_IMAGES[item.slug];
+
+  const isLightBook =
+    color === "#F1ECE4" || color === "#DDD6CC";
 
   return (
     <a
@@ -171,15 +192,17 @@ function Book({
 
           cursor: "pointer",
 
-          background: `
-            linear-gradient(
-              180deg,
-              rgba(255,255,255,0.045) 0%,
-              rgba(255,255,255,0.01) 14%,
-              rgba(0,0,0,0.02) 100%
-            ),
-            ${color}
-          `,
+          background: imageSrc
+            ? color
+            : `
+              linear-gradient(
+                180deg,
+                rgba(255,255,255,0.045) 0%,
+                rgba(255,255,255,0.01) 14%,
+                rgba(0,0,0,0.02) 100%
+              ),
+              ${color}
+            `,
 
           border: active
             ? "1px solid rgba(201,168,97,0.65)"
@@ -236,6 +259,49 @@ function Book({
               `;
         }}
       >
+        {/* =========================
+            COVER IMAGE
+        ========================= */}
+
+        {imageSrc && (
+          <>
+            <Image
+              src={imageSrc}
+              alt={item.name}
+              fill
+              sizes="320px"
+              style={{
+                objectFit: "cover",
+                opacity: 0.38,
+                zIndex: 0,
+              }}
+            />
+
+            {/* color blend */}
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+
+                background: `
+                  linear-gradient(
+                    180deg,
+                    rgba(0,0,0,0.15),
+                    rgba(0,0,0,0.45)
+                  ),
+                  ${color}
+                `,
+
+                mixBlendMode: "multiply",
+
+                opacity: 0.92,
+
+                zIndex: 1,
+              }}
+            />
+          </>
+        )}
+
         {/* texture */}
         <div
           style={{
@@ -256,6 +322,8 @@ function Book({
             mixBlendMode: "overlay",
 
             pointerEvents: "none",
+
+            zIndex: 2,
           }}
         />
 
@@ -277,6 +345,8 @@ function Book({
             boxShadow: isLightBook
               ? "1px 0 1px rgba(255,255,255,0.25)"
               : "1px 0 1px rgba(0,0,0,0.45)",
+
+            zIndex: 3,
           }}
         />
 
@@ -298,10 +368,12 @@ function Book({
             boxShadow: `
               0 0 2px rgba(201,168,97,0.22)
             `,
+
+            zIndex: 3,
           }}
         />
 
-        {/* elegant symbol */}
+        {/* elegant mark */}
         <div
           style={{
             position: "absolute",
@@ -320,6 +392,8 @@ function Book({
             textShadow: `
               0 0 4px rgba(201,168,97,0.2)
             `,
+
+            zIndex: 3,
           }}
         >
           {mark}
@@ -350,6 +424,8 @@ function Book({
             userSelect: "none",
 
             textTransform: "uppercase",
+
+            zIndex: 3,
           }}
         >
           {author}
@@ -360,11 +436,11 @@ function Book({
           className={fontClass}
           style={{
             position: "relative",
-            zIndex: 2,
+            zIndex: 4,
 
             color: isLightBook
               ? "#2B2622"
-              : "rgba(245,239,228,0.92)",
+              : "rgba(245,239,228,0.94)",
 
             fontSize: "24px",
 
@@ -380,31 +456,26 @@ function Book({
 
             textOverflow: "ellipsis",
 
-            textShadow: isLightBook
-              ? `
-                  0 1px 0 rgba(255,255,255,0.35)
-                `
-              : `
-                  0 1px 1px rgba(0,0,0,0.65),
-                  0 0 1px rgba(255,255,255,0.04)
-                `,
+            textShadow: `
+              0 2px 8px rgba(0,0,0,0.72)
+            `,
           }}
         >
           {item.name}
         </span>
 
-        {/* bottom subtitle */}
+        {/* subtitle */}
         <span
           className={cormorant400.className}
           style={{
             marginTop: "6px",
 
             position: "relative",
-            zIndex: 2,
+            zIndex: 4,
 
             color: isLightBook
               ? "rgba(45,38,34,0.62)"
-              : "rgba(245,239,228,0.42)",
+              : "rgba(245,239,228,0.52)",
 
             fontSize: "13px",
 
@@ -417,6 +488,10 @@ function Book({
             overflow: "hidden",
 
             textOverflow: "ellipsis",
+
+            textShadow: `
+              0 1px 6px rgba(0,0,0,0.55)
+            `,
           }}
         >
           {author}
