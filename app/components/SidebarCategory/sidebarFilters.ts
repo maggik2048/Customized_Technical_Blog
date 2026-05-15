@@ -5,45 +5,65 @@
  * SIDEBAR GLOBAL EDITORIAL FILTERS
  * =========================================
  *
- * sidebar 전체 aesthetic tone 통일용
- * 각 책 이미지를 직접 수정하는 게 아니라
- * 렌더 시 cinematic grading 느낌으로 보정
+ * luxury editorial / hardcover / cinematic grading
+ * inspired by:
+ * - criterion collection
+ * - aesop
+ * - taschen
+ * - moody museum catalogs
  */
 
 /**
- * luxury editorial image grading
+ * MAIN LUXURY IMAGE FILTER
+ *
+ * 핵심:
+ * - blacks deepen
+ * - cheap RGB saturation 제거
+ * - warm paper tone 추가
+ * - hardcover print 느낌 강화
  */
 export const SIDEBAR_IMAGE_FILTER = `
-  grayscale(0.12)
-  sepia(0.08)
-  contrast(1.02)
-  brightness(0.95)
-  saturate(0.78)
+  brightness(0.84)
+  contrast(1.18)
+  saturate(0.74)
+  sepia(0.16)
+  hue-rotate(-4deg)
 `;
 
 /**
- * unified warm editorial tint
+ * EDITORIAL LIGHTING OVERLAY
+ *
+ * 단색 overlay 대신
+ * cinematic directional lighting 느낌
  */
-export const SIDEBAR_EDITORIAL_OVERLAY =
-  "rgba(38, 30, 24, 0.12)";
+export const SIDEBAR_EDITORIAL_OVERLAY = `
+  linear-gradient(
+    135deg,
+    rgba(14,12,10,0.24),
+    rgba(42,32,24,0.10),
+    rgba(10,8,8,0.32)
+  )
+`;
 
 /**
- * optional darker cinematic version
+ * OPTIONAL:
+ * darker archival grading
  */
 export const SIDEBAR_DARK_EDITORIAL_FILTER = `
-  grayscale(0.18)
-  sepia(0.14)
-  contrast(0.98)
-  brightness(0.9)
-  saturate(0.72)
+  brightness(0.72)
+  contrast(1.24)
+  saturate(0.58)
+  sepia(0.22)
+  hue-rotate(-8deg)
 `;
 
 /**
- * optional archival cold version
+ * OPTIONAL:
+ * cold museum catalog grading
  */
 export const SIDEBAR_ARCHIVAL_FILTER = `
-  grayscale(0.28)
-  contrast(0.96)
-  brightness(0.92)
-  saturate(0.58)
+  brightness(0.88)
+  contrast(1.06)
+  saturate(0.52)
+  grayscale(0.18)
 `;
