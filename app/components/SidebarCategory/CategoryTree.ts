@@ -2,7 +2,7 @@ import { Item } from "../types";
 
 export const CATEGORY_TREE: Omit<Item, "href" | "count">[] = [
   {
-    name: "University Physics Revisited (대학 물리)",
+    name: "University Physics Revisited",
     slug: "physics_revisited",
     children: [
       { name: "la langue française(French Language)", slug: "french" },

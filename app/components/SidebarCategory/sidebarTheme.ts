@@ -107,7 +107,7 @@ export const SIDEBAR_BOOK_THEME_MAP: Record<
     onlyShowImage: true,
 
     imageOpacity: 0.98,
-    vignetteOpacity: 0.015,
+    vignetteOpacity: 0.095,
 
     mark: "❖",
 
@@ -120,10 +120,12 @@ export const SIDEBAR_BOOK_THEME_MAP: Record<
   thermodynamics: {
     font: "prata",
     fontWeight: "700",
-    color: "#2A1F1F",
-    image: "/images/covers/thermo.jpg",
+    color: "#1D2621",
+    image: "/images/covers/thermo.png",
 
-    imageOpacity: 0.58,
+    onlyShowImage: true,
+
+    imageOpacity: 0.98,
     vignetteOpacity: 0.08,
 
     mark: "✺",
@@ -155,9 +157,10 @@ export const SIDEBAR_BOOK_THEME_MAP: Record<
     font: "ebgaramond",
     fontWeight: "600",
     color: "#191919",
-    image: "/images/covers/linear.jpg",
+    image: "/images/covers/linear2.png",
 
-    imageOpacity: 0.6,
+
+    imageOpacity: 0.98,
     vignetteOpacity: 0.08,
 
     mark: "✢",
@@ -170,25 +173,25 @@ export const SIDEBAR_BOOK_THEME_MAP: Record<
     font: "alegreya",
     fontWeight: "500",
     color: "#1E1A1A",
-    image: "/images/covers/diff.jpg",
-
-    imageOpacity: 0.6,
+    image: "/images/covers/diffeq3.png",
+    onlyShowImage: true,
+    imageOpacity: 0.99,
     vignetteOpacity: 0.08,
 
     mark: "✧",
-    height: 78,
+    height: 138,
     width: 260,
     authorOverride: "John Rawls",
   },
 
   complex_analysis: {
     font: "cormorant",
-    fontWeight: "600",
+    fontWeight: "1900",
     color: "#262626",
-    image: "/images/covers/complex.jpg",
+    image: "/images/covers/complex.png",
 
-    imageOpacity: 0.62,
-    vignetteOpacity: 0.08,
+    imageOpacity: 0.92,
+    vignetteOpacity: 0.3,
 
     mark: "✦",
     height: 84,
@@ -200,10 +203,11 @@ export const SIDEBAR_BOOK_THEME_MAP: Record<
     font: "baskervville",
     fontWeight: "500",
     color: "#2A2420",
-    image: "/images/covers/prob.jpg",
+    image: "/images/covers/prob.png",
+    onlyShowImage: true,
 
-    imageOpacity: 0.58,
-    vignetteOpacity: 0.08,
+    imageOpacity: 0.95,
+    vignetteOpacity: 0.18,
 
     mark: "✹",
     height: 78,
@@ -215,13 +219,13 @@ export const SIDEBAR_BOOK_THEME_MAP: Record<
     font: "marcellus",
     fontWeight: "600",
     color: "#1D2621",
-    image: "/images/covers/geometry.jpg",
-
-    imageOpacity: 0.6,
+    image: "/images/covers/compgeo2.png",
+    onlyShowImage: true,
+    imageOpacity: 0.9,
     vignetteOpacity: 0.08,
 
     mark: "❖",
-    height: 84,
+    height: 104,
     width: 290,
     authorOverride: "Joseph Campbell",
   },
@@ -230,10 +234,10 @@ export const SIDEBAR_BOOK_THEME_MAP: Record<
     font: "librebaskerville",
     fontWeight: "500",
     color: "#20242B",
-    image: "/images/covers/numerical.jpg",
-
-    imageOpacity: 0.58,
-    vignetteOpacity: 0.08,
+    image: "/images/covers/numeric.png",
+    onlyShowImage: true,
+    imageOpacity: 0.99,
+    vignetteOpacity: 0.018,
 
     mark: "✺",
     height: 78,

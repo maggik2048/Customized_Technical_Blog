@@ -161,6 +161,15 @@ export default function Book({
   const fontObject =
     FONT_MAP[font ?? "cormorant"];
 
+  /**
+   * 핵심:
+   * 이미지 경로 없으면 아예 Image 렌더링 안함
+   * => next/image missing placeholder 제거
+   */
+  const hasImage =
+    typeof image === "string" &&
+    image.trim().length > 0;
+
   return (
     <a
       href={`/category/${item.slug}`}
@@ -202,7 +211,7 @@ export default function Book({
         }
       >
         {/* IMAGE */}
-        {image && (
+        {hasImage && (
           <>
             <Image
               src={image}
