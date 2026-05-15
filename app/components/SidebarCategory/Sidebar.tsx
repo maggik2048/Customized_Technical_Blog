@@ -22,28 +22,10 @@ export default function Sidebar() {
         overflowY: "auto",
 
         /**
-         * CUSTOM BACKGROUND IMAGE
+         * CINEMATIC EDITORIAL BACKGROUND
          */
-        backgroundImage:
-          "url('/images/covers/bg.jpg')",
-
-        backgroundSize: "cover",
-
-        backgroundPosition: "center",
-
-        backgroundRepeat: "no-repeat",
-
-        backgroundAttachment: "fixed",
-
-        /**
-         * 기존 dark bookshelf mood 유지용
-         */
-        backgroundColor: "#120F0E",
-
-        /**
-         * 이미지 위 살짝 cinematic darkening
-         */
-        backgroundBlendMode: "multiply",
+        background:
+          "linear-gradient(rgba(10,10,10,0.46), rgba(10,10,10,0.68)), url('/images/covers/bg.jpg') center / cover no-repeat",
 
         padding: "40px 22px",
       }}
