@@ -28,6 +28,11 @@ import {
 
 import { SIDEBAR_BOOK_THEME_MAP } from "./sidebarTheme";
 
+import {
+  SIDEBAR_IMAGE_FILTER,
+  SIDEBAR_EDITORIAL_OVERLAY,
+} from "./sidebarFilters";
+
 /* =========================
    GOOGLE FONTS
 ========================= */
@@ -162,9 +167,7 @@ export default function Book({
     FONT_MAP[font ?? "cormorant"];
 
   /**
-   * 핵심:
-   * 이미지 경로 없으면 아예 Image 렌더링 안함
-   * => next/image missing placeholder 제거
+   * 이미지 존재 여부
    */
   const hasImage =
     typeof image === "string" &&
@@ -222,35 +225,45 @@ export default function Book({
 
                 opacity:
                   imageOpacity ?? 0.6,
+
+                /**
+                 * luxury editorial grading
+                 */
+                filter:
+                  SIDEBAR_IMAGE_FILTER,
               }}
             />
 
+            {/* EDITORIAL OVERLAY */}
             <div
               style={{
                 position: "absolute",
                 inset: 0,
 
-                background: `linear-gradient(
-                  180deg,
-                  rgba(
-                    0,
-                    0,
-                    0,
-                    ${
-                      (vignetteOpacity ??
-                        0.08) * 0.4
-                    }
+                background: `
+                  linear-gradient(
+                    180deg,
+                    rgba(
+                      0,
+                      0,
+                      0,
+                      ${
+                        (vignetteOpacity ??
+                          0.08) * 0.4
+                      }
+                    ),
+                    rgba(
+                      0,
+                      0,
+                      0,
+                      ${
+                        vignetteOpacity ??
+                        0.08
+                      }
+                    )
                   ),
-                  rgba(
-                    0,
-                    0,
-                    0,
-                    ${
-                      vignetteOpacity ??
-                      0.08
-                    }
-                  )
-                )`,
+                  ${SIDEBAR_EDITORIAL_OVERLAY}
+                `,
 
                 mixBlendMode:
                   "multiply",
