@@ -5,176 +5,228 @@
  * SIDEBAR GLOBAL EDITORIAL FILTERS
  * =========================================
  *
- * luxury editorial / hardcover / cinematic grading
- * inspired by:
- * - criterion collection
- * - aesop
- * - taschen
- * - moody museum catalogs
+ * ultra luxury editorial / archival cinema
+ * darker + denser + lower saturation
  *
- * philosophy:
- * - restrained color
- * - deep material blacks
- * - warm paper undertones
- * - matte cinematic response
- * - printed object feeling
+ * references:
+ * - criterion collection
+ * - loewe campaigns
+ * - aesop interiors
+ * - saint laurent creative
+ * - moody european museum catalogs
+ *
+ * visual philosophy:
+ * - deep matte blacks
+ * - restrained chroma
+ * - heavy tonal density
+ * - cinematic contrast rolloff
+ * - expensive print-object atmosphere
+ * - anti-RGB digital feel
  */
 
 /**
  * -----------------------------------------
- * MAIN LUXURY EDITORIAL FILTER
+ * PRIMARY ULTRA LUXURY FILTER
  * -----------------------------------------
  *
- * goals:
- * - remove cheap RGB feel
- * - deepen blacks
- * - soften digital sharpness psychologically
- * - introduce subtle warm print tonality
+ * stronger contrast
+ * lower saturation
+ * deeper blacks
+ * richer tonal compression
+ * subtle warm paper chemistry
  */
 export const SIDEBAR_IMAGE_FILTER = `
-  brightness(0.82)
-  contrast(1.16)
-  saturate(0.68)
-  sepia(0.18)
-  hue-rotate(-3deg)
+  brightness(0.72)
+  contrast(1.34)
+  saturate(0.42)
+  sepia(0.22)
+  hue-rotate(-4deg)
 `;
 
 /**
  * -----------------------------------------
- * DARKER HARDCOVER EDITORIAL
+ * DARK HARDCOVER CINEMATIC
  * -----------------------------------------
  *
- * heavier museum / archive mood
- * stronger density
+ * museum-grade darkness
+ * heavy editorial density
+ * premium fashion campaign mood
  */
 export const SIDEBAR_DARK_EDITORIAL_FILTER = `
-  brightness(0.70)
-  contrast(1.22)
-  saturate(0.54)
-  sepia(0.24)
-  hue-rotate(-7deg)
+  brightness(0.60)
+  contrast(1.42)
+  saturate(0.32)
+  sepia(0.28)
+  hue-rotate(-8deg)
 `;
 
 /**
  * -----------------------------------------
- * COLD ARCHIVAL MUSEUM LOOK
+ * ARCHIVAL COLD MUSEUM LOOK
  * -----------------------------------------
  *
- * desaturated
- * restrained
- * northern european catalog tone
+ * extremely restrained chroma
+ * northern european archive feel
+ * matte paper atmosphere
  */
 export const SIDEBAR_ARCHIVAL_FILTER = `
-  brightness(0.86)
-  contrast(1.08)
-  saturate(0.48)
-  grayscale(0.18)
-  sepia(0.06)
+  brightness(0.80)
+  contrast(1.18)
+  saturate(0.26)
+  grayscale(0.28)
+  sepia(0.08)
+  hue-rotate(-2deg)
 `;
 
 /**
  * -----------------------------------------
- * EDITORIAL LIGHTING OVERLAY
+ * HIGH-END EDITORIAL OVERLAY
  * -----------------------------------------
  *
- * directional cinematic lighting
- * with warm paper reflection
+ * cinematic directional density
+ * avoids cheap dark overlays
  *
- * avoids:
- * - flat dark overlays
- * - generic black gradients
+ * adds:
+ * - atmospheric shadowing
+ * - warm reflected paper light
+ * - luxury visual depth
  */
 export const SIDEBAR_EDITORIAL_OVERLAY = `
   linear-gradient(
     135deg,
-    rgba(18,16,14,0.34) 0%,
-    rgba(52,42,34,0.12) 38%,
-    rgba(16,12,10,0.42) 100%
+    rgba(10,8,7,0.52) 0%,
+    rgba(36,28,22,0.18) 34%,
+    rgba(14,10,8,0.58) 100%
   )
 `;
 
 /**
  * -----------------------------------------
- * OPTIONAL:
- * MATTE FILM GRAIN OVERLAY
+ * FILM MATTE GRAIN
  * -----------------------------------------
  *
- * use with:
- * mix-blend-mode: soft-light;
- * opacity: 0.04;
+ * removes sterile digital cleanliness
+ * creates printed hardcover response
  *
- * creates:
- * - hardcover print texture
- * - cinematic material response
- * - removes sterile digital feel
+ * recommended:
+ * mix-blend-mode: soft-light;
+ * opacity: 0.05;
  */
 export const SIDEBAR_GRAIN_TEXTURE = `
   radial-gradient(
-    rgba(255,255,255,0.035) 0.6px,
-    transparent 0.6px
+    rgba(255,255,255,0.028) 0.7px,
+    transparent 0.7px
   )
 `;
 
 /**
  * -----------------------------------------
- * OPTIONAL:
- * LUXURY SHADOW SYSTEM
+ * LUXURY DEPTH SHADOW SYSTEM
  * -----------------------------------------
  *
- * subtle ambient density
- * instead of aggressive borders
+ * dense ambient shadowing
+ * premium object separation
+ * avoids visible UI borders
  */
 export const SIDEBAR_LUXURY_SHADOW = `
-  0 1px 0 rgba(255,255,255,0.03) inset,
-  0 0 0 1px rgba(120,96,72,0.08),
-  0 24px 60px rgba(0,0,0,0.42)
+  0 1px 0 rgba(255,255,255,0.025) inset,
+  0 0 0 1px rgba(126,96,68,0.06),
+  0 40px 90px rgba(0,0,0,0.62),
+  0 8px 24px rgba(0,0,0,0.38)
 `;
 
 /**
  * -----------------------------------------
- * OPTIONAL:
- * PREMIUM BORDER TONE
+ * WARM MUSEUM BORDER
  * -----------------------------------------
  *
- * warm museum-paper border
+ * subtle paper-edge separation
+ * instead of cold UI outlines
  */
 export const SIDEBAR_BORDER_COLOR = `
-  rgba(148, 124, 98, 0.10)
+  rgba(142, 116, 88, 0.08)
 `;
 
 /**
  * -----------------------------------------
- * OPTIONAL:
  * TYPOGRAPHIC ATMOSPHERE
  * -----------------------------------------
  *
- * luxury UI relies heavily on typography
- * and spacing restraint
+ * restrained warm typography
+ * luxury UI depends heavily
+ * on text tone discipline
  */
 export const SIDEBAR_TEXT_TONE = {
-  title: "rgba(245,240,232,0.92)",
-  body: "rgba(220,212,200,0.72)",
-  muted: "rgba(180,168,152,0.52)",
+  title: "rgba(244,238,228,0.88)",
+  body: "rgba(214,206,194,0.64)",
+  muted: "rgba(172,160,146,0.42)",
 };
 
 /**
  * -----------------------------------------
- * RECOMMENDED USAGE
+ * OPTIONAL:
+ * CINEMATIC VIGNETTE
  * -----------------------------------------
  *
- * image:
- * filter: SIDEBAR_IMAGE_FILTER
+ * subtle edge darkening
+ * creates expensive focal depth
+ */
+export const SIDEBAR_VIGNETTE = `
+  radial-gradient(
+    circle at center,
+    transparent 42%,
+    rgba(0,0,0,0.24) 100%
+  )
+`;
+
+/**
+ * -----------------------------------------
+ * OPTIONAL:
+ * MATTE SURFACE BLEND
+ * -----------------------------------------
  *
- * image overlay:
- * background: SIDEBAR_EDITORIAL_OVERLAY
+ * softens digital highlights
+ * creates luxury print diffusion
+ */
+export const SIDEBAR_SURFACE_BLEND = `
+  linear-gradient(
+    to bottom,
+    rgba(255,255,255,0.015),
+    rgba(0,0,0,0.08)
+  )
+`;
+
+/**
+ * =========================================
+ * RECOMMENDED COMBINATION
+ * =========================================
+ *
+ * image:
+ * filter: SIDEBAR_IMAGE_FILTER;
+ * transform: scale(1.02);
+ *
+ * overlay:
+ * background: SIDEBAR_EDITORIAL_OVERLAY;
+ *
+ * vignette:
+ * background: SIDEBAR_VIGNETTE;
+ * mix-blend-mode: multiply;
  *
  * grain:
- * background-image: SIDEBAR_GRAIN_TEXTURE
- * background-size: 3px 3px
- * mix-blend-mode: soft-light
- * opacity: 0.04
+ * background-image: SIDEBAR_GRAIN_TEXTURE;
+ * background-size: 3px 3px;
+ * mix-blend-mode: soft-light;
+ * opacity: 0.05;
  *
  * container:
- * box-shadow: SIDEBAR_LUXURY_SHADOW
- * border: 1px solid SIDEBAR_BORDER_COLOR
+ * box-shadow: SIDEBAR_LUXURY_SHADOW;
+ * border: 1px solid SIDEBAR_BORDER_COLOR;
+ * backdrop-filter: blur(10px);
+ *
+ * mood result:
+ * - darker
+ * - more cinematic
+ * - lower chroma
+ * - premium hardcover atmosphere
+ * - anti-generic SaaS aesthetic
  */
