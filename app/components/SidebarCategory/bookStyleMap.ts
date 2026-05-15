@@ -1,7 +1,24 @@
 // bookStyleMap.ts
 
 export type BookStyle = {
-  font: "serif400" | "serif500" | "serif600" | "serif700";
+  /**
+   * Google Font family name
+   * CSS variable / Tailwind 연동 기준
+   */
+  font:
+    | "cinzel"
+    | "cormorant"
+    | "playfair"
+    | "baskervville"
+    | "ebgaramond"
+    | "dmserif"
+    | "alegreya"
+    | "marcellus"
+    | "prata"
+    | "librebaskerville"
+    | "unbounded"
+    | "orbitron";
+
   color: string;
   image?: string;
   mark: string;
@@ -9,232 +26,242 @@ export type BookStyle = {
 };
 
 /**
- * slug 기준으로 모든 책 스타일 관리
- * (여기만 수정하면 UI 전부 바뀜)
+ * slug 기준 스타일 매핑
+ * cover 이미지 분위기 + 과목 성격 기준으로
+ * serif / art-deco / classical / technical 조합
  */
 export const BOOK_STYLE_MAP: Record<string, BookStyle> = {
+  // =========================
   // Physics
+  // =========================
+
   physics_revisited: {
-    font: "serif700",
+    font: "cinzel",
     color: "#1A1A1A",
     image: "/covers/physics.jpg",
     mark: "✦",
   },
 
   french: {
-    font: "serif500",
+    font: "cormorant",
     color: "#20242B",
     image: "/covers/french.jpg",
     mark: "✧",
   },
 
   fluid_mechanics: {
-    font: "serif600",
+    font: "marcellus",
     color: "#1D2621",
     image: "/covers/fluid.jpg",
     mark: "❖",
   },
 
   thermodynamics: {
-    font: "serif700",
+    font: "prata",
     color: "#2A1F1F",
     image: "/covers/thermo.jpg",
     mark: "✺",
   },
 
+  // =========================
   // Math
+  // =========================
+
   math_revisited: {
-    font: "serif700",
+    font: "cinzel",
     color: "#111111",
     image: "/covers/math.jpg",
     mark: "✹",
   },
 
   linear_algebra: {
-    font: "serif600",
+    font: "ebgaramond",
     color: "#191919",
     image: "/covers/linear.jpg",
     mark: "✢",
   },
 
   diff_eq: {
-    font: "serif500",
+    font: "alegreya",
     color: "#1E1A1A",
     image: "/covers/diff.jpg",
     mark: "✧",
   },
 
   complex_analysis: {
-    font: "serif600",
+    font: "cormorant",
     color: "#262626",
     image: "/covers/complex.jpg",
     mark: "✦",
   },
 
   prob_stats: {
-    font: "serif500",
+    font: "baskervville",
     color: "#2A2420",
     image: "/covers/prob.jpg",
     mark: "✹",
   },
 
   comp_geometry: {
-    font: "serif600",
+    font: "marcellus",
     color: "#1D2621",
     image: "/covers/geometry.jpg",
     mark: "❖",
   },
 
   numerical_analysis: {
-    font: "serif500",
+    font: "librebaskerville",
     color: "#20242B",
     image: "/covers/numerical.jpg",
     mark: "✺",
   },
 
   optimization: {
-    font: "serif700",
+    font: "prata",
     color: "#1A1A1A",
     image: "/covers/opt.jpg",
     mark: "✦",
   },
 
+  // =========================
   // CS
+  // =========================
+
   cs_revisited: {
-    font: "serif700",
+    font: "cinzel",
     color: "#111111",
     image: "/covers/cs.jpg",
     mark: "✹",
   },
 
   network: {
-    font: "serif500",
+    font: "librebaskerville",
     color: "#191919",
     image: "/covers/network.jpg",
     mark: "✧",
   },
 
   ai: {
-    font: "serif600",
+    font: "orbitron",
     color: "#1E1A1A",
     image: "/covers/ai.jpg",
     mark: "✦",
   },
 
   sqldb: {
-    font: "serif500",
+    font: "baskervville",
     color: "#2A1F1F",
     image: "/covers/sql.jpg",
     mark: "❖",
   },
 
   compiler: {
-    font: "serif600",
+    font: "ebgaramond",
     color: "#262626",
     image: "/covers/compiler.jpg",
     mark: "✺",
   },
 
   embed: {
-    font: "serif400",
+    font: "marcellus",
     color: "#1D2621",
     image: "/covers/embed.jpg",
     mark: "✢",
   },
 
   discrete: {
-    font: "serif500",
+    font: "alegreya",
     color: "#20242B",
     image: "/covers/discrete.jpg",
     mark: "✧",
   },
 
   digitalelec: {
-    font: "serif600",
+    font: "unbounded",
     color: "#1A1A1A",
     image: "/covers/digital.jpg",
     mark: "✹",
   },
 
   os: {
-    font: "serif700",
+    font: "prata",
     color: "#191919",
     image: "/covers/os.jpg",
     mark: "✦",
   },
 
   systems: {
-    font: "serif500",
+    font: "librebaskerville",
     color: "#1E1A1A",
     image: "/covers/systems.jpg",
     mark: "❖",
   },
 
   dsa: {
-    font: "serif600",
+    font: "ebgaramond",
     color: "#262626",
     image: "/covers/dsa.jpg",
     mark: "✺",
   },
 
   cpp: {
-    font: "serif500",
+    font: "baskervville",
     color: "#2A2420",
     image: "/covers/cpp.jpg",
     mark: "✢",
   },
 
   oop: {
-    font: "serif600",
+    font: "marcellus",
     color: "#1D2621",
     image: "/covers/oop.jpg",
     mark: "✦",
   },
 
   se: {
-    font: "serif700",
+    font: "cinzel",
     color: "#111111",
     image: "/covers/se.jpg",
     mark: "✹",
   },
 
   security: {
-    font: "serif500",
+    font: "alegreya",
     color: "#20242B",
     image: "/covers/security.jpg",
     mark: "✧",
   },
 
   mt_concurrency: {
-    font: "serif600",
+    font: "dmserif",
     color: "#1E1A1A",
     image: "/covers/concurrency.jpg",
     mark: "❖",
   },
 
   graphics_pipeline: {
-    font: "serif700",
+    font: "playfair",
     color: "#2A1F1F",
     image: "/covers/graphics.jpg",
     mark: "✺",
   },
 
   unreal: {
-    font: "serif600",
+    font: "cinzel",
     color: "#1D2621",
     image: "/covers/unreal.jpg",
     mark: "✢",
   },
 
   digitalTwin: {
-    font: "serif500",
+    font: "orbitron",
     color: "#262626",
     image: "/covers/twin.jpg",
     mark: "✦",
   },
 
   gameMath: {
-    font: "serif700",
+    font: "playfair",
     color: "#111111",
     image: "/covers/game.jpg",
     mark: "✹",
