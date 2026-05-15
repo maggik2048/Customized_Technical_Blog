@@ -1,6 +1,9 @@
+// SidebarBook.tsx
+
 "use client";
 
 import Image from "next/image";
+
 import {
   Cinzel,
   Cormorant_Garamond,
@@ -143,6 +146,10 @@ export default function Book({
     font,
     image,
     authorOverride,
+
+    onlyShowImage,
+    imageOpacity,
+    vignetteOpacity,
   } = theme;
 
   const active = pathname.includes(item.slug);
@@ -165,9 +172,12 @@ export default function Book({
         style={{
           width,
           height,
+
           position: "relative",
           overflow: "hidden",
+
           borderRadius: 6,
+
           marginBottom: 14,
           padding: "10px 34px",
 
@@ -176,13 +186,19 @@ export default function Book({
           background: color,
 
           boxShadow: getDefaultShadow(active),
-          transform: getDefaultTransform(index),
+
+          transform:
+            getDefaultTransform(index),
 
           transition: "all 0.28s ease",
         }}
         onMouseEnter={onBookEnter}
         onMouseLeave={(e) =>
-          onBookLeave(e, index, active)
+          onBookLeave(
+            e,
+            index,
+            active
+          )
         }
       >
         {/* IMAGE */}
@@ -194,7 +210,9 @@ export default function Book({
               fill
               style={{
                 objectFit: "cover",
-                opacity: 0.38,
+
+                opacity:
+                  imageOpacity ?? 0.6,
               }}
             />
 
@@ -203,124 +221,165 @@ export default function Book({
                 position: "absolute",
                 inset: 0,
 
-                background:
-                  "linear-gradient(180deg, rgba(0,0,0,0.15), rgba(0,0,0,0.45))",
+                background: `linear-gradient(
+                  180deg,
+                  rgba(
+                    0,
+                    0,
+                    0,
+                    ${
+                      (vignetteOpacity ??
+                        0.08) * 0.4
+                    }
+                  ),
+                  rgba(
+                    0,
+                    0,
+                    0,
+                    ${
+                      vignetteOpacity ??
+                      0.08
+                    }
+                  )
+                )`,
 
-                mixBlendMode: "multiply",
+                mixBlendMode:
+                  "multiply",
               }}
             />
           </>
         )}
 
         {/* GOLD LINE */}
-        <div
-          style={{
-            position: "absolute",
+        {!onlyShowImage && (
+          <div
+            style={{
+              position: "absolute",
 
-            left: 15,
-            top: 9,
-            bottom: 9,
+              left: 15,
+              top: 9,
+              bottom: 9,
 
-            width: 1,
+              width: 1,
 
-            background:
-              "rgba(201,168,97,0.65)",
-          }}
-        />
+              background:
+                "rgba(201,168,97,0.65)",
+            }}
+          />
+        )}
 
         {/* MARK */}
-        <div
-          style={{
-            position: "absolute",
+        {!onlyShowImage && (
+          <div
+            style={{
+              position: "absolute",
 
-            left: 20,
-            top: "50%",
+              left: 20,
+              top: "50%",
 
-            transform: "translateY(-50%)",
+              transform:
+                "translateY(-50%)",
 
-            fontSize: 11,
+              fontSize: 11,
 
-            color:
-              "rgba(220,190,120,0.8)",
-          }}
-        >
-          {mark}
-        </div>
+              color:
+                "rgba(220,190,120,0.8)",
+            }}
+          >
+            {mark}
+          </div>
+        )}
 
         {/* AUTHOR */}
-        <div
-          className={cormorant.className}
-          style={{
-            position: "absolute",
+        {!onlyShowImage && (
+          <div
+            className={
+              cormorant.className
+            }
+            style={{
+              position: "absolute",
 
-            right: 8,
-            top: 8,
-            bottom: 8,
+              right: 8,
+              top: 8,
+              bottom: 8,
 
-            writingMode: "vertical-rl",
+              writingMode:
+                "vertical-rl",
 
-            fontSize: 10,
-            letterSpacing: 1.2,
+              fontSize: 10,
+              letterSpacing: 1.2,
 
-            color: isLight
-              ? "rgba(60,52,42,0.55)"
-              : "rgba(245,239,228,0.32)",
+              color: isLight
+                ? "rgba(60,52,42,0.55)"
+                : "rgba(245,239,228,0.32)",
 
-            textTransform: "uppercase",
-          }}
-        >
-          {authorOverride}
-        </div>
+              textTransform:
+                "uppercase",
+            }}
+          >
+            {authorOverride}
+          </div>
+        )}
 
         {/* TITLE */}
-        <span
-          className={fontObject.className}
-          style={{
-            position: "relative",
-            zIndex: 3,
+        {!onlyShowImage && (
+          <span
+            className={
+              fontObject.className
+            }
+            style={{
+              position: "relative",
+              zIndex: 3,
 
-            color: isLight
-              ? "#2B2622"
-              : "#F5EFE4",
+              color: isLight
+                ? "#2B2622"
+                : "#F5EFE4",
 
-            fontSize: 24,
+              fontSize: 24,
 
-            fontWeight,
+              fontWeight,
 
-            letterSpacing:
-              font === "orbitron" ||
-              font === "unbounded"
-                ? "0.04em"
-                : "0.01em",
+              letterSpacing:
+                font ===
+                  "orbitron" ||
+                font ===
+                  "unbounded"
+                  ? "0.04em"
+                  : "0.01em",
 
-            whiteSpace: "nowrap",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              overflow: "hidden",
+              textOverflow:
+                "ellipsis",
 
-            textShadow: active
-              ? "0 0 12px rgba(255,255,255,0.08)"
-              : "none",
-          }}
-        >
-          {item.name}
-        </span>
+              textShadow: active
+                ? "0 0 12px rgba(255,255,255,0.08)"
+                : "none",
+            }}
+          >
+            {item.name}
+          </span>
+        )}
 
         {/* SUB */}
-        <div
-          style={{
-            marginTop: 6,
+        {!onlyShowImage && (
+          <div
+            style={{
+              marginTop: 6,
 
-            fontSize: 13,
+              fontSize: 13,
 
-            letterSpacing: "0.04em",
+              letterSpacing:
+                "0.04em",
 
-            color: isLight
-              ? "rgba(45,38,34,0.62)"
-              : "rgba(245,239,228,0.52)",
-          }}
-        >
-          {authorOverride}
-        </div>
+              color: isLight
+                ? "rgba(45,38,34,0.62)"
+                : "rgba(245,239,228,0.52)",
+            }}
+          >
+            {authorOverride}
+          </div>
+        )}
 
         {/* EDGE LIGHT */}
         <div
