@@ -103,3 +103,36 @@ code {
   text-shadow: 0 0.25px 0.9px rgba(0, 60, 80, 0.92);
 }
 
+
+
+
+
+
+
+
+
+/*  sidebar scrollbar */
+
+.sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar::-webkit-scrollbar-thumb {
+  background: rgba(230, 210, 170, 0.72);
+  border-radius: 999px;
+}
+
+.sidebar::-webkit-scrollbar-thumb:hover {
+  background: rgba(245, 225, 185, 0.92);
+}
+
+.sidebar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(230, 210, 170, 0.72) transparent;
+}
+
+/*  sidebar scrollbar----------end */

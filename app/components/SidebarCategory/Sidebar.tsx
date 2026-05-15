@@ -12,6 +12,7 @@ export default function Sidebar() {
 
   return (
     <aside
+      className="sidebar"
       style={{
         width: 390,
         height: "100vh",
