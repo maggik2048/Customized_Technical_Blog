@@ -5,7 +5,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 
 type Props = {
-  side: "left" | "right" | "center"; // 'center' 타입을 추가하여 확장성을 확보합니다.
+  side: "left" | "right" | "center";
   visible?: boolean;
 };
 
@@ -13,13 +13,40 @@ export default function CastshadowOnPost({
   side,
   visible = true,
 }: Props) {
-  // side 값에 따라 사용할 섀도우 이미지 매핑 (나중에 중앙용 이미지 경로를 넣으시면 됩니다)
   const shadowSrc =
     side === "left"
       ? "/images/shadow/leftshadow.png"
       : side === "right"
       ? "/images/shadow/rightshadow.png"
-      : "/images/shadow/centershadow.png"; // <- 중앙용 다른 섀도우 이미지 경로
+      : "/images/shadow/centershadow.png";
+
+  // 중앙 방향으로 자연스럽게 fade
+  const edgeFadeMask =
+    side === "left"
+      ? `
+        linear-gradient(
+          to right,
+          rgba(0,0,0,1) 0%,
+          rgba(0,0,0,1) 62%,
+          rgba(0,0,0,0.85) 72%,
+          rgba(0,0,0,0.45) 82%,
+          rgba(0,0,0,0.12) 92%,
+          rgba(0,0,0,0) 100%
+        )
+      `
+      : side === "right"
+      ? `
+        linear-gradient(
+          to left,
+          rgba(0,0,0,1) 0%,
+          rgba(0,0,0,1) 62%,
+          rgba(0,0,0,0.85) 72%,
+          rgba(0,0,0,0.45) 82%,
+          rgba(0,0,0,0.12) 92%,
+          rgba(0,0,0,0) 100%
+        )
+      `
+      : "none";
 
   return (
     <motion.div
@@ -30,21 +57,37 @@ export default function CastshadowOnPost({
         ease: "easeOut",
       }}
       style={{
-        position: "absolute",
+        position: "fixed",
+
         top: 0,
         bottom: 0,
+
         pointerEvents: "none",
+
         zIndex: 5,
+
         overflow: "hidden",
-        mixBlendMode: "multiply",
+
         willChange: "opacity",
 
-        // side 스타일에 따른 위치 및 너비 분기
+        // cinematic depth 유지
+        mixBlendMode: "multiply",
+
         ...(side === "left"
-          ? { left: 0, width: "50%" }
+          ? {
+              left: 0,
+              width: "50%",
+            }
           : side === "right"
-          ? { right: 0, width: "50%" }
-          : { left: 0, right: 0, width: "100%" }), // center일 때는 전체를 채우도록 설정
+          ? {
+              right: 0,
+              width: "50%",
+            }
+          : {
+              left: 0,
+              right: 0,
+              width: "100%",
+            }),
       }}
     >
       <Image
@@ -55,8 +98,17 @@ export default function CastshadowOnPost({
         draggable={false}
         style={{
           objectFit: "cover",
+
           userSelect: "none",
+
           opacity: 0.9,
+
+          // 핵심:
+          // 중앙 방향 끝부분만 자연스럽게 fade
+          maskImage: edgeFadeMask,
+
+          WebkitMaskImage:
+            edgeFadeMask,
         }}
       />
     </motion.div>

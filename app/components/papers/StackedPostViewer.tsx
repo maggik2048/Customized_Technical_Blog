@@ -49,8 +49,9 @@ export default function StackedPostViewer({
             const offset = i - index;
 
             // 너무 먼 카드 제거
-            if (Math.abs(offset) > 3)
+            if (Math.abs(offset) > 3) {
               return null;
+            }
 
             const isCurrent =
               offset === 0;
@@ -97,17 +98,16 @@ export default function StackedPostViewer({
 
                   overflow: "hidden",
 
-                  filter: isCurrent
-                    ? `
-                      brightness(1.02)
-                      contrast(1.04)
-                      saturate(1.08)
-                    `
-                    : `
-                      brightness(0.98)
-                      contrast(1.02)
-                      saturate(1.04)
-                    `,
+                  // 핵심:
+                  // 중앙 카드만 독립 stacking context
+                  isolation: isCurrent
+                    ? "isolate"
+                    : undefined,
+
+                  // 중앙 카드만 overlay 위
+                  zIndex: isCurrent
+                    ? 100
+                    : style.zIndex,
 
                   // 좌우 잘리는 마스크
                   maskImage:
@@ -137,7 +137,7 @@ export default function StackedPostViewer({
         </motion.div>
       </ViewportGuard>
 
-      {/* 화면 고정 shadow overlay */}
+      {/* 좌우 shadow overlay */}
 
       {posts[index - 1] && (
         <CastshadowOnPost side="left" />
@@ -147,7 +147,7 @@ export default function StackedPostViewer({
         <CastshadowOnPost side="right" />
       )}
 
-      {/* Punch 느낌 후처리 */}
+      {/* punch 후처리 */}
       <PunchFilterOverlay />
     </>
   );
