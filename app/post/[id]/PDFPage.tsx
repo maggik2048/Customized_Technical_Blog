@@ -60,8 +60,21 @@ export default function PDFPage({
   const HEADER_HEIGHT = 560;
 
   // =========================
-  // (이미 1번 최적화 적용된 상태 가정)
-  // parsedParts useMemo 존재
+  //  visualizationRegistry lookup optimization
+  // =========================
+
+  const vizRegistryRef = React.useMemo(
+    () => visualizationRegistry,
+    []
+  );
+
+  const getVizComponent = React.useCallback(
+    (key: string) => vizRegistryRef[key],
+    [vizRegistryRef]
+  );
+
+  // =========================
+  // (이미 이전 최적화 유지)
   // =========================
 
   const MemoRemarkPageRenderer = React.useMemo(
@@ -122,7 +135,7 @@ export default function PDFPage({
       );
 
     return parts.map((part: string, i: number) => {
-      const Component = visualizationRegistry[part];
+      const Component = getVizComponent(part);
 
       if (Component) {
         return {
@@ -138,7 +151,7 @@ export default function PDFPage({
         key: i,
       };
     });
-  }, [data.content]);
+  }, [data.content, getVizComponent]);
 
   return (
     <motion.div style={{ color: textColor }}>
