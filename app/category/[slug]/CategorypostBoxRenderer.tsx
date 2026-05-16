@@ -25,32 +25,28 @@ export default function CategoryPostBoxRenderer({
               borderRadius: 6,
               padding: "10px 18px",
               cursor: "pointer",
-
-              background: "rgba(165, 170, 185, 0.32)",
-
-              border: "1px solid rgba(255,255,255,0.12)",
-
-              // 거의 블러 제거 수준
-              backdropFilter: "blur(1px)",
-
-              transition: "all 0.28s ease",
               overflow: "hidden",
+              border: "1px solid rgba(255,255,255,0.12)",
+              transition: "all 0.28s ease",
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = "translateX(8px)";
-              e.currentTarget.style.background =
-                "rgba(180, 185, 200, 0.42)";
-              e.currentTarget.style.borderColor =
-                "rgba(255,255,255,0.18)";
             }}
             onMouseLeave={(e) => {
               e.currentTarget.style.transform = "translateX(0px)";
-              e.currentTarget.style.background =
-                "rgba(165, 170, 185, 0.32)";
-              e.currentTarget.style.borderColor =
-                "rgba(255,255,255,0.12)";
             }}
           >
+            {/* BACKGROUND LAYER (INVERTED FEEL) */}
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: "rgba(165, 170, 185, 0.25)",
+                backdropFilter: "invert(1) brightness(0.9)",
+                WebkitBackdropFilter: "invert(1) brightness(0.9)",
+              }}
+            />
+
             {/* LEFT SPINE */}
             <div
               style={{
@@ -66,6 +62,7 @@ export default function CategoryPostBoxRenderer({
             {/* TITLE */}
             <div
               style={{
+                position: "relative",
                 fontSize: 16,
                 color: "#ffffff",
                 letterSpacing: "0.02em",
@@ -73,10 +70,8 @@ export default function CategoryPostBoxRenderer({
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
-
-                // 더 강한 엠보싱/그림자
                 textShadow:
-                  "0 2px 2px rgba(0,0,0,0.75), 0 -1px 0 rgba(255,255,255,0.12)",
+                  "0 2px 3px rgba(0,0,0,0.80), 0 -1px 0 rgba(255,255,255,0.12)",
                 fontWeight: 600,
               }}
             >
@@ -86,10 +81,11 @@ export default function CategoryPostBoxRenderer({
             {/* META */}
             <div
               style={{
+                position: "relative",
                 fontSize: 11,
                 color: "rgba(255,255,255,0.65)",
                 letterSpacing: "0.06em",
-                textShadow: "0 1px 2px rgba(0,0,0,0.55)",
+                textShadow: "0 1px 2px rgba(0,0,0,0.60)",
               }}
             >
               {new Date(post.created_at).toLocaleDateString()}
