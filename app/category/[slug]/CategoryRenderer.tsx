@@ -9,7 +9,7 @@ export default function CategoryRenderer({
   posts: any[];
   slug: string;
 }) {
-  const bgImage = "/images/mathdraw0.png";
+  const bgImage = "/images/mathdraw3.png";
 
   return (
     <div
@@ -31,11 +31,11 @@ export default function CategoryRenderer({
           backgroundSize: "cover",
           backgroundPosition: "center",
           transform: "scale(1.02)",
-          zIndex: -5,
+          zIndex: -6,
         }}
       />
 
-      {/* INVERT LAYER (LEFT → RIGHT MASK) */}
+      {/* INVERT LAYER */}
       <div
         style={{
           position: "fixed",
@@ -55,7 +55,7 @@ export default function CategoryRenderer({
           `,
 
           opacity: 0.92,
-          zIndex: -4,
+          zIndex: -5,
           pointerEvents: "none",
 
           maskImage: `
@@ -84,6 +84,29 @@ export default function CategoryRenderer({
         }}
       />
 
+      {/*  #50557A LIGHTEN CLAMP LAYER */}
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          zIndex: -4,
+          pointerEvents: "none",
+
+          background: `
+            linear-gradient(
+              to right,
+              rgba(255,255,255,0.02) 0%,
+              rgba(220,225,240,0.10) 25%,
+              rgba(170,180,210,0.18) 45%,
+              rgba(120,130,170,0.30) 70%,
+              rgba(107, 110, 135, 0.55) 100%
+            )
+          `,
+
+          mixBlendMode: "lighten",
+        }}
+      />
+
       {/* DEPTH FOCUS */}
       <div
         style={{
@@ -94,7 +117,7 @@ export default function CategoryRenderer({
           background: `
             radial-gradient(
               circle at 85% 50%,
-              rgba(40, 80, 140, 0.18),
+              rgba(80, 85, 122, 0.35),
               transparent 60%
             )
           `,
@@ -107,7 +130,7 @@ export default function CategoryRenderer({
         style={{
           position: "fixed",
           inset: 0,
-          zIndex: -1,
+          zIndex: -2,
           opacity: 0.07,
           backgroundImage:
             "url('https://www.transparenttextures.com/patterns/noise.png')",
@@ -146,8 +169,6 @@ export default function CategoryRenderer({
           display: "flex",
           flexDirection: "column",
           gap: 12,
-
-          /*  핵심: 전체 카드 영역을 왼쪽으로 제한 */
           maxWidth: 1020,
         }}
       >
@@ -156,10 +177,7 @@ export default function CategoryRenderer({
             <div
               style={{
                 position: "relative",
-
-                /*  세로 길이 줄임 */
                 height: 64,
-
                 borderRadius: 6,
                 padding: "12px 18px",
                 cursor: "pointer",
@@ -194,7 +212,7 @@ export default function CategoryRenderer({
                   top: 0,
                   bottom: 0,
                   width: 2,
-                  background: "rgba(60, 100, 150, 0.65)",
+                  background: "rgba(80, 85, 122, 0.65)",
                 }}
               />
 
