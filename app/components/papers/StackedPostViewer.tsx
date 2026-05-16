@@ -2,9 +2,12 @@
 "use client";
 
 import { motion } from "framer-motion";
+
 import PDFPage from "@/app/post/[id]/PDFPage";
+
 import ViewportGuard from "./ViewportGuard";
 import CastshadowOnPost from "./CastshadowOnPost";
+import PunchFilterOverlay from "./PunchFilterOverlay";
 
 type Props = {
   posts: any[];
@@ -27,27 +30,36 @@ export default function StackedPostViewer({
           animate={{ x: STACK_OFFSET }}
           style={{
             position: "relative",
+
             display: "flex",
             justifyContent: "center",
+
             marginTop: 40,
+
             height: "100vh",
 
             willChange: "transform",
 
             transformStyle: "preserve-3d",
+
+            perspective: 1800,
           }}
         >
           {posts.map((post, i) => {
             const offset = i - index;
 
             // 너무 먼 카드 제거
-            if (Math.abs(offset) > 3) return null;
+            if (Math.abs(offset) > 3)
+              return null;
 
-            const isCurrent = offset === 0;
+            const isCurrent =
+              offset === 0;
+
             const isLeft = offset < 0;
             const isRight = offset > 0;
 
-            const style = getPostStyle(offset);
+            const style =
+              getPostStyle(offset);
 
             return (
               <motion.div
@@ -64,7 +76,8 @@ export default function StackedPostViewer({
 
                   left: "50%",
 
-                  transform: "translateX(-50%)",
+                  transform:
+                    "translateX(-50%)",
 
                   cursor: isCurrent
                     ? "default"
@@ -84,11 +97,24 @@ export default function StackedPostViewer({
 
                   overflow: "hidden",
 
+                  filter: isCurrent
+                    ? `
+                      brightness(1.02)
+                      contrast(1.04)
+                      saturate(1.08)
+                    `
+                    : `
+                      brightness(0.98)
+                      contrast(1.02)
+                      saturate(1.04)
+                    `,
+
                   // 좌우 잘리는 마스크
-                  maskImage: getMaskGradient(
-                    isLeft,
-                    isRight
-                  ),
+                  maskImage:
+                    getMaskGradient(
+                      isLeft,
+                      isRight
+                    ),
 
                   WebkitMaskImage:
                     getMaskGradient(
@@ -114,70 +140,93 @@ export default function StackedPostViewer({
       {/* 화면 고정 shadow overlay */}
 
       {posts[index - 1] && (
-        <CastshadowOnPost
-          side="left"
-        />
+        <CastshadowOnPost side="left" />
       )}
 
       {posts[index + 1] && (
-        <CastshadowOnPost
-          side="right"
-        />
+        <CastshadowOnPost side="right" />
       )}
+
+      {/* Punch 느낌 후처리 */}
+      <PunchFilterOverlay />
     </>
   );
 }
 
 // 카드 스타일
 function getPostStyle(offset: number) {
+  // 현재 카드
   if (offset === 0) {
     return {
       x: 0,
       y: 0,
+
       scale: 1,
+
       rotate: 0,
+
       opacity: 1,
+
       zIndex: 30,
     };
   }
 
+  // 왼쪽 카드
   if (offset === -1) {
     return {
       x: -520,
       y: -40,
+
       scale: 0.9,
+
       rotate: -3,
+
       opacity: 1,
+
       zIndex: 20,
     };
   }
 
+  // 오른쪽 카드
   if (offset === 1) {
     return {
       x: 520,
       y: -40,
+
       scale: 0.9,
+
       rotate: 3,
+
       opacity: 1,
+
       zIndex: 20,
     };
   }
 
+  // 먼 카드
   return offset < 0
     ? {
         x: -700,
         y: -60,
+
         scale: 0.85,
+
         rotate: -4,
+
         opacity: 0,
+
         zIndex: 10,
       }
     : {
         x: 700,
         y: -60,
+
         scale: 0.85,
+
         rotate: 4,
+
         opacity: 0,
+
         zIndex: 10,
       };
 }
