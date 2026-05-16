@@ -35,7 +35,7 @@ export default function CategoryRenderer({
         }}
       />
 
-      {/* INVERT LAYER (LEFT → RIGHT MASKED) */}
+      {/* INVERT LAYER (LEFT → RIGHT MASK) */}
       <div
         style={{
           position: "fixed",
@@ -58,7 +58,6 @@ export default function CategoryRenderer({
           zIndex: -4,
           pointerEvents: "none",
 
-          /* 핵심: 세로 → 가로 방향으로 변경 */
           maskImage: `
             linear-gradient(
               to right,
@@ -85,14 +84,13 @@ export default function CategoryRenderer({
         }}
       />
 
-      {/* RIGHT DEPTH FOCUS (steel tint 유지) */}
+      {/* DEPTH FOCUS */}
       <div
         style={{
           position: "fixed",
           inset: 0,
           zIndex: -3,
           pointerEvents: "none",
-
           background: `
             radial-gradient(
               circle at 85% 50%,
@@ -100,7 +98,6 @@ export default function CategoryRenderer({
               transparent 60%
             )
           `,
-
           mixBlendMode: "screen",
         }}
       />
@@ -144,19 +141,33 @@ export default function CategoryRenderer({
       </div>
 
       {/* LIST */}
-      <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: 12,
+
+          /*  핵심: 전체 카드 영역을 왼쪽으로 제한 */
+          maxWidth: 1020,
+        }}
+      >
         {posts.map((post) => (
           <Link key={post.id} href={`/post/${post.id}`}>
             <div
               style={{
                 position: "relative",
-                height: 78,
+
+                /*  세로 길이 줄임 */
+                height: 64,
+
                 borderRadius: 6,
-                padding: "14px 22px",
+                padding: "12px 18px",
                 cursor: "pointer",
+
                 background: "rgba(245,245,245,0.55)",
                 border: "1px solid rgba(120,120,120,0.25)",
                 backdropFilter: "blur(8px)",
+
                 transition: "all 0.28s ease",
                 overflow: "hidden",
               }}
@@ -190,10 +201,10 @@ export default function CategoryRenderer({
               {/* TITLE */}
               <div
                 style={{
-                  fontSize: 18,
+                  fontSize: 17,
                   color: "rgba(40,40,40,0.9)",
                   letterSpacing: "0.02em",
-                  marginBottom: 4,
+                  marginBottom: 3,
                   whiteSpace: "nowrap",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
@@ -205,7 +216,7 @@ export default function CategoryRenderer({
               {/* META */}
               <div
                 style={{
-                  fontSize: 12,
+                  fontSize: 11,
                   color: "rgba(80,80,80,0.7)",
                   letterSpacing: "0.06em",
                 }}
