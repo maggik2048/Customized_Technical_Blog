@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useMemo } from "react";
 
 import PDFPage from "@/app/post/[id]/PDFPage";
 import ViewportGuard from "./ViewportGuard";
@@ -18,6 +19,23 @@ type Props = {
   onChangeIndex: (i: number) => void;
 };
 
+const LEFT_MASK =
+  "linear-gradient(to right, rgba(0,0,0,1) 45%, rgba(0,0,0,0))";
+
+const RIGHT_MASK =
+  "linear-gradient(to left, rgba(0,0,0,1) 45%, rgba(0,0,0,0))";
+
+const BASE_STYLE = {
+  position: "absolute",
+  left: "50%",
+  transform: "translateX(-50%)",
+  willChange: "transform, opacity",
+  transformStyle: "preserve-3d" as const,
+  backfaceVisibility: "hidden" as const,
+  WebkitBackfaceVisibility: "hidden" as const,
+  overflow: "hidden",
+};
+
 export default function StackedPostViewer({
   posts,
   index,
@@ -28,6 +46,10 @@ export default function StackedPostViewer({
   const prev = posts[index - 1];
   const current = posts[index];
   const next = posts[index + 1];
+
+  const animLeft = useMemo(() => getPostStyle(-1), []);
+  const animCenter = useMemo(() => getPostStyle(0), []);
+  const animRight = useMemo(() => getPostStyle(1), []);
 
   return (
     <>
@@ -49,9 +71,17 @@ export default function StackedPostViewer({
           {prev && (
             <motion.div
               key={prev.id}
-              animate={getPostStyle(-1)}
+              animate={animLeft}
               transition={springTransition}
-              style={getBaseStyle(false, true, false)}
+              style={{
+                ...BASE_STYLE,
+                cursor: "pointer",
+                zIndex: 20,
+                opacity: 0.92,
+                filter: "grayscale(0.42) saturate(0.45)",
+                maskImage: LEFT_MASK,
+                WebkitMaskImage: LEFT_MASK,
+              }}
               onClick={() => onChangeIndex(index - 1)}
             >
               <PDFPage data={prev} isStandalone={false} isActive={false} />
@@ -62,9 +92,17 @@ export default function StackedPostViewer({
           {current && (
             <motion.div
               key={current.id}
-              animate={getPostStyle(0)}
+              animate={animCenter}
               transition={springTransition}
-              style={getBaseStyle(true, false, false)}
+              style={{
+                ...BASE_STYLE,
+                cursor: "default",
+                zIndex: 100,
+                opacity: 1,
+                isolation: "isolate",
+                maskImage: "none",
+                WebkitMaskImage: "none",
+              }}
             >
               <PDFPage data={current} isStandalone={false} isActive={true} />
             </motion.div>
@@ -74,9 +112,17 @@ export default function StackedPostViewer({
           {next && (
             <motion.div
               key={next.id}
-              animate={getPostStyle(1)}
+              animate={animRight}
               transition={springTransition}
-              style={getBaseStyle(false, false, true)}
+              style={{
+                ...BASE_STYLE,
+                cursor: "pointer",
+                zIndex: 20,
+                opacity: 0.92,
+                filter: "grayscale(0.42) saturate(0.45)",
+                maskImage: RIGHT_MASK,
+                WebkitMaskImage: RIGHT_MASK,
+              }}
               onClick={() => onChangeIndex(index + 1)}
             >
               <PDFPage data={next} isStandalone={false} isActive={false} />
@@ -85,77 +131,10 @@ export default function StackedPostViewer({
         </motion.div>
       </ViewportGuard>
 
-      {/* shadow layering 유지 */}
       {prev && <CastshadowOnPost side="left" />}
       {next && <CastshadowOnPost side="right" />}
 
       <PunchFilterOverlay />
     </>
   );
-}
-
-/* ========================= */
-/* BASE STYLE (유지 그대로) */
-/* ========================= */
-
-function getBaseStyle(
-  isCurrent: boolean,
-  isLeft: boolean,
-  isRight: boolean
-) {
-  return {
-    position: "absolute",
-    left: "50%",
-    transform: "translateX(-50%)",
-
-    cursor: isCurrent ? "default" : "pointer",
-
-    willChange: "transform, opacity",
-    transformStyle: "preserve-3d" as const,
-    backfaceVisibility: "hidden" as const,
-    WebkitBackfaceVisibility: "hidden" as const,
-
-    overflow: "hidden",
-
-    isolation: isCurrent ? "isolate" : undefined,
-
-    zIndex: isCurrent ? 100 : 20,
-
-    filter: isCurrent
-      ? "none"
-      : "grayscale(0.42) saturate(0.45)",
-
-    opacity: isCurrent ? 1 : 0.92,
-
-    maskImage: getMaskGradient(isLeft, isRight),
-    WebkitMaskImage: getMaskGradient(isLeft, isRight),
-  };
-}
-
-/* ========================= */
-/* MASK (그대로 유지) */
-/* ========================= */
-
-function getMaskGradient(isLeft: boolean, isRight: boolean) {
-  if (isLeft) {
-    return `
-      linear-gradient(
-        to right,
-        rgba(0,0,0,1) 45%,
-        rgba(0,0,0,0) 100%
-      )
-    `;
-  }
-
-  if (isRight) {
-    return `
-      linear-gradient(
-        to left,
-        rgba(0,0,0,1) 45%,
-        rgba(0,0,0,0) 100%
-      )
-    `;
-  }
-
-  return "none";
 }
