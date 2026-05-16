@@ -29,7 +29,9 @@ export default function CategoryPostBoxRenderer({
               background: "rgba(165, 170, 185, 0.32)",
 
               border: "1px solid rgba(255,255,255,0.12)",
-              backdropFilter: "blur(6px)",
+
+              // 거의 블러 제거 수준
+              backdropFilter: "blur(1px)",
 
               transition: "all 0.28s ease",
               overflow: "hidden",
@@ -71,6 +73,11 @@ export default function CategoryPostBoxRenderer({
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
+
+                // 더 강한 엠보싱/그림자
+                textShadow:
+                  "0 2px 2px rgba(0,0,0,0.75), 0 -1px 0 rgba(255,255,255,0.12)",
+                fontWeight: 600,
               }}
             >
               {post.title}
@@ -82,6 +89,7 @@ export default function CategoryPostBoxRenderer({
                 fontSize: 11,
                 color: "rgba(255,255,255,0.65)",
                 letterSpacing: "0.06em",
+                textShadow: "0 1px 2px rgba(0,0,0,0.55)",
               }}
             >
               {new Date(post.created_at).toLocaleDateString()}
