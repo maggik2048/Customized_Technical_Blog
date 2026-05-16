@@ -1,4 +1,3 @@
-// @/components/StackedPostViewer.tsx
 "use client";
 
 import { motion } from "framer-motion";
@@ -7,6 +6,11 @@ import PDFPage from "@/app/post/[id]/PDFPage";
 import ViewportGuard from "./ViewportGuard";
 import CastshadowOnPost from "./CastshadowOnPost";
 import PunchFilterOverlay from "./PunchFilterOverlay";
+
+import {
+  getPostStyle,
+  springTransition,
+} from "./StackedPostAnimation";
 
 type Props = {
   posts: any[];
@@ -46,12 +50,7 @@ export default function StackedPostViewer({
             <motion.div
               key={prev.id}
               animate={getPostStyle(-1)}
-              transition={{
-                type: "spring",
-                stiffness: 70,
-                damping: 26,
-                mass: 0.9,
-              }}
+              transition={springTransition}
               style={getBaseStyle(false, true, false)}
               onClick={() => onChangeIndex(index - 1)}
             >
@@ -64,12 +63,7 @@ export default function StackedPostViewer({
             <motion.div
               key={current.id}
               animate={getPostStyle(0)}
-              transition={{
-                type: "spring",
-                stiffness: 70,
-                damping: 26,
-                mass: 0.9,
-              }}
+              transition={springTransition}
               style={getBaseStyle(true, false, false)}
             >
               <PDFPage data={current} isStandalone={false} isActive={true} />
@@ -81,12 +75,7 @@ export default function StackedPostViewer({
             <motion.div
               key={next.id}
               animate={getPostStyle(1)}
-              transition={{
-                type: "spring",
-                stiffness: 70,
-                damping: 26,
-                mass: 0.9,
-              }}
+              transition={springTransition}
               style={getBaseStyle(false, false, true)}
               onClick={() => onChangeIndex(index + 1)}
             >
@@ -106,7 +95,7 @@ export default function StackedPostViewer({
 }
 
 /* ========================= */
-/* BASE STYLE (핵심 복구) */
+/* BASE STYLE (유지 그대로) */
 /* ========================= */
 
 function getBaseStyle(
@@ -132,13 +121,10 @@ function getBaseStyle(
 
     zIndex: isCurrent ? 100 : 20,
 
-    /* ===== 핵심 복구 ===== */
-
     filter: isCurrent
       ? "none"
       : "grayscale(0.42) saturate(0.45)",
 
-    /* 👉 블렌딩 핵심 (원래 느낌 복구) */
     opacity: isCurrent ? 1 : 0.92,
 
     maskImage: getMaskGradient(isLeft, isRight),
@@ -147,50 +133,7 @@ function getBaseStyle(
 }
 
 /* ========================= */
-/* ANIMATION STATE */
-/* ========================= */
-
-function getPostStyle(offset: number) {
-  if (offset === 0) {
-    return {
-      x: 0,
-      y: 0,
-      scale: 1,
-      rotate: 0,
-      opacity: 1,
-      zIndex: 30,
-    };
-  }
-
-  if (offset === -1) {
-    return {
-      x: -520,
-      y: -40,
-      scale: 0.9,
-      rotate: -3,
-      opacity: 1,
-      zIndex: 20,
-    };
-  }
-
-  if (offset === 1) {
-    return {
-      x: 520,
-      y: -40,
-      scale: 0.9,
-      rotate: 3,
-      opacity: 1,
-      zIndex: 20,
-    };
-  }
-
-  return {
-    opacity: 0,
-  };
-}
-
-/* ========================= */
-/* MASK (블렌딩 핵심 복구) */
+/* MASK (그대로 유지) */
 /* ========================= */
 
 function getMaskGradient(isLeft: boolean, isRight: boolean) {
