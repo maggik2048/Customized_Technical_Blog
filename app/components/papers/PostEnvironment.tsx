@@ -4,6 +4,7 @@ import React from "react";
 import { useDarkMode } from "@/app/context/DarkModeContext";
 
 import DarkModeContextButtonRenderer from "@/app/context/DarkModeContextButtonRenderer";
+import DrawingPenButton from "@/app/visualizations/DrawingNotation/DrawingPenButton";
 
 export default function PostEnvironment({
   children,
@@ -25,13 +26,10 @@ export default function PostEnvironment({
         style={{
           position: "fixed",
           inset: 0,
-
           backgroundImage: `url("${bgImage}")`,
           backgroundSize: "cover",
           backgroundPosition: "center",
-
           transform: "scale(1.02)",
-
           zIndex: -5,
         }}
       />
@@ -41,13 +39,10 @@ export default function PostEnvironment({
         style={{
           position: "fixed",
           inset: 0,
-
           backgroundImage: `url("${bgImage}")`,
           backgroundSize: "cover",
           backgroundPosition: "center",
-
           transform: "scale(1.02)",
-
           filter: `
             invert(1)
             hue-rotate(192deg)
@@ -56,13 +51,9 @@ export default function PostEnvironment({
             brightness(0.93)
             sepia(0.03)
           `,
-
           opacity: 0.92,
-
           zIndex: -4,
-
           pointerEvents: "none",
-
           maskImage: `
             linear-gradient(
               to bottom,
@@ -74,7 +65,6 @@ export default function PostEnvironment({
               rgba(0,0,0,1) 100%
             )
           `,
-
           WebkitMaskImage: `
             linear-gradient(
               to bottom,
@@ -94,7 +84,6 @@ export default function PostEnvironment({
         style={{
           position: "fixed",
           inset: 0,
-
           background: `
             linear-gradient(
               to top,
@@ -104,11 +93,8 @@ export default function PostEnvironment({
               transparent 60%
             )
           `,
-
           mixBlendMode: "screen",
-
           zIndex: -3,
-
           pointerEvents: "none",
         }}
       />
@@ -118,7 +104,6 @@ export default function PostEnvironment({
         style={{
           position: "fixed",
           inset: 0,
-
           background: `
             linear-gradient(
               to bottom,
@@ -128,11 +113,8 @@ export default function PostEnvironment({
               transparent 58%
             )
           `,
-
           mixBlendMode: "screen",
-
           zIndex: -2,
-
           pointerEvents: "none",
         }}
       />
@@ -142,7 +124,6 @@ export default function PostEnvironment({
         style={{
           position: "fixed",
           inset: 0,
-
           background: `
             linear-gradient(
               to top,
@@ -152,15 +133,16 @@ export default function PostEnvironment({
               transparent 52%
             )
           `,
-
           zIndex: -1,
-
           pointerEvents: "none",
         }}
       />
 
-      {/* CUSTOM DARKMODE CONTROLS */}
+      {/* GLOBAL UI LAYER */}
       <DarkModeContextButtonRenderer />
+
+      {/* TOPMOST FLOATING ACTION BUTTON */}
+      <DrawingPenButton />
 
       {children}
     </>
