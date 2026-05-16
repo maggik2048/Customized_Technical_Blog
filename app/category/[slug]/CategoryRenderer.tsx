@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import CategoryPostBoxRenderer from "./CategorypostBoxRenderer";
 
 export default function CategoryRenderer({
   posts,
@@ -44,7 +45,6 @@ export default function CategoryRenderer({
           backgroundSize: "cover",
           backgroundPosition: "center",
           transform: "scale(1.02)",
-
           filter: `
             invert(1)
             hue-rotate(200deg)
@@ -53,11 +53,9 @@ export default function CategoryRenderer({
             brightness(0.88)
             sepia(0.05)
           `,
-
           opacity: 0.92,
           zIndex: -5,
           pointerEvents: "none",
-
           maskImage: `
             linear-gradient(
               to right,
@@ -69,7 +67,6 @@ export default function CategoryRenderer({
               rgba(0,0,0,1) 100%
             )
           `,
-
           WebkitMaskImage: `
             linear-gradient(
               to right,
@@ -91,7 +88,6 @@ export default function CategoryRenderer({
           inset: 0,
           zIndex: -4,
           pointerEvents: "none",
-
           background: `
             linear-gradient(
               to right,
@@ -102,7 +98,6 @@ export default function CategoryRenderer({
               rgba(107,110,135,0.55) 100%
             )
           `,
-
           mixBlendMode: "lighten",
         }}
       />
@@ -164,101 +159,7 @@ export default function CategoryRenderer({
       </div>
 
       {/* LIST */}
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: 10,
-          maxWidth: 1020,
-        }}
-      >
-        {posts.map((post) => (
-          <Link key={post.id} href={`/post/${post.id}`}>
-            <div
-              style={{
-                position: "relative",
-
-                /* 🔥 vertical 줄임 */
-                height: 54,
-
-                borderRadius: 6,
-                padding: "10px 18px",
-                cursor: "pointer",
-
-                /* 🔥 핵심: dark navy box */
-                background: "#3F435C",
-
-                border: "1px solid rgba(255,255,255,0.08)",
-                backdropFilter: "blur(6px)",
-
-                transition: "all 0.28s ease",
-                overflow: "hidden",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateX(8px)";
-                e.currentTarget.style.background = "#464B66";
-                e.currentTarget.style.borderColor =
-                  "rgba(255,255,255,0.14)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateX(0px)";
-                e.currentTarget.style.background = "#3F435C";
-                e.currentTarget.style.borderColor =
-                  "rgba(255,255,255,0.08)";
-              }}
-            >
-              {/* LEFT SPINE */}
-              <div
-                style={{
-                  position: "absolute",
-                  left: 0,
-                  top: 0,
-                  bottom: 0,
-                  width: 2,
-                  background: "rgba(200, 210, 255, 0.55)",
-                }}
-              />
-
-              {/* TITLE (WHITE) */}
-              <div
-                style={{
-                  fontSize: 16,
-                  color: "#ffffff",
-                  letterSpacing: "0.02em",
-                  marginBottom: 2,
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                }}
-              >
-                {post.title}
-              </div>
-
-              {/* META (WHITE DIM) */}
-              <div
-                style={{
-                  fontSize: 11,
-                  color: "rgba(255,255,255,0.65)",
-                  letterSpacing: "0.06em",
-                }}
-              >
-                {new Date(post.created_at).toLocaleDateString()}
-              </div>
-
-              {/* EDGE LIGHT */}
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  boxShadow:
-                    "inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -1px 0 rgba(0,0,0,0.25)",
-                  pointerEvents: "none",
-                }}
-              />
-            </div>
-          </Link>
-        ))}
-      </div>
+      <CategoryPostBoxRenderer posts={posts} />
     </div>
   );
 }
