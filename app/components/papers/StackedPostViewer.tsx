@@ -21,93 +21,114 @@ export default function StackedPostViewer({
   const STACK_OFFSET = -520;
 
   return (
-    <ViewportGuard maxWidth="1400px">
-      <motion.div
-        animate={{ x: STACK_OFFSET }}
-        style={{
-          position: "relative",
-          display: "flex",
-          justifyContent: "center",
-          marginTop: 40,
-          height: "100vh",
-          willChange: "transform",
-          transformStyle: "preserve-3d",
-        }}
-      >
-        {posts.map((post, i) => {
-          const offset = i - index;
+    <>
+      <ViewportGuard maxWidth="1400px">
+        <motion.div
+          animate={{ x: STACK_OFFSET }}
+          style={{
+            position: "relative",
+            display: "flex",
+            justifyContent: "center",
+            marginTop: 40,
+            height: "100vh",
 
-          // 너무 먼 카드 제거
-          if (Math.abs(offset) > 3) return null;
+            willChange: "transform",
 
-          const isCurrent = offset === 0;
-          const isLeft = offset < 0;
-          const isRight = offset > 0;
+            transformStyle: "preserve-3d",
+          }}
+        >
+          {posts.map((post, i) => {
+            const offset = i - index;
 
-          const style = getPostStyle(offset);
+            // 너무 먼 카드 제거
+            if (Math.abs(offset) > 3) return null;
 
-          return (
-            <motion.div
-              key={post.id}
-              animate={style}
-              transition={{
-                type: "spring",
-                stiffness: 70,
-                damping: 26,
-                mass: 0.9,
-              }}
-              style={{
-                position: "absolute",
-                left: "50%",
-                transform: "translateX(-50%)",
+            const isCurrent = offset === 0;
+            const isLeft = offset < 0;
+            const isRight = offset > 0;
 
-                cursor: isCurrent ? "default" : "pointer",
+            const style = getPostStyle(offset);
 
-                willChange: "transform, opacity",
-                transformStyle: "preserve-3d",
+            return (
+              <motion.div
+                key={post.id}
+                animate={style}
+                transition={{
+                  type: "spring",
+                  stiffness: 70,
+                  damping: 26,
+                  mass: 0.9,
+                }}
+                style={{
+                  position: "absolute",
 
-                backfaceVisibility: "hidden",
-                WebkitBackfaceVisibility: "hidden",
+                  left: "50%",
 
-                overflow: "hidden",
+                  transform: "translateX(-50%)",
 
-                // 좌우 잘리는 마스크
-                maskImage: getMaskGradient(isLeft, isRight),
-                WebkitMaskImage: getMaskGradient(isLeft, isRight),
-              }}
-              onClick={() => onChangeIndex(i)}
-            >
-              {/* 실제 포스트 */}
-              <PDFPage
-                data={post}
-                isStandalone={false}
-                isActive={isCurrent}
-              />
+                  cursor: isCurrent
+                    ? "default"
+                    : "pointer",
 
-              {/* 왼쪽 카드 shadow */}
-              {isLeft && (
-                <CastshadowOnPost
-                  side="left"
-                  visible={!isCurrent}
+                  willChange:
+                    "transform, opacity",
+
+                  transformStyle:
+                    "preserve-3d",
+
+                  backfaceVisibility:
+                    "hidden",
+
+                  WebkitBackfaceVisibility:
+                    "hidden",
+
+                  overflow: "hidden",
+
+                  // 좌우 잘리는 마스크
+                  maskImage: getMaskGradient(
+                    isLeft,
+                    isRight
+                  ),
+
+                  WebkitMaskImage:
+                    getMaskGradient(
+                      isLeft,
+                      isRight
+                    ),
+                }}
+                onClick={() =>
+                  onChangeIndex(i)
+                }
+              >
+                <PDFPage
+                  data={post}
+                  isStandalone={false}
+                  isActive={isCurrent}
                 />
-              )}
+              </motion.div>
+            );
+          })}
+        </motion.div>
+      </ViewportGuard>
 
-              {/* 오른쪽 카드 shadow */}
-              {isRight && (
-                <CastshadowOnPost
-                  side="right"
-                  visible={!isCurrent}
-                />
-              )}
-            </motion.div>
-          );
-        })}
-      </motion.div>
-    </ViewportGuard>
+      {/* 화면 고정 shadow overlay */}
+
+      {posts[index - 1] && (
+        <CastshadowOnPost
+          side="left"
+        />
+      )}
+
+      {posts[index + 1] && (
+        <CastshadowOnPost
+          side="right"
+        />
+      )}
+    </>
   );
 }
 
-// 카드 위치/회전 스타일
+// 카드 스타일
 function getPostStyle(offset: number) {
   if (offset === 0) {
     return {
@@ -161,7 +182,7 @@ function getPostStyle(offset: number) {
       };
 }
 
-// 좌우 카드 페이드 마스크
+// 카드 가장자리 마스크
 function getMaskGradient(
   isLeft: boolean,
   isRight: boolean

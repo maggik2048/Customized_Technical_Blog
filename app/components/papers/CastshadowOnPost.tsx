@@ -28,15 +28,30 @@ export default function CastshadowOnPost({
       }}
       style={{
         position: "absolute",
-        inset: 0,
-        pointerEvents: "none",
-        zIndex: 999,
 
-        // 핵심
+        top: 0,
+        bottom: 0,
+
+        // 왼쪽 shadow 는 왼쪽 절반만
+        ...(side === "left"
+          ? {
+              left: 0,
+              width: "50%",
+            }
+          : {
+              right: 0,
+              width: "50%",
+            }),
+
+        pointerEvents: "none",
+
+        zIndex: 5,
+
+        overflow: "hidden",
+
         mixBlendMode: "multiply",
 
-        // GPU 가속
-        willChange: "opacity, transform",
+        willChange: "opacity",
       }}
     >
       <Image
@@ -46,8 +61,11 @@ export default function CastshadowOnPost({
         priority
         draggable={false}
         style={{
-          objectFit: "contain",
+          objectFit: "cover",
+
           userSelect: "none",
+
+          opacity: 0.9,
         }}
       />
     </motion.div>
