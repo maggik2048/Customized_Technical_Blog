@@ -61,71 +61,93 @@ export default function PDFPage({
 
   const pageStyle: React.CSSProperties = {
     width: 860,
-
     margin: "40px auto",
-
     position: "relative",
-
     background: isDark
       ? "rgba(60,60,60,0.6)"
       : "rgba(255,255,255,0.72)",
-
     paddingLeft: 64,
     paddingRight: 64,
-
     borderRadius: 12,
-
     overflow: "hidden",
-
     boxShadow: isDark
       ? "0 8px 30px rgba(0,0,0,0.6)"
       : "0 8px 30px rgba(0,0,0,0.15)",
   };
 
+  // =========================
+  // 🔥 ONLY OPTIMIZATION (1번)
+  // =========================
+  const parsedParts = React.useMemo(() => {
+    const regex = /\[([A-Za-z_][A-Za-z0-9_]*)\]/g;
+
+    const codeBlocks: string[] = [];
+
+    const protectedContent = data.content.replace(
+      /```[\s\S]*?```/g,
+      (match: string) => {
+        codeBlocks.push(match);
+        return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
+      }
+    );
+
+    const parts = protectedContent.split(regex);
+
+    const restore = (text: string) =>
+      text.replace(
+        /__CODE_BLOCK_(\d+)__/g,
+        (_, i) => codeBlocks[Number(i)]
+      );
+
+    return parts.map((part: string, i: number) => {
+      const Component = visualizationRegistry[part];
+
+      if (Component) {
+        return {
+          kind: "viz" as const,
+          Component,
+          key: i,
+        };
+      }
+
+      return {
+        kind: "md" as const,
+        content: restore(part),
+        key: i,
+      };
+    });
+  }, [data.content]);
+
   return (
-    <motion.div
-      style={{
-        color: textColor,
-      }}
-    >
+    <motion.div style={{ color: textColor }}>
       <div>
         <div style={pageStyle}>
           {/* HEADER */}
           <div
             style={{
               position: "absolute",
-
               top: 0,
               left: 0,
-
               width: "100%",
-
               height: HEADER_HEIGHT,
-
               overflow: "hidden",
             }}
           >
-            {/* HEADER IMAGE */}
             <img
               src={headerImage}
               style={{
                 width: "100%",
                 height: "100%",
-
                 objectFit: "cover",
-
                 objectPosition: "center center",
-
                 transform: "scale(1.02)",
               }}
             />
 
-            {/* OVERLAY */}
             <div
               style={{
                 position: "absolute",
                 inset: 0,
-
                 background: isDark
                   ? `
                     linear-gradient(
@@ -150,15 +172,12 @@ export default function PDFPage({
               }}
             />
 
-            {/* TITLE */}
             <div
               style={{
                 position: "absolute",
-
                 bottom: 38,
                 left: 48,
                 right: 48,
-
                 color: "#fff",
               }}
             >
@@ -166,26 +185,19 @@ export default function PDFPage({
                 className={cormorant.className}
                 style={{
                   fontSize: 42,
-
                   margin: 0,
-
                   lineHeight: 1.08,
-
                   letterSpacing: "0.02em",
-
-                  textShadow:
-                    "0 3px 18px rgba(0,0,0,0.5)",
+                  textShadow: "0 3px 18px rgba(0,0,0,0.5)",
                 }}
               >
                 {data.title}
               </h1>
             </div>
 
-            {/* ADMIN */}
             <div
               style={{
                 position: "absolute",
-
                 top: 16,
                 right: 40,
               }}
@@ -200,93 +212,48 @@ export default function PDFPage({
               paddingTop: HEADER_HEIGHT - 36,
             }}
           >
-            {/* POSTAL METADATA */}
             <MetadataPostalCode
               data={data}
               isDark={isDark}
             />
 
-            {/* 🔥 첫 몇 줄만 golden ratio 오른쪽에서 시작 */}
             <div
               style={{
                 float: "left",
-
                 width: 165,
-
                 height: 110,
-
                 pointerEvents: "none",
               }}
             />
 
-            {/* BODY */}
-            <div
-              style={{
-                marginTop: -2,
-              }}
-            >
+            <div style={{ marginTop: -2 }}>
               <NotepageLines>
-                {(() => {
-                  const regex =
-                    /\[([A-Za-z_][A-Za-z0-9_]*)\]/g;
-
-                  const codeBlocks: string[] = [];
-
-                  const protectedContent =
-                    data.content.replace(
-                      /```[\s\S]*?```/g,
-                      (match: string) => {
-                        codeBlocks.push(match);
-
-                        return `__CODE_BLOCK_${
-                          codeBlocks.length - 1
-                        }__`;
-                      }
+                {parsedParts.map((item) => {
+                  if (item.kind === "viz") {
+                    const Component = item.Component;
+                    return (
+                      <div key={item.key}>
+                        <Component />
+                      </div>
                     );
+                  }
 
-                  const parts =
-                    protectedContent.split(regex);
-
-                  const restore = (text: string) =>
-                    text.replace(
-                      /__CODE_BLOCK_(\d+)__/g,
-                      (_, i) =>
-                        codeBlocks[Number(i)]
-                    );
-
-                  return parts.map(
-                    (part: string, i: number) => {
-                      const Component =
-                        visualizationRegistry[part];
-
-                      if (Component) {
-                        return (
-                          <div key={i}>
-                            <Component />
-                          </div>
-                        );
+                  return (
+                    <RemarkPageRenderer
+                      key={item.key}
+                      markdownComponents={
+                        markdownComponents
                       }
-
-                      return (
-                        <RemarkPageRenderer
-                          key={i}
-                          markdownComponents={
-                            markdownComponents
-                          }
-                          sciFiMarkdownComponents={
-                            sciFiMarkdownComponents
-                          }
-                          isDark={isDark}
-                          CodeBlock={
-                            CodeBlockWithCopy
-                          }
-                        >
-                          {restore(part)}
-                        </RemarkPageRenderer>
-                      );
-                    }
+                      sciFiMarkdownComponents={
+                        sciFiMarkdownComponents
+                      }
+                      isDark={isDark}
+                      CodeBlock={CodeBlockWithCopy}
+                    >
+                      {item.content}
+                    </RemarkPageRenderer>
                   );
-                })()}
+                })}
               </NotepageLines>
             </div>
 
