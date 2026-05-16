@@ -109,6 +109,11 @@ export default function StackedPostViewer({
                     ? 100
                     : style.zIndex,
 
+                  // 좌우 카드 거의 흑백
+                  filter: isCurrent
+                    ? "none"
+                    : "grayscale(0.42) saturate(0.45)",
+
                   // 좌우 잘리는 마스크
                   maskImage:
                     getMaskGradient(
