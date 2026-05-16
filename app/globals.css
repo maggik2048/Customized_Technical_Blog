@@ -1,4 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Carattere&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -18,13 +19,21 @@ body.dark-mode {
   --code-bg: #222;
 }
 
-/*  전역 적용 (핵심) */
+/* 전역 적용 */
+html,
+body,
+* {
+  cursor: url("/images/mouseicon/pointer.ico") 0 0, auto;
+}
+
 body {
   margin: 0;
   font-family: 'Latin Modern', serif;
   background-color: var(--bg-color);
   color: var(--fg-color);
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    color 0.3s ease;
 }
 
 /* 링크 */
@@ -40,16 +49,16 @@ a {
   letter-spacing: 0.005em;
   font-size: 9vh;
 
-  background-image: 
+  background-image:
     linear-gradient(
       to bottom,
       rgba(255,255,255,0.85) 0%,
-      rgba(255,255,255,0.85) 50%,  
+      rgba(255,255,255,0.85) 50%,
       transparent 50%,
       transparent 100%
     ),
     url("/images/lee-su-yeon-header-bright-hot3.jpg");
-  
+
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -76,8 +85,6 @@ code {
   border-radius: 4px;
 }
 
-
-
 .font-carattere {
   font-family: 'Carattere', cursive !important;
 }
@@ -86,16 +93,13 @@ code {
   font-family: 'Carattere', cursive !important;
 }
 
-
 .paren-highlight {
   color: #ffcc88;
   font-weight: 500;
 
-  white-space: nowrap;       /*  핵심 */
-  display: inline-block;     /*  안정화 */
+  white-space: nowrap;
+  display: inline-block;
 }
-
-
 
 .katex,
 .katex * {
@@ -103,15 +107,7 @@ code {
   text-shadow: 0 0.25px 0.9px rgba(0, 60, 80, 0.92);
 }
 
-
-
-
-
-
-
-
-
-/*  sidebar scrollbar */
+/* sidebar scrollbar */
 
 .sidebar::-webkit-scrollbar {
   width: 4px;
@@ -135,4 +131,4 @@ code {
   scrollbar-color: rgba(230, 210, 170, 0.72) transparent;
 }
 
-/*  sidebar scrollbar----------end */
+/* sidebar scrollbar----------end */
