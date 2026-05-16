@@ -84,7 +84,7 @@ export default function CategoryRenderer({
         }}
       />
 
-      {/*  #50557A LIGHTEN CLAMP LAYER */}
+      {/* CLAMP LAYER */}
       <div
         style={{
           position: "fixed",
@@ -99,7 +99,7 @@ export default function CategoryRenderer({
               rgba(220,225,240,0.10) 25%,
               rgba(170,180,210,0.18) 45%,
               rgba(120,130,170,0.30) 70%,
-              rgba(107, 110, 135, 0.55) 100%
+              rgba(107,110,135,0.55) 100%
             )
           `,
 
@@ -107,7 +107,7 @@ export default function CategoryRenderer({
         }}
       />
 
-      {/* DEPTH FOCUS */}
+      {/* DEPTH */}
       <div
         style={{
           position: "fixed",
@@ -168,7 +168,7 @@ export default function CategoryRenderer({
         style={{
           display: "flex",
           flexDirection: "column",
-          gap: 12,
+          gap: 10,
           maxWidth: 1020,
         }}
       >
@@ -177,31 +177,34 @@ export default function CategoryRenderer({
             <div
               style={{
                 position: "relative",
-                height: 64,
+
+                /* 🔥 vertical 줄임 */
+                height: 54,
+
                 borderRadius: 6,
-                padding: "12px 18px",
+                padding: "10px 18px",
                 cursor: "pointer",
 
-                background: "rgba(245,245,245,0.55)",
-                border: "1px solid rgba(120,120,120,0.25)",
-                backdropFilter: "blur(8px)",
+                /* 🔥 핵심: dark navy box */
+                background: "#3F435C",
+
+                border: "1px solid rgba(255,255,255,0.08)",
+                backdropFilter: "blur(6px)",
 
                 transition: "all 0.28s ease",
                 overflow: "hidden",
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform = "translateX(8px)";
+                e.currentTarget.style.background = "#464B66";
                 e.currentTarget.style.borderColor =
-                  "rgba(120,120,120,0.45)";
-                e.currentTarget.style.background =
-                  "rgba(255,255,255,0.65)";
+                  "rgba(255,255,255,0.14)";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform = "translateX(0px)";
+                e.currentTarget.style.background = "#3F435C";
                 e.currentTarget.style.borderColor =
-                  "rgba(120,120,120,0.25)";
-                e.currentTarget.style.background =
-                  "rgba(245,245,245,0.55)";
+                  "rgba(255,255,255,0.08)";
               }}
             >
               {/* LEFT SPINE */}
@@ -212,17 +215,17 @@ export default function CategoryRenderer({
                   top: 0,
                   bottom: 0,
                   width: 2,
-                  background: "rgba(80, 85, 122, 0.65)",
+                  background: "rgba(200, 210, 255, 0.55)",
                 }}
               />
 
-              {/* TITLE */}
+              {/* TITLE (WHITE) */}
               <div
                 style={{
-                  fontSize: 17,
-                  color: "rgba(40,40,40,0.9)",
+                  fontSize: 16,
+                  color: "#ffffff",
                   letterSpacing: "0.02em",
-                  marginBottom: 3,
+                  marginBottom: 2,
                   whiteSpace: "nowrap",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
@@ -231,11 +234,11 @@ export default function CategoryRenderer({
                 {post.title}
               </div>
 
-              {/* META */}
+              {/* META (WHITE DIM) */}
               <div
                 style={{
                   fontSize: 11,
-                  color: "rgba(80,80,80,0.7)",
+                  color: "rgba(255,255,255,0.65)",
                   letterSpacing: "0.06em",
                 }}
               >
@@ -248,7 +251,7 @@ export default function CategoryRenderer({
                   position: "absolute",
                   inset: 0,
                   boxShadow:
-                    "inset 0 1px 0 rgba(255,255,255,0.5), inset 0 -1px 0 rgba(0,0,0,0.08)",
+                    "inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -1px 0 rgba(0,0,0,0.25)",
                   pointerEvents: "none",
                 }}
               />
