@@ -1,79 +1,197 @@
 "use client";
 
+import React from "react";
 import { useDarkMode } from "@/app/context/DarkModeContext";
 
 export default function DarkModeContextButtonRenderer() {
-  const {
-    mode,
-    codeDark,
-    toggle,
-    toggleCode,
-  } = useDarkMode();
+  const { mode, codeDark, toggle, toggleCode } = useDarkMode();
+
+  const isDark = mode === "dark";
 
   return (
     <div
       style={{
         position: "fixed",
-        top: 20,
-        left: 20,
-        zIndex: 50,
 
+        // sidebar 오른쪽
+        left: "340px",
+        top: 18,
+
+        zIndex: 50,
         display: "flex",
-        gap: 12,
+        gap: 16,
+        alignItems: "center",
       }}
     >
+      {/* ================= DARK MODE SWITCH ================= */}
       <button
         onClick={toggle}
         style={{
-          padding: "10px 18px",
-          borderRadius: 14,
-          border: "1px solid rgba(255,255,255,0.15)",
+          width: 86,
+          height: 40,
+          borderRadius: 999,
 
-          background:
-            mode === "dark"
-              ? "rgba(20,20,28,0.72)"
-              : "rgba(255,255,255,0.72)",
+          border: "1px solid rgba(255,255,255,0.14)",
 
-          color:
-            mode === "dark"
-              ? "#fff"
-              : "#111",
+          background: isDark
+            ? "rgba(20,20,28,0.55)"
+            : "rgba(255,255,255,0.55)",
 
-          backdropFilter: "blur(12px)",
+          backdropFilter: "blur(18px)",
+          WebkitBackdropFilter: "blur(18px)",
 
           cursor: "pointer",
+          position: "relative",
 
-          transition: "0.25s",
+          transition: "all 0.3s ease",
         }}
       >
-        {mode === "dark" ? "Dark" : "Light"}
+        {/* 🔥 BACKGROUND ORB (핵심: 항상 뒤에 있음) */}
+        <div
+          style={{
+            position: "absolute",
+            top: 4,
+
+            left: isDark ? 46 : 4,
+
+            width: 32,
+            height: 32,
+            borderRadius: "50%",
+
+            background: isDark ? "#ffffff" : "#111111",
+
+            boxShadow: isDark
+              ? "0 6px 18px rgba(255,255,255,0.25)"
+              : "0 6px 18px rgba(0,0,0,0.35)",
+
+            transition: "all 0.32s cubic-bezier(0.4,0,0.2,1)",
+
+            zIndex: 1, // 뒤쪽 레이어
+          }}
+        />
+
+        {/* ☀️ LEFT ICON (앞에 있음) */}
+        <div
+          style={{
+            position: "absolute",
+            left: 12,
+            top: 8,
+
+            fontSize: 15,
+
+            zIndex: 5, // orb보다 위
+
+            opacity: isDark ? 0.35 : 1,
+            transform: isDark ? "scale(0.9)" : "scale(1)",
+
+            transition: "all 0.25s ease",
+            filter: "drop-shadow(0 2px 4px rgba(0,0,0,0.25))",
+          }}
+        >
+          ☀️
+        </div>
+
+        {/* 🌙 RIGHT ICON (앞에 있음) */}
+        <div
+          style={{
+            position: "absolute",
+            right: 12,
+            top: 8,
+
+            fontSize: 15,
+
+            zIndex: 5, // orb보다 위
+
+            opacity: isDark ? 1 : 0.35,
+            transform: isDark ? "scale(1)" : "scale(0.9)",
+
+            transition: "all 0.25s ease",
+            filter: "drop-shadow(0 2px 6px rgba(0,0,0,0.35))",
+          }}
+        >
+          🌙
+        </div>
       </button>
 
+      {/* ================= CODE TOGGLE ================= */}
       <button
         onClick={toggleCode}
         style={{
-          padding: "10px 18px",
-          borderRadius: 14,
-          border: "1px solid rgba(255,255,255,0.15)",
+          width: 86,
+          height: 40,
+          borderRadius: 999,
 
-          background:
-            codeDark
-              ? "rgba(40,40,52,0.78)"
-              : "rgba(255,255,255,0.72)",
+          border: "1px solid rgba(255,255,255,0.14)",
 
-          color:
-            codeDark
-              ? "#7dd3fc"
-              : "#111",
+          background: codeDark
+            ? "rgba(40,40,52,0.55)"
+            : "rgba(255,255,255,0.55)",
 
-          backdropFilter: "blur(12px)",
+          backdropFilter: "blur(18px)",
+          WebkitBackdropFilter: "blur(18px)",
 
           cursor: "pointer",
+          position: "relative",
 
-          transition: "0.25s",
+          transition: "all 0.3s ease",
         }}
       >
-        Code
+        {/* ORB */}
+        <div
+          style={{
+            position: "absolute",
+            top: 4,
+            left: codeDark ? 46 : 4,
+
+            width: 32,
+            height: 32,
+            borderRadius: "50%",
+
+            background: codeDark ? "#38bdf8" : "#ffffff",
+
+            boxShadow: "0 6px 18px rgba(0,0,0,0.25)",
+
+            transition: "all 0.32s cubic-bezier(0.4,0,0.2,1)",
+
+            zIndex: 1,
+          }}
+        />
+
+        {/* LEFT */}
+        <div
+          style={{
+            position: "absolute",
+            left: 12,
+            top: 9,
+
+            fontSize: 12,
+
+            zIndex: 5,
+
+            opacity: codeDark ? 0.35 : 1,
+            transition: "all 0.25s ease",
+          }}
+        >
+          {"</>"}
+        </div>
+
+        {/* RIGHT */}
+        <div
+          style={{
+            position: "absolute",
+            right: 12,
+            top: 9,
+
+            fontSize: 12,
+
+            zIndex: 5,
+
+            opacity: codeDark ? 1 : 0.35,
+            transition: "all 0.25s ease",
+          }}
+        >
+          ON
+        </div>
       </button>
     </div>
   );
