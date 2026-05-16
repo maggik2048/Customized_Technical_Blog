@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import PostTitleRenderer from "./PostTitleRenderer";
 
 export default function CategoryPostBoxRenderer({
   posts,
@@ -12,7 +13,7 @@ export default function CategoryPostBoxRenderer({
       style={{
         display: "flex",
         flexDirection: "column",
-        gap: 10,
+        gap: 12,
         maxWidth: 1020,
       }}
     >
@@ -21,9 +22,9 @@ export default function CategoryPostBoxRenderer({
           <div
             style={{
               position: "relative",
-              height: 54,
+              height: 46,
               borderRadius: 6,
-              padding: "10px 18px",
+              padding: "8px 16px",
               cursor: "pointer",
               overflow: "hidden",
               border: "1px solid rgba(255,255,255,0.12)",
@@ -63,10 +64,10 @@ export default function CategoryPostBoxRenderer({
             <div
               style={{
                 position: "relative",
-                fontSize: 16,
+                fontSize: 15,
                 color: "#ffffff",
                 letterSpacing: "0.02em",
-                marginBottom: 2,
+                marginBottom: 1,
                 whiteSpace: "nowrap",
                 overflow: "hidden",
                 textOverflow: "ellipsis",
@@ -75,14 +76,14 @@ export default function CategoryPostBoxRenderer({
                 fontWeight: 600,
               }}
             >
-              {post.title}
+              <PostTitleRenderer text={post.title} />
             </div>
 
             {/* META */}
             <div
               style={{
                 position: "relative",
-                fontSize: 11,
+                fontSize: 10,
                 color: "rgba(255,255,255,0.65)",
                 letterSpacing: "0.06em",
                 textShadow: "0 1px 2px rgba(0,0,0,0.60)",
