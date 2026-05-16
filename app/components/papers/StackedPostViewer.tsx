@@ -4,7 +4,6 @@
 import { motion } from "framer-motion";
 
 import PDFPage from "@/app/post/[id]/PDFPage";
-
 import ViewportGuard from "./ViewportGuard";
 import CastshadowOnPost from "./CastshadowOnPost";
 import PunchFilterOverlay from "./PunchFilterOverlay";
@@ -20,8 +19,11 @@ export default function StackedPostViewer({
   index,
   onChangeIndex,
 }: Props) {
-  // 중앙 정렬 기준
   const STACK_OFFSET = -520;
+
+  const prev = posts[index - 1];
+  const current = posts[index];
+  const next = posts[index + 1];
 
   return (
     <>
@@ -30,217 +32,168 @@ export default function StackedPostViewer({
           animate={{ x: STACK_OFFSET }}
           style={{
             position: "relative",
-
             display: "flex",
             justifyContent: "center",
-
             marginTop: 40,
-
             height: "100vh",
-
             willChange: "transform",
-
             transformStyle: "preserve-3d",
-
             perspective: 1800,
           }}
         >
-          {posts.map((post, i) => {
-            const offset = i - index;
+          {/* LEFT */}
+          {prev && (
+            <motion.div
+              key={prev.id}
+              animate={getPostStyle(-1)}
+              transition={{
+                type: "spring",
+                stiffness: 70,
+                damping: 26,
+                mass: 0.9,
+              }}
+              style={getBaseStyle(false, true, false)}
+              onClick={() => onChangeIndex(index - 1)}
+            >
+              <PDFPage data={prev} isStandalone={false} isActive={false} />
+            </motion.div>
+          )}
 
-            // 너무 먼 카드 제거
-            if (Math.abs(offset) > 3) {
-              return null;
-            }
+          {/* CENTER */}
+          {current && (
+            <motion.div
+              key={current.id}
+              animate={getPostStyle(0)}
+              transition={{
+                type: "spring",
+                stiffness: 70,
+                damping: 26,
+                mass: 0.9,
+              }}
+              style={getBaseStyle(true, false, false)}
+            >
+              <PDFPage data={current} isStandalone={false} isActive={true} />
+            </motion.div>
+          )}
 
-            const isCurrent =
-              offset === 0;
-
-            const isLeft = offset < 0;
-            const isRight = offset > 0;
-
-            const style =
-              getPostStyle(offset);
-
-            return (
-              <motion.div
-                key={post.id}
-                animate={style}
-                transition={{
-                  type: "spring",
-                  stiffness: 70,
-                  damping: 26,
-                  mass: 0.9,
-                }}
-                style={{
-                  position: "absolute",
-
-                  left: "50%",
-
-                  transform:
-                    "translateX(-50%)",
-
-                  cursor: isCurrent
-                    ? "default"
-                    : "pointer",
-
-                  willChange:
-                    "transform, opacity",
-
-                  transformStyle:
-                    "preserve-3d",
-
-                  backfaceVisibility:
-                    "hidden",
-
-                  WebkitBackfaceVisibility:
-                    "hidden",
-
-                  overflow: "hidden",
-
-                  // 핵심:
-                  // 중앙 카드만 독립 stacking context
-                  isolation: isCurrent
-                    ? "isolate"
-                    : undefined,
-
-                  // 중앙 카드만 overlay 위
-                  zIndex: isCurrent
-                    ? 100
-                    : style.zIndex,
-
-                  // 좌우 카드 거의 흑백
-                  filter: isCurrent
-                    ? "none"
-                    : "grayscale(0.42) saturate(0.45)",
-
-                  // 좌우 잘리는 마스크
-                  maskImage:
-                    getMaskGradient(
-                      isLeft,
-                      isRight
-                    ),
-
-                  WebkitMaskImage:
-                    getMaskGradient(
-                      isLeft,
-                      isRight
-                    ),
-                }}
-                onClick={() =>
-                  onChangeIndex(i)
-                }
-              >
-                <PDFPage
-                  data={post}
-                  isStandalone={false}
-                  isActive={isCurrent}
-                />
-              </motion.div>
-            );
-          })}
+          {/* RIGHT */}
+          {next && (
+            <motion.div
+              key={next.id}
+              animate={getPostStyle(1)}
+              transition={{
+                type: "spring",
+                stiffness: 70,
+                damping: 26,
+                mass: 0.9,
+              }}
+              style={getBaseStyle(false, false, true)}
+              onClick={() => onChangeIndex(index + 1)}
+            >
+              <PDFPage data={next} isStandalone={false} isActive={false} />
+            </motion.div>
+          )}
         </motion.div>
       </ViewportGuard>
 
-      {/* 좌우 shadow overlay */}
+      {/* shadow layering 유지 */}
+      {prev && <CastshadowOnPost side="left" />}
+      {next && <CastshadowOnPost side="right" />}
 
-      {posts[index - 1] && (
-        <CastshadowOnPost side="left" />
-      )}
-
-      {posts[index + 1] && (
-        <CastshadowOnPost side="right" />
-      )}
-
-      {/* punch 후처리 */}
       <PunchFilterOverlay />
     </>
   );
 }
 
-// 카드 스타일
+/* ========================= */
+/* BASE STYLE (핵심 복구) */
+/* ========================= */
+
+function getBaseStyle(
+  isCurrent: boolean,
+  isLeft: boolean,
+  isRight: boolean
+) {
+  return {
+    position: "absolute",
+    left: "50%",
+    transform: "translateX(-50%)",
+
+    cursor: isCurrent ? "default" : "pointer",
+
+    willChange: "transform, opacity",
+    transformStyle: "preserve-3d" as const,
+    backfaceVisibility: "hidden" as const,
+    WebkitBackfaceVisibility: "hidden" as const,
+
+    overflow: "hidden",
+
+    isolation: isCurrent ? "isolate" : undefined,
+
+    zIndex: isCurrent ? 100 : 20,
+
+    /* ===== 핵심 복구 ===== */
+
+    filter: isCurrent
+      ? "none"
+      : "grayscale(0.42) saturate(0.45)",
+
+    /* 👉 블렌딩 핵심 (원래 느낌 복구) */
+    opacity: isCurrent ? 1 : 0.92,
+
+    maskImage: getMaskGradient(isLeft, isRight),
+    WebkitMaskImage: getMaskGradient(isLeft, isRight),
+  };
+}
+
+/* ========================= */
+/* ANIMATION STATE */
+/* ========================= */
+
 function getPostStyle(offset: number) {
-  // 현재 카드
   if (offset === 0) {
     return {
       x: 0,
       y: 0,
-
       scale: 1,
-
       rotate: 0,
-
       opacity: 1,
-
       zIndex: 30,
     };
   }
 
-  // 왼쪽 카드
   if (offset === -1) {
     return {
       x: -520,
       y: -40,
-
       scale: 0.9,
-
       rotate: -3,
-
       opacity: 1,
-
       zIndex: 20,
     };
   }
 
-  // 오른쪽 카드
   if (offset === 1) {
     return {
       x: 520,
       y: -40,
-
       scale: 0.9,
-
       rotate: 3,
-
       opacity: 1,
-
       zIndex: 20,
     };
   }
 
-  // 먼 카드
-  return offset < 0
-    ? {
-        x: -700,
-        y: -60,
-
-        scale: 0.85,
-
-        rotate: -4,
-
-        opacity: 0,
-
-        zIndex: 10,
-      }
-    : {
-        x: 700,
-        y: -60,
-
-        scale: 0.85,
-
-        rotate: 4,
-
-        opacity: 0,
-
-        zIndex: 10,
-      };
+  return {
+    opacity: 0,
+  };
 }
 
-// 카드 가장자리 마스크
-function getMaskGradient(
-  isLeft: boolean,
-  isRight: boolean
-) {
+/* ========================= */
+/* MASK (블렌딩 핵심 복구) */
+/* ========================= */
+
+function getMaskGradient(isLeft: boolean, isRight: boolean) {
   if (isLeft) {
     return `
       linear-gradient(
