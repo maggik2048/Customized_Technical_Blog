@@ -19,30 +19,111 @@ body.dark-mode {
   --code-bg: #222;
 }
 
-/* 전역 적용 */
+/* =========================
+   GLOBAL CURSOR
+========================= */
+
+/* 기본 커서 */
 html,
 body,
-* {
-  cursor: url("/images/mouseicon/pointer.ico") 0 0, auto;
+*,
+*::before,
+*::after {
+  cursor:
+    url("/cursors/MOVE.cur"),
+    auto;
 }
+
+/* =========================
+   CLICKABLE → HELP.cur
+========================= */
+
+/* hover 상태에서만 HELP.cur */
+a:hover,
+button:hover,
+[role="button"]:hover,
+summary:hover,
+label:hover,
+
+input[type="button"]:hover,
+input[type="submit"]:hover,
+input[type="reset"]:hover,
+input[type="checkbox"]:hover,
+input[type="radio"]:hover,
+
+select:hover,
+option:hover,
+
+.clickable:hover {
+  cursor:
+    url("/cursors/HELP.cur"),
+    pointer !important;
+}
+
+/* =========================
+   TEXT → TEXT.cur
+========================= */
+
+/* 텍스트 입력 */
+input[type="text"],
+input[type="search"],
+input[type="email"],
+input[type="password"],
+input[type="url"],
+input[type="tel"],
+textarea,
+[contenteditable="true"] {
+  cursor:
+    url("/cursors/TEXT.cur"),
+    text !important;
+}
+
+/* 텍스트 선택 가능한 요소 */
+p:hover,
+span:hover,
+li:hover,
+blockquote:hover,
+pre:hover,
+code:hover,
+h1:hover,
+h2:hover,
+h3:hover,
+h4:hover,
+h5:hover,
+h6:hover {
+  cursor:
+    url("/cursors/TEXT.cur"),
+    text;
+}
+
+/* =========================
+   BODY
+========================= */
 
 body {
   margin: 0;
   font-family: 'Latin Modern', serif;
   background-color: var(--bg-color);
   color: var(--fg-color);
+
   transition:
     background-color 0.3s ease,
     color 0.3s ease;
 }
 
-/* 링크 */
+/* =========================
+   LINKS
+========================= */
+
 a {
   color: var(--link-color) !important;
   text-decoration: none !important;
 }
 
-/* hero-title */
+/* =========================
+   HERO TITLE
+========================= */
+
 .hero-title {
   font-weight: 900;
   line-height: 1;
@@ -64,7 +145,10 @@ a {
   -webkit-text-fill-color: transparent;
 }
 
-/* 다크모드 텍스트 */
+/* =========================
+   DARK MODE TEXT
+========================= */
+
 body.dark-mode p,
 body.dark-mode h1,
 body.dark-mode h2,
@@ -73,17 +157,35 @@ body.dark-mode li {
   color: var(--fg-color) !important;
 }
 
-/* KaTeX */
+/* =========================
+   KATEX
+========================= */
+
 body.dark-mode .katex {
   color: var(--fg-color) !important;
 }
 
-/* code */
+.katex,
+.katex * {
+  opacity: 0.94;
+
+  text-shadow:
+    0 0.25px 0.9px rgba(0, 60, 80, 0.92);
+}
+
+/* =========================
+   INLINE CODE
+========================= */
+
 code {
   background-color: var(--code-bg);
   padding: 2px 6px;
   border-radius: 4px;
 }
+
+/* =========================
+   CARATTERE FONT
+========================= */
 
 .font-carattere {
   font-family: 'Carattere', cursive !important;
@@ -93,6 +195,10 @@ code {
   font-family: 'Carattere', cursive !important;
 }
 
+/* =========================
+   PAREN HIGHLIGHT
+========================= */
+
 .paren-highlight {
   color: #ffcc88;
   font-weight: 500;
@@ -101,13 +207,9 @@ code {
   display: inline-block;
 }
 
-.katex,
-.katex * {
-  opacity: 0.94;
-  text-shadow: 0 0.25px 0.9px rgba(0, 60, 80, 0.92);
-}
-
-/* sidebar scrollbar */
+/* =========================
+   SIDEBAR SCROLLBAR
+========================= */
 
 .sidebar::-webkit-scrollbar {
   width: 4px;
@@ -128,7 +230,12 @@ code {
 
 .sidebar {
   scrollbar-width: thin;
-  scrollbar-color: rgba(230, 210, 170, 0.72) transparent;
+
+  scrollbar-color:
+    rgba(230, 210, 170, 0.72)
+    transparent;
 }
 
-/* sidebar scrollbar----------end */
+/* =========================
+   SIDEBAR END
+========================= */
