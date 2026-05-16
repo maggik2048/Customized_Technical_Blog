@@ -32,8 +32,6 @@ import RemarkPageRenderer from "@/app/components/Markdown/remarkPageRenderer";
 
 import CodeBlockWithCopy from "@/app/components/Markdown/CodeBlockWithCopy";
 
-import PaperDecorFrame from "@/app/components/papers/PaperDecorFrame";
-
 import MetadataPostalCode from "@/app/components/papers/MetadataPostalCode";
 
 type Props = {
@@ -90,7 +88,7 @@ export default function PDFPage({
         color: textColor,
       }}
     >
-      <PaperDecorFrame enabled={isActive}>
+      <div>
         <div style={pageStyle}>
           {/* HEADER */}
           <div
@@ -215,7 +213,6 @@ export default function PDFPage({
 
                 width: 165,
 
-                // 이 높이 동안만 우측 흐름
                 height: 110,
 
                 pointerEvents: "none",
@@ -293,11 +290,10 @@ export default function PDFPage({
               </NotepageLines>
             </div>
 
-            {/* float 해제 */}
             <div style={{ clear: "both" }} />
           </div>
         </div>
-      </PaperDecorFrame>
+      </div>
     </motion.div>
   );
 }
