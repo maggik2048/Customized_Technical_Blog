@@ -24,8 +24,6 @@ import { getHeaderImage } from "@/lib/getHeaderImage";
 
 import { visualizationRegistry } from "@/lib/visualizationRegistry";
 
-import { remarkCarattere } from "@/lib/remarkCarattere";
-
 import NotepageLines from "@/app/components/markdown/NotepageLines";
 
 import RemarkPageRenderer from "@/app/components/Markdown/remarkPageRenderer";
@@ -60,21 +58,106 @@ export default function PDFPage({
   const HEADER_HEIGHT = 560;
 
   // =========================
-  //  visualizationRegistry lookup optimization
+  //  STYLE OBJECT MEMOIZATION (UI 0 CHANGE)
   // =========================
 
-  const vizRegistryRef = React.useMemo(
-    () => visualizationRegistry,
+  const pageStyle = React.useMemo(
+    () => ({
+      width: 860,
+      margin: "40px auto",
+      position: "relative",
+      background: isDark
+        ? "rgba(60,60,60,0.6)"
+        : "rgba(255,255,255,0.72)",
+      paddingLeft: 64,
+      paddingRight: 64,
+      borderRadius: 12,
+      overflow: "hidden",
+      boxShadow: isDark
+        ? "0 8px 30px rgba(0,0,0,0.6)"
+        : "0 8px 30px rgba(0,0,0,0.15)",
+    }),
+    [isDark]
+  );
+
+  const headerOverlayStyle = React.useMemo(
+    () => ({
+      position: "absolute" as const,
+      inset: 0,
+      background: isDark
+        ? `
+          linear-gradient(
+            to bottom,
+            rgba(0,0,0,0.82) 0%,
+            rgba(0,0,0,0.38) 22%,
+            rgba(0,0,0,0.08) 48%,
+            rgba(20,20,20,0.22) 68%,
+            rgba(30,30,30,0.82) 100%
+          )
+        `
+        : `
+          linear-gradient(
+            to bottom,
+            rgba(0,0,0,0.58) 0%,
+            rgba(0,0,0,0.18) 24%,
+            rgba(255,255,255,0) 68%,
+            rgba(255,255,255,0.78) 95%,
+            rgba(255,255,255,1) 100%
+          )
+        `,
+    }),
+    [isDark]
+  );
+
+  const headerWrapperStyle = React.useMemo(
+    () => ({
+      position: "absolute" as const,
+      top: 0,
+      left: 0,
+      width: "100%",
+      height: HEADER_HEIGHT,
+      overflow: "hidden",
+    }),
     []
   );
 
-  const getVizComponent = React.useCallback(
-    (key: string) => vizRegistryRef[key],
-    [vizRegistryRef]
+  const titleStyle = React.useMemo(
+    () => ({
+      position: "absolute" as const,
+      bottom: 38,
+      left: 48,
+      right: 48,
+      color: "#fff",
+    }),
+    []
+  );
+
+  const adminStyle = React.useMemo(
+    () => ({
+      position: "absolute" as const,
+      top: 16,
+      right: 40,
+    }),
+    []
+  );
+
+  const floatSpacerStyle = React.useMemo(
+    () => ({
+      float: "left" as const,
+      width: 165,
+      height: 110,
+      pointerEvents: "none" as const,
+    }),
+    []
+  );
+
+  const clearFixStyle = React.useMemo(
+    () => ({ clear: "both" as const }),
+    []
   );
 
   // =========================
-  // (이미 이전 최적화 유지)
+  // memoized renderer + registry (이전 최적화 유지)
   // =========================
 
   const MemoRemarkPageRenderer = React.useMemo(
@@ -97,21 +180,15 @@ export default function PDFPage({
     []
   );
 
-  const pageStyle: React.CSSProperties = {
-    width: 860,
-    margin: "40px auto",
-    position: "relative",
-    background: isDark
-      ? "rgba(60,60,60,0.6)"
-      : "rgba(255,255,255,0.72)",
-    paddingLeft: 64,
-    paddingRight: 64,
-    borderRadius: 12,
-    overflow: "hidden",
-    boxShadow: isDark
-      ? "0 8px 30px rgba(0,0,0,0.6)"
-      : "0 8px 30px rgba(0,0,0,0.15)",
-  };
+  const vizRegistryRef = React.useMemo(
+    () => visualizationRegistry,
+    []
+  );
+
+  const getVizComponent = React.useCallback(
+    (key: string) => vizRegistryRef[key],
+    [vizRegistryRef]
+  );
 
   const parsedParts = React.useMemo(() => {
     const regex = /\[([A-Za-z_][A-Za-z0-9_]*)\]/g;
@@ -158,16 +235,7 @@ export default function PDFPage({
       <div>
         <div style={pageStyle}>
           {/* HEADER */}
-          <div
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: HEADER_HEIGHT,
-              overflow: "hidden",
-            }}
-          >
+          <div style={headerWrapperStyle}>
             <img
               src={headerImage}
               style={{
@@ -179,43 +247,9 @@ export default function PDFPage({
               }}
             />
 
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                background: isDark
-                  ? `
-                    linear-gradient(
-                      to bottom,
-                      rgba(0,0,0,0.82) 0%,
-                      rgba(0,0,0,0.38) 22%,
-                      rgba(0,0,0,0.08) 48%,
-                      rgba(20,20,20,0.22) 68%,
-                      rgba(30,30,30,0.82) 100%
-                    )
-                  `
-                  : `
-                    linear-gradient(
-                      to bottom,
-                      rgba(0,0,0,0.58) 0%,
-                      rgba(0,0,0,0.18) 24%,
-                      rgba(255,255,255,0) 68%,
-                      rgba(255,255,255,0.78) 95%,
-                      rgba(255,255,255,1) 100%
-                    )
-                  `,
-              }}
-            />
+            <div style={headerOverlayStyle} />
 
-            <div
-              style={{
-                position: "absolute",
-                bottom: 38,
-                left: 48,
-                right: 48,
-                color: "#fff",
-              }}
-            >
+            <div style={titleStyle}>
               <h1
                 className={cormorant.className}
                 style={{
@@ -230,13 +264,7 @@ export default function PDFPage({
               </h1>
             </div>
 
-            <div
-              style={{
-                position: "absolute",
-                top: 16,
-                right: 40,
-              }}
-            >
+            <div style={adminStyle}>
               <PostAdminActions postId={data.id} />
             </div>
           </div>
@@ -252,14 +280,7 @@ export default function PDFPage({
               isDark={isDark}
             />
 
-            <div
-              style={{
-                float: "left",
-                width: 165,
-                height: 110,
-                pointerEvents: "none",
-              }}
-            />
+            <div style={floatSpacerStyle} />
 
             <div style={{ marginTop: -2 }}>
               <NotepageLines>
@@ -288,7 +309,7 @@ export default function PDFPage({
               </NotepageLines>
             </div>
 
-            <div style={{ clear: "both" }} />
+            <div style={clearFixStyle} />
           </div>
         </div>
       </div>
