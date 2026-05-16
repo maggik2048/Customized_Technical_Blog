@@ -59,6 +59,31 @@ export default function PDFPage({
 
   const HEADER_HEIGHT = 560;
 
+  // =========================
+  // (이미 1번 최적화 적용된 상태 가정)
+  // parsedParts useMemo 존재
+  // =========================
+
+  const MemoRemarkPageRenderer = React.useMemo(
+    () => React.memo(RemarkPageRenderer),
+    []
+  );
+
+  const mdComponents = React.useMemo(
+    () => markdownComponents,
+    []
+  );
+
+  const sciFiComponents = React.useMemo(
+    () => sciFiMarkdownComponents,
+    []
+  );
+
+  const CodeBlock = React.useMemo(
+    () => CodeBlockWithCopy,
+    []
+  );
+
   const pageStyle: React.CSSProperties = {
     width: 860,
     margin: "40px auto",
@@ -75,9 +100,6 @@ export default function PDFPage({
       : "0 8px 30px rgba(0,0,0,0.15)",
   };
 
-  // =========================
-  // 🔥 ONLY OPTIMIZATION (1번)
-  // =========================
   const parsedParts = React.useMemo(() => {
     const regex = /\[([A-Za-z_][A-Za-z0-9_]*)\]/g;
 
@@ -239,19 +261,15 @@ export default function PDFPage({
                   }
 
                   return (
-                    <RemarkPageRenderer
+                    <MemoRemarkPageRenderer
                       key={item.key}
-                      markdownComponents={
-                        markdownComponents
-                      }
-                      sciFiMarkdownComponents={
-                        sciFiMarkdownComponents
-                      }
+                      markdownComponents={mdComponents}
+                      sciFiMarkdownComponents={sciFiComponents}
                       isDark={isDark}
-                      CodeBlock={CodeBlockWithCopy}
+                      CodeBlock={CodeBlock}
                     >
                       {item.content}
-                    </RemarkPageRenderer>
+                    </MemoRemarkPageRenderer>
                   );
                 })}
               </NotepageLines>
