@@ -188,7 +188,7 @@ function LocalProgress({
 
             lineHeight: 0.9,
 
-            color: "#c9e5df",
+            color: "#dbf4ee",
 
             textShadow:
               "0 0 18px rgba(170,235,220,0.12)",
