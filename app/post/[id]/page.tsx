@@ -1,7 +1,13 @@
 "use client";
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, {
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+
 import { useParams } from "next/navigation";
+
 import { supabase } from "@/lib/supabase";
 
 import StackedPostViewer from "@/app/components/papers/StackedPostViewer";
@@ -12,21 +18,35 @@ import CategoryPostBoxIndex from "@/app/category/[slug]/CategoryPostBoxIndex";
 const WINDOW_SIZE = 2;
 
 export default function PostPage() {
-  const { id } = useParams() as { id: string };
+  const { id } = useParams() as {
+    id: string;
+  };
 
-  const [allPosts, setAllPosts] = useState<any[]>([]);
-  const [index, setIndex] = useState(0);
+  const [allPosts, setAllPosts] =
+    useState<any[]>([]);
 
-  const [cache, setCache] = useState<Record<string, any>>({});
+  const [index, setIndex] =
+    useState(0);
 
-  // 전체 posts 로드
+  const [cache, setCache] = useState<
+    Record<string, any>
+  >({});
+
+  // =========================
+  // LOAD ALL POSTS
+  // =========================
+
   useEffect(() => {
     const load = async () => {
-      const { data, error } = await supabase
-        .from("posts")
-        // 🔥 category_slug 대신 실제 컬럼명 사용
-        .select("id, created_at, category")
-        .order("created_at", { ascending: true });
+      const { data, error } =
+        await supabase
+          .from("posts")
+          .select(
+            "id, created_at, category"
+          )
+          .order("created_at", {
+            ascending: true,
+          });
 
       if (error) {
         console.error(error);
@@ -37,7 +57,21 @@ export default function PostPage() {
 
       setAllPosts(data);
 
-      const idx = data.findIndex((p) => p.id === id);
+      // CATEGORY 종류 확인
+      console.log(
+        "CATEGORY TYPES:",
+        [
+          ...new Set(
+            data.map(
+              (p) => p.category
+            )
+          ),
+        ]
+      );
+
+      const idx = data.findIndex(
+        (p) => p.id === id
+      );
 
       setIndex(idx >= 0 ? idx : 0);
     };
@@ -45,54 +79,83 @@ export default function PostPage() {
     load();
   }, [id]);
 
-  // 현재 post
-  const currentPost = allPosts[index];
+  // =========================
+  // CURRENT POST
+  // =========================
 
-  // 현재 category
-  const currentCategory = currentPost?.category;
+  const currentPost =
+    allPosts[index];
 
-  // 같은 category posts
+  const currentCategory =
+    currentPost?.category;
+
+  // =========================
+  // CATEGORY POSTS
+  // =========================
+
   const categoryPosts = useMemo(() => {
     if (!currentCategory) return [];
 
     return allPosts.filter(
-      (p) => p.category === currentCategory
+      (p) =>
+        p.category === currentCategory
     );
   }, [allPosts, currentCategory]);
 
-  // category 내부 순번
-  const categoryIndex = useMemo(() => {
-    if (!currentPost) return 0;
+  // =========================
+  // LOCAL INDEX
+  // =========================
 
-    const idx = categoryPosts.findIndex(
-      (p) => p.id === currentPost.id
-    );
+  const categoryIndex =
+    useMemo(() => {
+      if (!currentPost) return 0;
 
-    return idx >= 0 ? idx + 1 : 0;
-  }, [categoryPosts, currentPost]);
+      const idx =
+        categoryPosts.findIndex(
+          (p) =>
+            p.id === currentPost.id
+        );
 
-  // 전체 기준 순번
+      return idx >= 0 ? idx + 1 : 0;
+    }, [categoryPosts, currentPost]);
+
+  // =========================
+  // GLOBAL INDEX
+  // =========================
+
   const globalIndex = index + 1;
 
-  // 현재 보여줄 window
-  const windowStart = Math.max(0, index - WINDOW_SIZE);
+  // =========================
+  // WINDOW POSTS
+  // =========================
+
+  const windowStart = Math.max(
+    0,
+    index - WINDOW_SIZE
+  );
 
   const windowPosts = allPosts.slice(
     windowStart,
     index + WINDOW_SIZE + 1
   );
 
-  // visible posts만 fetch
+  // =========================
+  // FETCH VISIBLE POSTS
+  // =========================
+
   useEffect(() => {
     const loadVisible = async () => {
-      const ids = windowPosts.map((p) => p.id);
+      const ids = windowPosts.map(
+        (p) => p.id
+      );
 
       if (!ids.length) return;
 
-      const { data, error } = await supabase
-        .from("posts")
-        .select("*")
-        .in("id", ids);
+      const { data, error } =
+        await supabase
+          .from("posts")
+          .select("*")
+          .in("id", ids);
 
       if (error) {
         console.error(error);
@@ -115,19 +178,90 @@ export default function PostPage() {
     loadVisible();
   }, [windowPosts]);
 
-  // cache 기반 posts
+  // =========================
+  // BUILD POSTS WITH INDEXES
+  // =========================
+
   const posts = windowPosts
-    .map((p) => cache[p.id])
+    .map((p) => {
+      const full = cache[p.id];
+
+      if (!full) return null;
+
+      // 같은 category posts
+      const sameCategoryPosts =
+        allPosts.filter(
+          (x) =>
+            x.category ===
+            full.category
+        );
+
+      // local index
+      const localIndex =
+        sameCategoryPosts.findIndex(
+          (x) => x.id === full.id
+        ) + 1;
+
+      // category total
+      const localTotal =
+        sameCategoryPosts.length;
+
+      // global index
+      const globalIndex =
+        allPosts.findIndex(
+          (x) => x.id === full.id
+        ) + 1;
+
+      return {
+        ...full,
+
+        __globalIndex: globalIndex,
+
+        __localIndex: localIndex,
+
+        __localTotal: localTotal,
+      };
+    })
     .filter(Boolean);
 
-  // loading guard
+  // =========================
+  // DEBUG
+  // =========================
+
+  console.log(
+    posts.map((p) => ({
+      title: p.title,
+      category: p.category,
+
+      global: p.__globalIndex,
+
+      local: p.__localIndex,
+
+      total: p.__localTotal,
+    }))
+  );
+
+  // =========================
+  // LOADING
+  // =========================
+
   if (!allPosts.length) {
-    return <div>Loading all posts...</div>;
+    return (
+      <div>
+        Loading all posts...
+      </div>
+    );
   }
 
   if (!posts.length) {
-    return <div>Loading posts...</div>;
+    return (
+      <div>Loading posts...</div>
+    );
   }
+
+  // =========================
+  // RENDER
+  // =========================
 
   return (
     <PostEnvironment>
@@ -138,20 +272,29 @@ export default function PostPage() {
           height: "100%",
         }}
       >
+        {/* LEFT INDEX */}
         <CategoryPostBoxIndex
-          categoryIndex={categoryIndex}
-          globalIndex={globalIndex}
+          categoryIndex={
+            categoryIndex
+          }
+          globalIndex={
+            globalIndex
+          }
           isSimple={false}
         />
 
+        {/* POSTS */}
         <StackedPostViewer
           posts={posts}
           index={Math.min(
             index - windowStart,
             posts.length - 1
           )}
-          onChangeIndex={(i: number) => {
-            const realIndex = windowStart + i;
+          onChangeIndex={(
+            i: number
+          ) => {
+            const realIndex =
+              windowStart + i;
 
             setIndex(realIndex);
           }}

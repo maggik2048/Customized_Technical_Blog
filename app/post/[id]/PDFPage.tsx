@@ -4,11 +4,6 @@ import React from "react";
 
 import { Cormorant_SC } from "next/font/google";
 
-import remarkMath from "remark-math";
-import remarkGfm from "remark-gfm";
-import rehypeKatex from "rehype-katex";
-import rehypeRaw from "rehype-raw";
-
 import "katex/dist/katex.min.css";
 
 import { motion } from "framer-motion";
@@ -16,6 +11,7 @@ import { motion } from "framer-motion";
 import PostAdminActions from "@/app/admin/PostAdminActions";
 
 import { markdownComponents } from "@/lib/markdownComponents";
+
 import { sciFiMarkdownComponents } from "@/app/components/Markdown/SciFiMarkdownComponents";
 
 import { useDarkMode } from "@/app/context/DarkModeContext";
@@ -34,24 +30,35 @@ import MetadataPostalCode from "@/app/components/papers/MetadataPostalCode";
 
 type Props = {
   data: any;
+
   isActive?: boolean;
+
   isStandalone?: boolean;
 
+  // 직접 props로 받음
   globalIndex?: number;
+
   localIndex?: number;
+
+  localTotal?: number;
 };
 
 const cormorant = Cormorant_SC({
   subsets: ["latin"],
+
   weight: ["400", "500", "600", "700"],
 });
 
 export default function PDFPage({
   data,
+
   isActive = true,
 
   globalIndex,
+
   localIndex,
+
+  localTotal,
 }: Props) {
   const { mode } = useDarkMode();
 
@@ -59,26 +66,54 @@ export default function PDFPage({
 
   const headerImage = getHeaderImage(data);
 
-  const textColor = isDark ? "#eee" : "#111";
+  const textColor =
+    isDark ? "#eee" : "#111";
 
   const HEADER_HEIGHT = 560;
 
   // =========================
-  // STYLE OBJECT MEMOIZATION
+  // DEBUG
+  // =========================
+
+  console.log(
+    "PDF PAGE RECEIVED:",
+    {
+      title: data?.title,
+
+      globalIndex,
+
+      localIndex,
+
+      localTotal,
+
+      category: data?.category,
+    }
+  );
+
+  // =========================
+  // STYLES
   // =========================
 
   const pageStyle = React.useMemo(
     () => ({
       width: 860,
+
       margin: "40px auto",
+
       position: "relative" as const,
+
       background: isDark
         ? "rgba(60,60,60,0.6)"
         : "rgba(255,255,255,0.72)",
+
       paddingLeft: 64,
+
       paddingRight: 64,
+
       borderRadius: 12,
+
       overflow: "hidden" as const,
+
       boxShadow: isDark
         ? "0 8px 30px rgba(0,0,0,0.6)"
         : "0 8px 30px rgba(0,0,0,0.15)",
@@ -86,12 +121,15 @@ export default function PDFPage({
     [isDark]
   );
 
-  const headerOverlayStyle = React.useMemo(
-    () => ({
-      position: "absolute" as const,
-      inset: 0,
-      background: isDark
-        ? `
+  const headerOverlayStyle =
+    React.useMemo(
+      () => ({
+        position: "absolute" as const,
+
+        inset: 0,
+
+        background: isDark
+          ? `
           linear-gradient(
             to bottom,
             rgba(0,0,0,0.82) 0%,
@@ -101,7 +139,7 @@ export default function PDFPage({
             rgba(30,30,30,0.82) 100%
           )
         `
-        : `
+          : `
           linear-gradient(
             to bottom,
             rgba(0,0,0,0.58) 0%,
@@ -111,139 +149,160 @@ export default function PDFPage({
             rgba(255,255,255,1) 100%
           )
         `,
-    }),
-    [isDark]
-  );
+      }),
+      [isDark]
+    );
 
-  const headerWrapperStyle = React.useMemo(
-    () => ({
-      position: "absolute" as const,
-      top: 0,
-      left: 0,
-      width: "100%",
-      height: HEADER_HEIGHT,
-      overflow: "hidden" as const,
-    }),
-    []
-  );
+  const headerWrapperStyle =
+    React.useMemo(
+      () => ({
+        position: "absolute" as const,
+
+        top: 0,
+
+        left: 0,
+
+        width: "100%",
+
+        height: HEADER_HEIGHT,
+
+        overflow: "hidden" as const,
+      }),
+      []
+    );
 
   const titleStyle = React.useMemo(
     () => ({
       position: "absolute" as const,
+
       bottom: 38,
+
       left: 48,
+
       right: 48,
+
       color: "#fff",
     }),
     []
   );
 
-  const adminStyle = React.useMemo(
-    () => ({
-      position: "absolute" as const,
-      top: 16,
-      right: 40,
-    }),
-    []
-  );
-
-  const floatSpacerStyle = React.useMemo(
-    () => ({
-      float: "left" as const,
-      width: 165,
-      height: 110,
-      pointerEvents: "none" as const,
-    }),
-    []
-  );
-
-  const clearFixStyle = React.useMemo(
-    () => ({
-      clear: "both" as const,
-    }),
-    []
-  );
-
   // =========================
-  // MEMOIZED RENDERERS
+  // RENDERERS
   // =========================
 
-  const MemoRemarkPageRenderer = React.useMemo(
-    () => React.memo(RemarkPageRenderer),
-    []
-  );
-
-  const mdComponents = React.useMemo(
-    () => markdownComponents,
-    []
-  );
-
-  const sciFiComponents = React.useMemo(
-    () => sciFiMarkdownComponents,
-    []
-  );
-
-  const CodeBlock = React.useMemo(
-    () => CodeBlockWithCopy,
-    []
-  );
-
-  const vizRegistryRef = React.useMemo(
-    () => visualizationRegistry,
-    []
-  );
-
-  const getVizComponent = React.useCallback(
-    (key: string) => vizRegistryRef[key],
-    [vizRegistryRef]
-  );
-
-  // =========================
-  // PARSED PARTS
-  // =========================
-
-  const parsedParts = React.useMemo(() => {
-    const regex = /\[([A-Za-z_][A-Za-z0-9_]*)\]/g;
-
-    const codeBlocks: string[] = [];
-
-    const protectedContent = data.content.replace(
-      /```[\s\S]*?```/g,
-      (match: string) => {
-        codeBlocks.push(match);
-        return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
-      }
+  const MemoRemarkPageRenderer =
+    React.useMemo(
+      () => React.memo(
+        RemarkPageRenderer
+      ),
+      []
     );
 
-    const parts = protectedContent.split(regex);
+  const mdComponents =
+    React.useMemo(
+      () => markdownComponents,
+      []
+    );
 
-    const restore = (text: string) =>
-      text.replace(
-        /__CODE_BLOCK_(\d+)__/g,
-        (_, i) => codeBlocks[Number(i)]
+  const sciFiComponents =
+    React.useMemo(
+      () =>
+        sciFiMarkdownComponents,
+      []
+    );
+
+  const CodeBlock =
+    React.useMemo(
+      () => CodeBlockWithCopy,
+      []
+    );
+
+  const vizRegistryRef =
+    React.useMemo(
+      () => visualizationRegistry,
+      []
+    );
+
+  const getVizComponent =
+    React.useCallback(
+      (key: string) =>
+        vizRegistryRef[key],
+      [vizRegistryRef]
+    );
+
+  // =========================
+  // PARSE CONTENT
+  // =========================
+
+  const parsedParts =
+    React.useMemo(() => {
+      const regex =
+        /\[([A-Za-z_][A-Za-z0-9_]*)\]/g;
+
+      const codeBlocks: string[] =
+        [];
+
+      const protectedContent =
+        data.content.replace(
+          /```[\s\S]*?```/g,
+          (match: string) => {
+            codeBlocks.push(match);
+
+            return `__CODE_BLOCK_${
+              codeBlocks.length - 1
+            }__`;
+          }
+        );
+
+      const parts =
+        protectedContent.split(
+          regex
+        );
+
+      const restore = (
+        text: string
+      ) =>
+        text.replace(
+          /__CODE_BLOCK_(\d+)__/g,
+          (_, i) =>
+            codeBlocks[Number(i)]
+        );
+
+      return parts.map(
+        (
+          part: string,
+          i: number
+        ) => {
+          const Component =
+            getVizComponent(part);
+
+          if (Component) {
+            return {
+              kind: "viz" as const,
+
+              Component,
+
+              key: i,
+            };
+          }
+
+          return {
+            kind: "md" as const,
+
+            content: restore(part),
+
+            key: i,
+          };
+        }
       );
-
-    return parts.map((part: string, i: number) => {
-      const Component = getVizComponent(part);
-
-      if (Component) {
-        return {
-          kind: "viz" as const,
-          Component,
-          key: i,
-        };
-      }
-
-      return {
-        kind: "md" as const,
-        content: restore(part),
-        key: i,
-      };
-    });
-  }, [data.content, getVizComponent]);
+    }, [data.content, getVizComponent]);
 
   return (
-    <motion.div style={{ color: textColor }}>
+    <motion.div
+      style={{
+        color: textColor,
+      }}
+    >
       <div>
         <div style={pageStyle}>
           {/* HEADER */}
@@ -252,81 +311,191 @@ export default function PDFPage({
               src={headerImage}
               style={{
                 width: "100%",
+
                 height: "100%",
+
                 objectFit: "cover",
-                objectPosition: "center center",
-                transform: "scale(1.02)",
+
+                objectPosition:
+                  "center center",
+
+                transform:
+                  "scale(1.02)",
               }}
             />
 
-            <div style={headerOverlayStyle} />
+            <div
+              style={
+                headerOverlayStyle
+              }
+            />
 
             {/* ADMIN */}
-            <div style={adminStyle}>
-              <PostAdminActions postId={data.id} />
+            <div
+              style={{
+                position:
+                  "absolute",
+
+                top: 16,
+
+                right: 40,
+              }}
+            >
+              <PostAdminActions
+                postId={data.id}
+              />
             </div>
 
-            {/* TITLE + INDEX */}
-            <div style={titleStyle}>
-              {/* INDEX BADGES */}
+            {/* HUGE DEBUG INDEX */}
+            <div
+              style={{
+                position:
+                  "absolute",
+
+                top: 30,
+
+                left: 40,
+
+                zIndex: 100,
+
+                display: "flex",
+
+                flexDirection:
+                  "column",
+
+                gap: 12,
+              }}
+            >
+              {/* GLOBAL */}
               <div
                 style={{
-                  display: "flex",
-                  gap: 12,
-                  marginBottom: 18,
-                  alignItems: "center",
-                  flexWrap: "wrap",
+                  fontSize: 42,
+
+                  fontWeight: 900,
+
+                  color: "#fff",
+
+                  background:
+                    "rgba(0,0,0,0.55)",
+
+                  padding:
+                    "12px 24px",
+
+                  borderRadius: 18,
+
+                  backdropFilter:
+                    "blur(20px)",
+
+                  border:
+                    "2px solid rgba(255,255,255,0.25)",
+
+                  boxShadow:
+                    "0 8px 30px rgba(0,0,0,0.4)",
                 }}
               >
-                {globalIndex !== undefined && (
-                  <div
-                    style={{
-                      padding: "6px 14px",
-                      borderRadius: 999,
-                      background: "rgba(255,255,255,0.14)",
-                      backdropFilter: "blur(10px)",
-                      border:
-                        "1px solid rgba(255,255,255,0.18)",
-                      fontSize: 13,
-                      fontWeight: 700,
-                      letterSpacing: "0.08em",
-                      color: "#fff",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    GLOBAL #{globalIndex}
-                  </div>
-                )}
-
-                {localIndex !== undefined && (
-                  <div
-                    style={{
-                      padding: "6px 14px",
-                      borderRadius: 999,
-                      background: "rgba(255,255,255,0.14)",
-                      backdropFilter: "blur(10px)",
-                      border:
-                        "1px solid rgba(255,255,255,0.18)",
-                      fontSize: 13,
-                      fontWeight: 700,
-                      letterSpacing: "0.08em",
-                      color: "#fff",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    LOCAL #{localIndex}
-                  </div>
+                GLOBAL:{" "}
+                {String(
+                  globalIndex
                 )}
               </div>
 
-              {/* TITLE */}
-              <h1
-                className={cormorant.className}
+              {/* LOCAL */}
+              <div
                 style={{
                   fontSize: 42,
+
+                  fontWeight: 900,
+
+                  color: "#00ffcc",
+
+                  background:
+                    "rgba(0,0,0,0.55)",
+
+                  padding:
+                    "12px 24px",
+
+                  borderRadius: 18,
+
+                  backdropFilter:
+                    "blur(20px)",
+
+                  border:
+                    "2px solid rgba(0,255,200,0.35)",
+
+                  boxShadow:
+                    "0 8px 30px rgba(0,0,0,0.4)",
+                }}
+              >
+                LOCAL:{" "}
+                {String(localIndex)}
+              </div>
+
+              {/* TOTAL */}
+              <div
+                style={{
+                  fontSize: 32,
+
+                  fontWeight: 800,
+
+                  color: "#ffd166",
+
+                  background:
+                    "rgba(0,0,0,0.55)",
+
+                  padding:
+                    "10px 20px",
+
+                  borderRadius: 18,
+
+                  backdropFilter:
+                    "blur(20px)",
+                }}
+              >
+                TOTAL IN CATEGORY:{" "}
+                {String(localTotal)}
+              </div>
+
+              {/* CATEGORY */}
+              <div
+                style={{
+                  fontSize: 24,
+
+                  fontWeight: 700,
+
+                  color: "#fff",
+
+                  background:
+                    "rgba(0,0,0,0.45)",
+
+                  padding:
+                    "8px 18px",
+
+                  borderRadius: 16,
+                }}
+              >
+                CATEGORY:{" "}
+                {String(
+                  data?.category
+                )}
+              </div>
+            </div>
+
+            {/* TITLE */}
+            <div style={titleStyle}>
+              <h1
+                className={
+                  cormorant.className
+                }
+                style={{
+                  fontSize: 42,
+
                   margin: 0,
+
                   lineHeight: 1.08,
-                  letterSpacing: "0.02em",
+
+                  letterSpacing:
+                    "0.02em",
+
                   textShadow:
                     "0 3px 18px rgba(0,0,0,0.5)",
                 }}
@@ -339,7 +508,8 @@ export default function PDFPage({
           {/* CONTENT */}
           <div
             style={{
-              paddingTop: HEADER_HEIGHT - 36,
+              paddingTop:
+                HEADER_HEIGHT - 36,
             }}
           >
             <MetadataPostalCode
@@ -347,39 +517,76 @@ export default function PDFPage({
               isDark={isDark}
             />
 
-            <div style={floatSpacerStyle} />
+            <div
+              style={{
+                float: "left",
 
-            <div style={{ marginTop: -2 }}>
+                width: 165,
+
+                height: 110,
+
+                pointerEvents:
+                  "none",
+              }}
+            />
+
+            <div
+              style={{
+                marginTop: -2,
+              }}
+            >
               <NotepageLines>
-                {parsedParts.map((item) => {
-                  if (item.kind === "viz") {
-                    const Component = item.Component;
+                {parsedParts.map(
+                  (item) => {
+                    if (
+                      item.kind ===
+                      "viz"
+                    ) {
+                      const Component =
+                        item.Component;
+
+                      return (
+                        <div
+                          key={
+                            item.key
+                          }
+                        >
+                          <Component />
+                        </div>
+                      );
+                    }
 
                     return (
-                      <div key={item.key}>
-                        <Component />
-                      </div>
+                      <MemoRemarkPageRenderer
+                        key={
+                          item.key
+                        }
+                        markdownComponents={
+                          mdComponents
+                        }
+                        sciFiMarkdownComponents={
+                          sciFiComponents
+                        }
+                        isDark={isDark}
+                        CodeBlock={
+                          CodeBlock
+                        }
+                      >
+                        {
+                          item.content
+                        }
+                      </MemoRemarkPageRenderer>
                     );
                   }
-
-                  return (
-                    <MemoRemarkPageRenderer
-                      key={item.key}
-                      markdownComponents={mdComponents}
-                      sciFiMarkdownComponents={
-                        sciFiComponents
-                      }
-                      isDark={isDark}
-                      CodeBlock={CodeBlock}
-                    >
-                      {item.content}
-                    </MemoRemarkPageRenderer>
-                  );
-                })}
+                )}
               </NotepageLines>
             </div>
 
-            <div style={clearFixStyle} />
+            <div
+              style={{
+                clear: "both",
+              }}
+            />
           </div>
         </div>
       </div>
