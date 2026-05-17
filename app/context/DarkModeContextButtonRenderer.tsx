@@ -44,18 +44,30 @@ export default function DarkModeContextButtonRenderer() {
     whiteSpace: "nowrap",
   };
 
-  const iconStyle: React.CSSProperties = {
+  const iconWrap: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    gap: 6,
+    zIndex: 5,
+  };
+
+  const iconBase: React.CSSProperties = {
     fontSize: 14,
-    fontWeight: 700,
+    fontWeight: 800,
     position: "relative",
-    zIndex: 5, // IMPORTANT: knob보다 위
+    zIndex: 5,
+  };
+
+  const dotLarge: React.CSSProperties = {
+    fontSize: 6,
+    lineHeight: 1,
     opacity: 1,
   };
 
-  const sideWrap: React.CSSProperties = {
-    display: "flex",
-    alignItems: "center",
-    zIndex: 5,
+  const dotSmall: React.CSSProperties = {
+    fontSize: 3,
+    lineHeight: 1,
+    opacity: 0.55,
   };
 
   return (
@@ -90,21 +102,22 @@ export default function DarkModeContextButtonRenderer() {
             width: 40,
             height: 36,
             borderRadius: 999,
-            background: isDark ? "#f5f5f5" : "#111111",
-            boxShadow: isDark
-              ? "0 10px 26px rgba(255,255,255,0.20)"
-              : "0 10px 26px rgba(0,0,0,0.40)",
+            background: isDark ? "#111111" : "#f5f5f5",
+            boxShadow: "0 10px 26px rgba(0,0,0,0.35)",
             transition: "all 0.38s cubic-bezier(0.4,0,0.2,1)",
             zIndex: 1,
           }}
         />
 
-        <div style={sideWrap}>
-          <span style={iconStyle}>●☀</span>
+        {/* SUN (no dot) */}
+        <div style={iconWrap}>
+          <span style={iconBase}>☀</span>
         </div>
 
-        <div style={sideWrap}>
-          <span style={iconStyle}>●☾</span>
+        {/* MOON (small dot only) */}
+        <div style={iconWrap}>
+          <span style={dotSmall}>•</span>
+          <span style={iconBase}>☾</span>
         </div>
 
         <div style={labelStyle}>DAY · NIGHT</div>
@@ -128,15 +141,15 @@ export default function DarkModeContextButtonRenderer() {
             width: 40,
             height: 36,
             borderRadius: 999,
-            background: codeDark ? "#dbeafe" : "#f5f5f5",
+            background: codeDark ? "#111111" : "#f5f5f5",
             boxShadow: "0 10px 24px rgba(0,0,0,0.25)",
             transition: "all 0.38s cubic-bezier(0.4,0,0.2,1)",
             zIndex: 1,
           }}
         />
 
-        <div style={sideWrap}>
-          <span style={iconStyle}>{"</>"}</span>
+        <div style={iconWrap}>
+          <span style={iconBase}>{"</>"}</span>
         </div>
 
         <div style={labelStyle}>CODE · MODE</div>
@@ -167,12 +180,13 @@ export default function DarkModeContextButtonRenderer() {
           }}
         />
 
-        <div style={sideWrap}>
-          <span style={iconStyle}>◐</span>
+        <div style={iconWrap}>
+          <span style={iconBase}>◐</span>
         </div>
 
-        <div style={sideWrap}>
-          <span style={iconStyle}>◑</span>
+        <div style={iconWrap}>
+          <span style={dotSmall}>•</span>
+          <span style={iconBase}>◑</span>
         </div>
 
         <div style={labelStyle}>SHADOW · FX</div>
