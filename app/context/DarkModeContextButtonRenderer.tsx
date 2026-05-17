@@ -2,9 +2,12 @@
 
 import React from "react";
 import { useDarkMode } from "@/app/context/DarkModeContext";
+import { useCastShadowFilter } from "@/app/context/CastShadowFilterContext";
 
 export default function DarkModeContextButtonRenderer() {
   const { mode, codeDark, toggle, toggleCode } = useDarkMode();
+  const { toggle: toggleShadowFilter, enabled } =
+    useCastShadowFilter();
 
   const isDark = mode === "dark";
 
@@ -75,7 +78,6 @@ export default function DarkModeContextButtonRenderer() {
             : "rgba(255,255,255,0.14)",
         }}
       >
-        {/* thumb */}
         <div
           style={{
             position: "absolute",
@@ -93,47 +95,9 @@ export default function DarkModeContextButtonRenderer() {
           }}
         />
 
-        {/* LEFT: sun */}
-        <div style={leftGroupStyle}>
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="rgba(170,170,170,0.95)"
-            strokeWidth="3"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <circle cx="12" cy="12" r="4" />
-            <path d="M12 2v2" />
-            <path d="M12 20v2" />
-            <path d="M4.93 4.93l1.41 1.41" />
-            <path d="M17.66 17.66l1.41 1.41" />
-            <path d="M2 12h2" />
-            <path d="M20 12h2" />
-            <path d="M4.93 19.07l1.41-1.41" />
-            <path d="M17.66 6.34l1.41-1.41" />
-          </svg>
-        </div>
+        <div style={leftGroupStyle}>🌞</div>
+        <div style={rightGroupStyle}>🌙</div>
 
-        {/* RIGHT: moon */}
-        <div style={rightGroupStyle}>
-          <svg
-            width="18"
-            height="18"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="rgba(175,175,175,0.95)"
-            strokeWidth="2.6"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
-          </svg>
-        </div>
-
-        {/* TEXT INLINE (same line as icons) */}
         <div style={{ ...textStyle, marginLeft: 8 }}>
           DAY / NIGHT
         </div>
@@ -149,7 +113,6 @@ export default function DarkModeContextButtonRenderer() {
             : "rgba(255,255,255,0.10)",
         }}
       >
-        {/* thumb */}
         <div
           style={{
             position: "absolute",
@@ -165,23 +128,56 @@ export default function DarkModeContextButtonRenderer() {
           }}
         />
 
-        {/* LEFT */}
         <div style={leftGroupStyle}>
-          <div style={{ fontSize: 13, opacity: 0.7 }}>
-            {"</>"}
-          </div>
+          <div style={{ fontSize: 13, opacity: 0.7 }}>{"</>"}</div>
         </div>
 
-        {/* RIGHT */}
         <div style={rightGroupStyle}>
-          <div style={{ fontSize: 11, opacity: 0.7 }}>
-            ON
-          </div>
+          <div style={{ fontSize: 11, opacity: 0.7 }}>ON</div>
         </div>
 
-        {/* INLINE TEXT SAME LINE */}
         <div style={{ ...textStyle, marginLeft: 8 }}>
           CODE MODE
+        </div>
+      </button>
+
+      {/* ================= SHADOW + FILTER ================= */}
+      <button
+        onClick={toggleShadowFilter}
+        style={{
+          ...buttonBaseStyle,
+          background: enabled
+            ? "rgba(255,255,255,0.14)"
+            : "rgba(40,40,52,0.18)",
+        }}
+      >
+        <div
+          style={{
+            position: "absolute",
+            top: 4,
+            left: enabled ? 122 : 4,
+            width: 36,
+            height: 32,
+            borderRadius: 999,
+            background: enabled ? "#ffffff" : "#111111",
+            boxShadow: "0 10px 22px rgba(0,0,0,0.25)",
+            transition: "all 0.32s cubic-bezier(0.4,0,0.2,1)",
+            zIndex: 1,
+          }}
+        />
+
+        <div style={leftGroupStyle}>
+          <div style={{ fontSize: 12, opacity: 0.7 }}>FX</div>
+        </div>
+
+        <div style={rightGroupStyle}>
+          <div style={{ fontSize: 11, opacity: 0.7 }}>
+            {enabled ? "ON" : "OFF"}
+          </div>
+        </div>
+
+        <div style={{ ...textStyle, marginLeft: 8 }}>
+          SHADOW / FILTER
         </div>
       </button>
     </div>
