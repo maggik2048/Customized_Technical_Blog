@@ -95,7 +95,6 @@ export default function DarkModeContextButtonRenderer() {
             : "rgba(255,255,255,0.12)",
         }}
       >
-        {/* knob */}
         <div
           style={{
             position: "absolute",
@@ -111,12 +110,10 @@ export default function DarkModeContextButtonRenderer() {
           }}
         />
 
-        {/* SUN */}
         <div style={iconWrap}>
           <span style={iconBase}>☀</span>
         </div>
 
-        {/* MOON */}
         <div style={iconWrap}>
           <span style={dotSmall}>•</span>
           <span style={iconBase}>☾</span>
@@ -189,9 +186,9 @@ export default function DarkModeContextButtonRenderer() {
         <div style={iconWrap}>
           <span style={dotSmall}>•</span>
           <span style={iconBase}>◑</span>
-        </div>const labelStyle: React.CSSProperties = 
+        </div>
 
-        <div style={labelStyle}>SHADOW</div>
+        <div style={labelStyle}>SHADOW · FX</div>
       </button>
     </div>
   );
