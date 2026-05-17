@@ -74,7 +74,7 @@ function DiamondIndex({
         }}
       />
 
-      {/* NUMBER */}
+      {/* CONTENT */}
       <div
         style={{
           position: "relative",
@@ -86,8 +86,6 @@ function DiamondIndex({
           flexDirection: "column",
 
           alignItems: "center",
-
-          justifyContent: "center",
         }}
       >
         <div
@@ -130,18 +128,14 @@ function DiamondIndex({
   );
 }
 
-function MinimalStat({
-  label,
+function LocalProgress({
+  current,
 
-  value,
-
-  color = "#ffffff",
+  total,
 }: {
-  label: string;
+  current?: number;
 
-  value?: number | string;
-
-  color?: string;
+  total?: number;
 }) {
   return (
     <div
@@ -150,9 +144,12 @@ function MinimalStat({
 
         flexDirection: "column",
 
-        gap: 4,
+        gap: 8,
+
+        paddingLeft: 2,
       }}
     >
+      {/* LABEL */}
       <div
         style={{
           fontSize: 10,
@@ -167,21 +164,94 @@ function MinimalStat({
           fontWeight: 700,
         }}
       >
-        {label}
+        Local Index
       </div>
 
+      {/* INLINE FRACTION */}
       <div
         style={{
-          fontSize: 30,
+          display: "flex",
 
-          fontWeight: 800,
+          alignItems: "flex-end",
 
-          color,
-
-          lineHeight: 1,
+          gap: 6,
         }}
       >
-        {String(value)}
+        {/* CURRENT */}
+        <div
+          style={{
+            fontSize: 52,
+
+            fontWeight: 900,
+
+            lineHeight: 0.9,
+
+            color: "#9ef7ea",
+
+            textShadow:
+              "0 0 18px rgba(80,255,220,0.18)",
+          }}
+        >
+          {String(current)}
+        </div>
+
+        {/* SLASH */}
+        <div
+          style={{
+            fontSize: 42,
+
+            fontWeight: 200,
+
+            lineHeight: 1,
+
+            color:
+              "rgba(255,255,255,0.28)",
+
+            paddingBottom: 4,
+          }}
+        >
+          /
+        </div>
+
+        {/* TOTAL */}
+        <div
+          style={{
+            fontSize: 38,
+
+            fontWeight: 800,
+
+            lineHeight: 0.95,
+
+            color: "#f6d58f",
+
+            textShadow:
+              "0 0 16px rgba(255,210,120,0.14)",
+
+            paddingBottom: 2,
+          }}
+        >
+          {String(total)}
+        </div>
+      </div>
+
+      {/* SUB LABEL */}
+      <div
+        style={{
+          fontSize: 9,
+
+          letterSpacing: "0.18em",
+
+          textTransform: "uppercase",
+
+          color:
+            "rgba(255,255,255,0.34)",
+
+          fontWeight: 700,
+
+          marginTop: -2,
+        }}
+      >
+        In Category
       </div>
     </div>
   );
@@ -214,79 +284,63 @@ export default function PDFPageIndexPanel({
         gap: 28,
       }}
     >
-      {/* HERO GLOBAL INDEX */}
+      {/* GLOBAL */}
       <DiamondIndex
         value={globalIndex}
       />
 
-      {/* OTHER STATS */}
+      {/* LOCAL / TOTAL */}
+      <LocalProgress
+        current={localIndex}
+        total={localTotal}
+      />
+
+      {/* CATEGORY */}
       <div
         style={{
           display: "flex",
 
           flexDirection: "column",
 
-          gap: 18,
+          gap: 6,
 
           paddingLeft: 4,
         }}
       >
-        <MinimalStat
-          label="Local Index"
-          value={localIndex}
-          color="#9ef7ea"
-        />
+        <div
+          style={{
+            fontSize: 10,
 
-        <MinimalStat
-          label="Total In Category"
-          value={localTotal}
-          color="#f6d58f"
-        />
+            letterSpacing:
+              "0.22em",
+
+            textTransform:
+              "uppercase",
+
+            color:
+              "rgba(255,255,255,0.45)",
+
+            fontWeight: 700,
+          }}
+        >
+          Category
+        </div>
 
         <div
           style={{
-            display: "flex",
+            fontSize: 18,
 
-            flexDirection: "column",
+            fontWeight: 700,
 
-            gap: 6,
+            color:
+              "rgba(255,255,255,0.92)",
+
+            lineHeight: 1.2,
+
+            maxWidth: 240,
           }}
         >
-          <div
-            style={{
-              fontSize: 10,
-
-              letterSpacing:
-                "0.22em",
-
-              textTransform:
-                "uppercase",
-
-              color:
-                "rgba(255,255,255,0.45)",
-
-              fontWeight: 700,
-            }}
-          >
-            Category
-          </div>
-
-          <div
-            style={{
-              fontSize: 18,
-
-              fontWeight: 700,
-
-              color:
-                "rgba(255,255,255,0.92)",
-
-              lineHeight: 1.2,
-
-              maxWidth: 240,
-            }}
-          >
-            {category}
-          </div>
+          {category}
         </div>
       </div>
     </div>
