@@ -1,4 +1,8 @@
+
+/* globals.css */
+
 @import url('https://fonts.googleapis.com/css2?family=Carattere&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -121,9 +125,14 @@ a {
 ========================= */
 
 .hero-title {
-  font-weight: 900;
+  font-family: 'Cinzel Decorative', serif;
+
+  font-weight: 700;
   line-height: 1;
-  letter-spacing: 0.005em;
+
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+
   font-size: 9vh;
 
   background-image:
@@ -136,6 +145,12 @@ a {
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+
+  filter:
+    drop-shadow(0 0 8px rgba(255,255,255,0.08))
+    drop-shadow(0 0 24px rgba(255,220,180,0.12));
+
+  user-select: none;
 }
 
 /* =========================
@@ -232,3 +247,4 @@ code {
 /* =========================
    SIDEBAR END
 ========================= */
+

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+
 import CategoryCard from "./components/SidebarCategory/CategoryCard";
 import TopHeaderText from "./components/TopHeaderText";
 import SocialIcons from "./components/SocialIcons";
@@ -25,28 +26,52 @@ export default function HomePage() {
           position: "relative",
           width: "100%",
           height: "100vh",
+
           display: "flex",
           flexDirection: "column",
+
           justifyContent: "flex-start",
+
           paddingTop: "20px",
           paddingLeft: "80px",
         }}
       >
         <TopHeaderText />
+
         <SocialIcons />
 
-        <div style={{ height: "9vh", marginBottom: "1.5rem" }}>
-          <h1 className="hero-title" style={{ fontSize: "9vh" }}>
-            ART of CODE
+        {/* HERO TITLE */}
+        <div
+          style={{
+            height: "18vh",
+
+            marginBottom: "1.5rem",
+
+            display: "flex",
+            alignItems: "flex-start",
+          }}
+        >
+          <h1 className="hero-title">
+            Art of codE
+            <br />
+
+            <span className="hero-subtitle">
+              Technical aRchive
+            </span>
           </h1>
         </div>
 
+        {/* MAIN CONTENT */}
         <div
           style={{
             display: "flex",
+
             maxWidth: "1024px",
+
             margin: "300px auto 0 auto",
+
             padding: "0 1rem",
+
             gap: "2rem",
           }}
         >
@@ -60,10 +85,15 @@ export default function HomePage() {
                   onClick={() => setSelectedCategory(null)}
                   style={{
                     marginBottom: 16,
+
                     padding: "8px 16px",
+
                     borderRadius: 6,
+
                     background: "#ddd",
+
                     cursor: "pointer",
+
                     border: "none",
                   }}
                 >
@@ -97,7 +127,12 @@ export default function HomePage() {
             )}
 
             {/* 글쓰기 버튼 */}
-            <div style={{ marginTop: 32, textAlign: "center" }}>
+            <div
+              style={{
+                marginTop: 32,
+                textAlign: "center",
+              }}
+            >
               <WritePostButton />
             </div>
           </div>
