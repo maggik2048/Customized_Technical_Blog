@@ -57,9 +57,9 @@ export default function SidebarOpenCloseMotion({
             to right,
             black 0%,
             black 82%,
-            rgba(0,0,0,0.75) 88%,
-            rgba(0,0,0,0.35) 94%,
-            rgba(0,0,0,0.08) 98%,
+            rgba(0,0,0,0.65) 88%,
+            rgba(0,0,0,0.35) 92%,
+            rgba(0,0,0,0.04) 94%,
             transparent 100%
           )
         `,
