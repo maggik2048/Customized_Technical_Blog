@@ -5,8 +5,9 @@ import CategoryCard from "./components/SidebarCategory/CategoryCard";
 import TopHeaderText from "./components/TopHeaderText";
 import SocialIcons from "./components/SocialIcons";
 import LatestPosts from "./components/LatestPosts";
-import Link from "next/link";
 import ClickableImageBox from "./components/ClickableImageBox";
+import WritePostButton from "./components/WritePostButton";
+
 import { CATEGORY_TREE } from "./components/SidebarCategory/CategoryTree";
 
 export default function HomePage() {
@@ -52,7 +53,7 @@ export default function HomePage() {
           {/* LEFT */}
           <div style={{ flex: 2 }}>
 
-            {/* ✅ 카테고리 선택된 경우 */}
+            {/* 카테고리 선택된 경우 */}
             {selected && (
               <>
                 <button
@@ -63,6 +64,7 @@ export default function HomePage() {
                     borderRadius: 6,
                     background: "#ddd",
                     cursor: "pointer",
+                    border: "none",
                   }}
                 >
                   Back
@@ -74,8 +76,8 @@ export default function HomePage() {
                       key={item.name}
                       item={{
                         ...item,
-                        href: `/category/${item.slug}`, // 🔥 핵심
-                        count: 1, // optional
+                        href: `/category/${item.slug}`,
+                        count: 1,
                       }}
                     />
                   ))}
@@ -83,7 +85,7 @@ export default function HomePage() {
               </>
             )}
 
-            {/* ✅ 초기 상태 (이미지) */}
+            {/* 초기 상태 (이미지) */}
             {!selected && (
               <div style={{ marginTop: 16 }}>
                 <ClickableImageBox
@@ -96,21 +98,7 @@ export default function HomePage() {
 
             {/* 글쓰기 버튼 */}
             <div style={{ marginTop: 32, textAlign: "center" }}>
-              <Link href="/admin/write">
-                <button
-                  style={{
-                    padding: "12px 24px",
-                    backgroundColor: "#1e40af",
-                    color: "#fff",
-                    fontWeight: "bold",
-                    borderRadius: 8,
-                    cursor: "pointer",
-                    fontSize: 16,
-                  }}
-                >
-                  Write New Post
-                </button>
-              </Link>
+              <WritePostButton />
             </div>
           </div>
 
