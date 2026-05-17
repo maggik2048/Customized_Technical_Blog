@@ -23,7 +23,6 @@ body.dark-mode {
    GLOBAL CURSOR
 ========================= */
 
-/* 기본 커서 */
 html,
 body,
 *,
@@ -38,7 +37,6 @@ body,
    CLICKABLE → HELP.cur
 ========================= */
 
-/* hover 상태에서만 HELP.cur */
 a:hover,
 button:hover,
 [role="button"]:hover,
@@ -64,7 +62,6 @@ option:hover,
    TEXT → TEXT.cur
 ========================= */
 
-/* 텍스트 입력 */
 input[type="text"],
 input[type="search"],
 input[type="email"],
@@ -78,7 +75,6 @@ textarea,
     text !important;
 }
 
-/* 텍스트 선택 가능한 요소 */
 p:hover,
 span:hover,
 li:hover,
@@ -131,14 +127,11 @@ a {
   font-size: 9vh;
 
   background-image:
-    linear-gradient(
-      to bottom,
-      rgba(255,255,255,0.85) 0%,
-      rgba(255,255,255,0.85) 50%,
-      transparent 50%,
-      transparent 100%
-    ),
-    url("/images/lee-su-yeon-header-bright-hot3.jpg");
+    url("/images/lee-su-yeon-header-bright-hot2.jpg");
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 
   background-clip: text;
   -webkit-background-clip: text;

@@ -4,10 +4,7 @@ import "./globals.css";
 import { usePathname } from "next/navigation";
 
 import SidebarState from "./components/SidebarCategory/SidebarState";
-import ClickableImageBox from "./components/ClickableImageBox";
 import { DarkModeProvider } from "./context/DarkModeContext.tsx";
-
-// 👉 추가
 import { CastShadowFilterProvider } from "./context/CastShadowFilterContext";
 
 export default function RootLayout({
@@ -28,7 +25,6 @@ export default function RootLayout({
       </head>
 
       <body className="font-lm m-0">
-        {/* ✅ 여기 중요: Shadow Filter Provider를 DarkMode 위에 올려도 OK */}
         <CastShadowFilterProvider>
           <DarkModeProvider>
             {isHome ? (
@@ -43,7 +39,7 @@ export default function RootLayout({
                       rgba(0,0,0,0.2) 70%, 
                       rgba(0,0,0,0.2) 100%
                     ),
-                    url('/images/bgdraw.png')
+                    url('/images/artofcode.png')
                   `,
                   backgroundSize: "cover",
                   backgroundPosition: "center",
@@ -51,40 +47,7 @@ export default function RootLayout({
                   overflow: "hidden",
                 }}
               >
-                {/* LEFT OVERLAY */}
-                <div
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: "180px",
-                    height: "100%",
-                    width: "630px",
-                    background: `
-                      linear-gradient(rgba(40,40,60,0.65), rgba(40,40,40,0.95)),
-                      url('/images/dvinch6.jpg')
-                    `,
-                    backgroundSize: "150% auto",
-                    backgroundPosition: "center",
-                    backdropFilter: "blur(3px)",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    gap: "28px",
-                    zIndex: 1,
-                  }}
-                >
-                  <ClickableImageBox
-                    imageSrc="/images/manim.png"
-                    href="/category/art"
-                  />
-                  <ClickableImageBox
-                    imageSrc="/images/painting.png"
-                    href="/category/code"
-                  />
-                </div>
-
-                {/* MAIN */}
+                {/* HOME MAIN */}
                 <div
                   style={{
                     position: "relative",
@@ -92,16 +55,24 @@ export default function RootLayout({
                     height: "100%",
                     display: "flex",
                     alignItems: "center",
-                    paddingLeft: "80px",
+                    justifyContent: "center",
+                    padding: "0 40px",
                   }}
                 >
                   {children}
                 </div>
               </div>
             ) : (
-              <div style={{ display: "flex", height: "100vh" }}>
+              <div
+                style={{
+                  display: "flex",
+                  height: "100vh",
+                }}
+              >
+                {/* CATEGORY SIDEBAR 유지 */}
                 <SidebarState />
 
+                {/* MAIN CONTENT */}
                 <main
                   style={{
                     flex: 1,
