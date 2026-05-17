@@ -52,6 +52,7 @@ export default function SidebarOpenCloseToggle({
           "translate(-50%, -50%) scale(1)";
       }}
     >
+      {/* SYMBOL */}
       <span
         style={{
           display: "flex",
@@ -80,6 +81,36 @@ export default function SidebarOpenCloseToggle({
         }}
       >
         {open ? "Ψ" : "Ω"}
+      </span>
+
+      {/* VERTICAL TEXT */}
+      <span
+        style={{
+          position: "absolute",
+
+          left: 42,
+
+          color: "rgba(10,10,10,0.78)",
+
+          fontSize: 13,
+          fontWeight: 700,
+          letterSpacing: "0.12em",
+
+          fontFamily:
+            '"STIX Two Text", "Times New Roman", "Georgia", serif',
+
+          textTransform: "uppercase",
+
+          whiteSpace: "nowrap",
+
+          transform: "rotate(90deg)",
+
+          transformOrigin: "left center",
+
+          textShadow: "0 1px 1px rgba(255,255,255,0.4)",
+        }}
+      >
+        {open ? "Close Sidebar" : "Open Sidebar"}
       </span>
     </button>
   );
