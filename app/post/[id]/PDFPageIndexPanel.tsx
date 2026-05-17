@@ -285,18 +285,12 @@ export default function PDFPageIndexPanel({
 
         flexDirection: "column",
 
-        gap: 28,
+        gap: 24,
       }}
     >
       {/* GLOBAL */}
       <DiamondIndex
         value={globalIndex}
-      />
-
-      {/* LOCAL / TOTAL */}
-      <LocalProgress
-        current={localIndex}
-        total={localTotal}
       />
 
       {/* CATEGORY */}
@@ -309,6 +303,8 @@ export default function PDFPageIndexPanel({
           gap: 6,
 
           paddingLeft: 4,
+
+          marginTop: -2,
         }}
       >
         <div
@@ -347,6 +343,12 @@ export default function PDFPageIndexPanel({
           {category}
         </div>
       </div>
+
+      {/* LOCAL / TOTAL */}
+      <LocalProgress
+        current={localIndex}
+        total={localTotal}
+      />
     </div>
   );
 }
