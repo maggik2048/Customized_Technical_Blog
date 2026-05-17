@@ -12,46 +12,140 @@ type Props = {
   category?: string;
 };
 
-const glassStyle: React.CSSProperties = {
-  background: "rgba(0,0,0,0.52)",
-
-  backdropFilter: "blur(20px)",
-
-  WebkitBackdropFilter: "blur(20px)",
-
-  borderRadius: 18,
-
-  boxShadow:
-    "0 10px 35px rgba(0,0,0,0.35)",
-
-  border:
-    "1px solid rgba(255,255,255,0.12)",
-};
-
-function StatButton({
-  label,
-
+function DiamondIndex({
   value,
-
-  color = "#fff",
-
-  size = 36,
 }: {
-  label: string;
-
-  value: string;
-
-  color?: string;
-
-  size?: number;
+  value?: number;
 }) {
   return (
     <div
       style={{
-        ...glassStyle,
+        position: "relative",
 
-        padding: "14px 22px",
+        width: 112,
 
+        height: 112,
+
+        display: "flex",
+
+        alignItems: "center",
+
+        justifyContent: "center",
+      }}
+    >
+      {/* OUTER DIAMOND */}
+      <div
+        style={{
+          position: "absolute",
+
+          inset: 0,
+
+          transform: "rotate(45deg)",
+
+          border:
+            "1.5px solid rgba(255,220,140,0.78)",
+
+          background:
+            "linear-gradient(to bottom, rgba(255,235,180,0.12), rgba(120,80,20,0.08))",
+
+          boxShadow: `
+            0 0 24px rgba(255,210,120,0.18),
+            inset 0 0 22px rgba(255,230,160,0.08)
+          `,
+
+          backdropFilter:
+            "blur(12px)",
+        }}
+      />
+
+      {/* INNER DIAMOND */}
+      <div
+        style={{
+          position: "absolute",
+
+          width: 74,
+
+          height: 74,
+
+          transform: "rotate(45deg)",
+
+          border:
+            "1px solid rgba(255,240,200,0.4)",
+        }}
+      />
+
+      {/* NUMBER */}
+      <div
+        style={{
+          position: "relative",
+
+          zIndex: 2,
+
+          display: "flex",
+
+          flexDirection: "column",
+
+          alignItems: "center",
+
+          justifyContent: "center",
+        }}
+      >
+        <div
+          style={{
+            fontSize: 10,
+
+            letterSpacing: "0.32em",
+
+            textTransform: "uppercase",
+
+            color:
+              "rgba(255,228,170,0.75)",
+
+            marginBottom: 6,
+
+            fontWeight: 700,
+          }}
+        >
+          Global
+        </div>
+
+        <div
+          style={{
+            fontSize: 42,
+
+            fontWeight: 900,
+
+            lineHeight: 1,
+
+            color: "#fff7df",
+
+            textShadow:
+              "0 0 18px rgba(255,220,120,0.35)",
+          }}
+        >
+          {String(value)}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function MinimalStat({
+  label,
+
+  value,
+
+  color = "#ffffff",
+}: {
+  label: string;
+
+  value?: number | string;
+
+  color?: string;
+}) {
+  return (
+    <div
+      style={{
         display: "flex",
 
         flexDirection: "column",
@@ -59,35 +153,36 @@ function StatButton({
         gap: 4,
       }}
     >
-      <span
+      <div
         style={{
-          fontSize: 11,
+          fontSize: 10,
 
-          letterSpacing: "0.18em",
+          letterSpacing: "0.22em",
 
           textTransform: "uppercase",
 
-          color: "rgba(255,255,255,0.6)",
+          color:
+            "rgba(255,255,255,0.48)",
 
           fontWeight: 700,
         }}
       >
         {label}
-      </span>
+      </div>
 
-      <span
+      <div
         style={{
-          fontSize: size,
+          fontSize: 30,
 
-          fontWeight: 900,
-
-          lineHeight: 1,
+          fontWeight: 800,
 
           color,
+
+          lineHeight: 1,
         }}
       >
-        {value}
-      </span>
+        {String(value)}
+      </div>
     </div>
   );
 }
@@ -106,9 +201,9 @@ export default function PDFPageIndexPanel({
       style={{
         position: "absolute",
 
-        top: 28,
+        top: 34,
 
-        left: 36,
+        left: 38,
 
         zIndex: 100,
 
@@ -116,69 +211,82 @@ export default function PDFPageIndexPanel({
 
         flexDirection: "column",
 
-        gap: 12,
-
-        width: 260,
+        gap: 28,
       }}
     >
-      <StatButton
-        label="Global Index"
-        value={String(globalIndex)}
-        color="#ffffff"
-        size={42}
+      {/* HERO GLOBAL INDEX */}
+      <DiamondIndex
+        value={globalIndex}
       />
 
-      <StatButton
-        label="Local Index"
-        value={String(localIndex)}
-        color="#7df9ff"
-        size={42}
-      />
-
-      <StatButton
-        label="Total In Category"
-        value={String(localTotal)}
-        color="#ffd166"
-        size={30}
-      />
-
+      {/* OTHER STATS */}
       <div
         style={{
-          ...glassStyle,
+          display: "flex",
 
-          padding: "12px 18px",
+          flexDirection: "column",
+
+          gap: 18,
+
+          paddingLeft: 4,
         }}
       >
-        <div
-          style={{
-            fontSize: 10,
+        <MinimalStat
+          label="Local Index"
+          value={localIndex}
+          color="#9ef7ea"
+        />
 
-            letterSpacing: "0.16em",
-
-            textTransform: "uppercase",
-
-            color: "rgba(255,255,255,0.55)",
-
-            marginBottom: 6,
-
-            fontWeight: 700,
-          }}
-        >
-          Category
-        </div>
+        <MinimalStat
+          label="Total In Category"
+          value={localTotal}
+          color="#f6d58f"
+        />
 
         <div
           style={{
-            fontSize: 18,
+            display: "flex",
 
-            fontWeight: 700,
+            flexDirection: "column",
 
-            color: "#fff",
-
-            lineHeight: 1.2,
+            gap: 6,
           }}
         >
-          {category}
+          <div
+            style={{
+              fontSize: 10,
+
+              letterSpacing:
+                "0.22em",
+
+              textTransform:
+                "uppercase",
+
+              color:
+                "rgba(255,255,255,0.45)",
+
+              fontWeight: 700,
+            }}
+          >
+            Category
+          </div>
+
+          <div
+            style={{
+              fontSize: 18,
+
+              fontWeight: 700,
+
+              color:
+                "rgba(255,255,255,0.92)",
+
+              lineHeight: 1.2,
+
+              maxWidth: 240,
+            }}
+          >
+            {category}
+          </div>
         </div>
       </div>
     </div>
