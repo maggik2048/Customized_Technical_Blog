@@ -59,13 +59,12 @@ export default function DarkModeContextButtonRenderer() {
     zIndex: 5,
   };
 
-  //  핵심 변경: 살짝 확대 + subtle shadow
   const iconBase: React.CSSProperties = {
-    fontSize: 20, // 기존 15 → 살짝 확대
+    fontSize: 20,
     fontWeight: 700,
     position: "relative",
     zIndex: 5,
-    textShadow: "0 1px 2px rgba(0,0,0,0.25)", // 아주 약한 depth
+    textShadow: "0 1px 2px rgba(0,0,0,0.25)",
   };
 
   const dotSmall: React.CSSProperties = {
@@ -112,10 +111,12 @@ export default function DarkModeContextButtonRenderer() {
           }}
         />
 
+        {/* SUN */}
         <div style={iconWrap}>
           <span style={iconBase}>☀</span>
         </div>
 
+        {/* MOON */}
         <div style={iconWrap}>
           <span style={dotSmall}>•</span>
           <span style={iconBase}>☾</span>
@@ -142,7 +143,7 @@ export default function DarkModeContextButtonRenderer() {
             width: 42,
             height: 38,
             borderRadius: 999,
-            background: codeDark ? "#111111" : "#f5f5f5",
+            background: "#111111",
             boxShadow: "0 12px 26px rgba(0,0,0,0.28)",
             transition: "all 0.38s cubic-bezier(0.4,0,0.2,1)",
             zIndex: 1,
@@ -150,7 +151,14 @@ export default function DarkModeContextButtonRenderer() {
         />
 
         <div style={iconWrap}>
-          <span style={iconBase}>{"</>"}</span>
+          <span
+            style={{
+              ...iconBase,
+              color: "#ffffff", // 🔥 invert (black knob → white icon)
+            }}
+          >
+            {"</>"}
+          </span>
         </div>
 
         <div style={labelStyle}>CODE · MODE</div>
@@ -174,7 +182,7 @@ export default function DarkModeContextButtonRenderer() {
             width: 42,
             height: 38,
             borderRadius: 999,
-            background: enabled ? "#ffffff" : "#111111",
+            background: "#ffffff",
             boxShadow: "0 12px 26px rgba(0,0,0,0.28)",
             transition: "all 0.38s cubic-bezier(0.4,0,0.2,1)",
             zIndex: 1,
@@ -182,12 +190,26 @@ export default function DarkModeContextButtonRenderer() {
         />
 
         <div style={iconWrap}>
-          <span style={iconBase}>◐</span>
+          <span
+            style={{
+              ...iconBase,
+              color: "#111111", // 🔥 invert (white knob → black icon)
+            }}
+          >
+            ◐
+          </span>
         </div>
 
         <div style={iconWrap}>
           <span style={dotSmall}>•</span>
-          <span style={iconBase}>◑</span>
+          <span
+            style={{
+              ...iconBase,
+              color: "#111111",
+            }}
+          >
+            ◑
+          </span>
         </div>
 
         <div style={labelStyle}>SHADOW · FX</div>
