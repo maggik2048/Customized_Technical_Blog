@@ -59,11 +59,13 @@ export default function DarkModeContextButtonRenderer() {
     zIndex: 5,
   };
 
+  //  핵심 변경: 살짝 확대 + subtle shadow
   const iconBase: React.CSSProperties = {
-    fontSize: 15,
+    fontSize: 20, // 기존 15 → 살짝 확대
     fontWeight: 700,
     position: "relative",
     zIndex: 5,
+    textShadow: "0 1px 2px rgba(0,0,0,0.25)", // 아주 약한 depth
   };
 
   const dotSmall: React.CSSProperties = {
