@@ -18,7 +18,10 @@ export default function CategoryPostBoxRenderer({
       }}
     >
       {posts.map((post) => {
-        const isSimple = (post.title?.length ?? 0) < 30;
+        //  핵심 변경: content 기준으로 UI 결정
+        const contentLength = post.content?.length ?? 0;
+
+        const isSimple = contentLength < 3000; // threshold (조절 가능)
 
         return (
           <Link key={post.id} href={`/post/${post.id}`}>
@@ -33,7 +36,7 @@ export default function CategoryPostBoxRenderer({
                 overflow: "hidden",
                 transition: "all 0.28s ease",
 
-                // ONLY FRAME DIFFERENCE
+                // frame only for non-simple
                 border: isSimple
                   ? "none"
                   : "1px solid rgba(255,255,255,0.12)",
@@ -47,7 +50,7 @@ export default function CategoryPostBoxRenderer({
                 e.currentTarget.style.transform = "translateX(0px)";
               }}
             >
-              {/* BACKGROUND (card only) */}
+              {/* BACKGROUND LAYER (card only) */}
               {!isSimple && (
                 <div
                   style={{
@@ -74,7 +77,7 @@ export default function CategoryPostBoxRenderer({
                 />
               )}
 
-              {/* TITLE (ALWAYS SAME STYLE) */}
+              {/* TITLE (always same typography) */}
               <div
                 style={{
                   position: "relative",
@@ -89,7 +92,6 @@ export default function CategoryPostBoxRenderer({
                   overflow: "hidden",
                   textOverflow: "ellipsis",
 
-                  // 🔥 FIX: shadow ALWAYS preserved
                   textShadow:
                     "0 2px 3px rgba(0,0,0,0.80), 0 -1px 0 rgba(255,255,255,0.12)",
 
@@ -99,25 +101,20 @@ export default function CategoryPostBoxRenderer({
                 <PostTitleRenderer text={post.title} />
               </div>
 
-              {/* META (NOW ALWAYS VISIBLE) */}
-              <div
-                style={{
-                  position: "relative",
-                  fontSize: 10,
-
-                  color: isSimple
-                    ? "rgba(80,80,80,0.65)"
-                    : "rgba(255,255,255,0.65)",
-
-                  letterSpacing: "0.06em",
-
-                  // 🔥 FIX: shadow always preserved (softened in simple mode visually via opacity)
-                  textShadow:
-                    "0 1px 2px rgba(0,0,0,0.60)",
-                }}
-              >
-                {new Date(post.created_at).toLocaleDateString()}
-              </div>
+              {/* META (only card mode) */}
+              {!isSimple && (
+                <div
+                  style={{
+                    position: "relative",
+                    fontSize: 10,
+                    color: "rgba(255,255,255,0.65)",
+                    letterSpacing: "0.06em",
+                    textShadow: "0 1px 2px rgba(0,0,0,0.60)",
+                  }}
+                >
+                  {new Date(post.created_at).toLocaleDateString()}
+                </div>
+              )}
 
               {/* EDGE LIGHT (card only) */}
               {!isSimple && (
