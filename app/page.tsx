@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 import CategoryCard from "./components/SidebarCategory/CategoryCard";
@@ -12,6 +13,8 @@ import WritePostButton from "./admin/write/WritePostButton";
 import { CATEGORY_TREE } from "./components/SidebarCategory/CategoryTree";
 
 export default function HomePage() {
+  const router = useRouter();
+
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // 선택된 카테고리 찾기
@@ -119,9 +122,11 @@ export default function HomePage() {
             {!selected && (
               <div style={{ marginTop: 16 }}>
                 <ClickableImageBox
-                  imageSrc="/images/code3.png"
+                  imageSrc="/images/exploreCateg2.png"
                   width={540}
-                  onClick={() => setSelectedCategory("cs_revisited")}
+                  onClick={() =>
+                    router.push("/category/graphics_pipeline")
+                  }
                 />
               </div>
             )}
