@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 
-export default function DrawingPenButton() {
+export default function PenAnnotationButton() {
   const [hovered, setHovered] = useState(false);
 
   return (
@@ -34,39 +34,59 @@ export default function DrawingPenButton() {
           isolation: "isolate",
         }}
       >
-        {/* BASE IMAGE */}
-        <img
+        {/* ========================================
+            BASE IMAGE
+        ======================================== */}
+        <motion.img
           src="/images/drawmarks/fountainPen2.png"
-          alt="drawing pen button"
+          alt="pen annotation button"
+          animate={{
+            filter: hovered
+              ? "drop-shadow(0 22px 34px rgba(0,0,0,0.62)) brightness(1.08) saturate(1.05)"
+              : "drop-shadow(0 18px 26px rgba(0,0,0,0.55))",
+          }}
+          transition={{
+            duration: 0.22,
+            ease: "easeOut",
+          }}
           style={{
             width: "100%",
             height: "auto",
             userSelect: "none",
             pointerEvents: "none",
-            filter: "drop-shadow(0 18px 26px rgba(0,0,0,0.55))",
+            display: "block",
           }}
         />
 
-        {/* =========================
-            HOVER OFF STATE (original inverted image stack)
-           ========================= */}
+        {/* ========================================
+            HOVER OFF ONLY
+            (partial inversion effect)
+        ======================================== */}
         {!hovered && (
           <>
-            <img
+            {/* SOFT INVERT */}
+            <motion.img
               src="/images/drawmarks/fountainPen2.png"
+              alt="soft invert layer"
+              initial={{ opacity: 1 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               style={{
                 position: "absolute",
                 inset: 0,
                 width: "100%",
                 height: "auto",
-                pointerEvents: "none",
+
                 userSelect: "none",
+                pointerEvents: "none",
+
                 filter: `
                   invert(1)
                   contrast(2.2)
                   brightness(0.75)
                   saturate(2)
                 `,
+
                 maskImage:
                   "linear-gradient(to right, transparent 0%, black 20%, black 100%)",
                 WebkitMaskImage:
@@ -74,85 +94,32 @@ export default function DrawingPenButton() {
               }}
             />
 
-            <img
+            {/* HARD RIGHT INVERT */}
+            <motion.img
               src="/images/drawmarks/fountainPen2.png"
+              alt="hard invert layer"
+              initial={{ opacity: 1 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               style={{
                 position: "absolute",
                 inset: 0,
                 width: "100%",
                 height: "auto",
-                pointerEvents: "none",
+
                 userSelect: "none",
+                pointerEvents: "none",
+
                 filter: `
                   invert(1)
                   contrast(3)
                   brightness(0.6)
                 `,
+
                 maskImage:
                   "linear-gradient(to right, transparent 40%, black 100%)",
                 WebkitMaskImage:
                   "linear-gradient(to right, transparent 40%, black 100%)",
-              }}
-            />
-          </>
-        )}
-
-        {/* =========================
-            HOVER ON STATE (FIXED: keep IMAGE alpha intact)
-           ========================= */}
-        {hovered && (
-          <>
-            <img
-              src="/images/drawmarks/fountainPen2.png"
-              style={{
-                position: "absolute",
-                inset: 0,
-                width: "100%",
-                height: "auto",
-                pointerEvents: "none",
-                userSelect: "none",
-
-                /* stronger invert version but STILL image-based */
-                filter: `
-                  invert(1)
-                  hue-rotate(210deg)
-                  saturate(2.2)
-                  contrast(1.6)
-                  brightness(0.75)
-                `,
-
-                opacity: 0.95,
-
-                /* IMPORTANT: same alpha-safe mask approach */
-                maskImage:
-                  "linear-gradient(to right, transparent 10%, black 100%)",
-                WebkitMaskImage:
-                  "linear-gradient(to right, transparent 10%, black 100%)",
-              }}
-            />
-
-            <img
-              src="/images/drawmarks/fountainPen2.png"
-              style={{
-                position: "absolute",
-                inset: 0,
-                width: "100%",
-                height: "auto",
-                pointerEvents: "none",
-                userSelect: "none",
-
-                filter: `
-                  invert(1)
-                  contrast(2)
-                  brightness(0.6)
-                `,
-
-                opacity: 0.75,
-
-                maskImage:
-                  "linear-gradient(to right, transparent 45%, black 100%)",
-                WebkitMaskImage:
-                  "linear-gradient(to right, transparent 45%, black 100%)",
               }}
             />
           </>
