@@ -1,6 +1,11 @@
 "use client";
 
-import { FaTwitter, FaFacebookF, FaInstagram, FaEnvelope } from "react-icons/fa";
+import {
+  FaTwitter,
+  FaFacebookF,
+  FaInstagram,
+  FaEnvelope,
+} from "react-icons/fa";
 import React from "react";
 import Link from "next/link";
 
@@ -16,9 +21,9 @@ export default function SocialIcons() {
     <div
       style={{
         display: "flex",
-        gap: "1rem",
-        fontSize: "1.1rem",
-        color: "rgba(255, 255, 255, 0.8)",
+        gap: "1.5rem",
+        fontSize: "1.7rem",
+        color: "#3b2a1f", // 진갈색
       }}
     >
       {socialLinks.map((item, idx) => (
@@ -28,11 +33,18 @@ export default function SocialIcons() {
           target="_blank"
           rel="noopener noreferrer"
           style={{
-            transition: "color 0.2s",
+            transition: "color 0.25s ease",
             cursor: "pointer",
+            color: "#3b2a1f",
           }}
-          onMouseOver={(e) => ((e.currentTarget.style.color = "#fff"))}
-          onMouseOut={(e) => ((e.currentTarget.style.color = "rgba(255,255,255,0.8)"))}
+          onMouseOver={(e) => {
+            e.currentTarget.style.color = "#000000"; // 검정
+            e.currentTarget.style.transform = "scale(1.15)";
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.color = "#3b2a1f";
+            e.currentTarget.style.transform = "scale(1)";
+          }}
         >
           {item.icon}
         </Link>
