@@ -159,9 +159,11 @@ function LocalProgress({
           textTransform: "uppercase",
 
           color:
-            "rgba(255,255,255,0.48)",
+            "rgba(255,255,255,0.56)",
 
           fontWeight: 700,
+
+          marginLeft: -32,
         }}
       >
         Local Index
@@ -186,10 +188,10 @@ function LocalProgress({
 
             lineHeight: 0.9,
 
-            color: "#9ef7ea",
+            color: "#c9e5df",
 
             textShadow:
-              "0 0 18px rgba(80,255,220,0.18)",
+              "0 0 18px rgba(170,235,220,0.12)",
           }}
         >
           {String(current)}
@@ -237,21 +239,23 @@ function LocalProgress({
       {/* SUB LABEL */}
       <div
         style={{
-          fontSize: 9,
+          fontSize: 10,
 
           letterSpacing: "0.18em",
 
           textTransform: "uppercase",
 
           color:
-            "rgba(255,255,255,0.34)",
+            "rgba(255,245,220,0.66)",
 
-          fontWeight: 700,
+          fontWeight: 1700,
 
-          marginTop: -2,
+          marginTop: -1,
+
+          paddingLeft: 12,
         }}
       >
-        In Category
+        Total In Category
       </div>
     </div>
   );
