@@ -2,17 +2,22 @@
 
 import "./globals.css";
 import { usePathname } from "next/navigation";
-import SidebarWrapper from "./components/SidebarCategory/SidebarWrapper";
+
+import SidebarState from "./components/SidebarCategory/SidebarState";
+
 import ClickableImageBox from "./components/ClickableImageBox";
 import { DarkModeProvider } from "./context/DarkModeContext.tsx";
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
   const isHome = pathname === "/";
 
   return (
     <html lang="en">
-      {/*  폰트 로드 (핵심) */}
       <head>
         <link
           href="https://cdn.jsdelivr.net/npm/latin-modern-web@1.1.0/fonts.css"
@@ -20,7 +25,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
 
-      {/*  전역 폰트 적용 */}
       <body className="font-lm m-0">
         <DarkModeProvider>
           {isHome ? (
@@ -35,12 +39,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     rgba(0,0,0,0.2) 70%, 
                     rgba(0,0,0,0.2) 100%
                   ),
-                  url('/images/lee-su-yeon-header.jpg')
+                  url('/images/bgdraw.png')
                 `,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 backgroundRepeat: "no-repeat",
-                color: "var(--fg-color)",
                 overflow: "hidden",
               }}
             >
@@ -67,8 +70,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   zIndex: 1,
                 }}
               >
-                <ClickableImageBox imageSrc="/images/manim.png" href="/category/art" />
-                <ClickableImageBox imageSrc="/images/painting.png" href="/category/code" />
+                <ClickableImageBox
+                  imageSrc="/images/manim.png"
+                  href="/category/art"
+                />
+                <ClickableImageBox
+                  imageSrc="/images/painting.png"
+                  href="/category/code"
+                />
               </div>
 
               {/* MAIN */}
@@ -87,14 +96,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </div>
           ) : (
             <div style={{ display: "flex", height: "100vh" }}>
-              <SidebarWrapper />
+              {/*  ONLY ONE SOURCE OF TRUTH */}
+              <SidebarState />
+
               <main
                 style={{
                   flex: 1,
                   background: "transparent",
                   padding: "24px",
                   overflow: "auto",
-                  color: "var(--fg-color)",
                 }}
               >
                 {children}
