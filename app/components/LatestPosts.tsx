@@ -2,10 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+
 import { supabase } from "@/lib/supabase";
+
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
+
 import "katex/dist/katex.min.css";
 
 interface Post {
@@ -42,7 +45,10 @@ export default function LatestPosts() {
   }, []);
 
   if (loading) return <div>Loading...</div>;
-  if (posts.length === 0) return <div>There are No Posts yet.</div>;
+
+  if (posts.length === 0) {
+    return <div>There are No Posts yet.</div>;
+  }
 
   return (
     <div style={{ marginTop: 60 }}>
@@ -50,10 +56,15 @@ export default function LatestPosts() {
         style={{
           fontSize: 28,
           marginBottom: 20,
-          color: "#d4af37",
-          letterSpacing: "1px",
-          fontWeight: 600,
-          textShadow: "0 1px 2px rgba(0,0,0,0.2)",
+
+          color: "#ffffff",
+
+          letterSpacing: "0.08em",
+
+          fontWeight: 700,
+
+          textShadow:
+            "0 2px 6px rgba(0,0,0,0.75), 0 -1px 0 rgba(255,255,255,0.08)",
         }}
       >
         Recent Archives
@@ -63,7 +74,7 @@ export default function LatestPosts() {
         style={{
           display: "flex",
           flexDirection: "column",
-          gap: 28,
+          gap: 14,
         }}
       >
         {posts.map((post) => (
@@ -72,137 +83,212 @@ export default function LatestPosts() {
             href={`/post/${post.id}`}
             style={{
               textDecoration: "none",
-              color: "inherit",
             }}
           >
             <div
               style={{
                 position: "relative",
 
-                padding: "22px",
+                borderRadius: 8,
 
-                borderRadius: "10px",
+                padding: "18px 20px",
 
-                // 📜 종이 느낌
-                background:
-                  "linear-gradient(145deg, rgba(248,244,230,0.92), rgba(235,225,205,0.48))",
-
-                border: "1px solid rgba(120,100,60,0.28)",
-
-                boxShadow: `
-                  0 6px 20px rgba(0,0,0,0.22),
-                  inset 0 1px 0 rgba(255,255,255,0.45)
-                `,
-
-                backdropFilter: "blur(2px)",
-
-                transition: "all 0.25s ease",
+                overflow: "hidden",
 
                 cursor: "pointer",
 
-                overflow: "hidden",
+                border: "1px solid rgba(255,255,255,0.12)",
+
+                transition: "all 0.28s ease",
+
+                minHeight: 120,
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.transform =
-                  "translateY(-3px) scale(1.01)";
-                e.currentTarget.style.boxShadow = `
-                  0 10px 28px rgba(0,0,0,0.28),
-                  inset 0 1px 0 rgba(255,255,255,0.55)
-                `;
+                  "translateX(8px) scale(1.01)";
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.transform =
-                  "translateY(0px) scale(1)";
-                e.currentTarget.style.boxShadow = `
-                  0 6px 20px rgba(0,0,0,0.22),
-                  inset 0 1px 0 rgba(255,255,255,0.45)
-                `;
+                  "translateX(0px) scale(1)";
               }}
             >
-              {/* 오래된 종이 질감 */}
+              {/* BACKGROUND INVERSION LAYER */}
               <div
                 style={{
                   position: "absolute",
                   inset: 0,
-                  opacity: 0.08,
+
+                  background:
+                    "rgba(165, 170, 185, 0.18)",
+
+                  backdropFilter:
+                    "invert(1) brightness(0.88) blur(2px)",
+
+                  WebkitBackdropFilter:
+                    "invert(1) brightness(0.88) blur(2px)",
+                }}
+              />
+
+              {/* NOISE TEXTURE */}
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+
+                  opacity: 0.06,
+
                   pointerEvents: "none",
+
                   backgroundImage: `
-                    radial-gradient(#000 0.5px, transparent 0.5px)
+                    radial-gradient(#ffffff 0.6px, transparent 0.6px)
                   `,
+
                   backgroundSize: "8px 8px",
                 }}
               />
 
-              <h3
-                style={{
-                  color: "#111111",
-                  marginBottom: 14,
-                  fontSize: 22,
-                  fontWeight: 700,
-                  letterSpacing: "0.5px",
-                  lineHeight: 1.3,
-
-                  // 살짝 럭셔리 archive 느낌
-                  fontFamily:
-                    "'Times New Roman', 'Georgia', serif",
-                }}
-              >
-                {post.title}
-              </h3>
-
+              {/* LEFT SPINE */}
               <div
                 style={{
-                  color: "#2b2b2b",
-                  lineHeight: 1.75,
-                  fontSize: 15,
+                  position: "absolute",
 
-                  fontFamily:
-                    "'Georgia', 'Times New Roman', serif",
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+
+                  width: 2,
+
+                  background:
+                    "rgba(220,225,235,0.55)",
+                }}
+              />
+
+              {/* CONTENT */}
+              <div
+                style={{
+                  position: "relative",
+                  zIndex: 1,
                 }}
               >
-                <ReactMarkdown
-                  remarkPlugins={[remarkMath]}
-                  rehypePlugins={[rehypeKatex]}
-                  components={{
-                    img({ src, alt, ...props }) {
-                      return (
-                        <img
-                          src={src}
-                          alt={alt}
-                          style={{
-                            maxHeight: 300,
-                            width: "auto",
-                            maxWidth: "100%",
-                            display: "block",
-                            margin: "12px 0",
-                            borderRadius: 4,
-                            border:
-                              "1px solid rgba(80,60,30,0.15)",
-                          }}
-                          {...props}
-                        />
-                      );
-                    },
+                {/* TITLE */}
+                <h3
+                  style={{
+                    color: "#ffffff",
+
+                    marginBottom: 10,
+
+                    fontSize: 20,
+
+                    fontWeight: 700,
+
+                    letterSpacing: "0.03em",
+
+                    lineHeight: 1.3,
+
+                    textShadow:
+                      "0 2px 4px rgba(0,0,0,0.80), 0 -1px 0 rgba(255,255,255,0.10)",
+
+                    fontFamily:
+                      "'Times New Roman', 'Georgia', serif",
                   }}
                 >
-                  {post.content.slice(0, 150) +
-                    (post.content.length > 150 ? "..." : "")}
-                </ReactMarkdown>
+                  {post.title}
+                </h3>
+
+                {/* PREVIEW */}
+                <div
+                  style={{
+                    color: "rgba(255,255,255,0.78)",
+
+                    lineHeight: 1.7,
+
+                    fontSize: 14,
+
+                    overflow: "hidden",
+
+                    textShadow:
+                      "0 1px 3px rgba(0,0,0,0.70)",
+
+                    fontFamily:
+                      "'Georgia', 'Times New Roman', serif",
+                  }}
+                >
+                  <ReactMarkdown
+                    remarkPlugins={[remarkMath]}
+                    rehypePlugins={[rehypeKatex]}
+                    components={{
+                      img({ src, alt, ...props }) {
+                        return (
+                          <img
+                            src={src}
+                            alt={alt}
+                            style={{
+                              maxHeight: 240,
+
+                              width: "auto",
+
+                              maxWidth: "100%",
+
+                              display: "block",
+
+                              margin: "10px 0",
+
+                              borderRadius: 4,
+
+                              border:
+                                "1px solid rgba(255,255,255,0.12)",
+                            }}
+                            {...props}
+                          />
+                        );
+                      },
+                    }}
+                  >
+                    {post.content.slice(0, 150) +
+                      (post.content.length > 150
+                        ? "..."
+                        : "")}
+                  </ReactMarkdown>
+                </div>
+
+                {/* META */}
+                <div
+                  style={{
+                    marginTop: 16,
+
+                    fontSize: 11,
+
+                    color: "rgba(255,255,255,0.62)",
+
+                    letterSpacing: "0.08em",
+
+                    textTransform: "uppercase",
+
+                    textShadow:
+                      "0 1px 2px rgba(0,0,0,0.60)",
+
+                    fontWeight: 600,
+                  }}
+                >
+                  Archive · {post.category} ·{" "}
+                  {new Date(
+                    post.created_at
+                  ).toLocaleDateString()}
+                </div>
               </div>
 
+              {/* EDGE LIGHT */}
               <div
                 style={{
-                  marginTop: 18,
-                  fontSize: 12,
-                  color: "#7a5c1f",
-                  letterSpacing: "0.6px",
-                  textTransform: "uppercase",
-                  fontWeight: 600,
+                  position: "absolute",
+                  inset: 0,
+
+                  boxShadow:
+                    "inset 0 1px 0 rgba(255,255,255,0.10), inset 0 -1px 0 rgba(0,0,0,0.25)",
+
+                  pointerEvents: "none",
                 }}
-              >
-                Archive · {post.category} ·{" "}
-                {new Date(post.created_at).toLocaleDateString()}
-              </div>
+              />
             </div>
           </Link>
         ))}
