@@ -1,13 +1,14 @@
 "use client";
 
-import Link from "next/link";
 import CategoryPostBoxRenderer from "./CategorypostBoxRenderer";
 
 export default function CategoryRenderer({
   posts,
+  allPosts, //  추가 (핵심)
   slug,
 }: {
   posts: any[];
+  allPosts: any[];
   slug: string;
 }) {
   const bgImage = "/images/mathdraw3.png";
@@ -166,7 +167,10 @@ export default function CategoryRenderer({
       {/* LIST WRAPPER (CENTER FIX ONLY) */}
       <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
         <div style={{ width: "100%", maxWidth: 900 }}>
-          <CategoryPostBoxRenderer posts={posts} />
+          <CategoryPostBoxRenderer
+            posts={posts}
+            allPosts={allPosts} //  핵심 추가
+          />
         </div>
       </div>
     </div>
