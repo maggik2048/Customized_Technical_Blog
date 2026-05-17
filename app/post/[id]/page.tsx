@@ -13,8 +13,6 @@ import { supabase } from "@/lib/supabase";
 import StackedPostViewer from "@/app/components/papers/StackedPostViewer";
 import PostEnvironment from "@/app/components/papers/PostEnvironment";
 
-import CategoryPostBoxIndex from "@/app/category/[slug]/CategoryPostBoxIndex";
-
 const WINDOW_SIZE = 2;
 
 export default function PostPage() {
@@ -272,17 +270,6 @@ export default function PostPage() {
           height: "100%",
         }}
       >
-        {/* LEFT INDEX */}
-        <CategoryPostBoxIndex
-          categoryIndex={
-            categoryIndex
-          }
-          globalIndex={
-            globalIndex
-          }
-          isSimple={false}
-        />
-
         {/* POSTS */}
         <StackedPostViewer
           posts={posts}
