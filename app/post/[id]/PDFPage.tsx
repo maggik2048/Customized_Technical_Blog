@@ -28,6 +28,8 @@ import CodeBlockWithCopy from "@/app/components/Markdown/CodeBlockWithCopy";
 
 import MetadataPostalCode from "@/app/components/papers/MetadataPostalCode";
 
+import PDFPageIndexPanel from "./PDFPageIndexPanel";
+
 type Props = {
   data: any;
 
@@ -35,7 +37,6 @@ type Props = {
 
   isStandalone?: boolean;
 
-  // 직접 props로 받음
   globalIndex?: number;
 
   localIndex?: number;
@@ -346,139 +347,13 @@ export default function PDFPage({
               />
             </div>
 
-            {/* HUGE DEBUG INDEX */}
-            <div
-              style={{
-                position:
-                  "absolute",
-
-                top: 30,
-
-                left: 40,
-
-                zIndex: 100,
-
-                display: "flex",
-
-                flexDirection:
-                  "column",
-
-                gap: 12,
-              }}
-            >
-              {/* GLOBAL */}
-              <div
-                style={{
-                  fontSize: 42,
-
-                  fontWeight: 900,
-
-                  color: "#fff",
-
-                  background:
-                    "rgba(0,0,0,0.55)",
-
-                  padding:
-                    "12px 24px",
-
-                  borderRadius: 18,
-
-                  backdropFilter:
-                    "blur(20px)",
-
-                  border:
-                    "2px solid rgba(255,255,255,0.25)",
-
-                  boxShadow:
-                    "0 8px 30px rgba(0,0,0,0.4)",
-                }}
-              >
-                GLOBAL:{" "}
-                {String(
-                  globalIndex
-                )}
-              </div>
-
-              {/* LOCAL */}
-              <div
-                style={{
-                  fontSize: 42,
-
-                  fontWeight: 900,
-
-                  color: "#00ffcc",
-
-                  background:
-                    "rgba(0,0,0,0.55)",
-
-                  padding:
-                    "12px 24px",
-
-                  borderRadius: 18,
-
-                  backdropFilter:
-                    "blur(20px)",
-
-                  border:
-                    "2px solid rgba(0,255,200,0.35)",
-
-                  boxShadow:
-                    "0 8px 30px rgba(0,0,0,0.4)",
-                }}
-              >
-                LOCAL:{" "}
-                {String(localIndex)}
-              </div>
-
-              {/* TOTAL */}
-              <div
-                style={{
-                  fontSize: 32,
-
-                  fontWeight: 800,
-
-                  color: "#ffd166",
-
-                  background:
-                    "rgba(0,0,0,0.55)",
-
-                  padding:
-                    "10px 20px",
-
-                  borderRadius: 18,
-
-                  backdropFilter:
-                    "blur(20px)",
-                }}
-              >
-                TOTAL IN CATEGORY:{" "}
-                {String(localTotal)}
-              </div>
-
-              {/* CATEGORY */}
-              <div
-                style={{
-                  fontSize: 24,
-
-                  fontWeight: 700,
-
-                  color: "#fff",
-
-                  background:
-                    "rgba(0,0,0,0.45)",
-
-                  padding:
-                    "8px 18px",
-
-                  borderRadius: 16,
-                }}
-              >
-                CATEGORY:{" "}
-                {String(
-                  data?.category
-                )}
-              </div>
-            </div>
+            {/* INDEX PANEL */}
+            <PDFPageIndexPanel
+              globalIndex={globalIndex}
+              localIndex={localIndex}
+              localTotal={localTotal}
+              category={data?.category}
+            />
 
             {/* TITLE */}
             <div style={titleStyle}>
