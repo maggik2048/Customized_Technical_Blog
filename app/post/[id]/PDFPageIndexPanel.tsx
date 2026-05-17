@@ -285,7 +285,9 @@ export default function PDFPageIndexPanel({
 
         flexDirection: "column",
 
-        gap: 24,
+        gap: 14,
+
+        alignItems: "flex-start",
       }}
     >
       {/* GLOBAL */}
@@ -296,15 +298,21 @@ export default function PDFPageIndexPanel({
       {/* CATEGORY */}
       <div
         style={{
+          width: 112,
+
           display: "flex",
 
           flexDirection: "column",
 
+          alignItems: "center",
+
+          justifyContent: "center",
+
           gap: 6,
 
-          paddingLeft: 4,
+          marginTop: 16,
 
-          marginTop: -2,
+          textAlign: "center",
         }}
       >
         <div
@@ -337,7 +345,7 @@ export default function PDFPageIndexPanel({
 
             lineHeight: 1.2,
 
-            maxWidth: 240,
+            maxWidth: 180,
           }}
         >
           {category}
@@ -345,10 +353,16 @@ export default function PDFPageIndexPanel({
       </div>
 
       {/* LOCAL / TOTAL */}
-      <LocalProgress
-        current={localIndex}
-        total={localTotal}
-      />
+      <div
+        style={{
+          marginTop: -6,
+        }}
+      >
+        <LocalProgress
+          current={localIndex}
+          total={localTotal}
+        />
+      </div>
     </div>
   );
 }
