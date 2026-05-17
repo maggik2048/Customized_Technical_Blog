@@ -18,17 +18,15 @@ export default function CategoryPostBoxRenderer({
       }}
     >
       {posts.map((post) => {
-        //  핵심 변경: content 기준으로 UI 결정
         const contentLength = post.content?.length ?? 0;
 
-        const isSimple = contentLength < 3000; // threshold (조절 가능)
+        const isSimple = contentLength < 3000;
 
         return (
           <Link key={post.id} href={`/post/${post.id}`}>
             <div
               style={{
                 position: "relative",
-
                 height: 46,
                 borderRadius: 6,
                 padding: "8px 16px",
@@ -36,7 +34,6 @@ export default function CategoryPostBoxRenderer({
                 overflow: "hidden",
                 transition: "all 0.28s ease",
 
-                // frame only for non-simple
                 border: isSimple
                   ? "none"
                   : "1px solid rgba(255,255,255,0.12)",
@@ -50,7 +47,7 @@ export default function CategoryPostBoxRenderer({
                 e.currentTarget.style.transform = "translateX(0px)";
               }}
             >
-              {/* BACKGROUND LAYER (card only) */}
+              {/* BACKGROUND (card only) */}
               {!isSimple && (
                 <div
                   style={{
@@ -82,39 +79,41 @@ export default function CategoryPostBoxRenderer({
                 style={{
                   position: "relative",
                   fontSize: 15,
-
                   color: isSimple
                     ? "rgba(40,40,40,0.85)"
                     : "#ffffff",
-
                   letterSpacing: "0.02em",
                   whiteSpace: "nowrap",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
-
                   textShadow:
                     "0 2px 3px rgba(0,0,0,0.80), 0 -1px 0 rgba(255,255,255,0.12)",
-
                   fontWeight: 600,
                 }}
               >
                 <PostTitleRenderer text={post.title} />
               </div>
 
-              {/* META (only card mode) */}
-              {!isSimple && (
-                <div
-                  style={{
-                    position: "relative",
-                    fontSize: 10,
-                    color: "rgba(255,255,255,0.65)",
-                    letterSpacing: "0.06em",
-                    textShadow: "0 1px 2px rgba(0,0,0,0.60)",
-                  }}
-                >
-                  {new Date(post.created_at).toLocaleDateString()}
-                </div>
-              )}
+              {/* META ( FIX: ALWAYS SHOW DATE) */}
+              <div
+                style={{
+                  position: "relative",
+                  fontSize: 10,
+
+                  color: isSimple
+                    ? "rgba(60,60,60,0.55)"
+                    : "rgba(255,255,255,0.65)",
+
+                  letterSpacing: "0.06em",
+
+                  textShadow:
+                    isSimple
+                      ? "none"
+                      : "0 1px 2px rgba(0,0,0,0.60)",
+                }}
+              >
+                {new Date(post.created_at).toLocaleDateString()}
+              </div>
 
               {/* EDGE LIGHT (card only) */}
               {!isSimple && (
