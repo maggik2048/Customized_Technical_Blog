@@ -59,10 +59,13 @@ export default function SidebarOpenCloseToggle({
           alignItems: "center",
           justifyContent: "center",
 
-          color: "#050505",
+          // open 상태면 약간 어두운 아이보리
+          color: open ? "rgba(198, 192, 176, 0.92)" : "#050505",
 
           fontSize: 58,
-          fontWeight: 900,
+
+          // Ψ 너무 두꺼워진 느낌 방지
+          fontWeight: open ? 100 : 900,
 
           fontFamily:
             '"STIX Two Math", "Cambria Math", "Times New Roman", serif',
@@ -71,11 +74,17 @@ export default function SidebarOpenCloseToggle({
 
           transform: "rotate(90deg)",
 
-          textShadow: `
-            0 0 1px rgba(255,255,255,0.9),
-            0 0 14px rgba(255,215,120,0.18),
-            0 2px 12px rgba(0,0,0,0.35)
-          `,
+          textShadow: open
+            ? `
+              0 0 1px rgba(255,255,255,0.82),
+              0 0 14px rgba(255,240,200,0.12),
+              0 2px 10px rgba(0,0,0,0.34)
+            `
+            : `
+              0 0 1px rgba(255,255,255,0.9),
+              0 0 14px rgba(255,215,120,0.18),
+              0 2px 12px rgba(0,0,0,0.35)
+            `,
 
           transition: "all 0.45s cubic-bezier(0.16, 1, 0.3, 1)",
         }}
@@ -95,7 +104,10 @@ export default function SidebarOpenCloseToggle({
           transform: "translateY(-50%) rotate(90deg)",
           transformOrigin: "left center",
 
-          color: "rgba(10,10,10,0.78)",
+          // 약간 다운된 ivory tone
+          color: open
+            ? "rgba(222,216,202,0.78)"
+            : "rgba(10,10,10,0.78)",
 
           fontSize: 13,
           fontWeight: 700,
@@ -108,7 +120,11 @@ export default function SidebarOpenCloseToggle({
 
           whiteSpace: "nowrap",
 
-          textShadow: "0 1px 1px rgba(255,255,255,0.4)",
+          textShadow: open
+            ? "0 0 8px rgba(255,245,220,0.10)"
+            : "0 1px 1px rgba(255,255,255,0.4)",
+
+          transition: "all 0.45s cubic-bezier(0.16, 1, 0.3, 1)",
         }}
       >
         {open ? "Close Sidebar" : "Open Sidebar"}
