@@ -36,6 +36,9 @@ type Props = {
   data: any;
   isActive?: boolean;
   isStandalone?: boolean;
+
+  globalIndex?: number;
+  localIndex?: number;
 };
 
 const cormorant = Cormorant_SC({
@@ -46,6 +49,9 @@ const cormorant = Cormorant_SC({
 export default function PDFPage({
   data,
   isActive = true,
+
+  globalIndex,
+  localIndex,
 }: Props) {
   const { mode } = useDarkMode();
 
@@ -58,21 +64,21 @@ export default function PDFPage({
   const HEADER_HEIGHT = 560;
 
   // =========================
-  //  STYLE OBJECT MEMOIZATION (UI 0 CHANGE)
+  // STYLE OBJECT MEMOIZATION
   // =========================
 
   const pageStyle = React.useMemo(
     () => ({
       width: 860,
       margin: "40px auto",
-      position: "relative",
+      position: "relative" as const,
       background: isDark
         ? "rgba(60,60,60,0.6)"
         : "rgba(255,255,255,0.72)",
       paddingLeft: 64,
       paddingRight: 64,
       borderRadius: 12,
-      overflow: "hidden",
+      overflow: "hidden" as const,
       boxShadow: isDark
         ? "0 8px 30px rgba(0,0,0,0.6)"
         : "0 8px 30px rgba(0,0,0,0.15)",
@@ -116,7 +122,7 @@ export default function PDFPage({
       left: 0,
       width: "100%",
       height: HEADER_HEIGHT,
-      overflow: "hidden",
+      overflow: "hidden" as const,
     }),
     []
   );
@@ -152,12 +158,14 @@ export default function PDFPage({
   );
 
   const clearFixStyle = React.useMemo(
-    () => ({ clear: "both" as const }),
+    () => ({
+      clear: "both" as const,
+    }),
     []
   );
 
   // =========================
-  // memoized renderer + registry (이전 최적화 유지)
+  // MEMOIZED RENDERERS
   // =========================
 
   const MemoRemarkPageRenderer = React.useMemo(
@@ -189,6 +197,10 @@ export default function PDFPage({
     (key: string) => vizRegistryRef[key],
     [vizRegistryRef]
   );
+
+  // =========================
+  // PARSED PARTS
+  // =========================
 
   const parsedParts = React.useMemo(() => {
     const regex = /\[([A-Za-z_][A-Za-z0-9_]*)\]/g;
@@ -249,7 +261,65 @@ export default function PDFPage({
 
             <div style={headerOverlayStyle} />
 
+            {/* ADMIN */}
+            <div style={adminStyle}>
+              <PostAdminActions postId={data.id} />
+            </div>
+
+            {/* TITLE + INDEX */}
             <div style={titleStyle}>
+              {/* INDEX BADGES */}
+              <div
+                style={{
+                  display: "flex",
+                  gap: 12,
+                  marginBottom: 18,
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                }}
+              >
+                {globalIndex !== undefined && (
+                  <div
+                    style={{
+                      padding: "6px 14px",
+                      borderRadius: 999,
+                      background: "rgba(255,255,255,0.14)",
+                      backdropFilter: "blur(10px)",
+                      border:
+                        "1px solid rgba(255,255,255,0.18)",
+                      fontSize: 13,
+                      fontWeight: 700,
+                      letterSpacing: "0.08em",
+                      color: "#fff",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    GLOBAL #{globalIndex}
+                  </div>
+                )}
+
+                {localIndex !== undefined && (
+                  <div
+                    style={{
+                      padding: "6px 14px",
+                      borderRadius: 999,
+                      background: "rgba(255,255,255,0.14)",
+                      backdropFilter: "blur(10px)",
+                      border:
+                        "1px solid rgba(255,255,255,0.18)",
+                      fontSize: 13,
+                      fontWeight: 700,
+                      letterSpacing: "0.08em",
+                      color: "#fff",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    LOCAL #{localIndex}
+                  </div>
+                )}
+              </div>
+
+              {/* TITLE */}
               <h1
                 className={cormorant.className}
                 style={{
@@ -257,15 +327,12 @@ export default function PDFPage({
                   margin: 0,
                   lineHeight: 1.08,
                   letterSpacing: "0.02em",
-                  textShadow: "0 3px 18px rgba(0,0,0,0.5)",
+                  textShadow:
+                    "0 3px 18px rgba(0,0,0,0.5)",
                 }}
               >
                 {data.title}
               </h1>
-            </div>
-
-            <div style={adminStyle}>
-              <PostAdminActions postId={data.id} />
             </div>
           </div>
 
@@ -287,6 +354,7 @@ export default function PDFPage({
                 {parsedParts.map((item) => {
                   if (item.kind === "viz") {
                     const Component = item.Component;
+
                     return (
                       <div key={item.key}>
                         <Component />
@@ -298,7 +366,9 @@ export default function PDFPage({
                     <MemoRemarkPageRenderer
                       key={item.key}
                       markdownComponents={mdComponents}
-                      sciFiMarkdownComponents={sciFiComponents}
+                      sciFiMarkdownComponents={
+                        sciFiComponents
+                      }
                       isDark={isDark}
                       CodeBlock={CodeBlock}
                     >
