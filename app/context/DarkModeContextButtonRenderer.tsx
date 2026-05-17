@@ -23,7 +23,7 @@ export default function DarkModeContextButtonRenderer() {
   };
 
   const buttonBaseStyle: React.CSSProperties = {
-    width: 110,
+    width: 150,
     height: 42,
     borderRadius: 999,
     border: "1px solid rgba(255,255,255,0.10)",
@@ -33,6 +33,20 @@ export default function DarkModeContextButtonRenderer() {
     position: "relative",
     transition: "all 0.3s ease",
     boxShadow: "0 14px 34px rgba(0,0,0,0.16)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "space-between",
+    padding: "0 12px",
+    overflow: "hidden",
+  };
+
+  const iconStyle: React.CSSProperties = {
+    zIndex: 2,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    fontSize: 14,
+    fontWeight: 500,
   };
 
   return (
@@ -58,11 +72,12 @@ export default function DarkModeContextButtonRenderer() {
               : "rgba(255,255,255,0.14)",
           }}
         >
+          {/* thumb */}
           <div
             style={{
               position: "absolute",
               top: 4,
-              left: isDark ? 62 : 4,
+              left: isDark ? 104 : 4,
               width: 36,
               height: 32,
               borderRadius: 999,
@@ -75,23 +90,14 @@ export default function DarkModeContextButtonRenderer() {
             }}
           />
 
-          <div
-            style={{
-              position: "absolute",
-              left: 12,
-              top: 8,
-              zIndex: 5,
-              opacity: isDark ? 0.35 : 1,
-              transition: "all 0.25s ease",
-            }}
-          >
+          <div style={{ ...iconStyle, opacity: isDark ? 0.35 : 1 }}>
             <svg
-              width="20"
-              height="20"
+              width="18"
+              height="18"
               viewBox="0 0 24 24"
               fill="none"
               stroke="rgba(170,170,170,0.95)"
-              strokeWidth="3.2"
+              strokeWidth="3"
               strokeLinecap="round"
               strokeLinejoin="round"
             >
@@ -107,19 +113,10 @@ export default function DarkModeContextButtonRenderer() {
             </svg>
           </div>
 
-          <div
-            style={{
-              position: "absolute",
-              right: 12,
-              top: 8,
-              zIndex: 5,
-              opacity: isDark ? 1 : 0.45,
-              transition: "all 0.25s ease",
-            }}
-          >
+          <div style={{ ...iconStyle, opacity: isDark ? 1 : 0.45 }}>
             <svg
-              width="20"
-              height="20"
+              width="18"
+              height="18"
               viewBox="0 0 24 24"
               fill="none"
               stroke="rgba(175,175,175,0.95)"
@@ -146,11 +143,12 @@ export default function DarkModeContextButtonRenderer() {
               : "rgba(255,255,255,0.10)",
           }}
         >
+          {/* thumb */}
           <div
             style={{
               position: "absolute",
               top: 4,
-              left: codeDark ? 62 : 4,
+              left: codeDark ? 104 : 4,
               width: 36,
               height: 32,
               borderRadius: 999,
@@ -161,27 +159,11 @@ export default function DarkModeContextButtonRenderer() {
             }}
           />
 
-          <div
-            style={{
-              position: "absolute",
-              left: 14,
-              top: 10,
-              zIndex: 5,
-              opacity: codeDark ? 0.4 : 1,
-            }}
-          >
+          <div style={{ ...iconStyle, opacity: codeDark ? 0.4 : 1 }}>
             {"</>"}
           </div>
 
-          <div
-            style={{
-              position: "absolute",
-              right: 14,
-              top: 10,
-              zIndex: 5,
-              opacity: codeDark ? 1 : 0.4,
-            }}
-          >
+          <div style={{ ...iconStyle, opacity: codeDark ? 1 : 0.4 }}>
             ON
           </div>
         </button>
