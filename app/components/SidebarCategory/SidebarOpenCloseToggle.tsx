@@ -83,12 +83,17 @@ export default function SidebarOpenCloseToggle({
         {open ? "Ψ" : "Ω"}
       </span>
 
-      {/* VERTICAL TEXT */}
+      {/* CENTERED VERTICAL TEXT */}
       <span
         style={{
           position: "absolute",
 
-          left: 42,
+          // Ω / Ψ 기준 오른쪽 중앙
+          left: 58,
+          top: "-27%",
+
+          transform: "translateY(-50%) rotate(90deg)",
+          transformOrigin: "left center",
 
           color: "rgba(10,10,10,0.78)",
 
@@ -102,10 +107,6 @@ export default function SidebarOpenCloseToggle({
           textTransform: "uppercase",
 
           whiteSpace: "nowrap",
-
-          transform: "rotate(90deg)",
-
-          transformOrigin: "left center",
 
           textShadow: "0 1px 1px rgba(255,255,255,0.4)",
         }}
