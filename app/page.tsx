@@ -6,7 +6,7 @@ import TopHeaderText from "./components/TopHeaderText";
 import SocialIcons from "./components/SocialIcons";
 import LatestPosts from "./components/LatestPosts";
 import ClickableImageBox from "./components/ClickableImageBox";
-import WritePostButton from "./components/WritePostButton";
+import WritePostButton from "./admin/write/WritePostButton";
 
 import { CATEGORY_TREE } from "./components/SidebarCategory/CategoryTree";
 
