@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import PostTitleRenderer from "./PostTitleRenderer";
+import CategoryPostBoxIndex from "./CategoryPostBoxIndex";
 
 export default function CategoryPostBoxRenderer({
   posts,
@@ -17,19 +18,25 @@ export default function CategoryPostBoxRenderer({
         maxWidth: 1020,
       }}
     >
-      {posts.map((post) => {
+      {posts.map((post, index) => {
         const contentLength = post.content?.length ?? 0;
 
         const isSimple = contentLength < 3000;
+
+        const categoryIndex = index + 1;
+
+        // global index (예: 서버에서 전체 리스트 순서 있다고 가정)
+        const globalIndex = post.globalIndex ?? index + 1;
 
         return (
           <Link key={post.id} href={`/post/${post.id}`}>
             <div
               style={{
                 position: "relative",
+
                 height: 46,
                 borderRadius: 6,
-                padding: "8px 16px",
+                padding: "8px 16px 8px 48px", // 👈 left space for index
                 cursor: "pointer",
                 overflow: "hidden",
                 transition: "all 0.28s ease",
@@ -47,7 +54,14 @@ export default function CategoryPostBoxRenderer({
                 e.currentTarget.style.transform = "translateX(0px)";
               }}
             >
-              {/* BACKGROUND (card only) */}
+              {/* INDEX COMPONENT */}
+              <CategoryPostBoxIndex
+                categoryIndex={categoryIndex}
+                globalIndex={globalIndex}
+                isSimple={isSimple}
+              />
+
+              {/* BACKGROUND */}
               {!isSimple && (
                 <div
                   style={{
@@ -60,7 +74,7 @@ export default function CategoryPostBoxRenderer({
                 />
               )}
 
-              {/* LEFT SPINE (card only) */}
+              {/* LEFT SPINE */}
               {!isSimple && (
                 <div
                   style={{
@@ -74,38 +88,39 @@ export default function CategoryPostBoxRenderer({
                 />
               )}
 
-              {/* TITLE (always same typography) */}
+              {/* TITLE */}
               <div
                 style={{
                   position: "relative",
                   fontSize: 15,
+
                   color: isSimple
                     ? "rgba(40,40,40,0.85)"
                     : "#ffffff",
+
                   letterSpacing: "0.02em",
                   whiteSpace: "nowrap",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
+
                   textShadow:
                     "0 2px 3px rgba(0,0,0,0.80), 0 -1px 0 rgba(255,255,255,0.12)",
+
                   fontWeight: 600,
                 }}
               >
                 <PostTitleRenderer text={post.title} />
               </div>
 
-              {/* META ( FIX: ALWAYS SHOW DATE) */}
+              {/* META */}
               <div
                 style={{
                   position: "relative",
                   fontSize: 10,
-
                   color: isSimple
                     ? "rgba(60,60,60,0.55)"
                     : "rgba(255,255,255,0.65)",
-
                   letterSpacing: "0.06em",
-
                   textShadow:
                     isSimple
                       ? "none"
@@ -115,7 +130,7 @@ export default function CategoryPostBoxRenderer({
                 {new Date(post.created_at).toLocaleDateString()}
               </div>
 
-              {/* EDGE LIGHT (card only) */}
+              {/* EDGE LIGHT */}
               {!isSimple && (
                 <div
                   style={{
