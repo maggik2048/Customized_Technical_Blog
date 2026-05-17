@@ -21,6 +21,11 @@ export default function CategoryRenderer({
         overflow: "hidden",
         fontFamily: "serif",
         color: "rgba(40,40,40,0.78)",
+
+        // ONLY CHANGE: center layout container
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
       }}
     >
       {/* BASE BACKGROUND */}
@@ -133,7 +138,7 @@ export default function CategoryRenderer({
       />
 
       {/* HEADER */}
-      <div style={{ marginBottom: 42 }}>
+      <div style={{ marginBottom: 42, textAlign: "center" }}>
         <div
           style={{
             fontSize: 14,
@@ -158,8 +163,12 @@ export default function CategoryRenderer({
         </h1>
       </div>
 
-      {/* LIST */}
-      <CategoryPostBoxRenderer posts={posts} />
+      {/* LIST WRAPPER (CENTER FIX ONLY) */}
+      <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+        <div style={{ width: "100%", maxWidth: 900 }}>
+          <CategoryPostBoxRenderer posts={posts} />
+        </div>
+      </div>
     </div>
   );
 }
