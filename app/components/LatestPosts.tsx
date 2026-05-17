@@ -85,7 +85,7 @@ export default function LatestPosts() {
 
                 // 📜 종이 느낌
                 background:
-                  "linear-gradient(145deg, rgba(248,244,230,0.92), rgba(235,225,205,0.88))",
+                  "linear-gradient(145deg, rgba(248,244,230,0.92), rgba(235,225,205,0.48))",
 
                 border: "1px solid rgba(120,100,60,0.28)",
 
