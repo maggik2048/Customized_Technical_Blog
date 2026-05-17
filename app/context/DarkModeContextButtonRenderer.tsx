@@ -11,49 +11,51 @@ export default function DarkModeContextButtonRenderer() {
 
   const isDark = mode === "dark";
 
-  const wrapperStyle: React.CSSProperties = {
-    display: "flex",
-    gap: 26,
-    alignItems: "center",
+  const luxuryFont: React.CSSProperties = {
+    fontFamily: `"Playfair Display", "Didot", "Bodoni Moda", "Times New Roman", serif`,
+    letterSpacing: "0.18em",
+    textTransform: "uppercase",
   };
 
   const buttonBaseStyle: React.CSSProperties = {
-    width: 170,
-    height: 42,
+    width: 185,
+    height: 46,
     borderRadius: 999,
-    border: "1px solid rgba(255,255,255,0.10)",
-    backdropFilter: "blur(26px)",
-    WebkitBackdropFilter: "blur(26px)",
+    border: "1px solid rgba(255,255,255,0.14)",
+    backdropFilter: "blur(30px)",
+    WebkitBackdropFilter: "blur(30px)",
     cursor: "pointer",
     position: "relative",
-    transition: "all 0.3s ease",
-    boxShadow: "0 14px 34px rgba(0,0,0,0.16)",
+    transition: "all 0.35s ease",
+    boxShadow: "0 18px 42px rgba(0,0,0,0.28)",
     display: "flex",
     alignItems: "center",
     justifyContent: "space-between",
-    padding: "0 12px",
+    padding: "0 14px",
     overflow: "hidden",
+    ...luxuryFont,
   };
 
-  const leftGroupStyle: React.CSSProperties = {
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
-    zIndex: 2,
-  };
-
-  const rightGroupStyle: React.CSSProperties = {
-    display: "flex",
-    alignItems: "center",
-    gap: 8,
-    zIndex: 2,
-  };
-
-  const textStyle: React.CSSProperties = {
-    fontSize: 11,
-    letterSpacing: "0.12em",
-    opacity: 0.7,
+  const labelStyle: React.CSSProperties = {
+    fontSize: 10,
+    opacity: 0.75,
+    letterSpacing: "0.25em",
+    marginLeft: 10,
     whiteSpace: "nowrap",
+  };
+
+  const iconStyle: React.CSSProperties = {
+    fontSize: 14,
+    fontWeight: 700,
+    position: "relative",
+    zIndex: 5, // IMPORTANT: knob보다 위
+    opacity: 1,
+  };
+
+  const sideWrap: React.CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    zIndex: 5,
   };
 
   return (
@@ -66,6 +68,7 @@ export default function DarkModeContextButtonRenderer() {
         display: "flex",
         gap: 26,
         alignItems: "center",
+        ...luxuryFont,
       }}
     >
       {/* ================= DARK MODE ================= */}
@@ -74,33 +77,37 @@ export default function DarkModeContextButtonRenderer() {
         style={{
           ...buttonBaseStyle,
           background: isDark
-            ? "rgba(20,20,28,0.22)"
-            : "rgba(255,255,255,0.14)",
+            ? "rgba(20,20,28,0.28)"
+            : "rgba(255,255,255,0.12)",
         }}
       >
+        {/* knob */}
         <div
           style={{
             position: "absolute",
             top: 4,
-            left: isDark ? 122 : 4,
-            width: 36,
-            height: 32,
+            left: isDark ? 126 : 4,
+            width: 40,
+            height: 36,
             borderRadius: 999,
             background: isDark ? "#f5f5f5" : "#111111",
             boxShadow: isDark
-              ? "0 10px 24px rgba(255,255,255,0.20)"
-              : "0 10px 24px rgba(0,0,0,0.30)",
-            transition: "all 0.32s cubic-bezier(0.4,0,0.2,1)",
+              ? "0 10px 26px rgba(255,255,255,0.20)"
+              : "0 10px 26px rgba(0,0,0,0.40)",
+            transition: "all 0.38s cubic-bezier(0.4,0,0.2,1)",
             zIndex: 1,
           }}
         />
 
-        <div style={leftGroupStyle}>🌞</div>
-        <div style={rightGroupStyle}>🌙</div>
-
-        <div style={{ ...textStyle, marginLeft: 8 }}>
-          DAY / NIGHT
+        <div style={sideWrap}>
+          <span style={iconStyle}>●☀</span>
         </div>
+
+        <div style={sideWrap}>
+          <span style={iconStyle}>●☾</span>
+        </div>
+
+        <div style={labelStyle}>DAY · NIGHT</div>
       </button>
 
       {/* ================= CODE MODE ================= */}
@@ -109,7 +116,7 @@ export default function DarkModeContextButtonRenderer() {
         style={{
           ...buttonBaseStyle,
           background: codeDark
-            ? "rgba(40,40,52,0.18)"
+            ? "rgba(40,40,52,0.22)"
             : "rgba(255,255,255,0.10)",
         }}
       >
@@ -117,68 +124,58 @@ export default function DarkModeContextButtonRenderer() {
           style={{
             position: "absolute",
             top: 4,
-            left: codeDark ? 122 : 4,
-            width: 36,
-            height: 32,
+            left: codeDark ? 126 : 4,
+            width: 40,
+            height: 36,
             borderRadius: 999,
             background: codeDark ? "#dbeafe" : "#f5f5f5",
-            boxShadow: "0 10px 22px rgba(0,0,0,0.25)",
-            transition: "all 0.32s cubic-bezier(0.4,0,0.2,1)",
+            boxShadow: "0 10px 24px rgba(0,0,0,0.25)",
+            transition: "all 0.38s cubic-bezier(0.4,0,0.2,1)",
             zIndex: 1,
           }}
         />
 
-        <div style={leftGroupStyle}>
-          <div style={{ fontSize: 13, opacity: 0.7 }}>{"</>"}</div>
+        <div style={sideWrap}>
+          <span style={iconStyle}>{"</>"}</span>
         </div>
 
-        <div style={rightGroupStyle}>
-          <div style={{ fontSize: 11, opacity: 0.7 }}>ON</div>
-        </div>
-
-        <div style={{ ...textStyle, marginLeft: 8 }}>
-          CODE MODE
-        </div>
+        <div style={labelStyle}>CODE · MODE</div>
       </button>
 
-      {/* ================= SHADOW + FILTER ================= */}
+      {/* ================= SHADOW / FX ================= */}
       <button
         onClick={toggleShadowFilter}
         style={{
           ...buttonBaseStyle,
           background: enabled
             ? "rgba(255,255,255,0.14)"
-            : "rgba(40,40,52,0.18)",
+            : "rgba(40,40,52,0.22)",
         }}
       >
         <div
           style={{
             position: "absolute",
             top: 4,
-            left: enabled ? 122 : 4,
-            width: 36,
-            height: 32,
+            left: enabled ? 126 : 4,
+            width: 40,
+            height: 36,
             borderRadius: 999,
             background: enabled ? "#ffffff" : "#111111",
-            boxShadow: "0 10px 22px rgba(0,0,0,0.25)",
-            transition: "all 0.32s cubic-bezier(0.4,0,0.2,1)",
+            boxShadow: "0 10px 24px rgba(0,0,0,0.25)",
+            transition: "all 0.38s cubic-bezier(0.4,0,0.2,1)",
             zIndex: 1,
           }}
         />
 
-        <div style={leftGroupStyle}>
-          <div style={{ fontSize: 12, opacity: 0.7 }}>FX</div>
+        <div style={sideWrap}>
+          <span style={iconStyle}>◐</span>
         </div>
 
-        <div style={rightGroupStyle}>
-          <div style={{ fontSize: 11, opacity: 0.7 }}>
-            {enabled ? "ON" : "OFF"}
-          </div>
+        <div style={sideWrap}>
+          <span style={iconStyle}>◑</span>
         </div>
 
-        <div style={{ ...textStyle, marginLeft: 8 }}>
-          SHADOW / FILTER
-        </div>
+        <div style={labelStyle}>SHADOW · FX</div>
       </button>
     </div>
   );
