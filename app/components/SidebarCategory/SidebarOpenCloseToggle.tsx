@@ -60,11 +60,11 @@ export default function SidebarOpenCloseToggle({
           justifyContent: "center",
 
           // open 상태면 약간 어두운 아이보리
-          color: open ? "rgba(198, 192, 176, 0.92)" : "#050505",
+          color: open ? "rgba(175, 169, 154, 0.92)" : "#050505",
 
           fontSize: 58,
 
-          // Ψ 너무 두꺼워진 느낌 방지
+          // Ψ thinner
           fontWeight: open ? 100 : 900,
 
           fontFamily:
@@ -74,11 +74,16 @@ export default function SidebarOpenCloseToggle({
 
           transform: "rotate(90deg)",
 
+          // stronger & wider dark emboss
           textShadow: open
             ? `
-              0 0 1px rgba(255,255,255,0.82),
-              0 0 14px rgba(255,240,200,0.12),
-              0 2px 10px rgba(0,0,0,0.34)
+              -2.8px -2.8px 4px rgba(8,8,8,0.92),
+              -1.5px -1.5px 2px rgba(20,20,20,0.72),
+
+               1px 1px 1px rgba(255,248,235,0.22),
+
+               0 0 12px rgba(255,240,200,0.06),
+               0 3px 10px rgba(0,0,0,0.32)
             `
             : `
               0 0 1px rgba(255,255,255,0.9),
@@ -104,7 +109,6 @@ export default function SidebarOpenCloseToggle({
           transform: "translateY(-50%) rotate(90deg)",
           transformOrigin: "left center",
 
-          // 약간 다운된 ivory tone
           color: open
             ? "rgba(222,216,202,0.78)"
             : "rgba(10,10,10,0.78)",
