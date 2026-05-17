@@ -17,35 +17,70 @@ export default function SidebarOpenCloseToggle({
       style={{
         position: "fixed",
 
-        // 핵심: sidebar 위치 + width 기준으로 항상 붙음
+        // sidebar edge tracking
         left: sidebarWidth + sidebarTranslateX,
         top: "50%",
-        transform: "translate(-50%, -50%)",
 
-        width: 34,
-        height: 34,
-        borderRadius: "50%",
+        transform: "translate(-50%, -50%)",
 
         zIndex: 200,
 
-        background: "rgba(20,20,20,0.85)",
-        border: "1px solid rgba(255,255,255,0.12)",
-        boxShadow: "0 0 18px rgba(0,0,0,0.45)",
-        backdropFilter: "blur(10px)",
+        background: "transparent",
+        border: "none",
+        outline: "none",
 
         cursor: "pointer",
 
-        transition: "left 0.85s cubic-bezier(0.16, 1, 0.3, 1)",
+        padding: 0,
+        margin: 0,
 
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
 
-        color: "#e8d7b0",
-        fontSize: 14,
+        transition:
+          "left 0.85s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s ease",
+
+        userSelect: "none",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform =
+          "translate(-50%, -50%) scale(1.12)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform =
+          "translate(-50%, -50%) scale(1)";
       }}
     >
-      {open ? "‹" : "›"}
+      <span
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+
+          color: "#050505",
+
+          fontSize: 58,
+          fontWeight: 900,
+
+          fontFamily:
+            '"STIX Two Math", "Cambria Math", "Times New Roman", serif',
+
+          lineHeight: 1,
+
+          transform: "rotate(90deg)",
+
+          textShadow: `
+            0 0 1px rgba(255,255,255,0.9),
+            0 0 14px rgba(255,215,120,0.18),
+            0 2px 12px rgba(0,0,0,0.35)
+          `,
+
+          transition: "all 0.45s cubic-bezier(0.16, 1, 0.3, 1)",
+        }}
+      >
+        {open ? "Ψ" : "Ω"}
+      </span>
     </button>
   );
 }
