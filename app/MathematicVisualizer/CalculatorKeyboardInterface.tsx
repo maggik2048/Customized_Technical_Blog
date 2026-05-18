@@ -29,9 +29,13 @@ function normalizeExpression(input: string) {
     .replaceAll("ln(", "log(");
 }
 
-function evaluateExpression(expr: string, x: number) {
+function evaluateExpression(
+  expr: string,
+  x: number
+) {
   try {
-    const parsed = normalizeExpression(expr);
+    const parsed =
+      normalizeExpression(expr);
 
     const scope = {
       x,
@@ -55,17 +59,29 @@ function evaluateExpression(expr: string, x: number) {
 export default function CalculatorGraphingInterface({
   onClose,
 }: Props) {
-  const [expression, setExpression] = useState("sin(x)");
+  const [expression, setExpression] =
+    useState("sin(x)");
 
   /* ------------------------------------------------ */
   /* GRAPH DATA */
   /* ------------------------------------------------ */
 
   const graphPoints = useMemo(() => {
-    const points: { x: number; y: number }[] = [];
+    const points: {
+      x: number;
+      y: number;
+    }[] = [];
 
-    for (let x = -20; x <= 20; x += 0.1) {
-      const y = evaluateExpression(expression, x);
+    for (
+      let x = -20;
+      x <= 20;
+      x += 0.1
+    ) {
+      const y =
+        evaluateExpression(
+          expression,
+          x
+        );
 
       if (Number.isFinite(y)) {
         points.push({ x, y });
@@ -79,7 +95,9 @@ export default function CalculatorGraphingInterface({
   /* INPUT */
   /* ------------------------------------------------ */
 
-  const handleKeyPress = (key: string) => {
+  const handleKeyPress = (
+    key: string
+  ) => {
     if (key === "CLR") {
       setExpression("");
       return;
@@ -89,7 +107,9 @@ export default function CalculatorGraphingInterface({
       return;
     }
 
-    setExpression((prev) => prev + key);
+    setExpression(
+      (prev) => prev + key
+    );
   };
 
   /* ------------------------------------------------ */
@@ -107,50 +127,52 @@ export default function CalculatorGraphingInterface({
 
   const pathData = graphPoints
     .map((p, i) => {
-      const px = centerX + p.x * scaleX;
-      const py = centerY - p.y * scaleY;
+      const px =
+        centerX + p.x * scaleX;
 
-      return `${i === 0 ? "M" : "L"} ${px} ${py}`;
+      const py =
+        centerY - p.y * scaleY;
+
+      return `${
+        i === 0 ? "M" : "L"
+      } ${px} ${py}`;
     })
     .join(" ");
 
   return (
-    <CalculatorGraphTheme onClose={onClose}>
+    <CalculatorGraphTheme
+      onClose={onClose}
+    >
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "420px 1fr",
+
+          gridTemplateColumns:
+            "420px 1fr",
 
           gap: 28,
         }}
       >
-        {/* ------------------------------------------------ */}
-        {/* LEFT CALCULATOR */}
-        {/* ------------------------------------------------ */}
+        {/* -------------------------------- */}
+        {/* LEFT PANEL */}
+        {/* -------------------------------- */}
 
         <div
           style={{
             padding: 24,
 
-            borderRadius: 34,
+            borderRadius: 30,
 
-            background: `
-              linear-gradient(
-                to bottom,
-                rgba(255,240,220,0.10),
-                rgba(0,0,0,0.18)
-              )
-            `,
+            background:
+              "rgba(255,255,255,0.03)",
 
             border:
-              "1px solid rgba(255,220,170,0.14)",
+              "1px solid rgba(255,255,255,0.08)",
 
-            backdropFilter: "blur(24px)",
-            WebkitBackdropFilter: "blur(24px)",
+            backdropFilter: "blur(20px)",
 
             boxShadow: `
-              0px 30px 80px rgba(0,0,0,0.30),
-              inset 0px 1px 0px rgba(255,255,255,0.08)
+              0px 20px 60px rgba(0,0,0,0.20)
             `,
           }}
         >
@@ -160,35 +182,32 @@ export default function CalculatorGraphingInterface({
             style={{
               height: 110,
 
-              borderRadius: 24,
+              borderRadius: 22,
 
-              background: `
-                linear-gradient(
-                  to bottom,
-                  rgba(12,18,12,0.92),
-                  rgba(5,10,5,0.95)
-                )
-              `,
+              background:
+                "rgba(0,0,0,0.42)",
 
               border:
-                "1px solid rgba(180,255,180,0.10)",
+                "1px solid rgba(255,255,255,0.08)",
 
               padding: 20,
 
               marginBottom: 20,
 
               overflow: "hidden",
-
-              boxShadow: `
-                inset 0px 0px 24px rgba(0,255,120,0.08)
-              `,
             }}
           >
             <div
               style={{
-                fontSize: 14,
-                color: "rgba(160,255,180,0.42)",
+                fontSize: 13,
+
+                color:
+                  "rgba(255,255,255,0.45)",
+
                 marginBottom: 10,
+
+                letterSpacing:
+                  "0.08em",
               }}
             >
               f(x)
@@ -197,11 +216,13 @@ export default function CalculatorGraphingInterface({
             <div
               style={{
                 fontSize: 30,
-                color: "#d6ffd6",
+
+                color: "#ffffff",
 
                 wordBreak: "break-all",
 
-                fontFamily: "monospace",
+                fontFamily:
+                  "monospace",
               }}
             >
               {expression || "0"}
@@ -213,80 +234,72 @@ export default function CalculatorGraphingInterface({
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)",
+
+              gridTemplateColumns:
+                "repeat(4, 1fr)",
+
               gap: 14,
             }}
           >
-            {scientificKeys.flat().map((key) => (
-              <button
-                key={key}
-                onClick={() => handleKeyPress(key)}
-                style={{
-                  height: 58,
+            {scientificKeys
+              .flat()
+              .map((key) => (
+                <button
+                  key={key}
+                  onClick={() =>
+                    handleKeyPress(key)
+                  }
+                  style={{
+                    height: 58,
 
-                  borderRadius: 18,
+                    borderRadius: 16,
 
-                  border:
-                    "1px solid rgba(255,220,170,0.10)",
+                    border:
+                      "1px solid rgba(255,255,255,0.08)",
 
-                  background: `
-                    linear-gradient(
-                      to bottom,
-                      rgba(120,85,55,0.45),
-                      rgba(40,26,18,0.42)
-                    )
-                  `,
+                    background:
+                      "rgba(255,255,255,0.04)",
 
-                  color: "#ffe4c0",
+                    color: "#ffffff",
 
-                  fontSize: 16,
+                    fontSize: 16,
 
-                  cursor: "pointer",
+                    cursor: "pointer",
 
-                  transition: "all 0.18s ease",
+                    transition:
+                      "all 0.16s ease",
 
-                  backdropFilter: "blur(14px)",
-                  WebkitBackdropFilter: "blur(14px)",
+                    backdropFilter:
+                      "blur(10px)",
 
-                  boxShadow: `
-                    0px 4px 14px rgba(0,0,0,0.18),
-                    inset 0px 1px 0px rgba(255,255,255,0.06)
-                  `,
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform =
-                    "translateY(-2px) scale(1.02)";
+                    boxShadow: `
+                      inset 0px 1px 0px rgba(255,255,255,0.04)
+                    `,
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform =
+                      "translateY(-2px)";
 
-                  e.currentTarget.style.background = `
-                    linear-gradient(
-                      to bottom,
-                      rgba(150,110,75,0.60),
-                      rgba(55,34,22,0.58)
-                    )
-                  `;
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform =
-                    "translateY(0px) scale(1)";
+                    e.currentTarget.style.background =
+                      "rgba(255,255,255,0.08)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform =
+                      "translateY(0px)";
 
-                  e.currentTarget.style.background = `
-                    linear-gradient(
-                      to bottom,
-                      rgba(120,85,55,0.45),
-                      rgba(40,26,18,0.42)
-                    )
-                  `;
-                }}
-              >
-                {key}
-              </button>
-            ))}
+                    e.currentTarget.style.background =
+                      "rgba(255,255,255,0.04)";
+                  }}
+                >
+                  {key}
+                </button>
+              ))}
           </div>
         </div>
 
-        {/* ------------------------------------------------ */}
+        {/* -------------------------------- */}
         {/* GRAPH PANEL */}
-        {/* ------------------------------------------------ */}
+        {/* -------------------------------- */}
 
         <div
           style={{
@@ -294,48 +307,24 @@ export default function CalculatorGraphingInterface({
 
             overflow: "hidden",
 
-            borderRadius: 38,
+            borderRadius: 34,
 
-            background: `
-              linear-gradient(
-                to bottom,
-                rgba(255,240,220,0.08),
-                rgba(0,0,0,0.10)
-              )
-            `,
+            background:
+              "rgba(255,255,255,0.025)",
 
             border:
-              "1px solid rgba(255,220,170,0.10)",
+              "1px solid rgba(255,255,255,0.08)",
 
-            backdropFilter: "blur(30px)",
-            WebkitBackdropFilter: "blur(30px)",
+            backdropFilter: "blur(26px)",
 
-            boxShadow:
-              "0px 30px 80px rgba(0,0,0,0.26)",
+            boxShadow: `
+              0px 20px 60px rgba(0,0,0,0.22)
+            `,
 
             minHeight: 520,
           }}
         >
-          {/* METAL TEXTURE */}
-
-          <div
-            style={{
-              position: "absolute",
-              inset: 0,
-
-              opacity: 0.04,
-
-              backgroundImage: `
-                repeating-linear-gradient(
-                  90deg,
-                  rgba(255,255,255,0.08) 0px,
-                  rgba(255,255,255,0.08) 1px,
-                  transparent 1px,
-                  transparent 4px
-                )
-              `,
-            }}
-          />
+          {/* GRID */}
 
           <svg
             width="100%"
@@ -343,9 +332,9 @@ export default function CalculatorGraphingInterface({
             viewBox={`0 0 ${width} ${height}`}
             preserveAspectRatio="none"
           >
-            {/* GRID */}
-
-            {Array.from({ length: 60 }).map((_, i) => {
+            {Array.from({
+              length: 60,
+            }).map((_, i) => {
               const x = i * 35;
 
               return (
@@ -355,12 +344,14 @@ export default function CalculatorGraphingInterface({
                   y1={0}
                   x2={x}
                   y2={height}
-                  stroke="rgba(255,230,190,0.045)"
+                  stroke="rgba(255,255,255,0.04)"
                 />
               );
             })}
 
-            {Array.from({ length: 40 }).map((_, i) => {
+            {Array.from({
+              length: 40,
+            }).map((_, i) => {
               const y = i * 35;
 
               return (
@@ -370,7 +361,7 @@ export default function CalculatorGraphingInterface({
                   y1={y}
                   x2={width}
                   y2={y}
-                  stroke="rgba(255,230,190,0.045)"
+                  stroke="rgba(255,255,255,0.04)"
                 />
               );
             })}
@@ -382,7 +373,7 @@ export default function CalculatorGraphingInterface({
               y1={centerY}
               x2={width}
               y2={centerY}
-              stroke="rgba(255,240,210,0.22)"
+              stroke="rgba(255,255,255,0.18)"
               strokeWidth={1.2}
             />
 
@@ -391,7 +382,7 @@ export default function CalculatorGraphingInterface({
               y1={0}
               x2={centerX}
               y2={height}
-              stroke="rgba(255,240,210,0.22)"
+              stroke="rgba(255,255,255,0.18)"
               strokeWidth={1.2}
             />
 
@@ -400,14 +391,14 @@ export default function CalculatorGraphingInterface({
             <path
               d={pathData}
               fill="none"
-              stroke="#ffe0ad"
-              strokeWidth={2.5}
+              stroke="#ffffff"
+              strokeWidth={2.2}
               strokeLinejoin="round"
               strokeLinecap="round"
 
               filter="
                 drop-shadow(
-                  0px 0px 10px rgba(255,220,170,0.32)
+                  0px 0px 10px rgba(255,255,255,0.20)
                 )
               "
             />
@@ -419,23 +410,26 @@ export default function CalculatorGraphingInterface({
             style={{
               position: "absolute",
 
-              top: 24,
-              left: 24,
+              top: 22,
+              left: 22,
 
-              padding: "12px 18px",
+              padding:
+                "10px 16px",
 
-              borderRadius: 18,
+              borderRadius: 16,
 
-              background: "rgba(25,15,10,0.26)",
+              background:
+                "rgba(0,0,0,0.30)",
 
               border:
-                "1px solid rgba(255,220,170,0.08)",
+                "1px solid rgba(255,255,255,0.08)",
 
-              color: "#ffe7c7",
+              color: "#ffffff",
 
               fontSize: 18,
 
-              backdropFilter: "blur(20px)",
+              backdropFilter:
+                "blur(16px)",
             }}
           >
             y = {expression}
