@@ -21,7 +21,6 @@ export default function SearchBarButton({
     if (e.key === "Enter") handleSearch();
   };
 
-  // unified outline magnifier (single source of truth)
   const Magnifier = ({ size = 18 }: { size?: number }) => (
     <svg
       width={size}
@@ -58,23 +57,24 @@ export default function SearchBarButton({
         width: "100%",
         maxWidth: 560,
 
-        padding: "12px 16px",
+        padding: "6px 14px",
 
         background:
-          "linear-gradient(to bottom, rgba(255,255,255,0.18), rgba(255,255,255,0.62))",
+          "linear-gradient(to bottom, rgba(255,255,255,0.12), rgba(255,255,255,0.42))",
 
         backdropFilter: "blur(10px)",
         WebkitBackdropFilter: "blur(10px)",
 
-        border: "1px solid rgba(0, 0, 0, 0.06)",
+        border: "1px solid rgba(0, 0, 0, 0.05)",
         borderRadius: 999,
       }}
     >
-      {/* LEFT Σ + MAGNIFIER (larger) */}
+      {/* LEFT Σ + MAGNIFIER (moved closer to bar) */}
       <div
         style={{
           position: "absolute",
-          left: -62,
+          left: -48, // was -64 → moved closer
+
           top: "50%",
           transform: "translateY(-50%)",
 
@@ -83,9 +83,10 @@ export default function SearchBarButton({
         }}
         onClick={handleSearch}
       >
+        {/* Σ */}
         <span
           style={{
-            fontSize: 52,
+            fontSize: 60,
             fontWeight: 200,
 
             fontFamily:
@@ -97,25 +98,22 @@ export default function SearchBarButton({
 
             textShadow: `
               0 0 14px rgba(255,255,255,0.25),
-              0 3px 16px rgba(0,0,0,0.28)
+              0 3px 16px rgba(0,0,0,0.3)
             `,
           }}
         >
           Σ
         </span>
 
+        {/* subscript magnifier */}
         <span
           style={{
             position: "absolute",
-            right: -18,
-            bottom: -2,
-
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
+            right: -18, // slightly tighter
+            bottom: -4,
           }}
         >
-          <Magnifier size={16} />
+          <Magnifier size={18} />
         </span>
       </div>
 
@@ -124,21 +122,20 @@ export default function SearchBarButton({
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="Search..."
+        placeholder="Search On this Category..."
         style={{
           flex: 1,
 
           marginLeft: 80,
           marginRight: 140,
 
-          height: 38,
+          height: 34,
 
           border: "none",
           outline: "none",
           background: "transparent",
 
           fontSize: 14,
-          letterSpacing: "0.2px",
 
           fontFamily:
             "ui-serif, Georgia, 'Times New Roman', Times, serif",
@@ -147,19 +144,20 @@ export default function SearchBarButton({
         }}
       />
 
-      {/* SEARCH BUTTON (unified icon) */}
+      {/* SEARCH BUTTON (added subtle white outline/glow) */}
       <button
         onClick={handleSearch}
         style={{
           display: "flex",
           alignItems: "center",
-          gap: 8,
+          gap: 6,
 
-          height: 34,
-          padding: "0 14px",
+          height: 30,
+          padding: "0 12px",
 
           borderRadius: 999,
-          border: "1px solid rgba(0, 0, 0, 0.08)",
+
+          border: "1px solid rgba(255,255,255,0.25)", // subtle white outline added
 
           background: "rgba(0,0,0,0.04)",
 
@@ -172,6 +170,8 @@ export default function SearchBarButton({
           fontFamily:
             "ui-serif, Georgia, 'Times New Roman', Times, serif",
 
+          boxShadow: "0 0 8px rgba(255,255,255,0.08)", // subtle glow
+
           transition: "all 0.2s ease",
         }}
         onMouseEnter={(e) => {
@@ -181,18 +181,17 @@ export default function SearchBarButton({
           e.currentTarget.style.background = "rgba(0,0,0,0.04)";
         }}
       >
-        <span style={{ display: "flex", alignItems: "center" }}>
-          <Magnifier size={14} />
-        </span>
+        <Magnifier size={14} />
         Search
       </button>
 
-      {/* FILTER */}
+      {/* FILTER (more right + more transparent) */}
       <span
         onClick={onFilterClick}
         style={{
           position: "absolute",
-          right: -62,
+          right: -78, // moved further right (was -62)
+
           top: "50%",
           transform: "translateY(-50%)",
 
@@ -202,25 +201,17 @@ export default function SearchBarButton({
           fontFamily:
             "ui-serif, Georgia, 'Times New Roman', Times, serif",
 
-          color: "rgba(255,255,255,0.9)",
+          color: "rgba(255,255,255,0.55)", // more transparent
 
           cursor: "pointer",
           userSelect: "none",
 
           textShadow: `
-            0 0 10px rgba(255,255,255,0.25),
-            0 2px 10px rgba(0,0,0,0.25)
+            0 0 10px rgba(255,255,255,0.15),
+            0 2px 10px rgba(0,0,0,0.2)
           `,
 
           transition: "all 0.25s ease",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform =
-            "translateY(-50%) scale(1.05)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform =
-            "translateY(-50%) scale(1)";
         }}
       >
         FILTER
