@@ -16,55 +16,79 @@ export default function InteractivePostCard({
   const [active, setActive] = useState(false);
 
   /*
-    핵심:
-    실제 interaction component 내부의
-    nested UI / math renderer / absolute layer 들까지
-    정상 렌더되도록 isolate 제거 + scale viewport만 적용
+    card size
   */
 
-  const stageRef = useRef<HTMLDivElement | null>(null);
-
-  const [scale, setScale] = useState(0.72);
+  const CARD_HEIGHT = 500;
 
   /*
-    interaction 내부 전체 UI를
-    preview viewport에 "cover-fit" 시키기 위한 dynamic scaling
+    bottom content reservation
   */
+
+  const CONTENT_RESERVED_HEIGHT = 140;
+
+  /*
+    virtual interaction stage
+  */
+
+  const STAGE_WIDTH = 1400;
+  const STAGE_HEIGHT = 900;
+
+  /*
+    중요:
+
+    interaction component들 대부분은
+    좌상단 기준 absolute UI를 가짐
+
+    그래서 이전 center-cover 방식은
+    좌상단 control UI가 잘려버림
+
+    지금은:
+    LEFT-TOP ANCHORED COVER 전략 사용
+
+    => scale은 유지하되
+       origin을 left-top으로 고정
+       interaction toolbar/math ui가 항상 보임
+  */
+
+  const viewportRef =
+    useRef<HTMLDivElement | null>(null);
+
+  const [scale, setScale] = useState(1);
 
   useEffect(() => {
     function updateScale() {
-      if (!stageRef.current) return;
+      if (!viewportRef.current) return;
 
-      const parent =
-        stageRef.current.parentElement;
+      const rect =
+        viewportRef.current.getBoundingClientRect();
 
-      if (!parent) return;
+      const viewportWidth = rect.width;
 
-      const pw = parent.clientWidth;
-      const ph = parent.clientHeight;
-
-      /*
-        interaction 원본 virtual stage
-      */
-
-      const virtualWidth = 1400;
-      const virtualHeight = 900;
+      const viewportHeight =
+        rect.height;
 
       /*
-        contain-fit 계산
+        cover-fit
       */
 
-      const sx = pw / virtualWidth;
-      const sy = ph / virtualHeight;
+      const sx =
+        viewportWidth / STAGE_WIDTH;
+
+      const sy =
+        viewportHeight / STAGE_HEIGHT;
+
+      const fitted = Math.max(sx, sy);
 
       /*
-        preview에서는 살짝 zoom-out
-        active에서는 full interaction scale
+        inactive:
+        살짝 zoom-out
+
+        active:
+        immersive
       */
 
-      const fitted = Math.min(sx, sy);
-
-      setScale(active ? fitted : fitted * 0.82);
+      setScale(active ? fitted : fitted * 0.94);
     }
 
     updateScale();
@@ -88,14 +112,14 @@ export default function InteractivePostCard({
         position: "relative",
 
         width: "100%",
-        height: 500,
+        height: CARD_HEIGHT,
 
         overflow: "hidden",
 
-        borderRadius: 20,
+        borderRadius: 22,
 
         background:
-          "linear-gradient(180deg, rgba(10,10,12,0.96), rgba(0,0,0,0.98))",
+          "linear-gradient(180deg, rgba(10,10,12,0.98), rgba(0,0,0,1))",
 
         border: active
           ? "1px solid rgba(255,255,255,0.20)"
@@ -103,8 +127,6 @@ export default function InteractivePostCard({
 
         transition:
           "transform 0.45s ease, border 0.35s ease",
-
-        cursor: active ? "default" : "pointer",
 
         transform: active
           ? "translateY(-4px)"
@@ -117,10 +139,9 @@ export default function InteractivePostCard({
         setActive(false);
       }}
     >
-      {/* ====================================================
-          LINK OVERLAY
-          inactive 상태에서만 클릭
-      ==================================================== */}
+      {/* ============================================
+          inactive navigation
+      ============================================ */}
 
       {!active && (
         <Link
@@ -128,48 +149,55 @@ export default function InteractivePostCard({
           style={{
             position: "absolute",
             inset: 0,
-            zIndex: 40,
+            zIndex: 70,
           }}
         />
       )}
 
-      {/* ====================================================
+      {/* ============================================
           INTERACTION VIEWPORT
-      ==================================================== */}
+      ============================================ */}
 
       <div
+        ref={viewportRef}
         style={{
           position: "absolute",
-          inset: 0,
+
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: CONTENT_RESERVED_HEIGHT,
 
           overflow: "hidden",
 
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          zIndex: 1,
         }}
       >
         {/* 
-          중요:
-          transform scale만 적용하고
-          isolate / contain / clipping 안함
+          핵심 수정:
 
-          => 내부 nested math renderer,
-             absolute overlay,
-             portals 느낌 UI 다 살림
+          center 정렬 제거
+
+          left-top anchor 사용
+
+          => interaction 내부 toolbar,
+             math panel,
+             control ui 보존
         */}
 
         <div
-          ref={stageRef}
           style={{
-            width: 1400,
-            height: 900,
+            position: "absolute",
 
-            position: "relative",
+            left: 0,
+            top: 0,
+
+            width: STAGE_WIDTH,
+            height: STAGE_HEIGHT,
 
             transform: `scale(${scale})`,
 
-            transformOrigin: "center center",
+            transformOrigin: "top left",
 
             transition:
               "transform 0.7s cubic-bezier(.2,.8,.2,1)",
@@ -185,9 +213,9 @@ export default function InteractivePostCard({
         </div>
       </div>
 
-      {/* ====================================================
-          OVERLAY
-      ==================================================== */}
+      {/* ============================================
+          ATMOSPHERIC OVERLAY
+      ============================================ */}
 
       <div
         style={{
@@ -197,32 +225,34 @@ export default function InteractivePostCard({
           background: active
             ? `
               linear-gradient(
-                to top,
-                rgba(0,0,0,0.58),
-                rgba(0,0,0,0.04),
-                rgba(0,0,0,0.30)
+                to bottom,
+                rgba(0,0,0,0.28),
+                rgba(0,0,0,0.04) 18%,
+                rgba(0,0,0,0.12) 52%,
+                rgba(0,0,0,0.88)
               )
             `
             : `
               linear-gradient(
-                to top,
-                rgba(0,0,0,0.84),
-                rgba(0,0,0,0.18),
-                rgba(0,0,0,0.44)
+                to bottom,
+                rgba(0,0,0,0.48),
+                rgba(0,0,0,0.14) 24%,
+                rgba(0,0,0,0.24) 55%,
+                rgba(0,0,0,0.94)
               )
             `,
 
-          transition: "all 0.4s ease",
+          transition: "all 0.45s ease",
 
-          zIndex: 4,
+          zIndex: 10,
 
           pointerEvents: "none",
         }}
       />
 
-      {/* ====================================================
-          TOP RIGHT BADGE
-      ==================================================== */}
+      {/* ============================================
+          BADGE
+      ============================================ */}
 
       <div
         style={{
@@ -231,9 +261,9 @@ export default function InteractivePostCard({
           top: 18,
           right: 18,
 
-          zIndex: 20,
+          zIndex: 40,
 
-          padding: "6px 12px",
+          padding: "7px 14px",
 
           borderRadius: 999,
 
@@ -248,7 +278,7 @@ export default function InteractivePostCard({
 
           color: "white",
 
-          backdropFilter: "blur(10px)",
+          backdropFilter: "blur(12px)",
 
           border:
             "1px solid rgba(255,255,255,0.12)",
@@ -259,16 +289,18 @@ export default function InteractivePostCard({
         {active ? "INTERACTIVE LIVE" : vizKey}
       </div>
 
-      {/* ====================================================
+      {/* ============================================
           INDEX
-      ==================================================== */}
+      ============================================ */}
 
       <div
         style={{
           position: "absolute",
+
           top: 18,
           left: 18,
-          zIndex: 20,
+
+          zIndex: 40,
         }}
       >
         <CategoryPostBoxIndex
@@ -278,37 +310,38 @@ export default function InteractivePostCard({
         />
       </div>
 
-      {/* ====================================================
+      {/* ============================================
           CONTENT
-      ==================================================== */}
+      ============================================ */}
 
       <div
         style={{
           position: "absolute",
 
-          left: 30,
-          bottom: 30,
-          right: 30,
+          left: 34,
+          right: 34,
+          bottom: 28,
 
-          zIndex: 20,
+          zIndex: 40,
         }}
       >
         <div
           style={{
-            fontSize: active ? 32 : 28,
+            fontSize: active ? 34 : 30,
 
-            lineHeight: 1.08,
+            lineHeight: 1.04,
 
             fontWeight: 800,
 
             color: "white",
 
-            transition: "all 0.35s ease",
+            transition:
+              "font-size 0.35s ease, transform 0.35s ease",
 
             textShadow:
-              "0 6px 18px rgba(0,0,0,0.82)",
+              "0 8px 24px rgba(0,0,0,0.85)",
 
-            marginBottom: 12,
+            marginBottom: 14,
           }}
         >
           <PostTitleRenderer text={post.title} />
@@ -320,7 +353,7 @@ export default function InteractivePostCard({
             alignItems: "center",
             gap: 12,
 
-            color: "rgba(255,255,255,0.72)",
+            color: "rgba(255,255,255,0.74)",
 
             fontSize: 12,
 
@@ -341,33 +374,34 @@ export default function InteractivePostCard({
         </div>
       </div>
 
-      {/* ====================================================
+      {/* ============================================
           EDGE LIGHT
-      ==================================================== */}
+      ============================================ */}
 
       <div
         style={{
           position: "absolute",
+
           inset: 0,
 
-          borderRadius: 20,
+          borderRadius: 22,
 
           boxShadow: active
             ? `
-              inset 0 1px 0 rgba(255,255,255,0.18),
-              inset 0 -1px 0 rgba(0,0,0,0.32),
-              0 0 40px rgba(255,255,255,0.08)
+              inset 0 1px 0 rgba(255,255,255,0.16),
+              inset 0 -1px 0 rgba(0,0,0,0.28),
+              0 0 42px rgba(255,255,255,0.06)
             `
             : `
               inset 0 1px 0 rgba(255,255,255,0.08),
-              inset 0 -1px 0 rgba(0,0,0,0.28)
+              inset 0 -1px 0 rgba(0,0,0,0.24)
             `,
 
           transition: "all 0.35s ease",
 
           pointerEvents: "none",
 
-          zIndex: 30,
+          zIndex: 60,
         }}
       />
     </div>
