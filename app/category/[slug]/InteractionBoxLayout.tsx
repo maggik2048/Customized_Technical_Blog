@@ -1,10 +1,19 @@
-// InteractionBoxLayout.tsx
-
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, {
+  useMemo,
+  useState,
+} from "react";
+
+import { motion } from "framer-motion";
 
 import InteractivePostCard from "./InteractivePostCard";
+
+const springTransition = {
+  type: "spring",
+  stiffness: 120,
+  damping: 18,
+};
 
 export default function InteractionBoxLayout({
   posts,
@@ -12,79 +21,43 @@ export default function InteractionBoxLayout({
   visualizationRegistry,
   extractVisualization,
 }: any) {
-  const sortedByContentLength = useMemo(() => {
-    return [...posts].sort((a, b) => {
-      const aLength = a.content?.length ?? 0;
-      const bLength = b.content?.length ?? 0;
-
-      return bLength - aLength;
-    });
+  const sortedByLength = useMemo(() => {
+    return [...posts].sort(
+      (a, b) =>
+        (b.content?.length ?? 0) -
+        (a.content?.length ?? 0)
+    );
   }, [posts]);
 
-  const mainPost = sortedByContentLength[0];
+  const [activeIndex, setActiveIndex] =
+    useState(0);
 
-  const carouselPosts = sortedByContentLength.slice(1);
+  const activePost =
+    sortedByLength[activeIndex];
 
-  const [carouselIndex, setCarouselIndex] = useState(0);
+  const prevPost =
+    sortedByLength[activeIndex - 1];
 
-  const visibleCarouselPosts = carouselPosts.slice(
-    carouselIndex,
-    carouselIndex + 3
-  );
+  const nextPost =
+    sortedByLength[activeIndex + 1];
 
-  function renderInteractiveCard(
-    post: any,
-    index: number,
-    compact = false
-  ) {
-    const vizKey =
-      extractVisualization(post.content);
+  if (!activePost) return null;
 
-    const VizComponent = vizKey
-      ? visualizationRegistry[vizKey]
+  const activeVizKey =
+    extractVisualization(
+      activePost.content
+    );
+
+  const ActiveVizComponent =
+    activeVizKey
+      ? visualizationRegistry[
+          activeVizKey
+        ]
       : null;
 
-    const categoryIndex = index + 1;
-
-    const globalIndex =
-      globalIndexMap.get(post.id) ??
-      categoryIndex;
-
-    return (
-      <div
-        key={post.id}
-        style={{
-          width: "100%",
-
-          minHeight: compact ? 140 : 220,
-          maxHeight: compact ? 180 : 280,
-
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "stretch",
-
-          opacity: compact ? 0.88 : 1,
-
-          transform: compact
-            ? "scale(0.92)"
-            : "scale(1)",
-
-          transformOrigin: "top center",
-
-          transition:
-            "transform 0.28s ease, opacity 0.28s ease",
-        }}
-      >
-        <InteractivePostCard
-          post={post}
-          categoryIndex={categoryIndex}
-          globalIndex={globalIndex}
-          VizComponent={VizComponent}
-          vizKey={vizKey}
-        />
-      </div>
-    );
-  }
+  const activeGlobalIndex =
+    globalIndexMap.get(activePost.id) ??
+    activeIndex + 1;
 
   return (
     <div
@@ -103,6 +76,8 @@ export default function InteractionBoxLayout({
         flexShrink: 0,
 
         transform: "translateX(-120px)",
+
+        overflow: "visible",
       }}
     >
       <div
@@ -115,148 +90,252 @@ export default function InteractionBoxLayout({
           display: "flex",
           flexDirection: "column",
 
-          gap: 42,
+          gap: 48,
+
+          overflow: "visible",
         }}
       >
+        {/* ========================= */}
         {/* MAIN INTERACTION */}
-        {mainPost &&
-          renderInteractiveCard(
-            mainPost,
-            0,
-            false
+        {/* ========================= */}
+
+        <div
+          style={{
+            width: "100%",
+            position: "relative",
+            zIndex: 20,
+          }}
+        >
+          <InteractivePostCard
+            post={activePost}
+            categoryIndex={
+              activeIndex + 1
+            }
+            globalIndex={
+              activeGlobalIndex
+            }
+            VizComponent={
+              ActiveVizComponent
+            }
+            vizKey={activeVizKey}
+          />
+        </div>
+
+        {/* ========================= */}
+        {/* STACKED VIEWER */}
+        {/* ========================= */}
+
+        <div
+          style={{
+            width: "100%",
+            height: 220,
+
+            position: "relative",
+
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+
+            overflow: "visible",
+          }}
+        >
+          {/* LEFT */}
+          {prevPost && (
+            <motion.div
+              animate={{
+                x: -180,
+                scale: 0.68,
+                rotateY: 18,
+                opacity: 0.72,
+              }}
+              transition={
+                springTransition
+              }
+              onClick={() =>
+                setActiveIndex(
+                  activeIndex - 1
+                )
+              }
+              style={{
+                position: "absolute",
+
+                width: 340,
+                height: 190,
+
+                cursor: "pointer",
+
+                zIndex: 10,
+
+                overflow: "hidden",
+
+                borderRadius: 24,
+
+                filter:
+                  "grayscale(0.5) saturate(0.5)",
+
+                boxShadow:
+                  "0 20px 40px rgba(0,0,0,0.28)",
+
+                transformStyle:
+                  "preserve-3d",
+              }}
+            >
+              <InteractivePostCard
+                post={prevPost}
+                categoryIndex={
+                  activeIndex
+                }
+                globalIndex={
+                  globalIndexMap.get(
+                    prevPost.id
+                  ) ?? activeIndex
+                }
+                VizComponent={
+                  visualizationRegistry[
+                    extractVisualization(
+                      prevPost.content
+                    )
+                  ]
+                }
+                vizKey={extractVisualization(
+                  prevPost.content
+                )}
+              />
+
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+
+                  background:
+                    "linear-gradient(to right, rgba(0,0,0,0.05), rgba(0,0,0,0.52))",
+
+                  pointerEvents: "none",
+                }}
+              />
+            </motion.div>
           )}
 
-        {/* CAROUSEL */}
-        {carouselPosts.length > 0 && (
-          <div
+          {/* CENTER PREVIEW */}
+          <motion.div
+            animate={{
+              scale: 0.82,
+              opacity: 0.9,
+            }}
+            transition={
+              springTransition
+            }
             style={{
-              width: "100%",
+              position: "absolute",
 
-              display: "flex",
-              flexDirection: "column",
+              width: 400,
+              height: 210,
 
-              gap: 18,
+              borderRadius: 28,
+
+              overflow: "hidden",
+
+              zIndex: 30,
+
+              boxShadow:
+                "0 30px 60px rgba(0,0,0,0.32)",
+
+              pointerEvents: "none",
             }}
           >
-            {/* CONTROLS */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
+            <InteractivePostCard
+              post={activePost}
+              categoryIndex={
+                activeIndex + 1
+              }
+              globalIndex={
+                activeGlobalIndex
+              }
+              VizComponent={
+                ActiveVizComponent
+              }
+              vizKey={activeVizKey}
+            />
+          </motion.div>
+
+          {/* RIGHT */}
+          {nextPost && (
+            <motion.div
+              animate={{
+                x: 180,
+                scale: 0.68,
+                rotateY: -18,
+                opacity: 0.72,
               }}
-            >
-              <div
-                style={{
-                  fontSize: 12,
-                  letterSpacing: "0.18em",
-                  color:
-                    "rgba(255,255,255,0.48)",
-                }}
-              >
-                INTERACTION ARCHIVE
-              </div>
-
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 10,
-                }}
-              >
-                <button
-                  onClick={() => {
-                    setCarouselIndex((prev) =>
-                      Math.max(prev - 1, 0)
-                    );
-                  }}
-                  style={{
-                    border: "none",
-                    background:
-                      "rgba(255,255,255,0.08)",
-
-                    color: "white",
-
-                    width: 34,
-                    height: 34,
-
-                    borderRadius: 999,
-
-                    cursor: "pointer",
-
-                    fontSize: 16,
-                  }}
-                >
-                  {"<"}
-                </button>
-
-                <button
-                  onClick={() => {
-                    setCarouselIndex((prev) =>
-                      Math.min(
-                        prev + 1,
-                        Math.max(
-                          carouselPosts.length - 3,
-                          0
-                        )
-                      )
-                    );
-                  }}
-                  style={{
-                    border: "none",
-                    background:
-                      "rgba(255,255,255,0.08)",
-
-                    color: "white",
-
-                    width: 34,
-                    height: 34,
-
-                    borderRadius: 999,
-
-                    cursor: "pointer",
-
-                    fontSize: 16,
-                  }}
-                >
-                  {">"}
-                </button>
-              </div>
-            </div>
-
-            {/* ROW */}
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "row",
-
-                alignItems: "flex-start",
-
-                gap: 10,
-
-                width: "100%",
-              }}
-            >
-              {visibleCarouselPosts.map(
-                (post, index) => (
-                  <div
-                    key={post.id}
-                    style={{
-                      flex: 1,
-                      minWidth: 0,
-                    }}
-                  >
-                    {renderInteractiveCard(
-                      post,
-                      index + 1,
-                      true
-                    )}
-                  </div>
+              transition={
+                springTransition
+              }
+              onClick={() =>
+                setActiveIndex(
+                  activeIndex + 1
                 )
-              )}
-            </div>
-          </div>
-        )}
+              }
+              style={{
+                position: "absolute",
+
+                width: 340,
+                height: 190,
+
+                cursor: "pointer",
+
+                zIndex: 10,
+
+                overflow: "hidden",
+
+                borderRadius: 24,
+
+                filter:
+                  "grayscale(0.5) saturate(0.5)",
+
+                boxShadow:
+                  "0 20px 40px rgba(0,0,0,0.28)",
+
+                transformStyle:
+                  "preserve-3d",
+              }}
+            >
+              <InteractivePostCard
+                post={nextPost}
+                categoryIndex={
+                  activeIndex + 2
+                }
+                globalIndex={
+                  globalIndexMap.get(
+                    nextPost.id
+                  ) ??
+                  activeIndex + 2
+                }
+                VizComponent={
+                  visualizationRegistry[
+                    extractVisualization(
+                      nextPost.content
+                    )
+                  ]
+                }
+                vizKey={extractVisualization(
+                  nextPost.content
+                )}
+              />
+
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+
+                  background:
+                    "linear-gradient(to left, rgba(0,0,0,0.05), rgba(0,0,0,0.52))",
+
+                  pointerEvents: "none",
+                }}
+              />
+            </motion.div>
+          )}
+        </div>
       </div>
     </div>
   );
