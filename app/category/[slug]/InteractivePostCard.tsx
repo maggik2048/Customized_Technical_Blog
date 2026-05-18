@@ -15,7 +15,6 @@ export default function InteractivePostCard({
 }: any) {
   const [active, setActive] = useState(false);
 
-  // 🔥 TV 느낌: 세로 줄이고 가로 강조
   const CARD_HEIGHT = 320;
 
   const viewportRef = useRef<HTMLDivElement | null>(null);
@@ -49,8 +48,8 @@ export default function InteractivePostCard({
       const sx = viewportWidth / baseWidth;
       const sy = viewportHeight / baseHeight;
 
-      // 🔥 핵심 변경: TV / 와이드 느낌 (가로 기준)
-      const fitted = sx;
+      // ✅ 핵심 수정: TV/와이드 비율 안정화
+      const fitted = Math.min(sx, sy);
 
       setScale(active ? fitted : fitted * 0.92);
     }
@@ -99,7 +98,7 @@ export default function InteractivePostCard({
       onMouseEnter={() => setActive(true)}
       onMouseLeave={() => setActive(false)}
     >
-      {/* ================= LEFT ================= */}
+      {/* LEFT */}
       <div
         style={{
           width: "35%",
@@ -141,7 +140,7 @@ export default function InteractivePostCard({
         </div>
       </div>
 
-      {/* ================= RIGHT (TV SCREEN) ================= */}
+      {/* RIGHT TV SCREEN */}
       <div
         ref={viewportRef}
         style={{

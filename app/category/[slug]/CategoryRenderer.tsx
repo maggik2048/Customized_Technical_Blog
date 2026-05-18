@@ -25,18 +25,19 @@ export default function CategoryRenderer({
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
+
+        width: "100%",
       }}
     >
-      {/* BACKGROUND LAYERS (EXTRACTED - NO BEHAVIOR CHANGE) */}
       <CategoryInsideBackgroundRenderer />
 
-      {/* HEADER */}
       <div
         style={{
           marginBottom: 42,
           textAlign: "center",
           position: "relative",
           zIndex: 10,
+          width: "100%",
         }}
       >
         <div
@@ -63,7 +64,6 @@ export default function CategoryRenderer({
         </h1>
       </div>
 
-      {/* LIST WRAPPER */}
       <div
         style={{
           width: "100%",
@@ -73,9 +73,8 @@ export default function CategoryRenderer({
           zIndex: 10,
         }}
       >
-        <div style={{ width: "100%", maxWidth: 900 }}>
-          <CategoryPostBoxRenderer posts={posts} allPosts={allPosts} />
-        </div>
+        {/* layout is now controlled externally */}
+        <CategoryPostBoxRenderer posts={posts} allPosts={allPosts} />
       </div>
     </div>
   );

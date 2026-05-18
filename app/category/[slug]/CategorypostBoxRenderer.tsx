@@ -247,7 +247,7 @@ export default function CategoryPostBoxRenderer({
                 minHeight: 220,
                 maxHeight: 280,
                 display: "flex",
-                flexDirection: "row", // 🔥 핵심: 가로형 카드
+                flexDirection: "row", //  핵심: 가로형 카드
                 alignItems: "stretch",
               }}
             >
