@@ -126,7 +126,7 @@ export default function SearchBarButton({
         style={{
           flex: 1,
 
-          marginLeft: 80,
+          marginLeft: 10,
           marginRight: 140,
 
           height: 34,
