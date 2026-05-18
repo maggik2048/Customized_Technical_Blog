@@ -56,10 +56,7 @@ export default function MorphingTextAnimation({
     const aCtx = offA.getContext("2d")!;
     const bCtx = offB.getContext("2d")!;
 
-    const renderGlyph = (
-      ctx: CanvasRenderingContext2D,
-      text: string
-    ) => {
+    const renderGlyph = (ctx: CanvasRenderingContext2D, text: string) => {
       ctx.clearRect(0, 0, w, h);
       ctx.fillStyle = "white";
       ctx.font = "70px serif";
@@ -68,16 +65,21 @@ export default function MorphingTextAnimation({
       ctx.fillText(text, w / 2, h / 2);
     };
 
+    // easing
     const smooth = t * t * (3 - 2 * t);
-    const sigmaGate = Math.pow(1 - smooth, 2.5);
-    const forallGate = Math.pow(smooth, 2.5);
-    const warpIntensity = 1 - smooth;
+
+    // gates (더 강하게 닫히도록)
+    const sigmaGate = Math.pow(1 - smooth, 3.2);
+    const forallGate = Math.pow(smooth, 3.2);
+
+    // 🔥 핵심 수정: 끝에서는 무조건 warp = 0
+    const edgeFade = smooth * (1 - smooth); // 중간에서만 활성
+    const warpIntensity = edgeFade * 2.2;
 
     const time = t * Math.PI * 2;
 
     ctx.clearRect(0, 0, w, h);
 
-    // 🔥 CRITICAL FIX: 매 frame마다 glyph 재렌더링
     renderGlyph(aCtx, "Σ");
     renderGlyph(bCtx, "∀");
 
@@ -94,21 +96,28 @@ export default function MorphingTextAnimation({
         const sigma = (aAlpha / 255) * sigmaGate;
         const forall = (bAlpha / 255) * forallGate;
 
-        const intensity = sigma + forall;
+        let intensity = sigma + forall;
+
+        // 🔥 마지막 상태 완전 고정 (잔상 제거)
+        if (t < 0.001) intensity = sigma;
+        if (t > 0.999) intensity = forall;
 
         if (intensity > 0.02) {
           const dx =
-            (Math.sin(y * 0.08 + time) * 5 +
-              Math.sin((x + y) * 0.03 + time) * 2) *
-            warpIntensity;
+            Math.sin(y * 0.08 + time) * 5 +
+            Math.sin((x + y) * 0.03 + time) * 2;
 
           const dy =
-            (Math.cos(x * 0.08 + time) * 5 +
-              Math.sin(y * 0.05 + time * 1.5) * 2) *
-            warpIntensity;
+            Math.cos(x * 0.08 + time) * 5 +
+            Math.sin(y * 0.05 + time * 1.5) * 2;
 
           ctx.fillStyle = `rgba(255,255,255,${intensity})`;
-          ctx.fillRect(x + dx, y + dy, 2, 2);
+          ctx.fillRect(
+            x + dx * warpIntensity,
+            y + dy * warpIntensity,
+            2,
+            2
+          );
         }
       }
     }
