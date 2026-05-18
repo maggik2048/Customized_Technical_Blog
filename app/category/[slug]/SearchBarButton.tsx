@@ -28,7 +28,10 @@ export default function SearchBarButton({ onSearch }: Props) {
         width: "100%",
         maxWidth: 460,
 
-        background: "rgba(255, 255, 255, 0.25)",
+        /* glass + bottom white fade */
+        background:
+          "linear-gradient(to bottom, rgba(255,255,255,0.18), rgba(255,255,255,0.55))",
+
         backdropFilter: "blur(10px)",
         WebkitBackdropFilter: "blur(10px)",
 
@@ -38,7 +41,7 @@ export default function SearchBarButton({ onSearch }: Props) {
         padding: "10px 12px",
       }}
     >
-      {/* OUTSIDE SIGMA SYMBOL */}
+      {/* OUTSIDE Σ SYMBOL */}
       <span
         onClick={handleSearch}
         style={{
@@ -108,7 +111,7 @@ export default function SearchBarButton({ onSearch }: Props) {
         }}
       />
 
-      {/* RIGHT BUTTON (kept) */}
+      {/* RIGHT BUTTON */}
       <button
         onClick={handleSearch}
         style={{
