@@ -234,6 +234,7 @@ export default function CategoryPostBoxRenderer({
           display: "flex",
           flexDirection: "column",
           gap: 16,
+          transform: "translateX(270px)",
         }}
       >
         {normalPosts.map((post, index) =>
