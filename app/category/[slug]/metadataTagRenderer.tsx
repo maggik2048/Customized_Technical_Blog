@@ -19,7 +19,7 @@ export default function MetadataTagRenderer() {
         overflow: "hidden",
       }}
     >
-      {/* MAIN POLYGON */}
+      {/* OUTER POLYGON FRAME */}
       <div
         style={{
           position: "absolute",
@@ -29,114 +29,133 @@ export default function MetadataTagRenderer() {
           clipPath:
             "polygon(32% 0%, 100% 0%, 100% 100%, 0% 100%)",
 
-          background: `
-            linear-gradient(
-              to right,
-              rgba(232,228,220,0.82) 0%,
-              rgba(214,210,202,0.72) 52%,
-              rgba(244,242,238,0.88) 100%
-            )
-          `,
-
           border:
-            "1px solid rgba(255,248,235,0.14)",
+            "1.4px solid rgba(255,220,140,0.72)",
+
+          background: "transparent",
 
           boxShadow: `
-            0 0 18px rgba(255,245,220,0.04),
-            inset 0 0 14px rgba(255,255,255,0.08)
+            0 0 18px rgba(255,210,120,0.10),
+            inset 0 0 18px rgba(255,230,160,0.04)
           `,
 
-          opacity: 0.82,
+          backdropFilter: "blur(8px)",
 
-          backdropFilter: "blur(10px)",
+          WebkitBackdropFilter:
+            "blur(8px)",
         }}
       />
 
-      {/* INNER HIGHLIGHT */}
+      {/* INNER POLYGON FRAME */}
       <div
         style={{
           position: "absolute",
 
-          top: 6,
-          bottom: 6,
-          left: 52,
+          top: 7,
+          bottom: 7,
+          left: 56,
           right: 8,
 
           clipPath:
             "polygon(24% 0%, 100% 0%, 100% 100%, 0% 100%)",
 
           border:
-            "1px solid rgba(255,255,255,0.08)",
+            "1px solid rgba(255,240,200,0.34)",
 
-          opacity: 0.34,
+          opacity: 0.7,
         }}
       />
 
-      {/* DIAGONAL TECH LINE 1 */}
+      {/* TOP GOLD LINE */}
       <div
         style={{
           position: "absolute",
 
-          width: 180,
+          right: 8,
+          top: 7,
+
+          width: 148,
           height: 1,
 
-          right: 10,
-          top: 12,
-
           background:
-            "rgba(255,255,255,0.12)",
+            "linear-gradient(to right, transparent, rgba(255,220,140,0.55))",
 
-          transform: "rotate(-18deg)",
+          transform: "rotate(-17deg)",
 
           transformOrigin: "right center",
+
+          opacity: 0.9,
         }}
       />
 
-      {/* DIAGONAL TECH LINE 2 */}
+      {/* BOTTOM GOLD LINE */}
       <div
         style={{
           position: "absolute",
 
-          width: 140,
+          right: 14,
+          bottom: 8,
+
+          width: 128,
           height: 1,
 
-          right: 18,
-          bottom: 10,
-
           background:
-            "rgba(255,255,255,0.08)",
+            "linear-gradient(to right, transparent, rgba(255,235,180,0.32))",
 
-          transform: "rotate(-18deg)",
+          transform: "rotate(-17deg)",
 
           transformOrigin: "right center",
+
+          opacity: 0.7,
         }}
       />
 
-      {/* CENTER GLOW */}
+      {/* SIDE ACCENT */}
       <div
         style={{
           position: "absolute",
 
-          right: 36,
-          top: "50%",
+          right: 0,
+          top: 0,
+          bottom: 0,
 
-          width: 80,
-          height: 80,
+          width: 2,
 
-          transform: "translateY(-50%)",
+          background: `
+            linear-gradient(
+              to bottom,
+              rgba(255,230,170,0.0),
+              rgba(255,220,140,0.52),
+              rgba(255,240,200,0.0)
+            )
+          `,
 
-          borderRadius: "50%",
-
-          background:
-            "radial-gradient(circle, rgba(255,255,255,0.08), transparent 72%)",
-
-          filter: "blur(14px)",
-
-          opacity: 0.55,
+          opacity: 0.8,
         }}
       />
 
-      {/* MICRO LABEL */}
+      {/* MICRO TECH CORNER */}
+      <div
+        style={{
+          position: "absolute",
+
+          right: 22,
+          top: 10,
+
+          width: 18,
+          height: 18,
+
+          borderTop:
+            "1px solid rgba(255,225,160,0.42)",
+
+          borderRight:
+            "1px solid rgba(255,225,160,0.42)",
+
+          opacity: 0.7,
+        }}
+      />
+
+      {/* LABEL */}
       <div
         style={{
           position: "absolute",
@@ -146,14 +165,17 @@ export default function MetadataTagRenderer() {
 
           fontSize: 8,
 
-          letterSpacing: "0.24em",
+          letterSpacing: "0.26em",
 
           textTransform: "uppercase",
 
           color:
-            "rgba(90,90,90,0.34)",
+            "rgba(255,228,170,0.55)",
 
           fontWeight: 700,
+
+          textShadow:
+            "0 0 10px rgba(255,220,140,0.10)",
         }}
       >
         META
