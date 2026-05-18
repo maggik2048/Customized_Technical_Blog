@@ -1,3 +1,5 @@
+// CategoryPostBoxRenderer.tsx
+
 "use client";
 
 import Link from "next/link";
@@ -7,6 +9,7 @@ import PostTitleRenderer from "./PostTitleRenderer";
 import CategoryPostBoxIndex from "./CategoryPostBoxIndex";
 import InteractivePostCard from "./InteractivePostCard";
 import MetadataTagRenderer from "./metadataTagRenderer";
+import InteractionBoxLayout from "./InteractionBoxLayout";
 
 const SatProjection = dynamic(
   () => import("@/app/visualizations/SatProjection"),
@@ -49,6 +52,7 @@ function extractVisualization(content?: string) {
   if (!content) return null;
 
   const match = content.match(/\[(SAT|TORUS|MODEL|ANNOTATE|LIDAR)\]/);
+
   return match?.[1] ?? null;
 }
 
@@ -59,7 +63,9 @@ export default function CategoryPostBoxRenderer({
   posts: any[];
   allPosts?: any[];
 }) {
-  const safeAllPosts = Array.isArray(allPosts) ? allPosts : [];
+  const safeAllPosts = Array.isArray(allPosts)
+    ? allPosts
+    : [];
 
   const globalIndexMap = new Map(
     safeAllPosts
@@ -93,8 +99,12 @@ export default function CategoryPostBoxRenderer({
     (post) => !extractVisualization(post.content)
   );
 
-  const renderNormalPost = (post: any, index: number) => {
+  const renderNormalPost = (
+    post: any,
+    index: number
+  ) => {
     const contentLength = post.content?.length ?? 0;
+
     const categoryIndex = index + 1;
 
     const globalIndex =
@@ -119,10 +129,12 @@ export default function CategoryPostBoxRenderer({
             background: "transparent",
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.transform = "translateX(8px)";
+            e.currentTarget.style.transform =
+              "translateX(8px)";
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.transform = "translateX(0px)";
+            e.currentTarget.style.transform =
+              "translateX(0px)";
           }}
         >
           <CategoryPostBoxIndex
@@ -136,7 +148,8 @@ export default function CategoryPostBoxRenderer({
               style={{
                 position: "absolute",
                 inset: 0,
-                background: "rgba(165,170,185,0.14)",
+                background:
+                  "rgba(165,170,185,0.14)",
                 backdropFilter:
                   "invert(0.82) brightness(0.94) blur(2px)",
                 WebkitBackdropFilter:
@@ -154,7 +167,8 @@ export default function CategoryPostBoxRenderer({
                 top: 0,
                 bottom: 0,
                 width: 2,
-                background: "rgba(220,225,235,0.38)",
+                background:
+                  "rgba(220,225,235,0.38)",
                 zIndex: 0,
               }}
             />
@@ -174,7 +188,8 @@ export default function CategoryPostBoxRenderer({
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
-              textShadow: "0 2px 3px rgba(0,0,0,0.80)",
+              textShadow:
+                "0 2px 3px rgba(0,0,0,0.80)",
               fontWeight: 600,
             }}
           >
@@ -192,7 +207,9 @@ export default function CategoryPostBoxRenderer({
               letterSpacing: "0.06em",
             }}
           >
-            {new Date(post.created_at).toLocaleDateString()}
+            {new Date(
+              post.created_at
+            ).toLocaleDateString()}
           </div>
         </div>
       </Link>
@@ -208,18 +225,9 @@ export default function CategoryPostBoxRenderer({
         width: "100%",
         justifyContent: "flex-start",
         alignItems: "flex-start",
-        maxWidth: 1020,
-        marginLeft: "-140px",
       }}
     >
       {/* LEFT: NORMAL POSTS */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 16 }}>
-        {normalPosts.map((post, index) =>
-          renderNormalPost(post, index)
-        )}
-      </div>
-
-      {/* RIGHT: INTERACTIVE POSTS (MODIFIED LAYOUT ONLY HERE) */}
       <div
         style={{
           flex: 1,
@@ -228,40 +236,58 @@ export default function CategoryPostBoxRenderer({
           gap: 16,
         }}
       >
-        {interactivePosts.map((post, index) => {
-          const vizKey = extractVisualization(post.content);
-          const VizComponent = vizKey
-            ? visualizationRegistry[vizKey]
-            : null;
-
-          const categoryIndex = index + 1;
-
-          const globalIndex =
-            globalIndexMap.get(post.id) ?? categoryIndex;
-
-          return (
-            <div
-              key={post.id}
-              style={{
-                width: "100%",
-                minHeight: 220,
-                maxHeight: 280,
-                display: "flex",
-                flexDirection: "row", //  핵심: 가로형 카드
-                alignItems: "stretch",
-              }}
-            >
-              <InteractivePostCard
-                post={post}
-                categoryIndex={categoryIndex}
-                globalIndex={globalIndex}
-                VizComponent={VizComponent}
-                vizKey={vizKey}
-              />
-            </div>
-          );
-        })}
+        {normalPosts.map((post, index) =>
+          renderNormalPost(post, index)
+        )}
       </div>
+
+      {/* RIGHT: INTERACTIVE POSTS */}
+      <InteractionBoxLayout>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 16,
+          }}
+        >
+          {interactivePosts.map((post, index) => {
+            const vizKey =
+              extractVisualization(post.content);
+
+            const VizComponent = vizKey
+              ? visualizationRegistry[vizKey]
+              : null;
+
+            const categoryIndex = index + 1;
+
+            const globalIndex =
+              globalIndexMap.get(post.id) ??
+              categoryIndex;
+
+            return (
+              <div
+                key={post.id}
+                style={{
+                  width: "100%",
+                  minHeight: 220,
+                  maxHeight: 280,
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "stretch",
+                }}
+              >
+                <InteractivePostCard
+                  post={post}
+                  categoryIndex={categoryIndex}
+                  globalIndex={globalIndex}
+                  VizComponent={VizComponent}
+                  vizKey={vizKey}
+                />
+              </div>
+            );
+          })}
+        </div>
+      </InteractionBoxLayout>
     </div>
   );
 }
