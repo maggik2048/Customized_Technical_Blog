@@ -1,10 +1,11 @@
 "use client";
 
 import CategoryPostBoxRenderer from "./CategorypostBoxRenderer";
+import BurnFilterOverlay from "./BurnFilterOverlay";
 
 export default function CategoryRenderer({
   posts,
-  allPosts, //  추가 (핵심)
+  allPosts,
   slug,
 }: {
   posts: any[];
@@ -23,12 +24,14 @@ export default function CategoryRenderer({
         fontFamily: "serif",
         color: "rgba(40,40,40,0.78)",
 
-        // ONLY CHANGE: center layout container
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
       }}
     >
+      {/* GLOBAL BURN FILTER */}
+      <BurnFilterOverlay />
+
       {/* BASE BACKGROUND */}
       <div
         style={{
@@ -62,6 +65,7 @@ export default function CategoryRenderer({
           opacity: 0.92,
           zIndex: -5,
           pointerEvents: "none",
+
           maskImage: `
             linear-gradient(
               to right,
@@ -73,6 +77,7 @@ export default function CategoryRenderer({
               rgba(0,0,0,1) 100%
             )
           `,
+
           WebkitMaskImage: `
             linear-gradient(
               to right,
@@ -94,6 +99,7 @@ export default function CategoryRenderer({
           inset: 0,
           zIndex: -4,
           pointerEvents: "none",
+
           background: `
             linear-gradient(
               to right,
@@ -104,6 +110,7 @@ export default function CategoryRenderer({
               rgba(107,110,135,0.55) 100%
             )
           `,
+
           mixBlendMode: "lighten",
         }}
       />
@@ -115,6 +122,7 @@ export default function CategoryRenderer({
           inset: 0,
           zIndex: -3,
           pointerEvents: "none",
+
           background: `
             radial-gradient(
               circle at 85% 50%,
@@ -122,6 +130,7 @@ export default function CategoryRenderer({
               transparent 60%
             )
           `,
+
           mixBlendMode: "screen",
         }}
       />
@@ -133,13 +142,21 @@ export default function CategoryRenderer({
           inset: 0,
           zIndex: -2,
           opacity: 0.07,
+
           backgroundImage:
             "url('https://www.transparenttextures.com/patterns/noise.png')",
         }}
       />
 
       {/* HEADER */}
-      <div style={{ marginBottom: 42, textAlign: "center" }}>
+      <div
+        style={{
+          marginBottom: 42,
+          textAlign: "center",
+          position: "relative",
+          zIndex: 10,
+        }}
+      >
         <div
           style={{
             fontSize: 14,
@@ -164,12 +181,20 @@ export default function CategoryRenderer({
         </h1>
       </div>
 
-      {/* LIST WRAPPER (CENTER FIX ONLY) */}
-      <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+      {/* LIST WRAPPER */}
+      <div
+        style={{
+          width: "100%",
+          display: "flex",
+          justifyContent: "center",
+          position: "relative",
+          zIndex: 10,
+        }}
+      >
         <div style={{ width: "100%", maxWidth: 900 }}>
           <CategoryPostBoxRenderer
             posts={posts}
-            allPosts={allPosts} //  핵심 추가
+            allPosts={allPosts}
           />
         </div>
       </div>
