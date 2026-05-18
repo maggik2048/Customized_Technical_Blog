@@ -172,7 +172,7 @@ export default function CategoryPostBoxRenderer({
 
                 border: isSimple
                   ? "none"
-                  : "1px solid rgba(255,255,255,0.12)",
+                  : "1px solid rgba(255,255,255,0.08)",
 
                 background: "transparent",
               }}
@@ -198,13 +198,13 @@ export default function CategoryPostBoxRenderer({
                     inset: 0,
 
                     background:
-                      "rgba(165,170,185,0.25)",
+                      "rgba(165,170,185,0.14)",
 
                     backdropFilter:
-                      "invert(1) brightness(0.9)",
+                      "invert(0.82) brightness(0.94) blur(2px)",
 
                     WebkitBackdropFilter:
-                      "invert(1) brightness(0.9)",
+                      "invert(0.82) brightness(0.94) blur(2px)",
 
                     zIndex: 0,
                   }}
@@ -223,14 +223,13 @@ export default function CategoryPostBoxRenderer({
                     width: 2,
 
                     background:
-                      "rgba(220,225,235,0.55)",
+                      "rgba(220,225,235,0.38)",
 
                     zIndex: 0,
                   }}
                 />
               )}
 
-              {/* 여기만 추가됨 */}
               {!isSimple && <MetadataTagRenderer />}
 
               <div
