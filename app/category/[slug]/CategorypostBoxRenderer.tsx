@@ -248,7 +248,7 @@ export default function CategoryPostBoxRenderer({
           style={{
             display: "flex",
             flexDirection: "column",
-            gap: 16,
+            gap: 56,
           }}
         >
           {interactivePosts.map((post, index) => {
