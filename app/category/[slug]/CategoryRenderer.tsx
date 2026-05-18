@@ -1,3 +1,5 @@
+// CategoryRenderer.tsx
+
 "use client";
 
 import CategoryPostBoxRenderer from "./CategorypostBoxRenderer";
@@ -31,13 +33,17 @@ export default function CategoryRenderer({
     >
       <CategoryInsideBackgroundRenderer />
 
+      {/* HEADER */}
       <div
         style={{
           marginBottom: 42,
           textAlign: "center",
           position: "relative",
           zIndex: 10,
-          width: "100%",
+
+          // 기준 width 고정
+          width: 720,
+          maxWidth: 750,
         }}
       >
         <div
@@ -64,6 +70,7 @@ export default function CategoryRenderer({
         </h1>
       </div>
 
+      {/* CONTENT */}
       <div
         style={{
           width: "100%",
@@ -73,8 +80,10 @@ export default function CategoryRenderer({
           zIndex: 10,
         }}
       >
-        {/* layout is now controlled externally */}
-        <CategoryPostBoxRenderer posts={posts} allPosts={allPosts} />
+        <CategoryPostBoxRenderer
+          posts={posts}
+          allPosts={allPosts}
+        />
       </div>
     </div>
   );

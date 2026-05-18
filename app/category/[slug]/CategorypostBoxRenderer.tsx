@@ -51,7 +51,9 @@ const visualizationRegistry: Record<string, any> = {
 function extractVisualization(content?: string) {
   if (!content) return null;
 
-  const match = content.match(/\[(SAT|TORUS|MODEL|ANNOTATE|LIDAR)\]/);
+  const match = content.match(
+    /\[(SAT|TORUS|MODEL|ANNOTATE|LIDAR)\]/
+  );
 
   return match?.[1] ?? null;
 }
@@ -185,9 +187,11 @@ export default function CategoryPostBoxRenderer({
                 ? "rgba(40,40,40,0.85)"
                 : "#ffffff",
               letterSpacing: "0.02em",
+
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
+
               textShadow:
                 "0 2px 3px rgba(0,0,0,0.80)",
               fontWeight: 600,
@@ -230,10 +234,15 @@ export default function CategoryPostBoxRenderer({
       {/* LEFT: NORMAL POSTS */}
       <div
         style={{
-          flex: 1,
+          width: 780,
+          maxWidth: 780,
+
+          flexShrink: 0,
+
           display: "flex",
           flexDirection: "column",
           gap: 16,
+
           transform: "translateX(270px)",
         }}
       >
