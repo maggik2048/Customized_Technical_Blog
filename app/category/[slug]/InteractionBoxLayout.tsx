@@ -1,14 +1,15 @@
-// InteractionBoxLayout.tsx
-
 "use client";
 
 import React from "react";
 
+import InteractivePostCard from "./InteractivePostCard";
+
 export default function InteractionBoxLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+  posts,
+  globalIndexMap,
+  visualizationRegistry,
+  extractVisualization,
+}: any) {
   return (
     <div
       style={{
@@ -16,7 +17,6 @@ export default function InteractionBoxLayout({
 
         display: "flex",
 
-        // interaction 영역 positioning 책임
         justifyContent: "flex-start",
 
         paddingLeft: 390,
@@ -36,13 +36,49 @@ export default function InteractionBoxLayout({
 
           position: "relative",
 
-          // interaction stack 책임도 여기로 이동
           display: "flex",
           flexDirection: "column",
+
           gap: 56,
         }}
       >
-        {children}
+        {posts.map((post: any, index: number) => {
+          const vizKey =
+            extractVisualization(post.content);
+
+          const VizComponent = vizKey
+            ? visualizationRegistry[vizKey]
+            : null;
+
+          const categoryIndex = index + 1;
+
+          const globalIndex =
+            globalIndexMap.get(post.id) ??
+            categoryIndex;
+
+          return (
+            <div
+              key={post.id}
+              style={{
+                width: "100%",
+                minHeight: 220,
+                maxHeight: 280,
+
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "stretch",
+              }}
+            >
+              <InteractivePostCard
+                post={post}
+                categoryIndex={categoryIndex}
+                globalIndex={globalIndex}
+                VizComponent={VizComponent}
+                vizKey={vizKey}
+              />
+            </div>
+          );
+        })}
       </div>
     </div>
   );

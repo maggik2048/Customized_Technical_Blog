@@ -1,5 +1,3 @@
-// CategoryPostBoxRenderer.tsx
-
 "use client";
 
 import Link from "next/link";
@@ -7,7 +5,6 @@ import dynamic from "next/dynamic";
 
 import PostTitleRenderer from "./PostTitleRenderer";
 import CategoryPostBoxIndex from "./CategoryPostBoxIndex";
-import InteractivePostCard from "./InteractivePostCard";
 import MetadataTagRenderer from "./metadataTagRenderer";
 import InteractionBoxLayout from "./InteractionBoxLayout";
 
@@ -187,11 +184,9 @@ export default function CategoryPostBoxRenderer({
                 ? "rgba(40,40,40,0.85)"
                 : "#ffffff",
               letterSpacing: "0.02em",
-
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
-
               textShadow:
                 "0 2px 3px rgba(0,0,0,0.80)",
               fontWeight: 600,
@@ -231,12 +226,11 @@ export default function CategoryPostBoxRenderer({
         alignItems: "flex-start",
       }}
     >
-      {/* LEFT: NORMAL POSTS */}
+      {/* LEFT */}
       <div
         style={{
           width: 780,
           maxWidth: 780,
-
           flexShrink: 0,
 
           display: "flex",
@@ -251,45 +245,13 @@ export default function CategoryPostBoxRenderer({
         )}
       </div>
 
-      {/* RIGHT: INTERACTIVE POSTS */}
-      <InteractionBoxLayout>
-        {interactivePosts.map((post, index) => {
-          const vizKey =
-            extractVisualization(post.content);
-
-          const VizComponent = vizKey
-            ? visualizationRegistry[vizKey]
-            : null;
-
-          const categoryIndex = index + 1;
-
-          const globalIndex =
-            globalIndexMap.get(post.id) ??
-            categoryIndex;
-
-          return (
-            <div
-              key={post.id}
-              style={{
-                width: "100%",
-                minHeight: 220,
-                maxHeight: 280,
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "stretch",
-              }}
-            >
-              <InteractivePostCard
-                post={post}
-                categoryIndex={categoryIndex}
-                globalIndex={globalIndex}
-                VizComponent={VizComponent}
-                vizKey={vizKey}
-              />
-            </div>
-          );
-        })}
-      </InteractionBoxLayout>
+      {/* RIGHT */}
+      <InteractionBoxLayout
+        posts={interactivePosts}
+        globalIndexMap={globalIndexMap}
+        visualizationRegistry={visualizationRegistry}
+        extractVisualization={extractVisualization}
+      />
     </div>
   );
 }
