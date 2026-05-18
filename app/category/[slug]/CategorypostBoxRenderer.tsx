@@ -1,59 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import dynamic from "next/dynamic";
 
 import PostTitleRenderer from "./PostTitleRenderer";
 import CategoryPostBoxIndex from "./CategoryPostBoxIndex";
 import MetadataTagRenderer from "./metadataTagRenderer";
 import InteractionBoxLayout from "./InteractionBoxLayout";
 
-const SatProjection = dynamic(
-  () => import("@/app/visualizations/SatProjection"),
-  { ssr: false }
-);
-
-const Torus = dynamic(
-  () => import("@/app/visualizations/TorusWithNormals"),
-  { ssr: false }
-);
-
-const ModelSlot = dynamic(
-  () => import("@/app/visualizations/ModelSlot"),
-  { ssr: false }
-);
-
-const DrawingOverlay = dynamic(
-  () =>
-    import("@/app/visualizations/DrawingNotation/DrawingOverlay"),
-  { ssr: false }
-);
-
-const Lidar = dynamic(
-  () =>
-    import("@/app/visualizations/SphericalToCartesianCoordinates"),
-  { ssr: false }
-);
-
-const visualizationRegistry: Record<string, any> = {
-  SAT: SatProjection,
-  TORUS: Torus,
-  MODEL: ModelSlot,
-  ANNOTATE: (props: any) => (
-    <DrawingOverlay width={800} height={500} {...props} />
-  ),
-  LIDAR: Lidar,
-};
-
-function extractVisualization(content?: string) {
-  if (!content) return null;
-
-  const match = content.match(
-    /\[(SAT|TORUS|MODEL|ANNOTATE|LIDAR)\]/
-  );
-
-  return match?.[1] ?? null;
-}
+import {
+  visualizationRegistry,
+  extractVisualization,
+  partitionPostsByInteraction,
+} from "./postInteractionMetadataCalculator";
 
 export default function CategoryPostBoxRenderer({
   posts,
@@ -79,9 +37,11 @@ export default function CategoryPostBoxRenderer({
 
   const sortedPosts = [...posts].sort((a, b) => {
     const aHasViz = !!extractVisualization(a.content);
+
     const bHasViz = !!extractVisualization(b.content);
 
     if (aHasViz && !bHasViz) return -1;
+
     if (!aHasViz && bHasViz) return 1;
 
     return (
@@ -90,13 +50,10 @@ export default function CategoryPostBoxRenderer({
     );
   });
 
-  const interactivePosts = sortedPosts.filter((post) =>
-    !!extractVisualization(post.content)
-  );
-
-  const normalPosts = sortedPosts.filter(
-    (post) => !extractVisualization(post.content)
-  );
+  const {
+    interactivePosts,
+    normalPosts,
+  } = partitionPostsByInteraction(sortedPosts);
 
   const renderNormalPost = (
     post: any,
@@ -231,6 +188,7 @@ export default function CategoryPostBoxRenderer({
         style={{
           width: 780,
           maxWidth: 780,
+
           flexShrink: 0,
 
           display: "flex",
