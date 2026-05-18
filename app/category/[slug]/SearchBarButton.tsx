@@ -85,7 +85,7 @@ export default function SearchBarButton({
           borderRadius: 999,
         }}
       >
-        {/* LEFT AREA */}
+        {/* LEFT */}
         <div
           onMouseEnter={() => setIsActive(true)}
           onMouseLeave={() => setIsActive(false)}
@@ -154,7 +154,7 @@ export default function SearchBarButton({
             transform: "translateY(-50%)",
           }}
         >
-          {/* CALCULATOR BUTTON */}
+          {/* CALCULATOR */}
           <button
             onClick={() => setShowCalculator(true)}
             style={{
@@ -174,7 +174,7 @@ export default function SearchBarButton({
             <CalculatorIcon size={18} />
           </button>
 
-          {/* SEARCH BUTTON */}
+          {/* SEARCH */}
           <button
             onClick={handleSearch}
             style={{
@@ -219,7 +219,7 @@ export default function SearchBarButton({
         </span>
       </div>
 
-      {/* OVERLAY */}
+      {/* LOWER OVERLAY ONLY */}
       {showCalculator && (
         <div
           onClick={() => setShowCalculator(false)}
@@ -228,33 +228,48 @@ export default function SearchBarButton({
             inset: 0,
             zIndex: 999999,
 
-            background: `
-              linear-gradient(
-                to top,
-                rgba(0,0,0,0.82),
-                rgba(0,0,0,0.45),
-                rgba(0,0,0,0.18)
-              )
-            `,
-
-            backdropFilter: "blur(10px)",
-            WebkitBackdropFilter: "blur(10px)",
-
             display: "flex",
             alignItems: "flex-end",
             justifyContent: "center",
 
-            animation: "fadeInOverlay 0.22s ease",
+            pointerEvents: "auto",
           }}
         >
-          {/* STOP PROPAGATION */}
+          {/* LOWER DIM REGION */}
+          <div
+            style={{
+              position: "absolute",
+              left: 0,
+              right: 0,
+              bottom: 0,
+              height: "58vh",
+
+              background: `
+                linear-gradient(
+                  to top,
+                  rgba(0,0,0,0.55),
+                  rgba(0,0,0,0.28),
+                  rgba(0,0,0,0.0)
+                )
+              `,
+
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
+
+              pointerEvents: "none",
+            }}
+          />
+
+          {/* CALCULATOR */}
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
+              position: "relative",
               width: "100%",
               display: "flex",
               justifyContent: "center",
               paddingBottom: 34,
+
               animation: "slideUpCalc 0.24s ease",
             }}
           >

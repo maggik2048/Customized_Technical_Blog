@@ -87,7 +87,7 @@ export default function CalculatorKeyboardInterface({
         </button>
       </div>
 
-      {/* GRID */}
+      {/* KEYS */}
       <div
         style={{
           display: "grid",
