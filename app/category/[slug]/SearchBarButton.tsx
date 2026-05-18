@@ -22,19 +22,8 @@ export default function SearchBarButton({
   };
 
   const Magnifier = ({ size = 18 }: { size?: number }) => (
-    <svg
-      width={size}
-      height={size}
-      viewBox="0 0 24 24"
-      fill="none"
-    >
-      <circle
-        cx="11"
-        cy="11"
-        r="7"
-        stroke="white"
-        strokeWidth="1.6"
-      />
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <circle cx="11" cy="11" r="7" stroke="white" strokeWidth="1.6" />
       <line
         x1="16.5"
         y1="16.5"
@@ -69,21 +58,19 @@ export default function SearchBarButton({
         borderRadius: 999,
       }}
     >
-      {/* LEFT Σ + MAGNIFIER (moved closer to bar) */}
+      {/* LEFT Σ + HARD SHADOW MAGNIFIER */}
       <div
         style={{
           position: "absolute",
-          left: -48, // was -64 → moved closer
-
+          left: -48,
           top: "50%",
           transform: "translateY(-50%)",
-
           cursor: "pointer",
           userSelect: "none",
         }}
         onClick={handleSearch}
       >
-        {/* Σ */}
+        {/* Σ (unchanged soft glow) */}
         <span
           style={{
             fontSize: 60,
@@ -97,20 +84,26 @@ export default function SearchBarButton({
             lineHeight: 1,
 
             textShadow: `
-              0 0 14px rgba(255,255,255,0.25),
-              0 3px 16px rgba(0,0,0,0.3)
+              0 0 18px rgba(255,255,255,0.28),
+              0 6px 18px rgba(0,0,0,0.45),
+              0 2px 6px rgba(0,0,0,0.25)
             `,
           }}
         >
           Σ
         </span>
 
-        {/* subscript magnifier */}
+        {/* HARD SHADOW MAGNIFIER (strong & directional) */}
         <span
           style={{
             position: "absolute",
-            right: -18, // slightly tighter
+            right: -18,
             bottom: -4,
+
+            filter: `
+              drop-shadow(2px 3px 0px rgba(0,0,0,0.65))
+              drop-shadow(0px 1px 6px rgba(0,0,0,0.55))
+            `,
           }}
         >
           <Magnifier size={18} />
@@ -144,7 +137,7 @@ export default function SearchBarButton({
         }}
       />
 
-      {/* SEARCH BUTTON (added subtle white outline/glow) */}
+      {/* SEARCH BUTTON */}
       <button
         onClick={handleSearch}
         style={{
@@ -156,13 +149,9 @@ export default function SearchBarButton({
           padding: "0 12px",
 
           borderRadius: 999,
-
-          border: "1px solid rgba(255,255,255,0.25)", // subtle white outline added
-
+          border: "1px solid rgba(255,255,255,0.25)",
           background: "rgba(0,0,0,0.04)",
-
           color: "rgba(0,0,0,0.7)",
-
           fontSize: 12,
 
           cursor: "pointer",
@@ -170,28 +159,19 @@ export default function SearchBarButton({
           fontFamily:
             "ui-serif, Georgia, 'Times New Roman', Times, serif",
 
-          boxShadow: "0 0 8px rgba(255,255,255,0.08)", // subtle glow
-
-          transition: "all 0.2s ease",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = "rgba(0,0,0,0.07)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = "rgba(0,0,0,0.04)";
+          boxShadow: "0 0 8px rgba(255,255,255,0.08)",
         }}
       >
         <Magnifier size={14} />
         Search
       </button>
 
-      {/* FILTER (more right + more transparent) */}
+      {/* FILTER */}
       <span
         onClick={onFilterClick}
         style={{
           position: "absolute",
-          right: -78, // moved further right (was -62)
-
+          right: -78,
           top: "50%",
           transform: "translateY(-50%)",
 
@@ -201,7 +181,7 @@ export default function SearchBarButton({
           fontFamily:
             "ui-serif, Georgia, 'Times New Roman', Times, serif",
 
-          color: "rgba(255,255,255,0.55)", // more transparent
+          color: "rgba(255,255,255,0.55)",
 
           cursor: "pointer",
           userSelect: "none",
@@ -210,8 +190,6 @@ export default function SearchBarButton({
             0 0 10px rgba(255,255,255,0.15),
             0 2px 10px rgba(0,0,0,0.2)
           `,
-
-          transition: "all 0.25s ease",
         }}
       >
         FILTER
