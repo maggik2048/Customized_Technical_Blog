@@ -16,7 +16,7 @@ export default function InteractionBoxLayout({
 
         display: "flex",
 
-        // interaction 영역만 왼쪽 정렬
+        // interaction 영역 positioning 책임
         justifyContent: "flex-start",
 
         paddingLeft: 390,
@@ -26,7 +26,6 @@ export default function InteractionBoxLayout({
 
         flexShrink: 0,
 
-        // interaction 전체만 왼쪽으로 이동
         transform: "translateX(-120px)",
       }}
     >
@@ -36,6 +35,11 @@ export default function InteractionBoxLayout({
           maxWidth: 900,
 
           position: "relative",
+
+          // interaction stack 책임도 여기로 이동
+          display: "flex",
+          flexDirection: "column",
+          gap: 56,
         }}
       >
         {children}

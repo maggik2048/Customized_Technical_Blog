@@ -253,50 +253,42 @@ export default function CategoryPostBoxRenderer({
 
       {/* RIGHT: INTERACTIVE POSTS */}
       <InteractionBoxLayout>
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 56,
-          }}
-        >
-          {interactivePosts.map((post, index) => {
-            const vizKey =
-              extractVisualization(post.content);
+        {interactivePosts.map((post, index) => {
+          const vizKey =
+            extractVisualization(post.content);
 
-            const VizComponent = vizKey
-              ? visualizationRegistry[vizKey]
-              : null;
+          const VizComponent = vizKey
+            ? visualizationRegistry[vizKey]
+            : null;
 
-            const categoryIndex = index + 1;
+          const categoryIndex = index + 1;
 
-            const globalIndex =
-              globalIndexMap.get(post.id) ??
-              categoryIndex;
+          const globalIndex =
+            globalIndexMap.get(post.id) ??
+            categoryIndex;
 
-            return (
-              <div
-                key={post.id}
-                style={{
-                  width: "100%",
-                  minHeight: 220,
-                  maxHeight: 280,
-                  display: "flex",
-                  flexDirection: "row",
-                  alignItems: "stretch",
-                }}
-              >
-                <InteractivePostCard
-                  post={post}
-                  categoryIndex={categoryIndex}
-                  globalIndex={globalIndex}
-                  VizComponent={VizComponent}
-                  vizKey={vizKey}
-                />
-              </div>
-            );
-          })}
-        </div>
+          return (
+            <div
+              key={post.id}
+              style={{
+                width: "100%",
+                minHeight: 220,
+                maxHeight: 280,
+                display: "flex",
+                flexDirection: "row",
+                alignItems: "stretch",
+              }}
+            >
+              <InteractivePostCard
+                post={post}
+                categoryIndex={categoryIndex}
+                globalIndex={globalIndex}
+                VizComponent={VizComponent}
+                vizKey={vizKey}
+              />
+            </div>
+          );
+        })}
       </InteractionBoxLayout>
     </div>
   );
