@@ -268,7 +268,7 @@ export default function SearchBarButton({
               width: "100%",
               display: "flex",
               justifyContent: "center",
-              paddingBottom: 34,
+              paddingBottom: -10,
 
               animation: "slideUpCalc 0.24s ease",
             }}
