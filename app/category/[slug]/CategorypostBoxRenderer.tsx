@@ -206,19 +206,10 @@ export default function CategoryPostBoxRenderer({
         flexDirection: "row",
         gap: 24,
         width: "100%",
-
-        // 핵심 변경: 전체를 왼쪽으로 당김
         justifyContent: "flex-start",
         alignItems: "flex-start",
-
-        // 기존 maxWidth 유지하되 왼쪽으로 이동
         maxWidth: 1020,
-
-        //  전체 덩어리 왼쪽 이동 (핵심)
         marginLeft: "-140px",
-
-        // 더 강하게 당기고 싶으면 아래로 교체:
-        // transform: "translateX(-60px)",
       }}
     >
       {/* LEFT: NORMAL POSTS */}
@@ -228,8 +219,15 @@ export default function CategoryPostBoxRenderer({
         )}
       </div>
 
-      {/* RIGHT: INTERACTIVE POSTS */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 16 }}>
+      {/* RIGHT: INTERACTIVE POSTS (MODIFIED LAYOUT ONLY HERE) */}
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          gap: 16,
+        }}
+      >
         {interactivePosts.map((post, index) => {
           const vizKey = extractVisualization(post.content);
           const VizComponent = vizKey
@@ -242,14 +240,25 @@ export default function CategoryPostBoxRenderer({
             globalIndexMap.get(post.id) ?? categoryIndex;
 
           return (
-            <InteractivePostCard
+            <div
               key={post.id}
-              post={post}
-              categoryIndex={categoryIndex}
-              globalIndex={globalIndex}
-              VizComponent={VizComponent}
-              vizKey={vizKey}
-            />
+              style={{
+                width: "100%",
+                minHeight: 220,
+                maxHeight: 280,
+                display: "flex",
+                flexDirection: "row", // 🔥 핵심: 가로형 카드
+                alignItems: "stretch",
+              }}
+            >
+              <InteractivePostCard
+                post={post}
+                categoryIndex={categoryIndex}
+                globalIndex={globalIndex}
+                VizComponent={VizComponent}
+                vizKey={vizKey}
+              />
+            </div>
           );
         })}
       </div>
