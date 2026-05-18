@@ -3,15 +3,10 @@
 export default function CategoryPostBoxIndex({
   categoryIndex,
   globalIndex,
-  localTotal,
   isSimple,
 }: {
   categoryIndex: number;
-
   globalIndex: number;
-
-  localTotal: number;
-
   isSimple: boolean;
 }) {
   return (
@@ -21,7 +16,6 @@ export default function CategoryPostBoxIndex({
 
         left: 8,
         top: "50%",
-
         transform: "translateY(-50%)",
 
         zIndex: 20,
@@ -29,109 +23,30 @@ export default function CategoryPostBoxIndex({
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-
-        gap: 4,
-
-        minWidth: 42,
+        gap: 2,
 
         fontSize: 9,
-
         letterSpacing: "0.08em",
 
         pointerEvents: "none",
 
         color: isSimple
           ? "rgba(60,60,60,0.65)"
-          : "rgba(255,255,255,0.82)",
-
-        textAlign: "center",
+          : "rgba(255,255,255,0.75)",
       }}
     >
-      {/* LOCAL */}
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-
-          lineHeight: 1,
-        }}
-      >
-        <div
-          style={{
-            fontSize: 8,
-            opacity: 0.55,
-
-            marginBottom: 2,
-
-            letterSpacing: "0.14em",
-          }}
-        >
-          LOCAL
-        </div>
-
-        <div
-          style={{
-            fontSize: 12,
-            fontWeight: 700,
-          }}
-        >
-          {categoryIndex}
-
-          <span
-            style={{
-              opacity: 0.45,
-              margin: "0 2px",
-            }}
-          >
-            /
-          </span>
-
-          <span
-            style={{
-              opacity: 0.72,
-            }}
-          >
-            {localTotal}
-          </span>
-        </div>
+      {/* 같은 카테고리 내부 순번 */}
+      <div>
+        {categoryIndex}
       </div>
 
-      {/* GLOBAL */}
+      {/* 전체 posts 기준 순번 */}
       <div
         style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-
-          marginTop: 2,
-
-          lineHeight: 1,
+          opacity: 0.7,
         }}
       >
-        <div
-          style={{
-            fontSize: 8,
-            opacity: 0.5,
-
-            marginBottom: 2,
-
-            letterSpacing: "0.14em",
-          }}
-        >
-          GLOBAL
-        </div>
-
-        <div
-          style={{
-            fontSize: 11,
-            fontWeight: 600,
-
-            opacity: 0.82,
-          }}
-        >
-          #{globalIndex}
-        </div>
+        {globalIndex}
       </div>
     </div>
   );
