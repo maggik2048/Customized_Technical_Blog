@@ -7,6 +7,9 @@ import PostTitleRenderer from "./PostTitleRenderer";
 import CategoryPostBoxIndex from "./CategoryPostBoxIndex";
 import InteractivePostCard from "./InteractivePostCard";
 
+/* 추가 */
+import MetadataTagRenderer from "./metadataTagRenderer";
+
 const SatProjection = dynamic(
   () => import("@/app/visualizations/SatProjection"),
   { ssr: false }
@@ -226,6 +229,9 @@ export default function CategoryPostBoxRenderer({
                   }}
                 />
               )}
+
+              {/* 여기만 추가됨 */}
+              {!isSimple && <MetadataTagRenderer />}
 
               <div
                 style={{
