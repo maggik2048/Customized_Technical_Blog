@@ -17,8 +17,7 @@ export default function SidebarOpenCloseToggle({
       style={{
         position: "fixed",
 
-        // sidebar edge tracking
-        left: sidebarWidth + sidebarTranslateX,
+        left: sidebarWidth + sidebarTranslateX + 24,
         top: "50%",
 
         transform: "translate(-50%, -50%)",
@@ -59,29 +58,21 @@ export default function SidebarOpenCloseToggle({
           alignItems: "center",
           justifyContent: "center",
 
-          // open 상태면 약간 어두운 아이보리
           color: open ? "rgba(175, 169, 154, 0.92)" : "#050505",
-
           fontSize: 58,
-
-          // Ψ thinner
           fontWeight: open ? 100 : 900,
 
           fontFamily:
             '"STIX Two Math", "Cambria Math", "Times New Roman", serif',
 
           lineHeight: 1,
-
           transform: "rotate(90deg)",
 
-          // stronger & wider dark emboss
           textShadow: open
             ? `
               -2.8px -2.8px 4px rgba(8,8,8,0.92),
               -1.5px -1.5px 2px rgba(20,20,20,0.72),
-
                1px 1px 1px rgba(255,248,235,0.22),
-
                0 0 12px rgba(255,240,200,0.06),
                0 3px 10px rgba(0,0,0,0.32)
             `
@@ -97,16 +88,15 @@ export default function SidebarOpenCloseToggle({
         {open ? "Ψ" : "Ω"}
       </span>
 
-      {/* CENTERED VERTICAL TEXT */}
+      {/* TEXT */}
       <span
         style={{
           position: "absolute",
 
-          // Ω / Ψ 기준 오른쪽 중앙
           left: 58,
           top: "-27%",
 
-          transform: "translateY(-50%) rotate(90deg)",
+          transform: "translateY(-50%) rotate(90deg) translateX(6px)",
           transformOrigin: "left center",
 
           color: open
