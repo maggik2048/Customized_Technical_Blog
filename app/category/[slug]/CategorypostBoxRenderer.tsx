@@ -205,8 +205,20 @@ export default function CategoryPostBoxRenderer({
         display: "flex",
         flexDirection: "row",
         gap: 24,
-        maxWidth: 1020,
         width: "100%",
+
+        // 핵심 변경: 전체를 왼쪽으로 당김
+        justifyContent: "flex-start",
+        alignItems: "flex-start",
+
+        // 기존 maxWidth 유지하되 왼쪽으로 이동
+        maxWidth: 1020,
+
+        //  전체 덩어리 왼쪽 이동 (핵심)
+        marginLeft: "-140px",
+
+        // 더 강하게 당기고 싶으면 아래로 교체:
+        // transform: "translateX(-60px)",
       }}
     >
       {/* LEFT: NORMAL POSTS */}
