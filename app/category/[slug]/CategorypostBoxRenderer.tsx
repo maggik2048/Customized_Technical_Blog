@@ -5,7 +5,9 @@ import Link from "next/link";
 import PostTitleRenderer from "./PostTitleRenderer";
 import CategoryPostBoxIndex from "./CategoryPostBoxIndex";
 import MetadataTagRenderer from "./metadataTagRenderer";
+
 import InteractionBoxLayout from "./InteractionBoxLayout";
+import CategoryInsideLayout from "./CategoryInsideLayout";
 
 import {
   visualizationRegistry,
@@ -173,43 +175,18 @@ export default function CategoryPostBoxRenderer({
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "row",
-        gap: 24,
-        width: "100%",
-        justifyContent: "flex-start",
-        alignItems: "flex-start",
-      }}
-    >
-      {/* LEFT */}
-      <div
-        style={{
-          width: 780,
-          maxWidth: 780,
-
-          flexShrink: 0,
-
-          display: "flex",
-          flexDirection: "column",
-          gap: 16,
-
-          transform: "translateX(270px)",
-        }}
-      >
-        {normalPosts.map((post, index) =>
-          renderNormalPost(post, index)
-        )}
-      </div>
-
-      {/* RIGHT */}
-      <InteractionBoxLayout
-        posts={interactivePosts}
-        globalIndexMap={globalIndexMap}
-        visualizationRegistry={visualizationRegistry}
-        extractVisualization={extractVisualization}
-      />
-    </div>
+    <CategoryInsideLayout
+      left={normalPosts.map((post, index) =>
+        renderNormalPost(post, index)
+      )}
+      right={
+        <InteractionBoxLayout
+          posts={interactivePosts}
+          globalIndexMap={globalIndexMap}
+          visualizationRegistry={visualizationRegistry}
+          extractVisualization={extractVisualization}
+        />
+      }
+    />
   );
 }

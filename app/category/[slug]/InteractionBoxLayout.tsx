@@ -78,6 +78,18 @@ export default function InteractionBoxLayout({
         transform: "translateX(-120px)",
 
         overflow: "visible",
+
+        /* ========================= */
+        /* 핵심 추가 */
+        /* ========================= */
+
+        position: "sticky",
+
+        top: 40,
+
+        alignSelf: "flex-start",
+
+        zIndex: 200,
       }}
     >
       <div
@@ -216,7 +228,7 @@ export default function InteractionBoxLayout({
             </motion.div>
           )}
 
-          {/* CENTER PREVIEW */}
+          {/* CENTER */}
           <motion.div
             animate={{
               scale: 0.82,
