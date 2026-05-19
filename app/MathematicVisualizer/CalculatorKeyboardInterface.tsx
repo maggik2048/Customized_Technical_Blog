@@ -60,10 +60,7 @@ export default function CalculatorGraphingInterface({
 }: Props) {
   const [expression, setExpression] = useState("sin(x)");
 
-  /* ----------------------------- */
-  /* ZOOM STATE */
-  /* ----------------------------- */
-  const [zoom, setZoom] = useState(16);
+  const [zoom, setZoom] = useState(46);
 
   const handleWheel = (e: React.WheelEvent) => {
     e.preventDefault();
@@ -73,10 +70,6 @@ export default function CalculatorGraphingInterface({
       return Math.min(Math.max(next, 4), 60);
     });
   };
-
-  /* ----------------------------- */
-  /* GRAPH DATA */
-  /* ----------------------------- */
 
   const graphPoints = useMemo(() => {
     const points: { x: number; y: number }[] = [];
@@ -97,10 +90,6 @@ export default function CalculatorGraphingInterface({
     setExpression((prev) => prev + key);
   };
 
-  /* ----------------------------- */
-  /* GRAPH CONFIG */
-  /* ----------------------------- */
-
   const width = 820;
   const height = 520;
 
@@ -118,7 +107,6 @@ export default function CalculatorGraphingInterface({
     })
     .join(" ");
 
-  /* tick spacing (Manim style) */
   const tickStep = 1;
 
   return (
@@ -139,6 +127,7 @@ export default function CalculatorGraphingInterface({
             background: "rgba(255,255,255,0.03)",
             border: "2px solid rgba(255,255,255,0.18)",
             backdropFilter: "blur(20px)",
+            transition: "backdrop-filter 700ms ease, background 700ms ease"
           }}
         >
           <div
@@ -198,7 +187,6 @@ export default function CalculatorGraphingInterface({
             height="100%"
             viewBox={`0 0 ${width} ${height}`}
           >
-            {/* GRID (stronger Manim style) */}
             {Array.from({ length: 40 }).map((_, i) => {
               const x = i * 20;
               return (
@@ -227,7 +215,6 @@ export default function CalculatorGraphingInterface({
               );
             })}
 
-            {/* AXIS (stronger) */}
             <line
               x1={0}
               y1={centerY}
@@ -246,7 +233,6 @@ export default function CalculatorGraphingInterface({
               strokeWidth={2}
             />
 
-            {/* AXIS TICKS + LABELS */}
             {Array.from({ length: 40 }).map((_, i) => {
               const xVal = i - 20;
               const px = centerX + xVal * scaleX;
@@ -281,7 +267,6 @@ export default function CalculatorGraphingInterface({
               );
             })}
 
-            {/* GRAPH */}
             <path
               d={pathData}
               fill="none"
@@ -293,7 +278,6 @@ export default function CalculatorGraphingInterface({
             />
           </svg>
 
-          {/* LABEL */}
           <div
             style={{
               position: "absolute",
@@ -309,7 +293,6 @@ export default function CalculatorGraphingInterface({
             y = {expression}
           </div>
 
-          {/* ZOOM INDICATOR */}
           <div
             style={{
               position: "absolute",
