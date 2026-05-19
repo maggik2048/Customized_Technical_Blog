@@ -3,7 +3,7 @@
 import BurnFilterOverlay from "./BurnFilterOverlay";
 
 export default function CategoryInsideBackgroundRenderer() {
-  const bgImage = "/images/mathdraw3.png";
+  const bgImage = "/images/mathdraw.png";
 
   return (
     <>
