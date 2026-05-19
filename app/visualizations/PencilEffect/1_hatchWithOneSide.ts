@@ -5,7 +5,11 @@ type HatchReplaceOptions = {
   minGray?: number;
   maxGray?: number;
 
+  // 영역 판정 resolution
   blockSize?: number;
+
+  // hatch 성김 정도
+  hatchSpacing?: number;
 
   lineWidth?: number;
 
@@ -30,8 +34,13 @@ export function replaceGrayRangeWithHatch(
   const maxGray =
     options.maxGray ?? 30;
 
+  // coverage 판정용
   const blockSize =
     options.blockSize ?? 6;
+
+  // hatch density 전용
+  const hatchSpacing =
+    options.hatchSpacing ?? 2;
 
   const lineWidth =
     options.lineWidth ?? 1;
@@ -48,6 +57,7 @@ export function replaceGrayRangeWithHatch(
     0.5;
 
   const width = canvas.width;
+
   const height = canvas.height;
 
   // =========================
@@ -81,7 +91,6 @@ export function replaceGrayRangeWithHatch(
       0.587 * g +
       0.114 * b;
 
-    // 범위 안이면 1
     if (
       gray >= minGray &&
       gray <= maxGray
@@ -93,7 +102,6 @@ export function replaceGrayRangeWithHatch(
   }
 
   // =========================
-  // IMPORTANT
   // 기존 threshold 영역을
   // hatch로 "교체"
   // =========================
@@ -117,6 +125,7 @@ export function replaceGrayRangeWithHatch(
       x += blockSize
     ) {
       let insideCount = 0;
+
       let total = 0;
 
       for (let j = 0; j < blockSize; j++) {
@@ -151,7 +160,6 @@ export function replaceGrayRangeWithHatch(
       if (
         ratio >= coverageThreshold
       ) {
-        // 기존 threshold 검정 제거
         ctx.fillRect(
           x,
           y,
@@ -163,7 +171,8 @@ export function replaceGrayRangeWithHatch(
           ctx,
           x,
           y,
-          blockSize
+          blockSize,
+          hatchSpacing
         );
       }
     }
@@ -176,20 +185,41 @@ function drawHatch(
   ctx: CanvasRenderingContext2D,
   x: number,
   y: number,
-  size: number
+  size: number,
+  spacing: number
 ): void {
   ctx.beginPath();
 
-  // 좌하단 → 우상단
-  ctx.moveTo(
-    x,
-    y + size
-  );
+  // 기존 룩 유지:
+  // block 내부에 단일 diagonal만 그림
+  // 단지 spacing 기준으로 일부 block만 그림
 
-  ctx.lineTo(
-    x + size,
-    y
-  );
+  const gridX =
+    Math.floor(x / size);
+
+  const gridY =
+    Math.floor(y / size);
+
+  const shouldDraw =
+    (gridX + gridY) %
+      Math.max(
+        1,
+        Math.round(spacing)
+      ) ===
+    0;
+
+  if (shouldDraw) {
+    // 좌하단 → 우상단
+    ctx.moveTo(
+      x,
+      y + size
+    );
+
+    ctx.lineTo(
+      x + size,
+      y
+    );
+  }
 
   ctx.stroke();
 }
