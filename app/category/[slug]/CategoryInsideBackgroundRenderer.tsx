@@ -1,15 +1,10 @@
 "use client";
 
-import BurnFilterOverlay from "./BurnFilterOverlay";
-
 export default function CategoryInsideBackgroundRenderer() {
   const bgImage = "/images/mathdraw0.png";
 
   return (
     <>
-      {/* GLOBAL BURN FILTER */}
-      <BurnFilterOverlay />
-
       {/* BASE BACKGROUND */}
       <div
         style={{
@@ -77,7 +72,6 @@ export default function CategoryInsideBackgroundRenderer() {
           inset: 0,
           zIndex: -4,
           pointerEvents: "none",
-
           background: `
             linear-gradient(
               to top,
@@ -88,7 +82,6 @@ export default function CategoryInsideBackgroundRenderer() {
               rgba(107,110,135,0.55) 100%
             )
           `,
-
           mixBlendMode: "lighten",
         }}
       />
@@ -100,7 +93,6 @@ export default function CategoryInsideBackgroundRenderer() {
           inset: 0,
           zIndex: -3,
           pointerEvents: "none",
-
           background: `
             radial-gradient(
               circle at 85% 50%,
@@ -108,7 +100,6 @@ export default function CategoryInsideBackgroundRenderer() {
               transparent 60%
             )
           `,
-
           mixBlendMode: "screen",
         }}
       />
@@ -120,7 +111,6 @@ export default function CategoryInsideBackgroundRenderer() {
           inset: 0,
           zIndex: -2,
           opacity: 0.07,
-
           backgroundImage:
             "url('https://www.transparenttextures.com/patterns/noise.png')",
         }}
