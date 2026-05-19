@@ -7,7 +7,7 @@ declare global {
 import {
   processLongestSides,
   PolygonPoint,
-} from "./longestside";
+} from "./4_longestside";
 
 export function convexDecomposition(canvas: HTMLCanvasElement) {
   if (!window.cv) return;

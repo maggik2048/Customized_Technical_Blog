@@ -9,7 +9,12 @@ import {
   processLongestSides,
   PolygonDirectionData,
   PolygonPoint,
-} from "./longestside";
+} from "./4_longestside";
+
+import {
+  getPerpendicularDirections,
+  PerpendicularDirectionData,
+} from "./5_getPerpendicular";
 
 type Props = {
   img: HTMLImageElement;
@@ -20,7 +25,8 @@ export default function BasicRenderer({
   img,
   threshold = 128,
 }: Props) {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const canvasRef =
+    useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
     if (!canvasRef.current || !img) return;
@@ -36,7 +42,12 @@ export default function BasicRenderer({
     canvas.width = img.width;
     canvas.height = img.height;
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(
+      0,
+      0,
+      canvas.width,
+      canvas.height
+    );
 
     // STEP 0: original image
     ctx.drawImage(img, 0, 0);
@@ -45,7 +56,8 @@ export default function BasicRenderer({
     applyThreshold(canvas, threshold);
 
     // STEP 2: convex decomposition
-    const result = convexDecomposition(canvas);
+    const result =
+      convexDecomposition(canvas);
 
     if (!result) return;
 
@@ -58,14 +70,35 @@ export default function BasicRenderer({
     } = result;
 
     // STEP 3:
-    // 각 polygon의 가장 긴 변 계산 + 노란선 draw
-    processLongestSides(canvas, polygons);
+    // longest side 계산 + 노란선 draw
+    const longestSideData =
+      processLongestSides(
+        canvas,
+        polygons
+      );
 
-    console.log("polygons", polygons);
+    console.log(
+      "polygons",
+      polygons
+    );
 
     console.log(
       "directionData",
       directionData
+    );
+
+    // STEP 4:
+    // perpendicular 계산 + 하늘색선 draw
+    const perpendicularData:
+      PerpendicularDirectionData[] =
+      getPerpendicularDirections(
+        canvas,
+        longestSideData
+      );
+
+    console.log(
+      "perpendicularData",
+      perpendicularData
     );
   };
 
