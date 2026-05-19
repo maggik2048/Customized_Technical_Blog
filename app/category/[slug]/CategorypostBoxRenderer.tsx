@@ -39,11 +39,9 @@ export default function CategoryPostBoxRenderer({
 
   const sortedPosts = [...posts].sort((a, b) => {
     const aHasViz = !!extractVisualization(a.content);
-
     const bHasViz = !!extractVisualization(b.content);
 
     if (aHasViz && !bHasViz) return -1;
-
     if (!aHasViz && bHasViz) return 1;
 
     return (
@@ -52,19 +50,12 @@ export default function CategoryPostBoxRenderer({
     );
   });
 
-  const {
-    interactivePosts,
-    normalPosts,
-  } = partitionPostsByInteraction(sortedPosts);
+  const { interactivePosts, normalPosts } =
+    partitionPostsByInteraction(sortedPosts);
 
-  const renderNormalPost = (
-    post: any,
-    index: number
-  ) => {
+  const renderNormalPost = (post: any, index: number) => {
     const contentLength = post.content?.length ?? 0;
-
     const categoryIndex = index + 1;
-
     const globalIndex =
       globalIndexMap.get(post.id) ?? categoryIndex;
 
@@ -106,12 +97,11 @@ export default function CategoryPostBoxRenderer({
               style={{
                 position: "absolute",
                 inset: 0,
-                background:
-                  "rgba(165,170,185,0.14)",
+                background: "rgba(165,170,185,0.14)",
                 backdropFilter:
-                  "invert(0.82) brightness(0.94) blur(2px)",
+                  "invert(0.82) brightness(1.12) contrast(1.05) blur(2px)",
                 WebkitBackdropFilter:
-                  "invert(0.82) brightness(0.94) blur(2px)",
+                  "invert(0.82) brightness(1.12) contrast(1.05) blur(2px)",
                 zIndex: 0,
               }}
             />
@@ -125,8 +115,7 @@ export default function CategoryPostBoxRenderer({
                 top: 0,
                 bottom: 0,
                 width: 2,
-                background:
-                  "rgba(220,225,235,0.38)",
+                background: "rgba(220,225,235,0.38)",
                 zIndex: 0,
               }}
             />
@@ -146,8 +135,7 @@ export default function CategoryPostBoxRenderer({
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
-              textShadow:
-                "0 2px 3px rgba(0,0,0,0.80)",
+              textShadow: "0 2px 3px rgba(0,0,0,0.80)",
               fontWeight: 600,
             }}
           >
@@ -165,9 +153,7 @@ export default function CategoryPostBoxRenderer({
               letterSpacing: "0.06em",
             }}
           >
-            {new Date(
-              post.created_at
-            ).toLocaleDateString()}
+            {new Date(post.created_at).toLocaleDateString()}
           </div>
         </div>
       </Link>
