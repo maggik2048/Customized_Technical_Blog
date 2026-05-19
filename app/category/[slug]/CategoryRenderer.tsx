@@ -26,7 +26,7 @@ export default function CategoryRenderer({
           overflowX: "hidden",
           overflowY: "visible",
           fontFamily: "serif",
-          color: "rgba(40,40,40,0.78)",
+          color: "rgba(255, 255, 255, 0.78)",
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
@@ -50,7 +50,7 @@ export default function CategoryRenderer({
             style={{
               fontSize: 14,
               letterSpacing: "0.25em",
-              color: "rgba(90,90,90,0.7)",
+              color: "rgba(255, 255, 255, 0.7)",
               marginBottom: 10,
             }}
           >
@@ -61,7 +61,7 @@ export default function CategoryRenderer({
             style={{
               fontSize: 44,
               letterSpacing: "0.12em",
-              color: "rgba(50,50,50,0.85)",
+              color: "rgba(255, 255, 255, 0.85)",
               margin: 0,
               textShadow: "0 0 18px rgba(255,255,255,0.25)",
             }}
