@@ -94,6 +94,42 @@ export default function PunchFilterOverlay() {
           `,
         }}
       />
+
+      {/* CALM FILTER (NO BLUR, CLEAN LUXURY GRADE) */}
+      <div
+        style={{
+          position: "fixed",
+          inset: 0,
+          pointerEvents: "none",
+          zIndex: 8,
+
+          /* soft white lift + slight desaturation */
+          background: `
+            radial-gradient(
+              circle at center,
+              rgba(255,255,255,0.22) 0%,
+              rgba(255,255,255,0.10) 45%,
+              rgba(245,245,250,0.28) 100%
+            )
+          `,
+
+          mixBlendMode: "screen",
+          opacity: 0.48,
+
+          /* NO BLUR ANYMORE */
+          backdropFilter: `
+            brightness(1.14)
+            contrast(0.93)
+            saturate(0.86)
+          `,
+
+          WebkitBackdropFilter: `
+            brightness(1.14)
+            contrast(0.93)
+            saturate(0.86)
+          `,
+        }}
+      />
     </>
   );
 }
