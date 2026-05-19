@@ -48,14 +48,99 @@ export default function PostTitleRenderer({
   let isAfterEqual = false;
   let isAfterDoubleColon = false;
 
+  /**
+   * 영어만 약간 크게
+   */
+  const renderStyledText = (
+    value: string,
+    color: string,
+    key: string
+  ) => {
+    const segments = value.split(
+      /([A-Za-z0-9\s]+)/g
+    );
+
+    return segments.map(
+      (seg, idx) => {
+        if (!seg) return null;
+
+        const isEnglish =
+          /[A-Za-z]/.test(seg);
+
+        return (
+          <span
+            key={`${key}-${idx}`}
+            style={{
+              color,
+
+              // 영어만 확대
+              fontSize: isEnglish
+                ? "1.28em"
+                : "1em",
+
+              // 영어 optical balance
+              fontWeight: isEnglish
+                ? 560
+                : 520,
+
+              // baseline 보정
+              position: "relative",
+
+              top: isEnglish
+                ? "0.02em"
+                : "0",
+
+              display: "inline-block",
+
+              textShadow: `
+                0 1px 2px rgba(0,0,0,0.45),
+                0 3px 8px rgba(0,0,0,0.30)
+              `,
+            }}
+          >
+            {seg}
+          </span>
+        );
+      }
+    );
+  };
+
   return (
     <span
       className={cormorant.className}
       style={{
-        letterSpacing: "0.02em",
         fontSize: 16,
-        lineHeight: 1.15,
-        fontWeight: 600,
+
+        lineHeight: 1.18,
+
+        letterSpacing: "0.015em",
+
+        // 한글 안퍼지게
+        fontWeight: 520,
+
+        // 영어는 Cormorant 유지
+        // 한글만 fallback
+        fontFamily: `
+          ${cormorant.style.fontFamily},
+          "Pretendard",
+          "Noto Sans KR",
+          serif
+        `,
+
+        // cinematic but clean
+        textShadow: `
+          0 1px 2px rgba(0,0,0,0.50),
+          0 3px 8px rgba(0,0,0,0.35)
+        `,
+
+        WebkitFontSmoothing:
+          "antialiased",
+
+        MozOsxFontSmoothing:
+          "grayscale",
+
+        textRendering:
+          "optimizeLegibility",
       }}
     >
       {equalSplit.map((chunk, i) => {
@@ -70,7 +155,13 @@ export default function PostTitleRenderer({
               key={i}
               style={{
                 color: COLORS.equal,
+
                 fontWeight: 650,
+
+                textShadow: `
+                  0 0 8px rgba(255,202,10,0.25),
+                  0 2px 6px rgba(0,0,0,0.45)
+                `,
               }}
             >
               {chunk}
@@ -78,7 +169,9 @@ export default function PostTitleRenderer({
           );
         }
 
-        const parts = chunk.split(/(\(.*?\)|::|vs)/g);
+        const parts = chunk.split(
+          /(\(.*?\)|::|vs)/g
+        );
 
         return parts.map((part, j) => {
           if (!part) return null;
@@ -91,8 +184,15 @@ export default function PostTitleRenderer({
               <span
                 key={`${i}-${j}`}
                 style={{
-                  color: COLORS.doubleColon,
+                  color:
+                    COLORS.doubleColon,
+
                   fontWeight: 700,
+
+                  textShadow: `
+                    0 0 10px rgba(225,255,0,0.25),
+                    0 2px 8px rgba(0,0,0,0.45)
+                  `,
                 }}
               >
                 {part}
@@ -107,7 +207,13 @@ export default function PostTitleRenderer({
                 key={`${i}-${j}`}
                 style={{
                   color: COLORS.vs,
+
                   fontWeight: 700,
+
+                  textShadow: `
+                    0 0 8px rgba(255,175,122,0.22),
+                    0 2px 6px rgba(0,0,0,0.4)
+                  `,
                 }}
               >
                 {part}
@@ -124,7 +230,12 @@ export default function PostTitleRenderer({
               <span
                 key={`${i}-${j}`}
                 style={{
-                  color: COLORS.parentheses,
+                  color:
+                    COLORS.parentheses,
+
+                  textShadow: `
+                    0 1px 4px rgba(0,0,0,0.35)
+                  `,
                 }}
               >
                 {part}
@@ -136,20 +247,23 @@ export default function PostTitleRenderer({
           let color = COLORS.base;
 
           if (isAfterDoubleColon) {
-            color = COLORS.afterDoubleColon;
+            color =
+              COLORS.afterDoubleColon;
           } else if (isAfterEqual) {
-            color = COLORS.afterEqual;
+            color =
+              COLORS.afterEqual;
           }
 
           return (
-            <span
+            <React.Fragment
               key={`${i}-${j}`}
-              style={{
-                color,
-              }}
             >
-              {part}
-            </span>
+              {renderStyledText(
+                part,
+                color,
+                `${i}-${j}`
+              )}
+            </React.Fragment>
           );
         });
       })}
