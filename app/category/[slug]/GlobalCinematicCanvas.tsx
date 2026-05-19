@@ -73,7 +73,7 @@ export default function PunchFilterOverlay() {
           maskPosition: "bottom",
           WebkitMaskPosition: "bottom",
 
-          opacity: 0.61,
+          opacity: 0.71,
         }}
       />
     </div>

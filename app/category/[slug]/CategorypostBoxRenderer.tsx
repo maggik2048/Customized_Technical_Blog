@@ -66,24 +66,79 @@ export default function CategoryPostBoxRenderer({
         <div
           style={{
             position: "relative",
-            height: 46,
-            borderRadius: 6,
-            padding: "8px 16px 8px 52px",
+            height: 54,
+            borderRadius: 14,
+            padding: "10px 18px 10px 58px",
             cursor: "pointer",
             overflow: "hidden",
-            transition: "all 0.28s ease",
-            border: isSimple
-              ? "none"
-              : "1px solid rgba(255,255,255,0.08)",
+            transition: "all 0.32s ease",
             background: "transparent",
+
+            border: isSimple
+              ? "1px solid rgba(0,0,0,0.06)"
+              : "1px solid rgba(255,255,255,0.16)",
+
+            boxShadow: isSimple
+              ? `
+                inset 0 1px 0 rgba(255,255,255,0.75),
+                0 4px 18px rgba(0,0,0,0.04)
+              `
+              : `
+                inset 0 1px 0 rgba(255,255,255,0.10),
+                inset 0 0 0 1px rgba(255,255,255,0.04),
+                0 0 0 1px rgba(255,255,255,0.03),
+                0 10px 35px rgba(0,0,0,0.30)
+              `,
+
+            backdropFilter: !isSimple
+              ? "blur(10px)"
+              : "none",
+
+            WebkitBackdropFilter: !isSimple
+              ? "blur(10px)"
+              : "none",
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.transform =
-              "translateX(8px)";
+              "translateX(10px) scale(1.012)";
+
+            e.currentTarget.style.borderColor =
+              isSimple
+                ? "rgba(0,0,0,0.12)"
+                : "rgba(255,255,255,0.28)";
+
+            e.currentTarget.style.boxShadow = isSimple
+              ? `
+                inset 0 1px 0 rgba(255,255,255,0.85),
+                0 10px 24px rgba(0,0,0,0.08)
+              `
+              : `
+                inset 0 1px 0 rgba(255,255,255,0.16),
+                inset 0 0 0 1px rgba(255,255,255,0.06),
+                0 0 24px rgba(255,255,255,0.05),
+                0 14px 42px rgba(0,0,0,0.45)
+              `;
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform =
-              "translateX(0px)";
+              "translateX(0px) scale(1)";
+
+            e.currentTarget.style.borderColor =
+              isSimple
+                ? "rgba(0,0,0,0.06)"
+                : "rgba(255,255,255,0.16)";
+
+            e.currentTarget.style.boxShadow = isSimple
+              ? `
+                inset 0 1px 0 rgba(255,255,255,0.75),
+                0 4px 18px rgba(0,0,0,0.04)
+              `
+              : `
+                inset 0 1px 0 rgba(255,255,255,0.10),
+                inset 0 0 0 1px rgba(255,255,255,0.04),
+                0 0 0 1px rgba(255,255,255,0.03),
+                0 10px 35px rgba(0,0,0,0.30)
+              `;
           }}
         >
           <CategoryPostBoxIndex
@@ -93,32 +148,35 @@ export default function CategoryPostBoxRenderer({
           />
 
           {!isSimple && (
-            <div
-              style={{
-                position: "absolute",
-                inset: 0,
-                background: "rgba(165,170,185,0.14)",
-                backdropFilter:
-                  "invert(0.82) brightness(1.12) contrast(1.05) blur(2px)",
-                WebkitBackdropFilter:
-                  "invert(0.82) brightness(1.12) contrast(1.05) blur(2px)",
-                zIndex: 0,
-              }}
-            />
-          )}
+            <>
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  borderRadius: 14,
+                  pointerEvents: "none",
+                  background: `
+                    linear-gradient(
+                      135deg,
+                      rgba(255,255,255,0.06),
+                      transparent 40%,
+                      transparent 60%,
+                      rgba(255,255,255,0.04)
+                    )
+                  `,
+                }}
+              />
 
-          {!isSimple && (
-            <div
-              style={{
-                position: "absolute",
-                left: 0,
-                top: 0,
-                bottom: 0,
-                width: 2,
-                background: "rgba(220,225,235,0.38)",
-                zIndex: 0,
-              }}
-            />
+              <div
+                style={{
+                  position: "absolute",
+                  inset: 0,
+                  borderRadius: 14,
+                  pointerEvents: "none",
+                  border: "1px solid rgba(255,255,255,0.05)",
+                }}
+              />
+            </>
           )}
 
           {!isSimple && <MetadataTagRenderer />}
@@ -129,13 +187,15 @@ export default function CategoryPostBoxRenderer({
               zIndex: 5,
               fontSize: 15,
               color: isSimple
-                ? "rgba(40,40,40,0.85)"
-                : "#ffffff",
+                ? "rgba(35,35,35,0.88)"
+                : "rgba(255,255,255,0.94)",
               letterSpacing: "0.02em",
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
-              textShadow: "0 2px 3px rgba(0,0,0,0.80)",
+              textShadow: isSimple
+                ? "none"
+                : "0 2px 10px rgba(0,0,0,0.55)",
               fontWeight: 600,
             }}
           >
@@ -146,11 +206,12 @@ export default function CategoryPostBoxRenderer({
             style={{
               position: "relative",
               zIndex: 5,
+              marginTop: 2,
               fontSize: 10,
               color: isSimple
-                ? "rgba(60,60,60,0.55)"
-                : "rgba(255,255,255,0.65)",
-              letterSpacing: "0.06em",
+                ? "rgba(60,60,60,0.45)"
+                : "rgba(255,255,255,0.50)",
+              letterSpacing: "0.08em",
             }}
           >
             {new Date(post.created_at).toLocaleDateString()}

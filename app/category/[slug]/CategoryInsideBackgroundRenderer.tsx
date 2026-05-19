@@ -1,7 +1,7 @@
 "use client";
 
 export default function CategoryInsideBackgroundRenderer() {
-  const bgImage = "/images/mathdraw0.png";
+  const bgImage = "/images/mathdraw3.png";
 
   return (
     <>
