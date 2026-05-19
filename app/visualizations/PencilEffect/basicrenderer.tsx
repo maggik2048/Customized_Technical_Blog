@@ -1,8 +1,14 @@
+// BasicRenderer.tsx
+
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, {
+  useEffect,
+  useRef,
+} from "react";
 
 import { applyThreshold } from "./0_threshold";
+
 import { convexDecomposition } from "./3_convexDecomposition";
 
 import {
@@ -21,6 +27,12 @@ import {
   PolygonAreaData,
 } from "./6_AreaCalculator";
 
+import { hatchBlackAreas } from "./1_hatchWithOneSide";
+
+import {
+  useAnnotationManager,
+} from "./annotationManager";
+
 type Props = {
   img: HTMLImageElement;
   threshold?: number;
@@ -31,17 +43,30 @@ export default function BasicRenderer({
   threshold = 128,
 }: Props) {
   const canvasRef =
-    useRef<HTMLCanvasElement | null>(null);
+    useRef<HTMLCanvasElement | null>(
+      null
+    );
+
+  const { annotations } =
+    useAnnotationManager();
 
   useEffect(() => {
-    if (!canvasRef.current || !img) return;
+    if (!canvasRef.current || !img)
+      return;
 
     render();
-  }, [img, threshold]);
+  }, [
+    img,
+    threshold,
+    annotations,
+  ]);
 
   const render = () => {
-    const canvas = canvasRef.current!;
-    const ctx = canvas.getContext("2d")!;
+    const canvas =
+      canvasRef.current!;
+
+    const ctx =
+      canvas.getContext("2d")!;
 
     // clear + resize
     canvas.width = img.width;
@@ -54,13 +79,23 @@ export default function BasicRenderer({
       canvas.height
     );
 
-    // STEP 0: original image
+    // STEP 0
+    // original image
     ctx.drawImage(img, 0, 0);
 
-    // STEP 1: threshold
-    applyThreshold(canvas, threshold);
+    // STEP 1
+    // threshold
+    if (
+      annotations.showThreshold
+    ) {
+      applyThreshold(
+        canvas,
+        threshold
+      );
+    }
 
-    // STEP 2: convex decomposition
+    // STEP 2
+    // convex decomposition
     const result =
       convexDecomposition(canvas);
 
@@ -84,45 +119,79 @@ export default function BasicRenderer({
       directionData
     );
 
-    // STEP 3:
-    // longest side 계산 + 노란선 draw
-    const longestSideData =
-      processLongestSides(
-        canvas,
-        polygons
-      );
+    // STEP 3
+    // longest side
 
-    console.log(
-      "longestSideData",
-      longestSideData
-    );
+    let longestSideData: any = null;
 
-    // STEP 4:
-    // perpendicular 계산 + 하늘색선 draw
-    const perpendicularData:
-      PerpendicularDirectionData[] =
-      getPerpendicularDirections(
-        canvas,
+    if (
+      annotations.showLongestSide
+    ) {
+      longestSideData =
+        processLongestSides(
+          canvas,
+          polygons
+        );
+
+      console.log(
+        "longestSideData",
         longestSideData
       );
+    }
 
-    console.log(
-      "perpendicularData",
-      perpendicularData
-    );
+    // STEP 4
+    // perpendicular
 
-    // STEP 5:
-    // polygon area 계산 + 중앙에 숫자 출력
-    const areaData: PolygonAreaData[] =
-      calculatePolygonAreas(
-        canvas,
-        polygons
+    if (
+      annotations.showPerpendicular &&
+      longestSideData
+    ) {
+      const perpendicularData:
+        PerpendicularDirectionData[] =
+        getPerpendicularDirections(
+          canvas,
+          longestSideData
+        );
+
+      console.log(
+        "perpendicularData",
+        perpendicularData
       );
+    }
 
-    console.log(
-      "areaData",
-      areaData
-    );
+    // STEP 5
+    // area text
+
+    if (
+      annotations.showAreaText
+    ) {
+      const areaData:
+        PolygonAreaData[] =
+        calculatePolygonAreas(
+          canvas,
+          polygons
+        );
+
+      console.log(
+        "areaData",
+        areaData
+      );
+    }
+
+    // STEP 6
+    // hatch overlay
+
+    if (
+      annotations.showHatching
+    ) {
+      hatchBlackAreas(canvas, {
+        threshold,
+        blockSize: 6,
+        lineWidth: 1,
+        hatchColor: "#000",
+        blackRatio: 0.5,
+      });
+    }
   };
 
   return (

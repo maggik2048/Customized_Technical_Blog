@@ -1,55 +1,131 @@
+// page.tsx
+
 "use client";
 
-import { useEffect, useState } from "react";
+import {
+  useEffect,
+  useState,
+} from "react";
+
 import BasicRenderer from "./BasicRenderer";
 
-export default function PencilEffectPage() {
-  const [img, setImg] = useState<HTMLImageElement | null>(null);
-  const [cvReady, setCvReady] = useState(false);
+import {
+  AnnotationProvider,
+  AnnotationPanel,
+} from "./annotationManager";
 
-  // 1. OpenCV 로딩 (정석)
+export default function PencilEffectPage() {
+  const [img, setImg] =
+    useState<HTMLImageElement | null>(
+      null
+    );
+
+  const [cvReady, setCvReady] =
+    useState(false);
+
+  // =========================
+  // OpenCV load
+  // =========================
+
   useEffect(() => {
-    const script = document.createElement("script");
-    script.src = "https://docs.opencv.org/4.x/opencv.js";
+    const script =
+      document.createElement("script");
+
+    script.src =
+      "https://docs.opencv.org/4.x/opencv.js";
+
     script.async = true;
 
     script.onload = () => {
-      // 🔥 핵심: wasm init까지 기다려야 함
-      window.cv.onRuntimeInitialized = () => {
-        console.log("cv fully ready");
-        setCvReady(true);
-      };
+      // wasm init 기다려야함
+      window.cv.onRuntimeInitialized =
+        () => {
+          console.log(
+            "cv fully ready"
+          );
+
+          setCvReady(true);
+        };
     };
 
     document.body.appendChild(script);
 
     return () => {
-      document.body.removeChild(script);
+      document.body.removeChild(
+        script
+      );
     };
   }, []);
 
-  // 2. 이미지 로딩
+  // =========================
+  // image load
+  // =========================
+
   useEffect(() => {
     const image = new Image();
-    image.src = "/images/pencildrawing/test.png";
+
+    image.src =
+      "/images/pencildrawing/test.png";
 
     image.onload = () => {
       setImg(image);
     };
   }, []);
 
+  // =========================
+  // loading
+  // =========================
+
+  if (!cvReady || !img) {
+    return (
+      <div
+        style={{
+          width: "100vw",
+          height: "100vh",
+          background: "#111",
+          color: "white",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 20,
+        }}
+      >
+        loading...
+      </div>
+    );
+  }
+
+  // =========================
+  // render
+  // =========================
+
   return (
-    <div
-      style={{
-        width: "100vw",
-        height: "100vh",
-        background: "#111",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      {cvReady && img && <BasicRenderer img={img} />}
-    </div>
+    <AnnotationProvider>
+      <div
+        style={{
+          width: "100vw",
+          height: "100vh",
+          background: "#111",
+
+          display: "flex",
+          flexDirection: "row",
+
+          gap: 20,
+
+          alignItems: "flex-start",
+          justifyContent: "flex-start",
+
+          padding: 20,
+
+          boxSizing: "border-box",
+        }}
+      >
+        {/* LEFT PANEL */}
+        <AnnotationPanel />
+
+        {/* RENDERER */}
+        <BasicRenderer img={img} />
+      </div>
+    </AnnotationProvider>
   );
 }
