@@ -43,23 +43,40 @@ function evaluateExpression(expr: string, x: number) {
       log: Math.log,
     };
 
-    return Function(
-      ...Object.keys(scope),
-      `return ${parsed}`
-    )(...Object.values(scope));
+    return Function(...Object.keys(scope), `return ${parsed}`)(
+      ...Object.values(scope)
+    );
   } catch {
     return NaN;
   }
 }
+
+/* ------------------------------------------------ */
+/* COMPONENT */
+/* ------------------------------------------------ */
 
 export default function CalculatorGraphingInterface({
   onClose,
 }: Props) {
   const [expression, setExpression] = useState("sin(x)");
 
-  /* ------------------------------------------------ */
+  /* ----------------------------- */
+  /* ZOOM STATE */
+  /* ----------------------------- */
+  const [zoom, setZoom] = useState(16);
+
+  const handleWheel = (e: React.WheelEvent) => {
+    e.preventDefault();
+
+    setZoom((z) => {
+      const next = z - e.deltaY * 0.01;
+      return Math.min(Math.max(next, 4), 60);
+    });
+  };
+
+  /* ----------------------------- */
   /* GRAPH DATA */
-  /* ------------------------------------------------ */
+  /* ----------------------------- */
 
   const graphPoints = useMemo(() => {
     const points: { x: number; y: number }[] = [];
@@ -75,21 +92,20 @@ export default function CalculatorGraphingInterface({
   }, [expression]);
 
   const handleKeyPress = (key: string) => {
-    if (key === "CLR") {
-      setExpression("");
-      return;
-    }
-
+    if (key === "CLR") return setExpression("");
     if (key === "=") return;
-
     setExpression((prev) => prev + key);
   };
+
+  /* ----------------------------- */
+  /* GRAPH CONFIG */
+  /* ----------------------------- */
 
   const width = 820;
   const height = 520;
 
-  const scaleX = 16;
-  const scaleY = 16;
+  const scaleX = zoom;
+  const scaleY = zoom;
 
   const centerX = width / 2;
   const centerY = height / 2;
@@ -102,6 +118,9 @@ export default function CalculatorGraphingInterface({
     })
     .join(" ");
 
+  /* tick spacing (Manim style) */
+  const tickStep = 1;
+
   return (
     <CalculatorGraphTheme onClose={onClose}>
       <div
@@ -112,57 +131,30 @@ export default function CalculatorGraphingInterface({
           fontFamily: "serif",
         }}
       >
-        {/* LEFT PANEL */}
+        {/* LEFT */}
         <div
-          className="panel"
           style={{
             padding: 24,
             borderRadius: 30,
             background: "rgba(255,255,255,0.03)",
             border: "2px solid rgba(255,255,255,0.18)",
             backdropFilter: "blur(20px)",
-            boxShadow: "0px 20px 60px rgba(0,0,0,0.20)",
-            fontFamily: "serif",
           }}
         >
-          {/* DISPLAY */}
           <div
             style={{
               height: 110,
               borderRadius: 22,
-              background: "rgba(0,0,0,0.50)",
+              background: "rgba(0,0,0,0.5)",
               border: "2px solid rgba(255,255,255,0.18)",
               padding: 20,
               marginBottom: 20,
-              overflow: "hidden",
-              fontFamily: "serif",
             }}
           >
-            <div
-              style={{
-                fontSize: 14,
-                color: "rgba(255,255,255,0.6)",
-                marginBottom: 10,
-                letterSpacing: "0.08em",
-                fontFamily: "serif",
-              }}
-            >
-              f(x)
-            </div>
-
-            <div
-              style={{
-                fontSize: 34,
-                color: "#ffffff",
-                wordBreak: "break-all",
-                fontFamily: "serif",
-              }}
-            >
-              {expression || "0"}
-            </div>
+            <div style={{ fontSize: 14, opacity: 0.6 }}>f(x)</div>
+            <div style={{ fontSize: 34 }}>{expression || "0"}</div>
           </div>
 
-          {/* KEYS */}
           <div
             style={{
               display: "grid",
@@ -177,31 +169,12 @@ export default function CalculatorGraphingInterface({
                 style={{
                   height: 64,
                   borderRadius: 16,
-                  border: "2px solid rgba(255,255,255,0.22)",
+                  border: "2px solid rgba(255,255,255,0.28)",
                   background: "rgba(255,255,255,0.05)",
-                  color: "#ffffff",
                   fontSize: 20,
-                  cursor: "pointer",
-                  transition: "all 0.16s ease",
-                  backdropFilter: "blur(10px)",
+                  color: "#fff",
                   fontFamily: "serif",
-                  fontWeight: 500,
-                  boxShadow:
-                    "inset 0px 1px 0px rgba(255,255,255,0.05)",
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateY(-2px)";
-                  e.currentTarget.style.background =
-                    "rgba(255,255,255,0.10)";
-                  e.currentTarget.style.border =
-                    "2px solid rgba(255,255,255,0.35)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateY(0px)";
-                  e.currentTarget.style.background =
-                    "rgba(255,255,255,0.05)";
-                  e.currentTarget.style.border =
-                    "2px solid rgba(255,255,255,0.22)";
+                  cursor: "pointer",
                 }}
               >
                 {key}
@@ -210,29 +183,24 @@ export default function CalculatorGraphingInterface({
           </div>
         </div>
 
-        {/* GRAPH PANEL */}
+        {/* GRAPH */}
         <div
-          className="graph-panel"
+          onWheel={handleWheel}
           style={{
             position: "relative",
             overflow: "hidden",
             borderRadius: 34,
-            background: "rgba(255,255,255,0.025)",
-            border: "2px solid rgba(255,255,255,0.16)",
-            backdropFilter: "blur(26px)",
-            boxShadow: "0px 20px 60px rgba(0,0,0,0.22)",
-            minHeight: 520,
-            fontFamily: "serif",
+            border: "2px solid rgba(255,255,255,0.18)",
           }}
         >
           <svg
             width="100%"
             height="100%"
             viewBox={`0 0 ${width} ${height}`}
-            preserveAspectRatio="none"
           >
-            {Array.from({ length: 60 }).map((_, i) => {
-              const x = i * 35;
+            {/* GRID (stronger Manim style) */}
+            {Array.from({ length: 40 }).map((_, i) => {
+              const x = i * 20;
               return (
                 <line
                   key={`vx-${i}`}
@@ -240,13 +208,13 @@ export default function CalculatorGraphingInterface({
                   y1={0}
                   x2={x}
                   y2={height}
-                  stroke="rgba(255,255,255,0.04)"
+                  stroke="rgba(255,255,255,0.08)"
                 />
               );
             })}
 
-            {Array.from({ length: 40 }).map((_, i) => {
-              const y = i * 35;
+            {Array.from({ length: 30 }).map((_, i) => {
+              const y = i * 20;
               return (
                 <line
                   key={`hy-${i}`}
@@ -254,18 +222,19 @@ export default function CalculatorGraphingInterface({
                   y1={y}
                   x2={width}
                   y2={y}
-                  stroke="rgba(255,255,255,0.04)"
+                  stroke="rgba(255,255,255,0.08)"
                 />
               );
             })}
 
+            {/* AXIS (stronger) */}
             <line
               x1={0}
               y1={centerY}
               x2={width}
               y2={centerY}
-              stroke="rgba(255,255,255,0.2)"
-              strokeWidth={1.5}
+              stroke="rgba(255,255,255,0.35)"
+              strokeWidth={2}
             />
 
             <line
@@ -273,21 +242,58 @@ export default function CalculatorGraphingInterface({
               y1={0}
               x2={centerX}
               y2={height}
-              stroke="rgba(255,255,255,0.2)"
-              strokeWidth={1.5}
+              stroke="rgba(255,255,255,0.35)"
+              strokeWidth={2}
             />
 
+            {/* AXIS TICKS + LABELS */}
+            {Array.from({ length: 40 }).map((_, i) => {
+              const xVal = i - 20;
+              const px = centerX + xVal * scaleX;
+
+              return (
+                <text
+                  key={`x-label-${i}`}
+                  x={px}
+                  y={centerY + 18}
+                  fontSize={12}
+                  fill="rgba(255,255,255,0.6)"
+                >
+                  {xVal}
+                </text>
+              );
+            })}
+
+            {Array.from({ length: 30 }).map((_, i) => {
+              const yVal = 15 - i;
+              const py = centerY - yVal * scaleY;
+
+              return (
+                <text
+                  key={`y-label-${i}`}
+                  x={centerX + 6}
+                  y={py}
+                  fontSize={12}
+                  fill="rgba(255,255,255,0.6)"
+                >
+                  {yVal}
+                </text>
+              );
+            })}
+
+            {/* GRAPH */}
             <path
               d={pathData}
               fill="none"
               stroke="#ffffff"
-              strokeWidth={2.4}
-              strokeLinejoin="round"
+              strokeWidth={2.6}
               strokeLinecap="round"
+              strokeLinejoin="round"
               filter="drop-shadow(0px 0px 10px rgba(255,255,255,0.25))"
             />
           </svg>
 
+          {/* LABEL */}
           <div
             style={{
               position: "absolute",
@@ -295,15 +301,27 @@ export default function CalculatorGraphingInterface({
               left: 22,
               padding: "10px 16px",
               borderRadius: 16,
-              background: "rgba(0,0,0,0.35)",
-              border: "2px solid rgba(255,255,255,0.15)",
-              color: "#ffffff",
-              fontSize: 18,
-              backdropFilter: "blur(16px)",
-              fontFamily: "serif",
+              background: "rgba(0,0,0,0.4)",
+              border: "1px solid rgba(255,255,255,0.2)",
             }}
           >
             y = {expression}
+          </div>
+
+          {/* ZOOM INDICATOR */}
+          <div
+            style={{
+              position: "absolute",
+              bottom: 18,
+              right: 18,
+              padding: "8px 12px",
+              borderRadius: 12,
+              background: "rgba(0,0,0,0.4)",
+              border: "1px solid rgba(255,255,255,0.2)",
+              fontSize: 14,
+            }}
+          >
+            zoom: {zoom.toFixed(1)}
           </div>
         </div>
       </div>
