@@ -16,6 +16,9 @@ export type AnnotationState = {
   showPerpendicular: boolean;
   showAreaText: boolean;
   showHatching: boolean;
+
+  // 추가
+  showHatchEndpoints: boolean;
 };
 
 type AnnotationContextType = {
@@ -44,6 +47,9 @@ export function AnnotationProvider({
       showPerpendicular: true,
       showAreaText: true,
       showHatching: true,
+
+      // 추가
+      showHatchEndpoints: true,
     });
 
   const toggleAnnotation = (
@@ -191,6 +197,22 @@ export function AnnotationPanel() {
           }
         />
         Hatch
+      </label>
+
+      {/* 추가 */}
+      <label>
+        <input
+          type="checkbox"
+          checked={
+            annotations.showHatchEndpoints
+          }
+          onChange={() =>
+            toggleAnnotation(
+              "showHatchEndpoints"
+            )
+          }
+        />
+        Hatch Endpoints
       </label>
     </div>
   );

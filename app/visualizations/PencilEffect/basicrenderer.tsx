@@ -27,10 +27,14 @@ import {
   PolygonAreaData,
 } from "./6_AreaCalculator";
 
-// 핵심 변경
 import {
   replaceGrayRangeWithHatch,
 } from "./1_hatchWithOneSide";
+
+// 변경
+import {
+  drawHatchEndpoints,
+} from "./8_getEndpoint";
 
 import {
   useAnnotationManager,
@@ -105,16 +109,7 @@ export default function BasicRenderer({
     }
 
     // ====================
-    // IMPORTANT
-    //
-    // threshold의 검은 영역을
-    // hatch로 "교체"
-    //
-    // multiply 아님
-    // overlay 아님
-    // 뒤에 깔리는것도 아님
-    //
-    // 실제 픽셀 replacement
+    // hatch
     // ====================
 
     if (
@@ -123,7 +118,6 @@ export default function BasicRenderer({
       replaceGrayRangeWithHatch(
         canvas,
         {
-          // 검은색만 hatch로 치환
           minGray: 0,
           maxGray: 1,
 
@@ -228,6 +222,35 @@ export default function BasicRenderer({
       console.log(
         "areaData",
         areaData
+      );
+    }
+
+    // ====================
+    // hatch endpoint debug
+    //
+    // 가장 마지막
+    // ====================
+
+    if (
+      annotations.showHatchEndpoints
+    ) {
+      drawHatchEndpoints(
+        canvas,
+        {
+          minGray: 0,
+          maxGray: 1,
+
+          blockSize: 6,
+
+          hatchSpacing: 2,
+
+          coverageThreshold: 0.5,
+
+          endpointRadius: 2,
+
+          endpointColor:
+            "blue",
+        }
       );
     }
   };
