@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Convex Decomposition 2D</title>
+</head>
+
+<body>
+<input type="file" id="upload">
+<canvas id="canvas"></canvas>
+
+<script async src="https://docs.opencv.org/4.x/opencv.js"></script>
+
+<script>
+let imgElement = null;
+
+document.getElementById("upload").addEventListener("change", function(e) {
+    let file = e.target.files[0];
+    let img = new Image();
+    img.onload = function() {
+        let canvas = document.getElementById("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        let ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0);
+
+        processImage();
+    };
+    img.src = URL.createObjectURL(file);
+});
+
+function processImage() {
+    let src = cv.imread("canvas");
+    let gray = new cv.Mat();
+    let binary = new cv.Mat();
+
+    cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY, 0);
+    cv.threshold(gray, binary, 127, 255, cv.THRESH_BINARY);
+
+    let contours = new cv.MatVector();
+    let hierarchy = new cv.Mat();
+
+    cv.findContours(binary, contours, hierarchy, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE);
+
+    let ctx = document.getElementById("canvas").getContext("2d");
+
+    ctx.lineWidth = 2;
+
+    for (let i = 0; i < contours.size(); i++) {
+        let cnt = contours.get(i);
+
+        let approx = new cv.Mat();
+        cv.approxPolyDP(cnt, approx, 2, true);
+
+        let hull = new cv.Mat();
+        cv.convexHull(approx, hull, false, true);
+
+        drawContour(ctx, hull);
+
+        cnt.delete();
+        approx.delete();
+        hull.delete();
+    }
+
+    src.delete();
+    gray.delete();
+    binary.delete();
+    contours.delete();
+    hierarchy.delete();
+}
+
+function drawContour(ctx, mat) {
+    ctx.strokeStyle = "red";
+    ctx.beginPath();
+
+    for (let i = 0; i < mat.rows; i++) {
+        let x = mat.data32S[i * 2];
+        let y = mat.data32S[i * 2 + 1];
+
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+    }
+
+    ctx.closePath();
+    ctx.stroke();
+}
+</script>
+
+</body>
+</html>
