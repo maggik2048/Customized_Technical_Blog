@@ -78,7 +78,7 @@ export default function CalculatorGraphTheme({
         width: "100%",
         display: "flex",
         justifyContent: "center",
-        paddingTop: 90,
+        paddingTop: 400,
         paddingBottom: 60,
         boxSizing: "border-box",
         position: "relative",
