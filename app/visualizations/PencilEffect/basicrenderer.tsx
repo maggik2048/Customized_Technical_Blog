@@ -1,8 +1,15 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
+
 import { applyThreshold } from "./0_threshold";
 import { convexDecomposition } from "./3_convexDecomposition";
+
+import {
+  processLongestSides,
+  PolygonDirectionData,
+  PolygonPoint,
+} from "./longestside";
 
 type Props = {
   img: HTMLImageElement;
@@ -31,14 +38,35 @@ export default function BasicRenderer({
 
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // draw original image
+    // STEP 0: original image
     ctx.drawImage(img, 0, 0);
 
-    // STEP 1: threshold (UI controlled)
+    // STEP 1: threshold
     applyThreshold(canvas, threshold);
 
     // STEP 2: convex decomposition
-    convexDecomposition(canvas);
+    const result = convexDecomposition(canvas);
+
+    if (!result) return;
+
+    const {
+      polygons,
+      directionData,
+    }: {
+      polygons: PolygonPoint[][];
+      directionData: PolygonDirectionData[];
+    } = result;
+
+    // STEP 3:
+    // 각 polygon의 가장 긴 변 계산 + 노란선 draw
+    processLongestSides(canvas, polygons);
+
+    console.log("polygons", polygons);
+
+    console.log(
+      "directionData",
+      directionData
+    );
   };
 
   return (
