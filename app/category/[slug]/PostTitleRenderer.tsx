@@ -2,6 +2,13 @@
 
 import React from "react";
 
+import { Cormorant_SC } from "next/font/google";
+
+const cormorant = Cormorant_SC({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
 export default function PostTitleRenderer({
   text,
 }: {
@@ -10,13 +17,7 @@ export default function PostTitleRenderer({
   if (!text) return null;
 
   /**
-   * New palette:
-   *
-   * 전체적으로:
-   * dark academia + laboratory metal + luxury graphite 느낌
-   *
-   * 기존의 파랑/주황 제거
-   * -> graphite / silver / titanium / muted wine / pale platinum 계열
+   * dark academia + laboratory metal + luxury graphite
    */
 
   const COLORS = {
@@ -24,22 +25,22 @@ export default function PostTitleRenderer({
     base: "#F3F4F6",
 
     // "="
-    equal: "#8F8A7A", // titanium bronze
+    equal: "#ffca0a",
 
     // "=" 이후
-    afterEqual: "#D8D4C8", // warm platinum
+    afterEqual: "#ffb74b",
 
     // "::"
-    doubleColon: "#6F7278", // graphite steel
+    doubleColon: "#e1ff00",
 
     // "::" 이후
-    afterDoubleColon: "#B7BDC7", // cold silver
+    afterDoubleColon: "#c1b7a9",
 
     // vs
-    vs: "#7C5A64", // muted luxury wine
+    vs: "#ffaf7a",
 
     // ( ... )
-    parentheses: "#A8A39A", // soft ash beige
+    parentheses: "#bfd2ff",
   };
 
   const equalSplit = text.split(/(=)/g);
@@ -48,7 +49,15 @@ export default function PostTitleRenderer({
   let isAfterDoubleColon = false;
 
   return (
-    <>
+    <span
+      className={cormorant.className}
+      style={{
+        letterSpacing: "0.02em",
+        fontSize: 16,
+        lineHeight: 1.15,
+        fontWeight: 600,
+      }}
+    >
       {equalSplit.map((chunk, i) => {
         if (!chunk) return null;
 
@@ -107,7 +116,10 @@ export default function PostTitleRenderer({
           }
 
           // ( ... )
-          if (part.startsWith("(") && part.endsWith(")")) {
+          if (
+            part.startsWith("(") &&
+            part.endsWith(")")
+          ) {
             return (
               <span
                 key={`${i}-${j}`}
@@ -141,6 +153,6 @@ export default function PostTitleRenderer({
           );
         });
       })}
-    </>
+    </span>
   );
 }

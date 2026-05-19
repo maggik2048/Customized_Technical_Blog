@@ -21,7 +21,26 @@ export default function PunchFilterOverlay() {
         background: "rgba(0,0,0,0.03)",
       }}
     >
-      {/* bottom white fade + strong image mask */}
+      {/* TOP BLACK VIGNETTE */}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "12vh",
+
+          background:
+            "linear-gradient(to bottom, rgba(0,0,0,0.75), rgba(0,0,0,0))",
+
+          // 자연스러운 퍼짐
+          filter: "blur(18px)",
+
+          opacity: 0.05,
+        }}
+      />
+
+      {/* BOTTOM WHITE FADE + IMAGE MASK */}
       <div
         style={{
           position: "absolute",
@@ -33,7 +52,6 @@ export default function PunchFilterOverlay() {
           background:
             "linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0))",
 
-          //  핵심: mask 강화 (대비 강제 증가)
           maskImage: `
             linear-gradient(to top, rgba(0,0,0,1), rgba(0,0,0,0)),
             url("/images/abstractsubtle1.jpg")
@@ -55,7 +73,7 @@ export default function PunchFilterOverlay() {
           maskPosition: "bottom",
           WebkitMaskPosition: "bottom",
 
-          opacity: 1,
+          opacity: 0.61,
         }}
       />
     </div>

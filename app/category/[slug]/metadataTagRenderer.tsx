@@ -130,7 +130,7 @@ export default function MetadataTagRenderer() {
             )
           `,
 
-          opacity: 0.8,
+          opacity: 0.98,
         }}
       />
 
@@ -151,7 +151,7 @@ export default function MetadataTagRenderer() {
           borderRight:
             "1px solid rgba(255,225,160,0.42)",
 
-          opacity: 0.7,
+          opacity: 0.97,
         }}
       />
 
@@ -170,12 +170,12 @@ export default function MetadataTagRenderer() {
           textTransform: "uppercase",
 
           color:
-            "rgba(255,228,170,0.55)",
+            "rgba(255, 255, 255, 0.55)",
 
-          fontWeight: 700,
+          fontWeight: 1700,
 
           textShadow:
-            "0 0 10px rgba(255,220,140,0.10)",
+            "0 0 5px rgba(255, 231, 153, 0.31)",
         }}
       >
         META
