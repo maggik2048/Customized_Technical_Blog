@@ -8,23 +8,16 @@ import React, {
   useState,
 } from "react";
 
-import CalculatorGraphVintageTheme from "./CalculatorGraphVintageTheme";
-
-export type CalculatorThemeType =
-  | "raw"
-  | "vintage";
+import {
+  CALCULATOR_THEME_REGISTRY,
+  CalculatorThemeType,
+  getCalculatorTheme,
+} from "./CalculatorThemeRegistry";
 
 type Props = {
   children: React.ReactNode;
   title?: string;
   onClose?: () => void;
-};
-
-type ThemeOption = {
-  id: CalculatorThemeType | "add";
-  label: string;
-  accent: string;
-  selectable?: boolean;
 };
 
 /* ------------------------------------------------ */
@@ -47,27 +40,21 @@ export function useCalculatorTheme() {
 }
 
 /* ------------------------------------------------ */
-/* THEME OPTIONS */
+/* STATIC OPTIONS */
 /* ------------------------------------------------ */
 
-const THEMES: ThemeOption[] = [
-  {
-    id: "raw",
-    label: "RAW",
-    accent: "#d7dce2",
-  },
-  {
-    id: "vintage",
-    label: "VINTAGE",
-    accent: "#f0c48d",
-  },
+const EXTRA_BUTTONS = [
   {
     id: "add",
     label: "+",
     accent: "#8cb7ff",
     selectable: false,
   },
-];
+] as const;
+
+/* ------------------------------------------------ */
+/* COMPONENT */
+/* ------------------------------------------------ */
 
 export default function CalculatorGraphTheme({
   children,
@@ -80,11 +67,7 @@ export default function CalculatorGraphTheme({
     );
 
   const activeTheme = useMemo(
-    () =>
-      THEMES.find(
-        (themeOption) =>
-          themeOption.id === theme
-      ),
+    () => getCalculatorTheme(theme),
     [theme]
   );
 
@@ -95,6 +78,11 @@ export default function CalculatorGraphTheme({
       {children}
     </CalculatorThemeContext.Provider>
   );
+
+  const allButtons = [
+    ...CALCULATOR_THEME_REGISTRY,
+    ...EXTRA_BUTTONS,
+  ];
 
   return (
     <div
@@ -112,7 +100,7 @@ export default function CalculatorGraphTheme({
       }}
     >
       {/* -------------------------------- */}
-      {/* DESTINY STYLE SELECTOR */}
+      {/* THEME SELECTOR */}
       {/* -------------------------------- */}
 
       <div
@@ -196,132 +184,123 @@ export default function CalculatorGraphTheme({
           THEME
         </div>
 
-        {THEMES.map((item, index) => {
-          const angle =
-            (-90 + index * 120) *
-            (Math.PI / 180);
+        {allButtons.map(
+          (item, index) => {
+            const angle =
+              (-90 +
+                (index * 360) /
+                  allButtons.length) *
+              (Math.PI / 180);
 
-          const radius = 68;
+            const radius = 68;
 
-          const x =
-            Math.cos(angle) * radius;
+            const x =
+              Math.cos(angle) * radius;
 
-          const y =
-            Math.sin(angle) * radius;
+            const y =
+              Math.sin(angle) * radius;
 
-          const selected =
-            item.id === theme;
+            const selected =
+              "id" in item &&
+              item.id === theme;
 
-          const isSelectable =
-            item.selectable !== false;
+            const isSelectable =
+              item.selectable !== false;
 
-          return (
-            <button
-              key={item.id}
-              disabled={!isSelectable}
-              onClick={() => {
-                if (
-                  item.id === "raw" ||
-                  item.id === "vintage"
-                ) {
-                  setTheme(item.id);
-                }
-              }}
-              style={{
-                position: "absolute",
+            return (
+              <button
+                key={item.id}
+                disabled={!isSelectable}
+                onClick={() => {
+                  if (
+                    isSelectable &&
+                    item.id !== "add"
+                  ) {
+                    setTheme(
+                      item.id as CalculatorThemeType
+                    );
+                  }
+                }}
+                style={{
+                  position: "absolute",
 
-                left: "50%",
-                top: "50%",
+                  left: "50%",
+                  top: "50%",
 
-                transform: `
-                  translate(-50%, -50%)
-                  translate(${x}px, ${y}px)
-                `,
+                  transform: `
+                    translate(-50%, -50%)
+                    translate(${x}px, ${y}px)
+                  `,
 
-                width: selected
-                  ? 54
-                  : 46,
+                  width: selected
+                    ? 54
+                    : 46,
 
-                height: selected
-                  ? 54
-                  : 46,
+                  height: selected
+                    ? 54
+                    : 46,
 
-                borderRadius: "50%",
+                  borderRadius: "50%",
 
-                border: selected
-                  ? `1px solid ${item.accent}`
-                  : "1px solid rgba(255,255,255,0.10)",
+                  border: selected
+                    ? `1px solid ${item.accent}`
+                    : "1px solid rgba(255,255,255,0.10)",
 
-                background: `
-                  radial-gradient(
-                    circle at 30% 30%,
-                    rgba(255,255,255,0.12),
-                    rgba(0,0,0,0.52)
-                  )
-                `,
+                  background: `
+                    radial-gradient(
+                      circle at 30% 30%,
+                      rgba(255,255,255,0.12),
+                      rgba(0,0,0,0.52)
+                    )
+                  `,
 
-                color: item.accent,
+                  color: item.accent,
 
-                cursor: isSelectable
-                  ? "pointer"
-                  : "default",
+                  cursor: isSelectable
+                    ? "pointer"
+                    : "default",
 
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
 
-                fontSize:
-                  item.id === "add"
-                    ? 22
-                    : 9,
+                  fontSize:
+                    item.id === "add"
+                      ? 22
+                      : 9,
 
-                letterSpacing:
-                  item.id === "add"
-                    ? "0"
-                    : "0.14em",
+                  letterSpacing:
+                    item.id === "add"
+                      ? "0"
+                      : "0.14em",
 
-                backdropFilter:
-                  "blur(14px)",
+                  backdropFilter:
+                    "blur(14px)",
 
-                boxShadow: selected
-                  ? `
-                    0px 0px 24px ${item.accent}55
-                  `
-                  : "none",
-              }}
-            >
-              {item.label}
-            </button>
-          );
-        })}
+                  boxShadow: selected
+                    ? `
+                      0px 0px 24px ${item.accent}55
+                    `
+                    : "none",
+                }}
+              >
+                {item.label}
+              </button>
+            );
+          }
+        )}
       </div>
 
       {/* -------------------------------- */}
-      {/* RAW */}
+      {/* ACTIVE THEME RENDER */}
       {/* -------------------------------- */}
 
-      {theme === "raw" && (
-        <div
-          style={{
-            width: 1480,
-            maxWidth: "96vw",
-          }}
-        >
-          {renderedContent}
-        </div>
-      )}
-
-      {/* -------------------------------- */}
-      {/* VINTAGE */}
-      {/* -------------------------------- */}
-
-      {theme === "vintage" && (
-        <CalculatorGraphVintageTheme
-          title={title}
-          onClose={onClose}
-        >
-          {renderedContent}
-        </CalculatorGraphVintageTheme>
+      {activeTheme?.render(
+        renderedContent,
+        {
+          title,
+          onClose,
+        }
       )}
     </div>
   );
