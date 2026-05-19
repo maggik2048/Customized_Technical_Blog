@@ -48,7 +48,6 @@ export default function InteractivePostCard({
       const sx = viewportWidth / baseWidth;
       const sy = viewportHeight / baseHeight;
 
-      // ✅ 핵심 수정: TV/와이드 비율 안정화
       const fitted = Math.min(sx, sy);
 
       setScale(active ? fitted : fitted * 0.92);
@@ -70,39 +69,68 @@ export default function InteractivePostCard({
         display: "flex",
         flexDirection: "row",
 
-        borderRadius: 22,
+        borderRadius: 24,
         overflow: "hidden",
 
+        // 더 투명한 유리 느낌
         background: `
           linear-gradient(
             180deg,
-            rgba(18,18,22,0.78),
-            rgba(8,8,10,0.82)
+            rgba(255,255,255,0.06),
+            rgba(255,255,255,0.02)
           )
         `,
 
-        backdropFilter: "blur(10px)",
-        WebkitBackdropFilter: "blur(10px)",
+        backdropFilter: "blur(18px)",
+        WebkitBackdropFilter: "blur(18px)",
 
         border: active
-          ? "1px solid rgba(255,255,255,0.18)"
+          ? "1px solid rgba(255,255,255,0.16)"
           : "1px solid rgba(255,255,255,0.08)",
 
         boxShadow: active
-          ? "0 18px 60px rgba(0,0,0,0.30)"
-          : "0 10px 32px rgba(0,0,0,0.20)",
+          ? `
+            0 20px 80px rgba(0,0,0,0.22),
+            inset 0 1px 0 rgba(255,255,255,0.12)
+          `
+          : `
+            0 10px 40px rgba(0,0,0,0.16),
+            inset 0 1px 0 rgba(255,255,255,0.06)
+          `,
 
-        transition: "all 0.35s ease",
-        transform: active ? "translateY(-4px)" : "translateY(0px)",
+        transition: "all 0.45s ease",
+        transform: active
+          ? "translateY(-6px) scale(1.01)"
+          : "translateY(0px) scale(1)",
+
+        // 핵심
+        opacity: active ? 1 : 0.88,
       }}
       onMouseEnter={() => setActive(true)}
       onMouseLeave={() => setActive(false)}
     >
+      {/* subtle glow */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: `
+            radial-gradient(
+              circle at top left,
+              rgba(255,255,255,0.12),
+              transparent 40%
+            )
+          `,
+          pointerEvents: "none",
+          zIndex: 1,
+        }}
+      />
+
       {/* LEFT */}
       <div
         style={{
           width: "35%",
-          padding: 18,
+          padding: 20,
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
@@ -118,11 +146,12 @@ export default function InteractivePostCard({
 
           <div
             style={{
-              marginTop: 16,
+              marginTop: 18,
               fontSize: 20,
               fontWeight: 800,
-              color: "white",
-              lineHeight: 1.1,
+              color: "rgba(255,255,255,0.96)",
+              lineHeight: 1.12,
+              textShadow: "0 2px 12px rgba(0,0,0,0.25)",
             }}
           >
             <PostTitleRenderer text={post.title} />
@@ -132,7 +161,7 @@ export default function InteractivePostCard({
         <div
           style={{
             fontSize: 11,
-            color: "rgba(255,255,255,0.6)",
+            color: "rgba(255,255,255,0.58)",
             letterSpacing: "0.08em",
           }}
         >
@@ -149,7 +178,7 @@ export default function InteractivePostCard({
           overflow: "hidden",
         }}
       >
-        {/* STAGE */}
+        {/* stage */}
         <div
           style={{
             position: "absolute",
@@ -161,9 +190,13 @@ export default function InteractivePostCard({
 
             transform: `scale(${scale})`,
             transformOrigin: "top left",
-            transition: "transform 0.6s ease",
+
+            transition:
+              "transform 0.7s cubic-bezier(0.22, 1, 0.36, 1)",
 
             pointerEvents: active ? "auto" : "none",
+
+            opacity: active ? 1 : 0.82,
           }}
         >
           <VizComponent />
@@ -174,9 +207,42 @@ export default function InteractivePostCard({
           style={{
             position: "absolute",
             inset: 0,
+
             background: active
-              ? "linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.6))"
-              : "linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.7))",
+              ? `
+                linear-gradient(
+                  to bottom,
+                  rgba(255,255,255,0.02),
+                  rgba(0,0,0,0.28)
+                )
+              `
+              : `
+                linear-gradient(
+                  to bottom,
+                  rgba(255,255,255,0.03),
+                  rgba(0,0,0,0.42)
+                )
+              `,
+
+            pointerEvents: "none",
+          }}
+        />
+
+        {/* glass fade */}
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: `
+              linear-gradient(
+                135deg,
+                rgba(255,255,255,0.08),
+                transparent 30%,
+                transparent 70%,
+                rgba(255,255,255,0.04)
+              )
+            `,
+            mixBlendMode: "screen",
             pointerEvents: "none",
           }}
         />
@@ -187,12 +253,19 @@ export default function InteractivePostCard({
             position: "absolute",
             top: 14,
             right: 14,
+
             padding: "6px 12px",
             borderRadius: 999,
+
             fontSize: 11,
             color: "white",
-            background: "rgba(255,255,255,0.1)",
-            border: "1px solid rgba(255,255,255,0.1)",
+
+            background: "rgba(255,255,255,0.08)",
+
+            border: "1px solid rgba(255,255,255,0.10)",
+
+            backdropFilter: "blur(12px)",
+
             zIndex: 50,
           }}
         >
