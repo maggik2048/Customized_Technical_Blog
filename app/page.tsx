@@ -14,10 +14,8 @@ import { CATEGORY_TREE } from "./components/SidebarCategory/CategoryTree";
 
 export default function HomePage() {
   const router = useRouter();
-
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  // 선택된 카테고리 찾기
   const selected = CATEGORY_TREE.find(
     (cat) => cat.slug === selectedCategory
   );
@@ -29,74 +27,62 @@ export default function HomePage() {
           position: "relative",
           width: "100%",
           height: "100vh",
-
           display: "flex",
           flexDirection: "column",
-
           justifyContent: "flex-start",
-
           paddingTop: "20px",
           paddingLeft: "80px",
         }}
       >
         <TopHeaderText />
-
         <SocialIcons />
 
-        {/* HERO TITLE */}
-        <div
+        {/* NEW BUTTON */}
+        <button
+          onClick={() => router.push("/visualizations/PencilEffect")}
           style={{
-            height: "18vh",
-
-            marginBottom: "1.5rem",
-
-            display: "flex",
-            alignItems: "flex-start",
+            position: "absolute",
+            top: 20,
+            right: 20,
+            padding: "10px 16px",
+            borderRadius: 8,
+            border: "none",
+            cursor: "pointer",
+            background: "#222",
+            color: "#fff",
           }}
         >
+          Pencil Background
+        </button>
+
+        <div style={{ height: "18vh", marginBottom: "1.5rem" }}>
           <h1 className="hero-title">
             Art of codE
             <br />
-
-            <span className="hero-subtitle">
-              Technical aRchive
-            </span>
+            <span className="hero-subtitle">Technical aRchive</span>
           </h1>
         </div>
 
-        {/* MAIN CONTENT */}
         <div
           style={{
             display: "flex",
-
             maxWidth: "1024px",
-
             margin: "300px auto 0 auto",
-
             padding: "0 1rem",
-
             gap: "2rem",
           }}
         >
-          {/* LEFT */}
           <div style={{ flex: 2 }}>
-
-            {/* 카테고리 선택된 경우 */}
             {selected && (
               <>
                 <button
                   onClick={() => setSelectedCategory(null)}
                   style={{
                     marginBottom: 16,
-
                     padding: "8px 16px",
-
                     borderRadius: 6,
-
                     background: "#ddd",
-
                     cursor: "pointer",
-
                     border: "none",
                   }}
                 >
@@ -118,7 +104,6 @@ export default function HomePage() {
               </>
             )}
 
-            {/* 초기 상태 (이미지) */}
             {!selected && (
               <div style={{ marginTop: 16 }}>
                 <ClickableImageBox
@@ -131,18 +116,11 @@ export default function HomePage() {
               </div>
             )}
 
-            {/* 글쓰기 버튼 */}
-            <div
-              style={{
-                marginTop: 32,
-                textAlign: "center",
-              }}
-            >
+            <div style={{ marginTop: 32, textAlign: "center" }}>
               <WritePostButton />
             </div>
           </div>
 
-          {/* RIGHT */}
           <div style={{ flex: 1 }}>
             <LatestPosts />
           </div>
