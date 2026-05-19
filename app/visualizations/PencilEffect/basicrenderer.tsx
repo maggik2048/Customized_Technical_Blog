@@ -16,6 +16,11 @@ import {
   PerpendicularDirectionData,
 } from "./5_getPerpendicular";
 
+import {
+  calculatePolygonAreas,
+  PolygonAreaData,
+} from "./6_AreaCalculator";
+
 type Props = {
   img: HTMLImageElement;
   threshold?: number;
@@ -69,6 +74,16 @@ export default function BasicRenderer({
       directionData: PolygonDirectionData[];
     } = result;
 
+    console.log(
+      "polygons",
+      polygons
+    );
+
+    console.log(
+      "directionData",
+      directionData
+    );
+
     // STEP 3:
     // longest side 계산 + 노란선 draw
     const longestSideData =
@@ -78,13 +93,8 @@ export default function BasicRenderer({
       );
 
     console.log(
-      "polygons",
-      polygons
-    );
-
-    console.log(
-      "directionData",
-      directionData
+      "longestSideData",
+      longestSideData
     );
 
     // STEP 4:
@@ -99,6 +109,19 @@ export default function BasicRenderer({
     console.log(
       "perpendicularData",
       perpendicularData
+    );
+
+    // STEP 5:
+    // polygon area 계산 + 중앙에 숫자 출력
+    const areaData: PolygonAreaData[] =
+      calculatePolygonAreas(
+        canvas,
+        polygons
+      );
+
+    console.log(
+      "areaData",
+      areaData
     );
   };
 
