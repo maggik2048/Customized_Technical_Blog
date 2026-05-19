@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Streamline Vector Field</title>
+
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    background: #050505;
+    color: white;
+    font-family: Inter, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px;
+    overflow-x: hidden;
+  }
+
+  h1 {
+    margin-bottom: 8px;
+    font-size: 36px;
+  }
+
+  p {
+    color: #9a9a9a;
+    max-width: 900px;
+    text-align: center;
+    line-height: 1.7;
+    margin-bottom: 28px;
+  }
+
+  input {
+    margin-bottom: 24px;
+    background: #111;
+    color: white;
+    border: 1px solid #333;
+    padding: 12px;
+    border-radius: 12px;
+  }
+
+  canvas {
+    max-width: 92vw;
+    border-radius: 22px;
+    border: 1px solid #252525;
+    box-shadow: 0 0 50px rgba(255,255,255,0.06);
+  }
+</style>
+</head>
+<body>
+
+<h1>Image → Streamline Flow Field</h1>
+
+<p>
+이미지의 brightness gradient를 이용해서 vector field를 만들고,
+각 벡터를 discrete arrow로 그리는 대신 streamline처럼 연결해서
+미분방정식 vector field 느낌으로 렌더링합니다.
+</p>
+
+<input type="file" id="upload" accept="image/*" />
+
+<canvas id="canvas"></canvas>
+
+<script>
+
+const upload = document.getElementById('upload')
+const canvas = document.getElementById('canvas')
+const ctx = canvas.getContext('2d')
+
+let field = []
+let fieldWidth = 0
+let fieldHeight = 0
+
+upload.addEventListener('change', (e) => {
+  const file = e.target.files[0]
+  if (!file) return
+
+  const reader = new FileReader()
+
+  reader.onload = () => {
+    const img = new Image()
+
+    img.onload = () => {
+      buildFlowField(img)
+    }
+
+    img.src = reader.result
+  }
+
+  reader.readAsDataURL(file)
+})
+
+function buildFlowField(img) {
+
+  canvas.width = img.width
+  canvas.height = img.height
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  ctx.drawImage(img, 0, 0)
+
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height)
+  const data = imageData.data
+
+  fieldWidth = canvas.width
+  fieldHeight = canvas.height
+  field = new Array(fieldWidth * fieldHeight)
+
+  for (let y = 1; y < fieldHeight - 1; y++) {
+    for (let x = 1; x < fieldWidth - 1; x++) {
+
+      const gx =
+        brightness(data, fieldWidth, x + 1, y) -
+        brightness(data, fieldWidth, x - 1, y)
+
+      const gy =
+        brightness(data, fieldWidth, x, y + 1) -
+        brightness(data, fieldWidth, x, y - 1)
+
+      const angle = Math.atan2(gy, gx)
+      const mag = Math.sqrt(gx * gx + gy * gy)
+
+      field[y * fieldWidth + x] = {
+        angle,
+        mag
+      }
+    }
+  }
+
+  renderStreamlines()
+}
+
+function brightness(data, width, x, y) {
+  const index = (y * width + x) * 4
+
+  const r = data[index]
+  const g = data[index + 1]
+  const b = data[index + 2]
+
+  return (r + g + b) / 3
+}
+
+function sampleField(x, y) {
+
+  x = Math.floor(x)
+  y = Math.floor(y)
+
+  if (
+    x < 0 ||
+    y < 0 ||
+    x >= fieldWidth ||
+    y >= fieldHeight
+  ) {
+    return null
+  }
+
+  return field[y * fieldWidth + x]
+}
+
+function renderStreamlines() {
+
+  ctx.fillStyle = 'rgba(0,0,0,0.82)'
+  ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+  ctx.drawImage(canvas, 0, 0)
+
+  const spacing = 38
+
+  for (let sy = spacing; sy < canvas.height; sy += spacing) {
+    for (let sx = spacing; sx < canvas.width; sx += spacing) {
+
+      traceLine(sx, sy)
+    }
+  }
+}
+
+function traceLine(startX, startY) {
+
+  let x = startX
+  let y = startY
+
+  ctx.beginPath()
+  ctx.moveTo(x, y)
+
+  for (let i = 0; i < 120; i++) {
+
+    const v = sampleField(x, y)
+
+    if (!v) break
+
+    const speed = 1.8 + v.mag * 0.04
+
+    x += Math.cos(v.angle) * speed
+    y += Math.sin(v.angle) * speed
+
+    if (
+      x < 0 ||
+      y < 0 ||
+      x >= canvas.width ||
+      y >= canvas.height
+    ) {
+      break
+    }
+
+    ctx.lineTo(x, y)
+  }
+
+  const hue = (startX / canvas.width) * 260 + 120
+
+  ctx.strokeStyle = `hsla(${hue}, 100%, 70%, 0.55)`
+  ctx.lineWidth = 1.2
+  ctx.stroke()
+}
+
+</script>
+
+</body>
+</html>
