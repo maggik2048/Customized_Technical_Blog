@@ -76,7 +76,7 @@ export default function CategoryPostBoxRenderer({
 
             border: isSimple
               ? "1px solid rgba(0,0,0,0.06)"
-              : "1px solid rgba(255,255,255,0.16)",
+              : "1px solid rgba(255,255,255,0.12)",
 
             boxShadow: isSimple
               ? `
@@ -84,18 +84,18 @@ export default function CategoryPostBoxRenderer({
                 0 4px 18px rgba(0,0,0,0.04)
               `
               : `
-                inset 0 1px 0 rgba(255,255,255,0.10),
-                inset 0 0 0 1px rgba(255,255,255,0.04),
-                0 0 0 1px rgba(255,255,255,0.03),
-                0 10px 35px rgba(0,0,0,0.30)
+                inset 0 1px 0 rgba(255,255,255,0.08),
+                inset 0 0 0 1px rgba(255,255,255,0.03),
+                0 6px 20px rgba(0,0,0,0.12)
               `,
 
+            // 여기 블러 강도 거의 안 보이게 낮춤
             backdropFilter: !isSimple
-              ? "blur(10px)"
+              ? "blur(1.5px)"
               : "none",
 
             WebkitBackdropFilter: !isSimple
-              ? "blur(10px)"
+              ? "blur(1.5px)"
               : "none",
           }}
           onMouseEnter={(e) => {
@@ -105,7 +105,7 @@ export default function CategoryPostBoxRenderer({
             e.currentTarget.style.borderColor =
               isSimple
                 ? "rgba(0,0,0,0.12)"
-                : "rgba(255,255,255,0.28)";
+                : "rgba(255,255,255,0.18)";
 
             e.currentTarget.style.boxShadow = isSimple
               ? `
@@ -113,10 +113,9 @@ export default function CategoryPostBoxRenderer({
                 0 10px 24px rgba(0,0,0,0.08)
               `
               : `
-                inset 0 1px 0 rgba(255,255,255,0.16),
-                inset 0 0 0 1px rgba(255,255,255,0.06),
-                0 0 24px rgba(255,255,255,0.05),
-                0 14px 42px rgba(0,0,0,0.45)
+                inset 0 1px 0 rgba(255,255,255,0.10),
+                inset 0 0 0 1px rgba(255,255,255,0.04),
+                0 10px 26px rgba(0,0,0,0.18)
               `;
           }}
           onMouseLeave={(e) => {
@@ -126,7 +125,7 @@ export default function CategoryPostBoxRenderer({
             e.currentTarget.style.borderColor =
               isSimple
                 ? "rgba(0,0,0,0.06)"
-                : "rgba(255,255,255,0.16)";
+                : "rgba(255,255,255,0.12)";
 
             e.currentTarget.style.boxShadow = isSimple
               ? `
@@ -134,10 +133,9 @@ export default function CategoryPostBoxRenderer({
                 0 4px 18px rgba(0,0,0,0.04)
               `
               : `
-                inset 0 1px 0 rgba(255,255,255,0.10),
-                inset 0 0 0 1px rgba(255,255,255,0.04),
-                0 0 0 1px rgba(255,255,255,0.03),
-                0 10px 35px rgba(0,0,0,0.30)
+                inset 0 1px 0 rgba(255,255,255,0.08),
+                inset 0 0 0 1px rgba(255,255,255,0.03),
+                0 6px 20px rgba(0,0,0,0.12)
               `;
           }}
         >
@@ -158,10 +156,10 @@ export default function CategoryPostBoxRenderer({
                   background: `
                     linear-gradient(
                       135deg,
-                      rgba(255,255,255,0.06),
+                      rgba(255,255,255,0.025),
                       transparent 40%,
                       transparent 60%,
-                      rgba(255,255,255,0.04)
+                      rgba(255,255,255,0.02)
                     )
                   `,
                 }}
@@ -173,7 +171,7 @@ export default function CategoryPostBoxRenderer({
                   inset: 0,
                   borderRadius: 14,
                   pointerEvents: "none",
-                  border: "1px solid rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.03)",
                 }}
               />
             </>
@@ -195,7 +193,7 @@ export default function CategoryPostBoxRenderer({
               textOverflow: "ellipsis",
               textShadow: isSimple
                 ? "none"
-                : "0 2px 10px rgba(0,0,0,0.55)",
+                : "0 1px 4px rgba(0,0,0,0.30)",
               fontWeight: 600,
             }}
           >
