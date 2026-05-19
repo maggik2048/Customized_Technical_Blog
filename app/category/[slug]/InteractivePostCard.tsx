@@ -72,17 +72,25 @@ export default function InteractivePostCard({
         borderRadius: 24,
         overflow: "hidden",
 
-        // 더 투명한 유리 느낌
+        // base glass
         background: `
           linear-gradient(
             180deg,
-            rgba(255,255,255,0.06),
+            rgba(255,255,255,0.05),
             rgba(255,255,255,0.02)
           )
         `,
 
-        backdropFilter: "blur(18px)",
-        WebkitBackdropFilter: "blur(18px)",
+        // 핵심:
+        // 평소에는 blur 거의 없음
+        // hover 시 확 blur
+        backdropFilter: active
+          ? "blur(22px) saturate(140%)"
+          : "blur(0px) saturate(100%)",
+
+        WebkitBackdropFilter: active
+          ? "blur(22px) saturate(140%)"
+          : "blur(0px) saturate(100%)",
 
         border: active
           ? "1px solid rgba(255,255,255,0.16)"
@@ -90,50 +98,59 @@ export default function InteractivePostCard({
 
         boxShadow: active
           ? `
-            0 20px 80px rgba(0,0,0,0.22),
+            0 24px 90px rgba(0,0,0,0.28),
             inset 0 1px 0 rgba(255,255,255,0.12)
           `
           : `
             0 10px 40px rgba(0,0,0,0.16),
-            inset 0 1px 0 rgba(255,255,255,0.06)
+            inset 0 1px 0 rgba(255,255,255,0.04)
           `,
 
-        transition: "all 0.45s ease",
+        transition:
+          "backdrop-filter 0.55s ease, transform 0.45s ease, box-shadow 0.45s ease, border 0.45s ease, opacity 0.45s ease",
+
         transform: active
           ? "translateY(-6px) scale(1.01)"
           : "translateY(0px) scale(1)",
 
-        // 핵심
-        opacity: active ? 1 : 0.88,
+        opacity: active ? 1 : 0.9,
       }}
       onMouseEnter={() => setActive(true)}
       onMouseLeave={() => setActive(false)}
     >
-      {/* subtle glow */}
+      {/* glow */}
       <div
         style={{
           position: "absolute",
           inset: 0,
+
           background: `
             radial-gradient(
               circle at top left,
-              rgba(255,255,255,0.12),
-              transparent 40%
+              rgba(255,255,255,0.10),
+              transparent 42%
             )
           `,
+
+          opacity: active ? 1 : 0.5,
+
+          transition: "opacity 0.5s ease",
+
           pointerEvents: "none",
           zIndex: 1,
         }}
       />
 
-      {/* LEFT */}
+      {/* LEFT DESCRIPTION */}
       <div
         style={{
           width: "35%",
           padding: 20,
+
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
+
           zIndex: 20,
         }}
       >
@@ -149,9 +166,13 @@ export default function InteractivePostCard({
               marginTop: 18,
               fontSize: 20,
               fontWeight: 800,
+
               color: "rgba(255,255,255,0.96)",
+
               lineHeight: 1.12,
-              textShadow: "0 2px 12px rgba(0,0,0,0.25)",
+
+              textShadow:
+                "0 2px 14px rgba(0,0,0,0.28)",
             }}
           >
             <PostTitleRenderer text={post.title} />
@@ -169,19 +190,28 @@ export default function InteractivePostCard({
         </div>
       </div>
 
-      {/* RIGHT TV SCREEN */}
+      {/* RIGHT INTERACTION SCREEN */}
       <div
         ref={viewportRef}
         style={{
           width: "65%",
           position: "relative",
           overflow: "hidden",
+
+          // 핵심:
+          // 평소엔 좀 더 어둡게
+          background: active
+            ? "rgba(0,0,0,0.18)"
+            : "rgba(0,0,0,0.36)",
+
+          transition: "background 0.45s ease",
         }}
       >
         {/* stage */}
         <div
           style={{
             position: "absolute",
+
             left: STAGE_OFFSET_X,
             top: STAGE_OFFSET_Y,
 
@@ -192,17 +222,22 @@ export default function InteractivePostCard({
             transformOrigin: "top left",
 
             transition:
-              "transform 0.7s cubic-bezier(0.22, 1, 0.36, 1)",
+              "transform 0.7s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.45s ease",
 
             pointerEvents: active ? "auto" : "none",
 
-            opacity: active ? 1 : 0.82,
+            // 평소엔 살짝 죽여놓음
+            opacity: active ? 1 : 0.72,
+
+            filter: active
+              ? "brightness(1)"
+              : "brightness(0.72)",
           }}
         >
           <VizComponent />
         </div>
 
-        {/* overlay */}
+        {/* dark cinematic overlay */}
         <div
           style={{
             position: "absolute",
@@ -212,27 +247,30 @@ export default function InteractivePostCard({
               ? `
                 linear-gradient(
                   to bottom,
-                  rgba(255,255,255,0.02),
-                  rgba(0,0,0,0.28)
+                  rgba(0,0,0,0.12),
+                  rgba(0,0,0,0.34)
                 )
               `
               : `
                 linear-gradient(
                   to bottom,
-                  rgba(255,255,255,0.03),
-                  rgba(0,0,0,0.42)
+                  rgba(0,0,0,0.22),
+                  rgba(0,0,0,0.56)
                 )
               `,
+
+            transition: "background 0.45s ease",
 
             pointerEvents: "none",
           }}
         />
 
-        {/* glass fade */}
+        {/* glass reflection */}
         <div
           style={{
             position: "absolute",
             inset: 0,
+
             background: `
               linear-gradient(
                 135deg,
@@ -242,7 +280,13 @@ export default function InteractivePostCard({
                 rgba(255,255,255,0.04)
               )
             `,
+
             mixBlendMode: "screen",
+
+            opacity: active ? 1 : 0.7,
+
+            transition: "opacity 0.45s ease",
+
             pointerEvents: "none",
           }}
         />
@@ -255,16 +299,24 @@ export default function InteractivePostCard({
             right: 14,
 
             padding: "6px 12px",
+
             borderRadius: 999,
 
             fontSize: 11,
             color: "white",
 
-            background: "rgba(255,255,255,0.08)",
+            background: active
+              ? "rgba(255,255,255,0.12)"
+              : "rgba(255,255,255,0.06)",
 
-            border: "1px solid rgba(255,255,255,0.10)",
+            border:
+              "1px solid rgba(255,255,255,0.10)",
 
-            backdropFilter: "blur(12px)",
+            backdropFilter: active
+              ? "blur(14px)"
+              : "blur(0px)",
+
+            transition: "all 0.4s ease",
 
             zIndex: 50,
           }}

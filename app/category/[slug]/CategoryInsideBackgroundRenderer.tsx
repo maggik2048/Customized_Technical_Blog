@@ -2,6 +2,7 @@
 
 export default function CategoryInsideBackgroundRenderer() {
   const bgImage = "/images/mathdraw32.png";
+  const birdsImage = "/images/birds2.png";
 
   return (
     <>
@@ -41,11 +42,6 @@ export default function CategoryInsideBackgroundRenderer() {
           zIndex: -5,
           pointerEvents: "none",
 
-          /*
-            전체 invert 영역 자체를 아래로 확장.
-            단순 시작점만 내린 게 아니라
-            전체 gradient curve 를 통째로 아래로 이동시킴.
-          */
           maskImage: `
             linear-gradient(
               to top,
@@ -117,12 +113,42 @@ export default function CategoryInsideBackgroundRenderer() {
         }}
       />
 
+      {/* HUGE BIRDS IMAGE */}
+      <div
+        style={{
+          position: "fixed",
+          right: "-15vw",
+          bottom: "-14vh",
+
+          width: "48vw",
+          height: "48vw",
+
+          backgroundImage: `url("${birdsImage}")`,
+          backgroundRepeat: "no-repeat",
+          backgroundSize: "contain",
+          backgroundPosition: "bottom right",
+
+          zIndex: -2,
+          pointerEvents: "none",
+
+          opacity: 0.60,
+
+          filter: `
+            drop-shadow(0 0 40px rgba(120,140,255,0.22))
+            contrast(1.08)
+            saturate(1.1)
+          `,
+
+          transform: "rotate(-2deg)",
+        }}
+      />
+
       {/* GRAIN */}
       <div
         style={{
           position: "fixed",
           inset: 0,
-          zIndex: -2,
+          zIndex: -1,
           opacity: 0.07,
           backgroundImage:
             "url('https://www.transparenttextures.com/patterns/noise.png')",
