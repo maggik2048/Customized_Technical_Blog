@@ -158,6 +158,7 @@ export default function CalculatorGraphingInterface({
         {/* -------------------------------- */}
 
         <div
+          className="panel"
           style={{
             padding: 24,
 
@@ -245,6 +246,7 @@ export default function CalculatorGraphingInterface({
               .flat()
               .map((key) => (
                 <button
+                  className="calculator-key"
                   key={key}
                   onClick={() =>
                     handleKeyPress(key)
@@ -302,6 +304,7 @@ export default function CalculatorGraphingInterface({
         {/* -------------------------------- */}
 
         <div
+          className="graph-panel"
           style={{
             position: "relative",
 

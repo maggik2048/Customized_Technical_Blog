@@ -16,6 +16,7 @@ export default function CalculatorGraphVintageTheme({
 }: Props) {
   return (
     <div
+      className="vintage-calculator-theme"
       style={{
         width: 1480,
         maxWidth: "96vw",
@@ -125,7 +126,9 @@ export default function CalculatorGraphVintageTheme({
           {title}
         </div>
 
+        {/* close button */}
         <button
+          className="vintage-btn"
           onClick={onClose}
           style={{
             width: 38,
@@ -133,24 +136,8 @@ export default function CalculatorGraphVintageTheme({
 
             borderRadius: "50%",
 
-            border: "1px solid rgba(255,220,180,0.25)",
-
-            background: `
-              radial-gradient(circle at top,
-                rgba(255,245,225,0.18),
-                rgba(60,40,20,0.95)
-              )
-            `,
-
-            color: "#ffe8c7",
-
             fontSize: 18,
             cursor: "pointer",
-
-            boxShadow: `
-              inset 0 1px 0 rgba(255,255,255,0.08),
-              0 0 18px rgba(255,210,120,0.10)
-            `,
           }}
         >
           ×
@@ -188,13 +175,20 @@ export default function CalculatorGraphVintageTheme({
         {children}
       </div>
 
-      {/* GLOBAL VINTAGE BUTTON STYLE */}
+      {/* GLOBAL STYLE */}
 
       <style jsx global>{`
-        /* 숫자 버튼 / sin cos tan / graph 버튼 */
+        /*
+          IMPORTANT:
+          이제 전체 button 에 적용 안됨
+          .vintage-calculator-theme 내부에서
+          특정 클래스 가진 요소만 스타일 적용
+        */
 
-        .calculator-key,
-        button {
+        /* calculator buttons */
+
+        .vintage-calculator-theme .calculator-key,
+        .vintage-calculator-theme .vintage-btn {
           border-radius: 999px !important;
 
           background:
@@ -226,8 +220,8 @@ export default function CalculatorGraphVintageTheme({
           position: relative;
         }
 
-        .calculator-key:hover,
-        button:hover {
+        .vintage-calculator-theme .calculator-key:hover,
+        .vintage-calculator-theme .vintage-btn:hover {
           transform: translateY(-1px);
 
           border: 1px solid rgba(255,235,190,0.52) !important;
@@ -238,8 +232,8 @@ export default function CalculatorGraphVintageTheme({
             0 6px 18px rgba(0,0,0,0.24) !important;
         }
 
-        .calculator-key:active,
-        button:active {
+        .vintage-calculator-theme .calculator-key:active,
+        .vintage-calculator-theme .vintage-btn:active {
           transform: translateY(2px);
 
           box-shadow:
@@ -247,10 +241,10 @@ export default function CalculatorGraphVintageTheme({
             0 0 10px rgba(255,200,120,0.06) !important;
         }
 
-        /* f(x) 입력창 */
+        /* inputs */
 
-        input,
-        textarea {
+        .vintage-calculator-theme input,
+        .vintage-calculator-theme textarea {
           background:
             linear-gradient(
               180deg,
@@ -273,31 +267,33 @@ export default function CalculatorGraphVintageTheme({
             Georgia !important;
         }
 
-        input::placeholder,
-        textarea::placeholder {
+        .vintage-calculator-theme input::placeholder,
+        .vintage-calculator-theme textarea::placeholder {
           color: rgba(255,230,190,0.34) !important;
         }
 
-        /* graph line color */
+        /* graph line */
 
-        svg path {
+        .vintage-calculator-theme svg path {
           stroke: #f6d089 !important;
         }
 
-        /* axis */
+        /* axis text */
 
-        svg text {
+        .vintage-calculator-theme svg text {
           fill: #f3e2bd !important;
         }
 
-        svg line {
+        /* axis line */
+
+        .vintage-calculator-theme svg line {
           stroke: rgba(255,225,170,0.24) !important;
         }
 
-        /* 카드 패널 */
+        /* panels */
 
-        .panel,
-        .graph-panel {
+        .vintage-calculator-theme .panel,
+        .vintage-calculator-theme .graph-panel {
           background:
             linear-gradient(
               145deg,
