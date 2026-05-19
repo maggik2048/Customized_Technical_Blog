@@ -27,7 +27,10 @@ import {
   PolygonAreaData,
 } from "./6_AreaCalculator";
 
-import { hatchBlackAreas } from "./1_hatchWithOneSide";
+// 핵심 변경
+import {
+  replaceGrayRangeWithHatch,
+} from "./1_hatchWithOneSide";
 
 import {
   useAnnotationManager,
@@ -68,7 +71,10 @@ export default function BasicRenderer({
     const ctx =
       canvas.getContext("2d")!;
 
-    // clear + resize
+    // ====================
+    // resize
+    // ====================
+
     canvas.width = img.width;
     canvas.height = img.height;
 
@@ -79,12 +85,16 @@ export default function BasicRenderer({
       canvas.height
     );
 
-    // STEP 0
+    // ====================
     // original image
+    // ====================
+
     ctx.drawImage(img, 0, 0);
 
-    // STEP 1
+    // ====================
     // threshold
+    // ====================
+
     if (
       annotations.showThreshold
     ) {
@@ -94,8 +104,47 @@ export default function BasicRenderer({
       );
     }
 
-    // STEP 2
+    // ====================
+    // IMPORTANT
+    //
+    // threshold의 검은 영역을
+    // hatch로 "교체"
+    //
+    // multiply 아님
+    // overlay 아님
+    // 뒤에 깔리는것도 아님
+    //
+    // 실제 픽셀 replacement
+    // ====================
+
+    if (
+      annotations.showHatching
+    ) {
+      replaceGrayRangeWithHatch(
+        canvas,
+        {
+          // 검은색만 hatch로 치환
+          minGray: 0,
+          maxGray: 1,
+
+          blockSize: 6,
+
+          lineWidth: 1,
+
+          hatchColor: "#000",
+
+          backgroundColor:
+            "#fff",
+
+          coverageThreshold: 0.5,
+        }
+      );
+    }
+
+    // ====================
     // convex decomposition
+    // ====================
+
     const result =
       convexDecomposition(canvas);
 
@@ -119,10 +168,12 @@ export default function BasicRenderer({
       directionData
     );
 
-    // STEP 3
+    // ====================
     // longest side
+    // ====================
 
-    let longestSideData: any = null;
+    let longestSideData: any =
+      null;
 
     if (
       annotations.showLongestSide
@@ -139,8 +190,9 @@ export default function BasicRenderer({
       );
     }
 
-    // STEP 4
+    // ====================
     // perpendicular
+    // ====================
 
     if (
       annotations.showPerpendicular &&
@@ -159,8 +211,9 @@ export default function BasicRenderer({
       );
     }
 
-    // STEP 5
+    // ====================
     // area text
+    // ====================
 
     if (
       annotations.showAreaText
@@ -176,21 +229,6 @@ export default function BasicRenderer({
         "areaData",
         areaData
       );
-    }
-
-    // STEP 6
-    // hatch overlay
-
-    if (
-      annotations.showHatching
-    ) {
-      hatchBlackAreas(canvas, {
-        threshold,
-        blockSize: 6,
-        lineWidth: 1,
-        hatchColor: "#000",
-        blackRatio: 0.5,
-      });
     }
   };
 

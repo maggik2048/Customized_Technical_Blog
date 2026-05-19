@@ -1,23 +1,34 @@
 // 1_hatchWithOneSide.ts
 
-type HatchOptions = {
-  threshold?: number;
+type HatchReplaceOptions = {
+  // 이 범위의 grayscale을 hatch로 "대체"
+  minGray?: number;
+  maxGray?: number;
+
   blockSize?: number;
+
   lineWidth?: number;
+
   hatchColor?: string;
-  blackRatio?: number;
+
+  backgroundColor?: string;
+
+  coverageThreshold?: number;
 };
 
-export function hatchBlackAreas(
+export function replaceGrayRangeWithHatch(
   canvas: HTMLCanvasElement,
-  options: HatchOptions = {}
+  options: HatchReplaceOptions = {}
 ): void {
   const ctx = canvas.getContext("2d");
 
   if (!ctx) return;
 
-  const threshold =
-    options.threshold ?? 128;
+  const minGray =
+    options.minGray ?? 0;
+
+  const maxGray =
+    options.maxGray ?? 30;
 
   const blockSize =
     options.blockSize ?? 6;
@@ -28,15 +39,21 @@ export function hatchBlackAreas(
   const hatchColor =
     options.hatchColor ?? "#000";
 
-  const blackRatio =
-    options.blackRatio ?? 0.5;
+  const backgroundColor =
+    options.backgroundColor ??
+    "#fff";
+
+  const coverageThreshold =
+    options.coverageThreshold ??
+    0.5;
 
   const width = canvas.width;
   const height = canvas.height;
 
-  // 현재 캔버스 상태 읽기
-  // (이미 threshold + polygon visualization
-  // + line visualization 다 그려진 상태)
+  // =========================
+  // 현재 canvas 읽기
+  // =========================
+
   const imageData = ctx.getImageData(
     0,
     0,
@@ -47,17 +64,47 @@ export function hatchBlackAreas(
   const data = imageData.data;
 
   // =========================
+  // mask 생성
+  // =========================
+
+  const mask: number[] = [];
+
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i];
+
+    const g = data[i + 1];
+
+    const b = data[i + 2];
+
+    const gray =
+      0.299 * r +
+      0.587 * g +
+      0.114 * b;
+
+    // 범위 안이면 1
+    if (
+      gray >= minGray &&
+      gray <= maxGray
+    ) {
+      mask.push(1);
+    } else {
+      mask.push(0);
+    }
+  }
+
+  // =========================
   // IMPORTANT
-  // 기존 캔버스 절대 clear 안함
-  // fillRect 안함
-  // 덮어쓰기 안함
-  // 오직 검은 영역 위에만 hatch 추가
+  // 기존 threshold 영역을
+  // hatch로 "교체"
   // =========================
 
   ctx.save();
 
-  ctx.strokeStyle = hatchColor;
   ctx.lineWidth = lineWidth;
+
+  ctx.strokeStyle = hatchColor;
+
+  ctx.fillStyle = backgroundColor;
 
   for (
     let y = 0;
@@ -69,13 +116,13 @@ export function hatchBlackAreas(
       x < width;
       x += blockSize
     ) {
-      let blackCount = 0;
+      let insideCount = 0;
       let total = 0;
 
-      // 블록 내부 검사
       for (let j = 0; j < blockSize; j++) {
         for (let i = 0; i < blockSize; i++) {
           const px = x + i;
+
           const py = y + j;
 
           if (
@@ -85,37 +132,33 @@ export function hatchBlackAreas(
             continue;
           }
 
-          const pixelIndex =
-            (py * width + px) * 4;
-
-          const r =
-            data[pixelIndex];
-
-          const g =
-            data[pixelIndex + 1];
-
-          const b =
-            data[pixelIndex + 2];
-
-          const gray =
-            0.299 * r +
-            0.587 * g +
-            0.114 * b;
+          const idx =
+            py * width + px;
 
           total++;
 
-          // threshold 기준 검정 판단
-          if (gray < threshold) {
-            blackCount++;
+          if (mask[idx] === 1) {
+            insideCount++;
           }
         }
       }
 
       const ratio =
-        blackCount / total;
+        insideCount / total;
 
-      // 검정 비율 높은 영역만 해치
-      if (ratio > blackRatio) {
+      // 충분히 해당 gray range이면
+      // 기존 픽셀을 지우고 hatch로 교체
+      if (
+        ratio >= coverageThreshold
+      ) {
+        // 기존 threshold 검정 제거
+        ctx.fillRect(
+          x,
+          y,
+          blockSize,
+          blockSize
+        );
+
         drawHatch(
           ctx,
           x,
