@@ -151,8 +151,8 @@ export default function CalculatorGraphingInterface({
               marginBottom: 20,
             }}
           >
-            <div style={{ fontSize: 14, opacity: 0.6 }}>f(x)</div>
-            <div style={{ fontSize: 34 }}>{expression || "0"}</div>
+            <div style={{ fontSize: 14, opacity: 0.0}}>f(x)</div>
+            <div style={{ fontSize: 34, color: "#fff" }}>{expression || "0"}</div>
           </div>
 
           <div
@@ -303,6 +303,7 @@ export default function CalculatorGraphingInterface({
               borderRadius: 16,
               background: "rgba(0,0,0,0.4)",
               border: "1px solid rgba(255,255,255,0.2)",
+              color: "#fff"
             }}
           >
             y = {expression}
@@ -319,6 +320,7 @@ export default function CalculatorGraphingInterface({
               background: "rgba(0,0,0,0.4)",
               border: "1px solid rgba(255,255,255,0.2)",
               fontSize: 14,
+              color: "#cecece"
             }}
           >
             zoom: {zoom.toFixed(1)}
