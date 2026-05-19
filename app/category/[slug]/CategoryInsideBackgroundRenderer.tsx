@@ -1,7 +1,7 @@
 "use client";
 
 export default function CategoryInsideBackgroundRenderer() {
-  const bgImage = "/images/mathdraw3.png";
+  const bgImage = "/images/mathdraw32.png";
 
   return (
     <>
@@ -27,6 +27,7 @@ export default function CategoryInsideBackgroundRenderer() {
           backgroundSize: "cover",
           backgroundPosition: "center",
           transform: "scale(1.02)",
+
           filter: `
             invert(1)
             hue-rotate(200deg)
@@ -35,18 +36,25 @@ export default function CategoryInsideBackgroundRenderer() {
             brightness(0.88)
             sepia(0.05)
           `,
+
           opacity: 0.92,
           zIndex: -5,
           pointerEvents: "none",
 
+          /*
+            전체 invert 영역 자체를 아래로 확장.
+            단순 시작점만 내린 게 아니라
+            전체 gradient curve 를 통째로 아래로 이동시킴.
+          */
           maskImage: `
             linear-gradient(
               to top,
-              transparent 0%,
-              rgba(0,0,0,0.12) 30%,
-              rgba(0,0,0,0.35) 48%,
-              rgba(0,0,0,0.70) 68%,
-              rgba(0,0,0,0.92) 85%,
+              rgba(0,0,0,0.10) 0%,
+              rgba(0,0,0,0.06) 10%,
+              rgba(0,0,0,0.18) 22%,
+              rgba(0,0,0,0.80) 52%,
+              rgba(0,0,0,0.88) 58%,
+              rgba(0,0,0,0.97) 78%,
               rgba(0,0,0,1) 100%
             )
           `,
@@ -54,11 +62,12 @@ export default function CategoryInsideBackgroundRenderer() {
           WebkitMaskImage: `
             linear-gradient(
               to top,
-              transparent 0%,
-              rgba(0,0,0,0.12) 30%,
-              rgba(0,0,0,0.35) 48%,
-              rgba(0,0,0,0.70) 68%,
-              rgba(0,0,0,0.92) 85%,
+              rgba(0,0,0,0.10) 0%,
+              rgba(0,0,0,0.26) 10%,
+              rgba(0,0,0,0.48) 22%,
+              rgba(0,0,0,0.70) 38%,
+              rgba(0,0,0,0.88) 58%,
+              rgba(0,0,0,0.97) 78%,
               rgba(0,0,0,1) 100%
             )
           `,
@@ -72,16 +81,18 @@ export default function CategoryInsideBackgroundRenderer() {
           inset: 0,
           zIndex: -4,
           pointerEvents: "none",
+
           background: `
             linear-gradient(
               to top,
-              rgba(255,255,255,0.02) 0%,
-              rgba(220,225,240,0.10) 25%,
-              rgba(170,180,210,0.18) 45%,
-              rgba(120,130,170,0.30) 70%,
-              rgba(107,110,135,0.55) 100%
+              rgba(255,255,255,0.03) 0%,
+              rgba(220,225,240,0.12) 20%,
+              rgba(170,180,210,0.20) 42%,
+              rgba(120,130,170,0.34) 68%,
+              rgba(107,110,135,0.56) 100%
             )
           `,
+
           mixBlendMode: "lighten",
         }}
       />
@@ -93,6 +104,7 @@ export default function CategoryInsideBackgroundRenderer() {
           inset: 0,
           zIndex: -3,
           pointerEvents: "none",
+
           background: `
             radial-gradient(
               circle at 85% 50%,
@@ -100,6 +112,7 @@ export default function CategoryInsideBackgroundRenderer() {
               transparent 60%
             )
           `,
+
           mixBlendMode: "screen",
         }}
       />
