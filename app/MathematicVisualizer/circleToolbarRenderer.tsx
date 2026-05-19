@@ -314,7 +314,7 @@ export default function CircleToolbarRenderer({
           letterSpacing: "0.3em",
         }}
       >
-        SYS
+        Theme
       </div>
     </div>
   );
