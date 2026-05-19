@@ -3,7 +3,7 @@
 import BurnFilterOverlay from "./BurnFilterOverlay";
 
 export default function CategoryInsideBackgroundRenderer() {
-  const bgImage = "/images/mathdraw.png";
+  const bgImage = "/images/mathdraw0.png";
 
   return (
     <>
@@ -46,7 +46,7 @@ export default function CategoryInsideBackgroundRenderer() {
 
           maskImage: `
             linear-gradient(
-              to right,
+              to top,
               transparent 0%,
               rgba(0,0,0,0.12) 30%,
               rgba(0,0,0,0.35) 48%,
@@ -58,7 +58,7 @@ export default function CategoryInsideBackgroundRenderer() {
 
           WebkitMaskImage: `
             linear-gradient(
-              to right,
+              to top,
               transparent 0%,
               rgba(0,0,0,0.12) 30%,
               rgba(0,0,0,0.35) 48%,
@@ -80,7 +80,7 @@ export default function CategoryInsideBackgroundRenderer() {
 
           background: `
             linear-gradient(
-              to right,
+              to top,
               rgba(255,255,255,0.02) 0%,
               rgba(220,225,240,0.10) 25%,
               rgba(170,180,210,0.18) 45%,
