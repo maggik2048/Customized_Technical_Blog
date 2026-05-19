@@ -20,8 +20,6 @@ type Props = {
   extraButtons?: readonly ExtraButton[];
 };
 
-const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
-
 export default function CircleToolbarRenderer({
   theme,
   setTheme,
@@ -34,26 +32,25 @@ export default function CircleToolbarRenderer({
   );
 
   const radius = 120;
+  const cx = 170;
+  const cy = 170;
 
-  // physics rotation
   const [rotation, setRotation] = useState(0);
   const velocity = useRef(0);
   const targetRotation = useRef(0);
   const raf = useRef<number | null>(null);
 
-  const selectedIndex = allButtons.findIndex((b) => b.id === theme);
-
-  /** inertia loop */
   useEffect(() => {
     const animate = () => {
       const diff = targetRotation.current - rotation;
 
-      velocity.current += diff * 0.08; // spring strength
-      velocity.current *= 0.86; // damping
+      velocity.current += diff * 0.09;
+      velocity.current *= 0.84;
 
-      const next = rotation + velocity.current;
-
-      setRotation(next);
+      setRotation((r) => {
+        const next = r + velocity.current;
+        return next;
+      });
 
       raf.current = requestAnimationFrame(animate);
     };
@@ -73,15 +70,15 @@ export default function CircleToolbarRenderer({
     targetRotation.current = -index * step;
   };
 
-  /** particle galaxy */
-  const particles = useMemo(() => {
-    return Array.from({ length: 40 }).map(() => ({
-      x: Math.random() * 340,
-      y: Math.random() * 340,
-      r: Math.random() * 1.6 + 0.3,
-      a: Math.random(),
-    }));
-  }, []);
+  const particles = useMemo(
+    () =>
+      Array.from({ length: 40 }).map(() => ({
+        x: Math.random() * 340,
+        y: Math.random() * 340,
+        r: Math.random() * 1.6 + 0.3,
+      })),
+    []
+  );
 
   return (
     <div
@@ -94,15 +91,9 @@ export default function CircleToolbarRenderer({
         zIndex: 100,
       }}
     >
-      {/* GALAXY PARTICLES */}
+      {/* PARTICLES (조금 더 보이게) */}
       <svg
-        style={{
-          position: "absolute",
-          inset: 0,
-          width: "100%",
-          height: "100%",
-          pointerEvents: "none",
-        }}
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
       >
         {particles.map((p, i) => (
           <circle
@@ -111,66 +102,86 @@ export default function CircleToolbarRenderer({
             cy={p.y}
             r={p.r}
             fill="white"
-            opacity={0.08 + Math.sin(rotation * 0.01 + i) * 0.05}
+            opacity={0.12}
           />
         ))}
       </svg>
 
-      {/* OUTER RING (stronger visibility) */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          borderRadius: "50%",
-          border: "1px solid rgba(255,255,255,0.08)",
-          boxShadow:
-            "0 0 55px rgba(0,0,0,0.55), inset 0 0 25px rgba(255,255,255,0.03)",
-        }}
-      />
-
-      {/* ORBIT CONNECTION RING (stronger) */}
+      {/* ORBIT SYSTEM (강화된 핵심) */}
       <svg
-        style={{
-          position: "absolute",
-          inset: 0,
-          width: "100%",
-          height: "100%",
-          pointerEvents: "none",
-        }}
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
       >
+        {/* 가장 강한 기준 orbit */}
         <circle
-          cx="170"
-          cy="170"
+          cx={cx}
+          cy={cy}
           r={radius}
           fill="none"
-          stroke="rgba(255,255,255,0.10)"
+          stroke="rgba(255,255,255,0.22)"
+          strokeWidth="1.4"
+        />
+
+        {/* outer thick glow orbit */}
+        <circle
+          cx={cx}
+          cy={cy}
+          r={radius + 6}
+          fill="none"
+          stroke="rgba(255,255,255,0.14)"
+          strokeWidth="2.2"
+        />
+
+        {/* dashed strong orbit */}
+        <circle
+          cx={cx}
+          cy={cy}
+          r={radius - 8}
+          fill="none"
+          stroke="rgba(255,255,255,0.28)"
+          strokeWidth="1.4"
+          strokeDasharray="3 6"
+        />
+
+        {/* segmented heavy orbit (|||| 느낌 강화) */}
+        <circle
+          cx={cx}
+          cy={cy}
+          r={radius + 14}
+          fill="none"
+          stroke="rgba(255,255,255,0.18)"
           strokeWidth="1.2"
+          strokeDasharray="10 8 2 8"
+        />
+
+        {/* inner fine orbit */}
+        <circle
+          cx={cx}
+          cy={cy}
+          r={radius - 16}
+          fill="none"
+          stroke="rgba(255,255,255,0.16)"
+          strokeWidth="1"
+          strokeDasharray="1 6"
         />
       </svg>
 
-      {/* CONNECTION LINES BETWEEN BUTTONS */}
+      {/* CONNECTION LINES (더 진하게 + 구조화) */}
       <svg
-        style={{
-          position: "absolute",
-          inset: 0,
-          width: "100%",
-          height: "100%",
-          pointerEvents: "none",
-        }}
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%" }}
       >
         {allButtons.map((_, i) => {
           const step = (Math.PI * 2) / allButtons.length;
+
           const a1 = i * step;
           const a2 = (i + 1) * step;
-
-          const cx = 170;
-          const cy = 170;
 
           const x1 = cx + Math.cos(a1) * radius;
           const y1 = cy + Math.sin(a1) * radius;
 
           const x2 = cx + Math.cos(a2) * radius;
           const y2 = cy + Math.sin(a2) * radius;
+
+          const mode = i % 4;
 
           return (
             <line
@@ -179,14 +190,31 @@ export default function CircleToolbarRenderer({
               y1={y1}
               x2={x2}
               y2={y2}
-              stroke="rgba(255,255,255,0.14)"
-              strokeWidth="1.2"
+              stroke={
+                mode === 0
+                  ? "rgba(255,255,255,0.32)"
+                  : mode === 1
+                  ? "rgba(255,255,255,0.18)"
+                  : mode === 2
+                  ? "rgba(255,255,255,0.24)"
+                  : "rgba(255,255,255,0.14)"
+              }
+              strokeWidth={mode === 0 ? 1.8 : 1.2}
+              strokeDasharray={
+                mode === 1
+                  ? "2 7"
+                  : mode === 2
+                  ? "6 3"
+                  : mode === 3
+                  ? "1 5"
+                  : "none"
+              }
             />
           );
         })}
       </svg>
 
-      {/* ORBIT LAYER */}
+      {/* ORBIT ITEMS */}
       <div
         style={{
           position: "absolute",
@@ -213,14 +241,12 @@ export default function CircleToolbarRenderer({
                 transform: `translate(-50%, -50%) translate(${x}px, ${y}px)`,
               }}
             >
-              {/* counter rotate */}
               <div style={{ transform: `rotate(${-rotation}deg)` }}>
-                {/* GLow trail for selected */}
                 {selected && (
                   <svg
                     style={{
                       position: "absolute",
-                      inset: -20,
+                      inset: -18,
                       width: 80,
                       height: 80,
                       pointerEvents: "none",
@@ -229,20 +255,11 @@ export default function CircleToolbarRenderer({
                     <circle
                       cx="40"
                       cy="40"
-                      r="28"
+                      r="30"
                       fill="none"
                       stroke={item.accent}
                       strokeWidth="2"
-                      opacity="0.35"
-                    />
-                    <circle
-                      cx="40"
-                      cy="40"
-                      r="32"
-                      fill="none"
-                      stroke={item.accent}
-                      strokeWidth="1"
-                      opacity="0.15"
+                      opacity="0.45"
                     />
                   </svg>
                 )}
@@ -250,28 +267,19 @@ export default function CircleToolbarRenderer({
                 <button
                   onClick={() => handleClick(item.id, index)}
                   style={{
-                    width: selected ? 58 : 46,
-                    height: selected ? 58 : 46,
+                    width: selected ? 60 : 46,
+                    height: selected ? 60 : 46,
                     borderRadius: "50%",
-
-                    // transparent glass (stronger readability)
-                    background: "rgba(255,255,255,0.02)",
-
+                    background: "rgba(255,255,255,0.03)",
                     border: selected
-                      ? `1px solid ${item.accent}`
-                      : "1px solid rgba(255,255,255,0.14)",
-
+                      ? `1.5px solid ${item.accent}`
+                      : "1px solid rgba(255,255,255,0.18)",
                     color: item.accent,
-                    backdropFilter: "blur(8px)",
-
+                    backdropFilter: "blur(10px)",
                     boxShadow: selected
-                      ? `0 0 22px ${item.accent}55`
-                      : "0 0 0 rgba(0,0,0,0)",
-
+                      ? `0 0 26px ${item.accent}66`
+                      : "none",
                     cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
                     fontSize: 9,
                     letterSpacing: "0.12em",
                     textTransform: "uppercase",
@@ -285,25 +293,25 @@ export default function CircleToolbarRenderer({
         })}
       </div>
 
-      {/* CENTER CORE */}
+      {/* CENTER CORE (더 또렷하게) */}
       <div
         style={{
           position: "absolute",
           left: "50%",
           top: "50%",
           transform: "translate(-50%, -50%)",
-          width: 78,
-          height: 78,
+          width: 82,
+          height: 82,
           borderRadius: "50%",
-          border: "1px solid rgba(255,255,255,0.14)",
+          border: "1.2px solid rgba(255,255,255,0.22)",
           background:
-            "radial-gradient(circle at 30% 30%, rgba(255,255,255,0.06), rgba(0,0,0,0.7))",
+            "radial-gradient(circle at 30% 30%, rgba(255,255,255,0.08), rgba(0,0,0,0.8))",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          color: activeAccent ?? "rgba(255,255,255,0.8)",
+          color: activeAccent ?? "rgba(255,255,255,0.85)",
           fontSize: 10,
-          letterSpacing: "0.25em",
+          letterSpacing: "0.3em",
         }}
       >
         SYS
