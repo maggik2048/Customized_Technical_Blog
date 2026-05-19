@@ -60,8 +60,7 @@ canvas{
 <h1>Image → Smooth Streamline Field</h1>
 
 <p>
-원래 gradient field 느낌은 유지하면서<br>
-streamline propagation만 smooth 하게 개선한 버전
+중복 streamline을 occupancy suppression으로 제거한 버전
 </p>
 
 <input type="file" id="upload" accept="image/*" />
@@ -75,8 +74,15 @@ const canvas = document.getElementById('canvas')
 const ctx = canvas.getContext('2d')
 
 let field = []
+
 let W = 0
 let H = 0
+
+// 핵심 파라미터들
+const spacing = 34
+const occupancyRadius = 24
+
+let occupied
 
 upload.addEventListener('change', e=>{
 
@@ -97,7 +103,6 @@ upload.addEventListener('change', e=>{
   }
 
   reader.readAsDataURL(file)
-
 })
 
 function buildField(img){
@@ -114,7 +119,6 @@ function buildField(img){
 
   field = new Array(W * H)
 
-  // 원래 local detail 유지
   for(let y=1; y<H-1; y++){
 
     for(let x=1; x<W-1; x++){
@@ -176,11 +180,16 @@ function render(){
   ctx.fillStyle = "rgba(0,0,0,0.94)"
   ctx.fillRect(0,0,W,H)
 
-  const spacing = 34
+  occupied = new Uint8Array(W * H)
 
   for(let y=spacing; y<H; y+=spacing){
 
     for(let x=spacing; x<W; x+=spacing){
+
+      const idx = y * W + x
+
+      // 이미 다른 streamline 근처면 skip
+      if(occupied[idx]) continue
 
       trace(x,y)
     }
@@ -203,9 +212,7 @@ function trace(startX,startY){
 
     if(!v) break
 
-    // 핵심:
-    // direction inertia
-
+    // direction inertia smoothing
     if(currentAngle === null){
 
       currentAngle = v.angle
@@ -215,8 +222,7 @@ function trace(startX,startY){
       let da =
         normalizeAngle(v.angle - currentAngle)
 
-      // 얼마나 부드럽게 따라갈지
-      currentAngle += da * 0.08
+      currentAngle += da * 0.05
     }
 
     const speed =
@@ -232,6 +238,9 @@ function trace(startX,startY){
       y>=H
     ) break
 
+    // occupancy marking
+    markOccupied(x,y,occupancyRadius)
+
     ctx.lineTo(x,y)
   }
 
@@ -239,11 +248,37 @@ function trace(startX,startY){
     (startX / W) * 220 + 160
 
   ctx.strokeStyle =
-    `hsla(${hue},100%,70%,0.6)`
+    `hsla(${hue},100%,70%,0.62)`
 
   ctx.lineWidth = 1.5
 
   ctx.stroke()
+}
+
+function markOccupied(cx,cy,r){
+
+  const rr = r * r
+
+  for(let oy=-r; oy<=r; oy++){
+
+    for(let ox=-r; ox<=r; ox++){
+
+      if(ox*ox + oy*oy > rr)
+        continue
+
+      const x = Math.floor(cx + ox)
+      const y = Math.floor(cy + oy)
+
+      if(
+        x<0 ||
+        y<0 ||
+        x>=W ||
+        y>=H
+      ) continue
+
+      occupied[y * W + x] = 1
+    }
+  }
 }
 
 function normalizeAngle(a){
