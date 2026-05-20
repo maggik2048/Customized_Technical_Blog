@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>Node-Based Stroke Propagation</title>
+<style>
+body {
+  font-family: Arial;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  padding:20px;
+}
+canvas { border:1px solid #ccc; }
+</style>
+</head>
+<body>
+
+<input type="file" id="upload"/>
+<input type="range" id="threshold" min="0" max="255" value="128"/>
+
+<canvas id="canvas"></canvas>
+
+<script>
+
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+const upload = document.getElementById("upload");
+const thresholdInput = document.getElementById("threshold");
+
+let img = new Image();
+
+let W,H;
+let visited;
+
+upload.onchange = e=>{
+  const r=new FileReader();
+  r.onload = ev=>{
+    img=new Image();
+    img.onload=draw;
+    img.src=ev.target.result;
+  };
+  r.readAsDataURL(e.target.files[0]);
+};
+
+thresholdInput.oninput=draw;
+
+function gray(i,data){
+  return 0.299*data[i]+0.587*data[i+1]+0.114*data[i+2];
+}
+
+const dirs = [
+ [-1,-1],[0,-1],[1,-1],
+ [-1,0],       [1,0],
+ [-1,1],[0,1],[1,1]
+];
+
+function draw(){
+
+  if(!img.src) return;
+
+  canvas.width=img.width;
+  canvas.height=img.height;
+
+  ctx.drawImage(img,0,0);
+
+  const data = ctx.getImageData(0,0,canvas.width,canvas.height).data;
+  const th = +thresholdInput.value;
+
+  W=canvas.width;
+  H=canvas.height;
+
+  const bw = new Uint8Array(W*H);
+  visited = new Uint8Array(W*H);
+
+  // binary map
+  for(let i=0,p=0;i<data.length;i+=4,p++){
+    bw[p] = gray(i,data) < th ? 1 : 0;
+  }
+
+  function idx(x,y){ return y*W+x; }
+
+  function inb(x,y){ return x>=0 && y>=0 && x<W && y<H; }
+
+  function isEdge(x,y){
+    if(!bw[idx(x,y)]) return false;
+
+    // edge if any neighbor is background
+    for(const [dx,dy] of dirs){
+      const nx=x+dx, ny=y+dy;
+      if(inb(nx,ny) && !bw[idx(nx,ny)]) return true;
+    }
+    return false;
+  }
+
+  function findNext(x,y,prevDir){
+
+    let best=null;
+    let bestScore=-1;
+
+    for(const [dx,dy] of dirs){
+      const nx=x+dx, ny=y+dy;
+      if(!inb(nx,ny)) continue;
+      if(!bw[idx(nx,ny)]) continue;
+      if(visited[idx(nx,ny)]) continue;
+
+      const len=Math.hypot(dx,dy);
+      const ndx=dx/len, ndy=dy/len;
+
+      const score = prevDir.x*ndx + prevDir.y*ndy;
+
+      if(score > bestScore){
+        bestScore = score;
+        best = {x:nx,y:ny,dir:{x:ndx,y:ndy}};
+      }
+    }
+
+    return best;
+  }
+
+  ctx.clearRect(0,0,W,H);
+
+  function trace(startx,starty){
+
+    let x=startx, y=starty;
+    let dir={x:1,y:0};
+
+    while(true){
+
+      visited[idx(x,y)] = 1;
+
+      const next = findNext(x,y,dir);
+      if(!next) break;
+
+      ctx.beginPath();
+      ctx.strokeStyle="#000";
+      ctx.moveTo(x,y);
+      ctx.lineTo(next.x,next.y);
+      ctx.stroke();
+
+      x=next.x;
+      y=next.y;
+      dir=next.dir;
+    }
+  }
+
+  // scan all edge pixels
+  for(let y=0;y<H;y++){
+    for(let x=0;x<W;x++){
+      if(isEdge(x,y) && !visited[idx(x,y)]){
+        trace(x,y);
+      }
+    }
+  }
+}
+
+</script>
+</body>
+</html>
