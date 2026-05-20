@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Soft Threshold Binarization</title>
+  <style>
+    body {
+      font-family: Arial;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 20px;
+    }
+    canvas {
+      border: 1px solid #ccc;
+      max-width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+<input type="file" id="upload" accept="image/*" />
+
+<label>
+  Highlight Threshold:
+  <input type="range" id="threshold" min="0" max="255" value="178" />
+</label>
+
+<label>
+  Highlight Softness:
+  <input type="range" id="softness1" min="1" max="100" value="10" />
+</label>
+
+<label>
+  Base Threshold:
+  <input type="range" id="threshold2" min="0" max="255" value="120" />
+</label>
+
+<label>
+  Base Softness:
+  <input type="range" id="softness2" min="1" max="100" value="10" />
+</label>
+
+<canvas id="canvas"></canvas>
+
+<script>
+const upload = document.getElementById("upload");
+
+const thresholdInput = document.getElementById("threshold");
+const softness1Input = document.getElementById("softness1");
+
+const threshold2Input = document.getElementById("threshold2");
+const softness2Input = document.getElementById("softness2");
+
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+let img = new Image();
+let grain = new Image();
+let grainLight = new Image();
+
+// textures
+grain.src = "../../../../public/images/pencildrawing/pencilgrain.png";
+grainLight.src = "../../../../public/images/pencildrawing/pencilgrain_lightsoft.png";
+
+let grainReady = false;
+let grainLightReady = false;
+
+grain.onload = () => { grainReady = true; draw(); };
+grainLight.onload = () => { grainLightReady = true; draw(); };
+
+upload.addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  const reader = new FileReader();
+
+  reader.onload = function(event) {
+    img = new Image();
+    img.onload = () => draw();
+    img.src = event.target.result;
+  };
+
+  reader.readAsDataURL(file);
+});
+
+thresholdInput.addEventListener("input", draw);
+softness1Input.addEventListener("input", draw);
+threshold2Input.addEventListener("input", draw);
+softness2Input.addEventListener("input", draw);
+
+function smoothstep(edge0, edge1, x) {
+  const t = Math.min(1, Math.max(0, (x - edge0) / (edge1 - edge0)));
+  return t * t * (3 - 2 * t);
+}
+
+function draw() {
+  if (!img.src) return;
+
+  canvas.width = img.width;
+  canvas.height = img.height;
+
+  ctx.globalCompositeOperation = "source-over";
+  ctx.drawImage(img, 0, 0);
+
+  const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+  const data = imageData.data;
+
+  // =========================
+  // BASE PARAMS
+  // =========================
+  const baseThreshold = parseInt(threshold2Input.value) / 255;
+  const baseSoftness = parseInt(softness2Input.value) / 255;
+
+  const baseLow = baseThreshold - baseSoftness;
+  const baseHigh = baseThreshold + baseSoftness;
+
+  // =========================
+  // 1. BASE TONE MAPPING
+  // =========================
+  for (let i = 0; i < data.length; i += 4) {
+    const r = data[i];
+    const g = data[i + 1];
+    const b = data[i + 2];
+
+    const gray = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+    let value = smoothstep(baseLow, baseHigh, gray);
+    const out = value * 255;
+
+    data[i] = out;
+    data[i + 1] = out;
+    data[i + 2] = out;
+  }
+
+  ctx.putImageData(imageData, 0, 0);
+
+  // =========================
+  // 2. GLOBAL GRAIN
+  // =========================
+  ctx.globalCompositeOperation = "lighter";
+  ctx.globalAlpha = 0.25;
+
+  if (grainReady) {
+    ctx.drawImage(grain, 0, 0, canvas.width, canvas.height);
+  }
+
+  // =========================
+  // 3. BRIGHT MASK GRAIN
+  // =========================
+  if (grainLightReady) {
+    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const d = imgData.data;
+
+    const maskCanvas = document.createElement("canvas");
+    maskCanvas.width = canvas.width;
+    maskCanvas.height = canvas.height;
+    const mctx = maskCanvas.getContext("2d");
+
+    mctx.drawImage(grainLight, 0, 0, canvas.width, canvas.height);
+    const maskData = mctx.getImageData(0, 0, canvas.width, canvas.height).data;
+
+    for (let i = 0; i < d.length; i += 4) {
+      const gray = (d[i] + d[i + 1] + d[i + 2]) / 3;
+      const mask = gray > 180 ? 1 : 0;
+
+      d[i] = d[i] * (1 - mask) + maskData[i] * mask;
+      d[i + 1] = d[i + 1] * (1 - mask) + maskData[i + 1] * mask;
+      d[i + 2] = d[i + 2] * (1 - mask) + maskData[i + 2] * mask;
+    }
+
+    ctx.putImageData(imgData, 0, 0);
+  }
+
+  // =========================
+  // 4. HIGHLIGHT EXTRACTION (SEPARATE SOFTNESS)
+  // =========================
+
+  const highlightThreshold = parseInt(thresholdInput.value) / 255;
+  const highlightSoftness = parseInt(softness1Input.value) / 255;
+
+  const lowH = highlightThreshold - highlightSoftness;
+  const highH = highlightThreshold + highlightSoftness;
+
+  const highlightCanvas = document.createElement("canvas");
+  highlightCanvas.width = canvas.width;
+  highlightCanvas.height = canvas.height;
+  const hctx = highlightCanvas.getContext("2d");
+
+  hctx.drawImage(img, 0, 0);
+
+  const hData = hctx.getImageData(0, 0, canvas.width, canvas.height);
+  const hd = hData.data;
+
+  for (let i = 0; i < hd.length; i += 4) {
+    const r = hd[i];
+    const g = hd[i + 1];
+    const b = hd[i + 2];
+
+    const gray = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+
+    let v = smoothstep(lowH, highH, gray) * 255;
+
+    hd[i] = v;
+    hd[i + 1] = v;
+    hd[i + 2] = v;
+  }
+
+  hctx.putImageData(hData, 0, 0);
+
+  // =========================
+  // 5. FINAL LIGHTEN OVERLAY
+  // =========================
+  ctx.globalCompositeOperation = "lighter";
+  ctx.globalAlpha = 0.6;
+
+  ctx.drawImage(highlightCanvas, 0, 0);
+
+  ctx.globalAlpha = 1.0;
+  ctx.globalCompositeOperation = "source-over";
+}
+</script>
+
+</body>
+</html>
