@@ -1,11 +1,11 @@
 'use client';
 
-import RegisterMaterialPanel
-from './RegisterMaterialPanel';
+import { useState } from 'react';
+
+import RegisterMaterialPanel from './RegisterMaterialPanel';
 
 interface Props {
-
-  onDoMapping: () => void;
+  onDoMapping: (materialId: string) => void;
 }
 
 export default function AssetBrowserInterface({
@@ -17,6 +17,10 @@ export default function AssetBrowserInterface({
       { length: 24 },
       (_, i) => i
     );
+
+  // ⭐ 핵심: 방금 등록된 material id 저장
+  const [latestMaterialId, setLatestMaterialId] =
+    useState<string | null>(null);
 
   return (
 
@@ -124,13 +128,32 @@ export default function AssetBrowserInterface({
       />
 
       {/* REGISTER MATERIAL PANEL */}
+      <RegisterMaterialPanel
+        onRegistered={(materialId: string) => {
 
-      <RegisterMaterialPanel />
+          console.log(
+            'MATERIAL REGISTERED:',
+            materialId
+          );
+
+          // ⭐ 저장
+          setLatestMaterialId(materialId);
+        }}
+      />
 
       {/* DO MAPPING BUTTON */}
 
       <button
-        onClick={onDoMapping}
+        onClick={() => {
+
+          if (!latestMaterialId) {
+            console.warn('NO MATERIAL ID YET');
+            return;
+          }
+
+          // ⭐ 핵심 연결
+          onDoMapping(latestMaterialId);
+        }}
 
         style={{
           width: '100%',

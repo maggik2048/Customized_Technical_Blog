@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import PurgeAllRegisteredMaterial from './PurgeAllRegisteredMaterial';
 
 type TextureSet = {
   albedo?: File;
@@ -545,6 +546,9 @@ export default function RegisterMaterialPanel() {
       >
         RegisterMaterial
       </button>
+
+      {/* 🔥 PURGE BUTTON (추가만, 기존 영향 없음) */}
+      <PurgeAllRegisteredMaterial />
 
     </div>
   );
