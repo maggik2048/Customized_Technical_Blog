@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>Inverted Sobel Cleanup</title>
+
+<style>
+body{
+    background:#111;
+    color:white;
+    font-family:Arial;
+    padding:20px;
+}
+
+.wrap{
+    display:flex;
+    gap:20px;
+    flex-wrap:wrap;
+}
+
+.controls{
+    width:320px;
+    background:#1e1e1e;
+    padding:16px;
+    border-radius:12px;
+}
+
+label{
+    display:block;
+    margin-top:14px;
+}
+
+input[type=range]{
+    width:100%;
+}
+
+.value{
+    color:#6fe3ff;
+    font-size:14px;
+}
+
+canvas{
+    border:1px solid #444;
+    background:white;
+    max-width:100%;
+}
+
+button{
+    width:100%;
+    margin-top:20px;
+    padding:12px;
+    border:none;
+    border-radius:8px;
+    background:#2f89ff;
+    color:white;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Inverted Sobel Thick Line Extractor</h2>
+
+<div class="wrap">
+
+<div class="controls">
+
+<input type="file" id="fileInput">
+
+<label>
+Contrast
+<input type="range" id="contrast" min="0.5" max="5" step="0.01" value="2.2">
+<div class="value" id="contrastValue">2.2</div>
+</label>
+
+<label>
+Gamma
+<input type="range" id="gamma" min="0.1" max="4" step="0.01" value="1.4">
+<div class="value" id="gammaValue">1.4</div>
+</label>
+
+<label>
+White Clip
+<input type="range" id="whiteClip" min="0" max="255" step="1" value="180">
+<div class="value" id="whiteClipValue">180</div>
+</label>
+
+<label>
+Threshold
+<input type="range" id="threshold" min="0" max="255" step="1" value="100">
+<div class="value" id="thresholdValue">100</div>
+</label>
+
+<label>
+Morph Radius
+<input type="range" id="radius" min="1" max="10" step="1" value="2">
+<div class="value" id="radiusValue">2</div>
+</label>
+
+<label>
+Morph Passes
+<input type="range" id="passes" min="0" max="6" step="1" value="1">
+<div class="value" id="passesValue">1</div>
+</label>
+
+<button id="downloadBtn">Download Result</button>
+
+</div>
+
+<div>
+
+<div>Original</div>
+<canvas id="src"></canvas>
+
+<br><br>
+
+<div>Processed</div>
+<canvas id="dst"></canvas>
+
+</div>
+
+</div>
+
+<script>
+
+const fileInput = document.getElementById("fileInput");
+
+const srcCanvas = document.getElementById("src");
+const dstCanvas = document.getElementById("dst");
+
+const sctx = srcCanvas.getContext("2d");
+const dctx = dstCanvas.getContext("2d");
+
+let currentImage = null;
+
+const sliderIds = [
+    "contrast",
+    "gamma",
+    "whiteClip",
+    "threshold",
+    "radius",
+    "passes"
+];
+
+sliderIds.forEach(id=>{
+
+    const slider = document.getElementById(id);
+    const value = document.getElementById(id+"Value");
+
+    value.innerText = slider.value;
+
+    slider.addEventListener("input",()=>{
+
+        value.innerText = slider.value;
+
+        if(currentImage){
+            process();
+        }
+    });
+});
+
+fileInput.addEventListener("change",(e)=>{
+
+    const file = e.target.files[0];
+
+    if(!file) return;
+
+    const img = new Image();
+
+    img.onload = ()=>{
+
+        currentImage = img;
+
+        srcCanvas.width = img.width;
+        srcCanvas.height = img.height;
+
+        dstCanvas.width = img.width;
+        dstCanvas.height = img.height;
+
+        sctx.drawImage(img,0,0);
+
+        process();
+    };
+
+    img.src = URL.createObjectURL(file);
+});
+
+function process(){
+
+    if(!currentImage) return;
+
+    const w = srcCanvas.width;
+    const h = srcCanvas.height;
+
+    sctx.drawImage(currentImage,0,0);
+
+    const imgData = sctx.getImageData(0,0,w,h);
+
+    const data = imgData.data;
+
+    const contrast = parseFloat(document.getElementById("contrast").value);
+    const gamma = parseFloat(document.getElementById("gamma").value);
+    const whiteClip = parseInt(document.getElementById("whiteClip").value);
+    const threshold = parseInt(document.getElementById("threshold").value);
+    const radius = parseInt(document.getElementById("radius").value);
+    const passes = parseInt(document.getElementById("passes").value);
+
+    const gray = new Uint8Array(w*h);
+
+    // grayscale + curve
+    for(let i=0;i<data.length;i+=4){
+
+        const idx = i/4;
+
+        let v = data[i];
+
+        // contrast
+        v = ((v - 128) * contrast) + 128;
+
+        // gamma
+        v = 255 * Math.pow(v / 255, gamma);
+
+        // white clip
+        if(v > whiteClip){
+            v = 255;
+        }
+
+        v = Math.max(0,Math.min(255,v));
+
+        gray[idx] = v;
+    }
+
+    // threshold
+    let bin = new Uint8Array(w*h);
+
+    for(let i=0;i<gray.length;i++){
+
+        if(gray[i] < threshold){
+            bin[i] = 0;
+        }else{
+            bin[i] = 255;
+        }
+    }
+
+    // morphology
+    for(let p=0;p<passes;p++){
+
+        bin = morphologyOpen(bin,w,h,radius);
+    }
+
+    // render
+    const out = dctx.createImageData(w,h);
+
+    for(let i=0;i<bin.length;i++){
+
+        const v = bin[i];
+
+        out.data[i*4+0] = v;
+        out.data[i*4+1] = v;
+        out.data[i*4+2] = v;
+        out.data[i*4+3] = 255;
+    }
+
+    dctx.putImageData(out,0,0);
+}
+
+function morphologyOpen(src,w,h,r){
+
+    const eroded = new Uint8Array(src.length);
+
+    // erode
+    for(let y=0;y<h;y++){
+        for(let x=0;x<w;x++){
+
+            let keepBlack = true;
+
+            for(let ky=-r; ky<=r; ky++){
+                for(let kx=-r; kx<=r; kx++){
+
+                    const nx = x+kx;
+                    const ny = y+ky;
+
+                    if(nx<0 || ny<0 || nx>=w || ny>=h){
+                        continue;
+                    }
+
+                    const idx = ny*w+nx;
+
+                    if(src[idx] !== 0){
+                        keepBlack = false;
+                        break;
+                    }
+                }
+
+                if(!keepBlack) break;
+            }
+
+            eroded[y*w+x] = keepBlack ? 0 : 255;
+        }
+    }
+
+    const dilated = new Uint8Array(src.length);
+
+    // dilate
+    for(let y=0;y<h;y++){
+        for(let x=0;x<w;x++){
+
+            let foundBlack = false;
+
+            for(let ky=-r; ky<=r; ky++){
+                for(let kx=-r; kx<=r; kx++){
+
+                    const nx = x+kx;
+                    const ny = y+ky;
+
+                    if(nx<0 || ny<0 || nx>=w || ny>=h){
+                        continue;
+                    }
+
+                    const idx = ny*w+nx;
+
+                    if(eroded[idx] === 0){
+                        foundBlack = true;
+                        break;
+                    }
+                }
+
+                if(foundBlack) break;
+            }
+
+            dilated[y*w+x] = foundBlack ? 0 : 255;
+        }
+    }
+
+    return dilated;
+}
+
+document.getElementById("downloadBtn").addEventListener("click",()=>{
+
+    const a = document.createElement("a");
+
+    a.href = dstCanvas.toDataURL("image/png");
+
+    a.download = "processed.png";
+
+    a.click();
+});
+
+</script>
+
+</body>
+</html>
