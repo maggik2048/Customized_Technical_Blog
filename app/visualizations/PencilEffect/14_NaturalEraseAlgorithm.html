@@ -56,22 +56,24 @@
                value="22">
     </label>
 
+    <!-- VERY LOW ERASE -->
     <label>
         Erase Strength
         <input type="range"
                id="strength"
                min="1"
                max="100"
-               value="28">
+               value="10">
     </label>
 
+    <!-- VERY HIGH SMUDGE -->
     <label>
         Smudge Amount
         <input type="range"
                id="smudge"
                min="0"
                max="100"
-               value="18">
+               value="100">
     </label>
 
 </div>
@@ -148,6 +150,7 @@ function softErase(cx,cy){
     const radius =
         parseInt(sizeSlider.value);
 
+    // FIXED NORMALIZED VALUE
     const eraseStrength =
         parseInt(strengthSlider.value)
         / 100;
@@ -284,12 +287,12 @@ function softErase(cx,cy){
                 totalB / blurCount;
 
             // =================================================
-            // SUBTLE GRAPHITE SMEAR
+            // STRONG GRAPHITE SMEAR
             // =================================================
 
             let nr =
                 r + (blurR - r)
-                * smudgeStrength
+                * smudgeStrength*2
                 * fade;
 
             let ng =
@@ -303,8 +306,7 @@ function softErase(cx,cy){
                 * fade;
 
             // =================================================
-            // SOFT ERASER LIFTING
-            // NOT PURE WHITE
+            // VERY SOFT GRAPHITE LIFTING
             // =================================================
 
             nr =
@@ -348,10 +350,6 @@ function softErase(cx,cy){
         startY
     );
 }
-
-// =====================================================
-// MOUSE EVENTS
-// =====================================================
 
 canvas.addEventListener("mousedown", e => {
 
