@@ -13,15 +13,25 @@ import WritePostButton from "./admin/write/WritePostButton";
 import { CATEGORY_TREE } from "./components/SidebarCategory/CategoryTree";
 
 export default function HomePage() {
-  const router = useRouter();
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
-  const selected = CATEGORY_TREE.find(
-    (cat) => cat.slug === selectedCategory
-  );
+  const router = useRouter();
+
+  const [
+    selectedCategory,
+    setSelectedCategory,
+  ] = useState<string | null>(null);
+
+  const selected =
+    CATEGORY_TREE.find(
+      (cat) =>
+        cat.slug ===
+        selectedCategory
+    );
 
   return (
+
     <div>
+
       <div
         style={{
           position: "relative",
@@ -34,16 +44,28 @@ export default function HomePage() {
           paddingLeft: "80px",
         }}
       >
+
         <TopHeaderText />
+
         <SocialIcons />
 
-        {/* NEW BUTTON */}
+        {/* Pencil Effect Button */}
         <button
-          onClick={() => router.push("/visualizations/PencilEffect")}
+          onClick={() => {
+
+            console.log(
+              "PENCIL BUTTON CLICKED"
+            );
+
+            router.push(
+              "/visualizations/PencilEffect"
+            );
+          }}
           style={{
             position: "absolute",
             top: 20,
             right: 20,
+            zIndex: 9999,
             padding: "10px 16px",
             borderRadius: 8,
             border: "none",
@@ -55,12 +77,50 @@ export default function HomePage() {
           Pencil Background
         </button>
 
-        <div style={{ height: "18vh", marginBottom: "1.5rem" }}>
+        {/* HDRI Renderer Button */}
+        <button
+          onClick={() => {
+
+            console.log(
+              "HDRI BUTTON CLICKED"
+            );
+
+            router.push(
+              "/visualizations/MaterialSystem"
+            );
+          }}
+          style={{
+            position: "absolute",
+            top: 70,
+            right: 20,
+            zIndex: 9999,
+            padding: "10px 16px",
+            borderRadius: 8,
+            border: "none",
+            cursor: "pointer",
+            background: "#444",
+            color: "#fff",
+          }}
+        >
+          HDRI Renderer
+        </button>
+
+        <div
+          style={{
+            height: "18vh",
+            marginBottom: "1.5rem",
+          }}
+        >
+
           <h1 className="hero-title">
             Art of codE
             <br />
-            <span className="hero-subtitle">Technical aRchive</span>
+
+            <span className="hero-subtitle">
+              Technical aRchive
+            </span>
           </h1>
+
         </div>
 
         <div
@@ -72,11 +132,19 @@ export default function HomePage() {
             gap: "2rem",
           }}
         >
+
           <div style={{ flex: 2 }}>
+
             {selected && (
+
               <>
+
                 <button
-                  onClick={() => setSelectedCategory(null)}
+                  onClick={() =>
+                    setSelectedCategory(
+                      null
+                    )
+                  }
                   style={{
                     marginBottom: 16,
                     padding: "8px 16px",
@@ -90,42 +158,74 @@ export default function HomePage() {
                 </button>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-1">
-                  {selected.children?.map((item) => (
-                    <CategoryCard
-                      key={item.name}
-                      item={{
-                        ...item,
-                        href: `/category/${item.slug}`,
-                        count: 1,
-                      }}
-                    />
-                  ))}
+
+                  {selected.children?.map(
+                    (item) => (
+
+                      <CategoryCard
+                        key={item.name}
+                        item={{
+                          ...item,
+                          href:
+                            `/category/${item.slug}`,
+                          count: 1,
+                        }}
+                      />
+
+                    )
+                  )}
+
                 </div>
+
               </>
+
             )}
 
             {!selected && (
-              <div style={{ marginTop: 16 }}>
+
+              <div
+                style={{
+                  marginTop: 16,
+                }}
+              >
+
                 <ClickableImageBox
                   imageSrc="/images/exploreCateg2.png"
                   width={540}
                   onClick={() =>
-                    router.push("/category/graphics_pipeline")
+                    router.push(
+                      "/category/graphics_pipeline"
+                    )
                   }
                 />
+
               </div>
+
             )}
 
-            <div style={{ marginTop: 32, textAlign: "center" }}>
+            <div
+              style={{
+                marginTop: 32,
+                textAlign: "center",
+              }}
+            >
+
               <WritePostButton />
+
             </div>
+
           </div>
 
           <div style={{ flex: 1 }}>
+
             <LatestPosts />
+
           </div>
+
         </div>
+
       </div>
+
     </div>
   );
 }
