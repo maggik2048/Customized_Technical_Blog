@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Wet Watercolor Brush</title>
+
+<style>
+    html, body {
+        margin: 0;
+        overflow: hidden;
+        background: white;
+    }
+
+    canvas {
+        display: block;
+        cursor: crosshair;
+    }
+</style>
+</head>
+
+<body>
+<canvas id="canvas"></canvas>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+resize();
+
+window.addEventListener("resize", resize);
+
+function resize() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+
+let drawing = false;
+let mouse = { x: 0, y: 0 };
+
+const wetSpots = [];
+
+canvas.addEventListener("mousedown", (e) => {
+    drawing = true;
+    updateMouse(e);
+});
+
+canvas.addEventListener("mouseup", () => {
+    drawing = false;
+});
+
+canvas.addEventListener("mouseleave", () => {
+    drawing = false;
+});
+
+canvas.addEventListener("mousemove", (e) => {
+    updateMouse(e);
+
+    if (drawing) {
+        createInk(mouse.x, mouse.y);
+    }
+});
+
+function updateMouse(e) {
+    mouse.x = e.clientX;
+    mouse.y = e.clientY;
+}
+
+function createInk(x, y) {
+
+    // Main dark stroke
+    ctx.beginPath();
+    ctx.arc(x, y, 6, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(0,0,0,0.22)";
+    ctx.fill();
+
+    // Store wet watercolor particles
+    wetSpots.push({
+        x,
+        y,
+        radius: 4 + Math.random() * 6,
+        alpha: 0.18,
+        spread: 0.3 + Math.random() * 0.4,
+        life: 0
+    });
+}
+
+function animate() {
+
+    // Slight fade for blending
+    ctx.fillStyle = "rgba(255,255,255,0.015)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    for (let i = wetSpots.length - 1; i >= 0; i--) {
+
+        const p = wetSpots[i];
+
+        p.life++;
+
+        // Wet spreading effect
+        p.radius += p.spread;
+
+        // Slowly fade
+        p.alpha *= 0.992;
+
+        // Draw watercolor bloom
+        const gradient = ctx.createRadialGradient(
+            p.x, p.y, 0,
+            p.x, p.y, p.radius
+        );
+
+        gradient.addColorStop(0, `rgba(0,0,0,${p.alpha})`);
+        gradient.addColorStop(1, `rgba(0,0,0,0)`);
+
+        ctx.beginPath();
+        ctx.fillStyle = gradient;
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Remove old particles
+        if (p.alpha < 0.002) {
+            wetSpots.splice(i, 1);
+        }
+    }
+
+    // Holding longer creates more pooling
+    if (drawing) {
+
+        for (let i = 0; i < 2; i++) {
+
+            wetSpots.push({
+                x: mouse.x + (Math.random() - 0.5) * 4,
+                y: mouse.y + (Math.random() - 0.5) * 4,
+                radius: 3 + Math.random() * 5,
+                alpha: 0.08,
+                spread: 0.5 + Math.random() * 0.7,
+                life: 0
+            });
+        }
+    }
+
+    requestAnimationFrame(animate);
+}
+
+animate();
+</script>
+</body>
+</html>
