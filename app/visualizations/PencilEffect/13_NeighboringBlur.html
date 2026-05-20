@@ -2,16 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Real Charcoal Smudge Tool</title>
+<title>Realistic Charcoal Smudge Engine</title>
 
 <style>
     body{
         margin:0;
-        background:#d7d7d7;
+        background:#d4d4d4;
         display:flex;
         flex-direction:column;
-        align-items:center;
         justify-content:center;
+        align-items:center;
         height:100vh;
         overflow:hidden;
         font-family:Arial;
@@ -20,8 +20,9 @@
 
     .toolbar{
         display:flex;
-        gap:20px;
+        gap:18px;
         align-items:center;
+        flex-wrap:wrap;
     }
 
     canvas{
@@ -31,34 +32,48 @@
         max-width:92vw;
         max-height:82vh;
     }
+
+    label{
+        font-size:14px;
+    }
 </style>
 </head>
 
 <body>
 
 <div class="toolbar">
+
     <input type="file" id="upload" accept="image/*">
 
     <label>
         Brush Size
-        <input type="range" id="size" min="5" max="80" value="25">
+        <input type="range" id="size" min="5" max="120" value="30">
     </label>
 
     <label>
-        Strength
-        <input type="range" id="strength" min="1" max="100" value="60">
+        Smudge Strength
+        <input type="range" id="strength" min="1" max="100" value="65">
     </label>
+
+    <label>
+        Pigment Deposit
+        <input type="range" id="deposit" min="0" max="100" value="50">
+    </label>
+
 </div>
 
 <canvas id="canvas"></canvas>
 
 <script>
+
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
 const upload = document.getElementById("upload");
+
 const sizeSlider = document.getElementById("size");
 const strengthSlider = document.getElementById("strength");
+const depositSlider = document.getElementById("deposit");
 
 let drawing = false;
 
@@ -98,7 +113,6 @@ canvas.addEventListener("mousemove", e => {
 
     const rect = canvas.getBoundingClientRect();
 
-    // FIXED mouse coordinate
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
 
@@ -110,14 +124,26 @@ canvas.addEventListener("mousemove", e => {
 
 function smudge(cx,cy){
 
-    const radius = parseInt(sizeSlider.value);
-    const strength = parseInt(strengthSlider.value) / 100;
+    const radius =
+        parseInt(sizeSlider.value);
 
-    const startX = Math.max(0, Math.floor(cx - radius));
-    const startY = Math.max(0, Math.floor(cy - radius));
+    const smudgeStrength =
+        parseInt(strengthSlider.value) / 100;
 
-    const endX = Math.min(canvas.width, Math.floor(cx + radius));
-    const endY = Math.min(canvas.height, Math.floor(cy + radius));
+    const depositStrength =
+        parseInt(depositSlider.value) / 100;
+
+    const startX =
+        Math.max(0, Math.floor(cx - radius));
+
+    const startY =
+        Math.max(0, Math.floor(cy - radius));
+
+    const endX =
+        Math.min(canvas.width, Math.floor(cx + radius));
+
+    const endY =
+        Math.min(canvas.height, Math.floor(cy + radius));
 
     const imageData = ctx.getImageData(
         startX,
@@ -127,13 +153,24 @@ function smudge(cx,cy){
     );
 
     const data = imageData.data;
+
     const copy = new Uint8ClampedArray(data);
 
-    const localWidth = imageData.width;
+    const width = imageData.width;
+    const height = imageData.height;
 
-    for(let y=0; y<imageData.height; y++){
+    // =====================================================
+    // collect average DARK charcoal pigment
+    // =====================================================
 
-        for(let x=0; x<imageData.width; x++){
+    let darkR = 0;
+    let darkG = 0;
+    let darkB = 0;
+    let countDark = 0;
+
+    for(let y=0; y<height; y++){
+
+        for(let x=0; x<width; x++){
 
             const dx = x - radius;
             const dy = y - radius;
@@ -142,70 +179,139 @@ function smudge(cx,cy){
 
             if(dist > radius) continue;
 
-            const i = (y * localWidth + x) * 4;
+            const i = (y * width + x) * 4;
 
             const r = copy[i];
             const g = copy[i+1];
             const b = copy[i+2];
 
-            // darkness check
-            const brightness = (r + g + b) / 3;
+            const brightness = (r+g+b)/3;
 
-            // only dark areas affected
-            if(brightness < 190){
+            // ONLY use dark graphite tones
+            if(brightness < 180){
 
-                let totalR = 0;
-                let totalG = 0;
-                let totalB = 0;
-                let count = 0;
+                darkR += r;
+                darkG += g;
+                darkB += b;
 
-                // REAL blur averaging nearby pixels
-                for(let oy=-2; oy<=2; oy++){
-
-                    for(let ox=-2; ox<=2; ox++){
-
-                        const nx = x + ox;
-                        const ny = y + oy;
-
-                        if(nx < 0 || ny < 0 ||
-                           nx >= imageData.width ||
-                           ny >= imageData.height){
-                            continue;
-                        }
-
-                        const ni = (ny * localWidth + nx) * 4;
-
-                        totalR += copy[ni];
-                        totalG += copy[ni+1];
-                        totalB += copy[ni+2];
-
-                        count++;
-                    }
-                }
-
-                const blurR = totalR / count;
-                const blurG = totalG / count;
-                const blurB = totalB / count;
-
-                const fade = 1 - (dist / radius);
-
-                const blend = strength * fade;
-
-                // TRUE blur blend
-                data[i] =
-                    r + (blurR - r) * blend;
-
-                data[i+1] =
-                    g + (blurG - g) * blend;
-
-                data[i+2] =
-                    b + (blurB - b) * blend;
+                countDark++;
             }
+        }
+    }
+
+    if(countDark === 0) return;
+
+    darkR /= countDark;
+    darkG /= countDark;
+    darkB /= countDark;
+
+    // =====================================================
+    // smudge + dark charcoal deposition
+    // =====================================================
+
+    for(let y=0; y<height; y++){
+
+        for(let x=0; x<width; x++){
+
+            const dx = x - radius;
+            const dy = y - radius;
+
+            const dist = Math.sqrt(dx*dx + dy*dy);
+
+            if(dist > radius) continue;
+
+            const fade = 1 - (dist / radius);
+
+            const i = (y * width + x) * 4;
+
+            const r = copy[i];
+            const g = copy[i+1];
+            const b = copy[i+2];
+
+            // =================================================
+            // local blur averaging
+            // =================================================
+
+            let totalR = 0;
+            let totalG = 0;
+            let totalB = 0;
+            let blurCount = 0;
+
+            for(let oy=-2; oy<=2; oy++){
+
+                for(let ox=-2; ox<=2; ox++){
+
+                    const nx = x + ox;
+                    const ny = y + oy;
+
+                    if(nx < 0 || ny < 0 ||
+                       nx >= width || ny >= height){
+                        continue;
+                    }
+
+                    const ni = (ny * width + nx) * 4;
+
+                    totalR += copy[ni];
+                    totalG += copy[ni+1];
+                    totalB += copy[ni+2];
+
+                    blurCount++;
+                }
+            }
+
+            const blurR = totalR / blurCount;
+            const blurG = totalG / blurCount;
+            const blurB = totalB / blurCount;
+
+            // =================================================
+            // TRUE charcoal smudge blur
+            // =================================================
+
+            let nr =
+                r + (blurR - r) *
+                smudgeStrength * fade;
+
+            let ng =
+                g + (blurG - g) *
+                smudgeStrength * fade;
+
+            let nb =
+                b + (blurB - b) *
+                smudgeStrength * fade;
+
+            // =================================================
+            // DARK charcoal pigment deposition
+            // IMPORTANT:
+            // ONLY darkens, NEVER lightens
+            // =================================================
+
+            nr = Math.min(
+                nr,
+                nr + (darkR - nr) *
+                depositStrength * fade
+            );
+
+            ng = Math.min(
+                ng,
+                ng + (darkG - ng) *
+                depositStrength * fade
+            );
+
+            nb = Math.min(
+                nb,
+                nb + (darkB - nb) *
+                depositStrength * fade
+            );
+
+            data[i]   = nr;
+            data[i+1] = ng;
+            data[i+2] = nb;
         }
     }
 
     ctx.putImageData(imageData,startX,startY);
 }
+
 </script>
 
 </body>
