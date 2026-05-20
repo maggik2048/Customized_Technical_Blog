@@ -68,42 +68,41 @@ function updateMouse(e) {
 
 function createInk(x, y) {
 
-    // Main dark stroke
+    // Main stroke
     ctx.beginPath();
-    ctx.arc(x, y, 6, 0, Math.PI * 2);
+    ctx.arc(x, y, 5, 0, Math.PI * 2);
     ctx.fillStyle = "rgba(0,0,0,0.22)";
     ctx.fill();
 
-    // Store wet watercolor particles
+    // Smaller and shorter watercolor spread
     wetSpots.push({
         x,
         y,
-        radius: 4 + Math.random() * 6,
-        alpha: 0.18,
-        spread: 0.3 + Math.random() * 0.4,
-        life: 0
+        radius: 3 + Math.random() * 3,
+        alpha: 0.12,
+        spread: 0.08 + Math.random() * 0.12,
+        maxRadius: 18 + Math.random() * 10
     });
 }
 
 function animate() {
 
-    // Slight fade for blending
-    ctx.fillStyle = "rgba(255,255,255,0.015)";
+    // Very light blending
+    ctx.fillStyle = "rgba(255,255,255,0.01)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     for (let i = wetSpots.length - 1; i >= 0; i--) {
 
         const p = wetSpots[i];
 
-        p.life++;
+        // Controlled spreading
+        if (p.radius < p.maxRadius) {
+            p.radius += p.spread;
+        }
 
-        // Wet spreading effect
-        p.radius += p.spread;
+        // Faster fade
+        p.alpha *= 0.97;
 
-        // Slowly fade
-        p.alpha *= 0.992;
-
-        // Draw watercolor bloom
         const gradient = ctx.createRadialGradient(
             p.x, p.y, 0,
             p.x, p.y, p.radius
@@ -117,26 +116,23 @@ function animate() {
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fill();
 
-        // Remove old particles
-        if (p.alpha < 0.002) {
+        // Remove earlier
+        if (p.alpha < 0.01) {
             wetSpots.splice(i, 1);
         }
     }
 
-    // Holding longer creates more pooling
+    // Small pooling while holding
     if (drawing) {
 
-        for (let i = 0; i < 2; i++) {
-
-            wetSpots.push({
-                x: mouse.x + (Math.random() - 0.5) * 4,
-                y: mouse.y + (Math.random() - 0.5) * 4,
-                radius: 3 + Math.random() * 5,
-                alpha: 0.08,
-                spread: 0.5 + Math.random() * 0.7,
-                life: 0
-            });
-        }
+        wetSpots.push({
+            x: mouse.x + (Math.random() - 0.5) * 2,
+            y: mouse.y + (Math.random() - 0.5) * 2,
+            radius: 2 + Math.random() * 2,
+            alpha: 0.05,
+            spread: 0.05 + Math.random() * 0.08,
+            maxRadius: 12 + Math.random() * 6
+        });
     }
 
     requestAnimationFrame(animate);
