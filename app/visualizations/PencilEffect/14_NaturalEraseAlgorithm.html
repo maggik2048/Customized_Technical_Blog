@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Soft Charcoal Eraser</title>
+<title>Soft Graphite Eraser</title>
 
 <style>
     body{
@@ -53,7 +53,7 @@
                id="size"
                min="5"
                max="120"
-               value="18">
+               value="22">
     </label>
 
     <label>
@@ -62,7 +62,16 @@
                id="strength"
                min="1"
                max="100"
-               value="70">
+               value="28">
+    </label>
+
+    <label>
+        Smudge Amount
+        <input type="range"
+               id="smudge"
+               min="0"
+               max="100"
+               value="18">
     </label>
 
 </div>
@@ -85,6 +94,9 @@ const sizeSlider =
 
 const strengthSlider =
     document.getElementById("strength");
+
+const smudgeSlider =
+    document.getElementById("smudge");
 
 let isDrawing = false;
 
@@ -128,63 +140,213 @@ upload.addEventListener("change", e => {
 });
 
 // =====================================================
-// SOFT ERASE
+// SOFT GRAPHITE ERASER
 // =====================================================
 
-function softErase(x,y){
+function softErase(cx,cy){
 
     const radius =
         parseInt(sizeSlider.value);
 
-    const strength =
+    const eraseStrength =
         parseInt(strengthSlider.value)
         / 100;
 
-    const gradient =
-        ctx.createRadialGradient(
-            x,
-            y,
+    const smudgeStrength =
+        parseInt(smudgeSlider.value)
+        / 100;
+
+    const startX =
+        Math.max(
             0,
-            x,
-            y,
-            radius
+            Math.floor(cx - radius)
         );
 
-    // center
-    gradient.addColorStop(
-        0,
-        `rgba(255,255,255,${strength})`
+    const startY =
+        Math.max(
+            0,
+            Math.floor(cy - radius)
+        );
+
+    const endX =
+        Math.min(
+            canvas.width,
+            Math.floor(cx + radius)
+        );
+
+    const endY =
+        Math.min(
+            canvas.height,
+            Math.floor(cy + radius)
+        );
+
+    const imageData =
+        ctx.getImageData(
+            startX,
+            startY,
+            endX - startX,
+            endY - startY
+        );
+
+    const data =
+        imageData.data;
+
+    const copy =
+        new Uint8ClampedArray(data);
+
+    const width =
+        imageData.width;
+
+    const height =
+        imageData.height;
+
+    // =====================================================
+    // PIXEL PROCESSING
+    // =====================================================
+
+    for(let y=0; y<height; y++){
+
+        for(let x=0; x<width; x++){
+
+            const dx =
+                x - radius;
+
+            const dy =
+                y - radius;
+
+            const dist =
+                Math.sqrt(dx*dx + dy*dy);
+
+            if(dist > radius)
+                continue;
+
+            const fade =
+                1 - (dist / radius);
+
+            const i =
+                (y * width + x) * 4;
+
+            const r =
+                copy[i];
+
+            const g =
+                copy[i+1];
+
+            const b =
+                copy[i+2];
+
+            // =================================================
+            // SMALL LOCAL SMUDGE
+            // =================================================
+
+            let totalR = 0;
+            let totalG = 0;
+            let totalB = 0;
+            let blurCount = 0;
+
+            for(let oy=-1; oy<=1; oy++){
+
+                for(let ox=-1; ox<=1; ox++){
+
+                    const nx =
+                        x + ox;
+
+                    const ny =
+                        y + oy;
+
+                    if(
+                        nx < 0 ||
+                        ny < 0 ||
+                        nx >= width ||
+                        ny >= height
+                    ){
+                        continue;
+                    }
+
+                    const ni =
+                        (ny * width + nx) * 4;
+
+                    totalR += copy[ni];
+                    totalG += copy[ni+1];
+                    totalB += copy[ni+2];
+
+                    blurCount++;
+                }
+            }
+
+            const blurR =
+                totalR / blurCount;
+
+            const blurG =
+                totalG / blurCount;
+
+            const blurB =
+                totalB / blurCount;
+
+            // =================================================
+            // SUBTLE GRAPHITE SMEAR
+            // =================================================
+
+            let nr =
+                r + (blurR - r)
+                * smudgeStrength
+                * fade;
+
+            let ng =
+                g + (blurG - g)
+                * smudgeStrength
+                * fade;
+
+            let nb =
+                b + (blurB - b)
+                * smudgeStrength
+                * fade;
+
+            // =================================================
+            // SOFT ERASER LIFTING
+            // NOT PURE WHITE
+            // =================================================
+
+            nr =
+                nr + (245 - nr)
+                * eraseStrength
+                * fade;
+
+            ng =
+                ng + (245 - ng)
+                * eraseStrength
+                * fade;
+
+            nb =
+                nb + (245 - nb)
+                * eraseStrength
+                * fade;
+
+            data[i] =
+                Math.max(
+                    0,
+                    Math.min(255,nr)
+                );
+
+            data[i+1] =
+                Math.max(
+                    0,
+                    Math.min(255,ng)
+                );
+
+            data[i+2] =
+                Math.max(
+                    0,
+                    Math.min(255,nb)
+                );
+        }
+    }
+
+    ctx.putImageData(
+        imageData,
+        startX,
+        startY
     );
-
-    // mid softness
-    gradient.addColorStop(
-        0.55,
-        `rgba(255,255,255,${strength * 0.35})`
-    );
-
-    // edge fade
-    gradient.addColorStop(
-        1,
-        "rgba(255,255,255,0)"
-    );
-
-    ctx.globalCompositeOperation =
-        "source-over";
-
-    ctx.fillStyle =
-        gradient;
-
-    ctx.beginPath();
-
-    ctx.arc(
-        x,
-        y,
-        radius,
-        0,
-        Math.PI * 2
-    );
-
-    ctx.fill();
 }
 
 // =====================================================
