@@ -13,9 +13,9 @@ export default class MaterialControlPanel {
   private container: HTMLDivElement;
 
   public state: MaterialControlState = {
-    repeatX: 2,
-    repeatY: 2,
-    displacementScale: 0.25,
+    repeatX: 1,
+    repeatY: 1,
+    displacementScale: 0.2,
     normalScale: 1,
     roughness: 1,
     aoIntensity: 1,

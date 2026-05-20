@@ -1,5 +1,8 @@
 'use client';
 
+import RegisterMaterialPanel
+from './RegisterMaterialPanel';
+
 interface Props {
 
   onDoMapping: () => void;
@@ -20,10 +23,13 @@ export default function AssetBrowserInterface({
     <div
       style={{
         position: 'absolute',
+
         top: 0,
+
         left: 0,
 
         width: 360,
+
         height: '100vh',
 
         overflowY: 'auto',
@@ -59,8 +65,11 @@ export default function AssetBrowserInterface({
         <h1
           style={{
             color: 'white',
+
             fontSize: 26,
+
             fontWeight: 700,
+
             margin: 0,
           }}
         >
@@ -86,6 +95,7 @@ export default function AssetBrowserInterface({
 
       <input
         placeholder="Search Materials..."
+
         style={{
           width: '100%',
 
@@ -113,12 +123,16 @@ export default function AssetBrowserInterface({
         }}
       />
 
+      {/* REGISTER MATERIAL PANEL */}
+
+      <RegisterMaterialPanel />
+
       {/* DO MAPPING BUTTON */}
 
       <button
         onClick={onDoMapping}
-        style={{
 
+        style={{
           width: '100%',
 
           height: 48,
@@ -173,8 +187,8 @@ export default function AssetBrowserInterface({
 
             <div
               key={item}
-              style={{
 
+              style={{
                 aspectRatio: '1 / 1',
 
                 borderRadius: 18,
@@ -204,6 +218,7 @@ export default function AssetBrowserInterface({
               <div
                 style={{
                   width: '100%',
+
                   height: '75%',
 
                   background:
