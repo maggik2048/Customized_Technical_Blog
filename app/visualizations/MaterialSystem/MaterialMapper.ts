@@ -1,32 +1,31 @@
 import * as THREE from 'three';
 
+import MaterialControlPanel from './MaterialControlPanel';
+
 export default function MaterialMapper(
   material: THREE.MeshStandardMaterial
 ) {
   const textureLoader = new THREE.TextureLoader();
 
-  //
-  // Vite / React / Next
-  // public 폴더 기준
-  //
-  // public/
-  //   Ground054_1K-JPG_Color.jpg
-  //   Ground054_1K-JPG_NormalGL.jpg
-  //   ...
-  //
   const basePath = '/';
 
-  //
-  // SAFETY DEFAULTS
-  //
   material.metalness = 0;
+
   material.roughness = 1;
 
-  //
-  // 공통 텍스쳐 세팅
-  //
-  const setupTexture = (texture: THREE.Texture) => {
+  const textures: {
+    color?: THREE.Texture;
+    normal?: THREE.Texture;
+    roughness?: THREE.Texture;
+    ao?: THREE.Texture;
+    displacement?: THREE.Texture;
+  } = {};
+
+  const setupTexture = (
+    texture: THREE.Texture
+  ) => {
     texture.wrapS = THREE.RepeatWrapping;
+
     texture.wrapT = THREE.RepeatWrapping;
 
     texture.repeat.set(2, 2);
@@ -38,19 +37,18 @@ export default function MaterialMapper(
   textureLoader.load(
     `${basePath}Ground054_1K-JPG_Color.jpg`,
     (texture) => {
-      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.colorSpace =
+        THREE.SRGBColorSpace;
 
       setupTexture(texture);
+
+      textures.color = texture;
 
       material.map = texture;
 
       material.needsUpdate = true;
 
       console.log('COLOR LOADED');
-    },
-    undefined,
-    (err) => {
-      console.error('COLOR LOAD FAIL', err);
     }
   );
 
@@ -62,16 +60,16 @@ export default function MaterialMapper(
     (texture) => {
       setupTexture(texture);
 
+      textures.normal = texture;
+
       material.normalMap = texture;
-      material.normalScale = new THREE.Vector2(1, 1);
+
+      material.normalScale =
+        new THREE.Vector2(1, 1);
 
       material.needsUpdate = true;
 
       console.log('NORMAL LOADED');
-    },
-    undefined,
-    (err) => {
-      console.error('NORMAL LOAD FAIL', err);
     }
   );
 
@@ -83,16 +81,15 @@ export default function MaterialMapper(
     (texture) => {
       setupTexture(texture);
 
+      textures.roughness = texture;
+
       material.roughnessMap = texture;
+
       material.roughness = 1;
 
       material.needsUpdate = true;
 
       console.log('ROUGHNESS LOADED');
-    },
-    undefined,
-    (err) => {
-      console.error('ROUGHNESS LOAD FAIL', err);
     }
   );
 
@@ -104,16 +101,15 @@ export default function MaterialMapper(
     (texture) => {
       setupTexture(texture);
 
+      textures.ao = texture;
+
       material.aoMap = texture;
+
       material.aoMapIntensity = 1;
 
       material.needsUpdate = true;
 
       console.log('AO LOADED');
-    },
-    undefined,
-    (err) => {
-      console.error('AO LOAD FAIL', err);
     }
   );
 
@@ -125,6 +121,8 @@ export default function MaterialMapper(
     (texture) => {
       setupTexture(texture);
 
+      textures.displacement = texture;
+
       material.displacementMap = texture;
 
       material.displacementScale = 0.25;
@@ -132,12 +130,18 @@ export default function MaterialMapper(
       material.needsUpdate = true;
 
       console.log('DISPLACEMENT LOADED');
-    },
-    undefined,
-    (err) => {
-      console.error('DISPLACEMENT LOAD FAIL', err);
     }
   );
 
-  console.log('PBR Material Mapping Complete');
+  //
+  // CONTROL PANEL
+  //
+  new MaterialControlPanel(
+    material,
+    textures
+  );
+
+  console.log(
+    'PBR Material Mapping Complete'
+  );
 }
