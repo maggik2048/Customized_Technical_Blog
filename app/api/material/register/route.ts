@@ -1,201 +1,167 @@
-export interface SelectedMaterialFiles {
-  albedo?: File;
-  normal?: File;
-  roughness?: File;
-  ao?: File;
-  displacement?: File;
-}
+import { NextRequest }
+from 'next/server';
 
-export default class RegisterMaterialPanel {
-  private container: HTMLDivElement;
+import fs from 'fs';
 
-  private files: SelectedMaterialFiles = {};
+import path from 'path';
 
-  constructor() {
-    this.container = document.createElement('div');
+export async function POST(
+  request: NextRequest
+) {
 
-    this.buildUI();
+  try {
 
-    document.body.appendChild(this.container);
-  }
+    const formData =
+      await request.formData();
 
-  private buildUI() {
-    this.container.style.position = 'fixed';
+    //
+    // MATERIAL ID
+    //
 
-    this.container.style.left = '20px';
+    const materialId =
+      `material_${Date.now()}`;
 
-    this.container.style.top = '20px';
+    //
+    // TARGET DIRECTORY
+    //
 
-    this.container.style.width = '320px';
+    const materialDir =
+      path.join(
+        process.cwd(),
 
-    this.container.style.padding = '16px';
+        'public',
 
-    this.container.style.background =
-      'rgba(0,0,0,0.55)';
+        'materials',
 
-    this.container.style.backdropFilter =
-      'blur(8px)';
-
-    this.container.style.borderRadius = '12px';
-
-    this.container.style.color = 'white';
-
-    this.container.style.zIndex = '99999';
-
-    this.container.style.fontFamily =
-      'sans-serif';
-
-    this.container.style.display = 'flex';
-
-    this.container.style.flexDirection =
-      'column';
-
-    this.container.style.gap = '12px';
-
-    const title = document.createElement('h2');
-
-    title.innerText = 'Register Material';
-
-    title.style.fontSize = '18px';
-
-    title.style.margin = '0';
-
-    this.container.appendChild(title);
-
-    this.createFileInput(
-      'Albedo',
-      'albedo'
-    );
-
-    this.createFileInput(
-      'Normal',
-      'normal'
-    );
-
-    this.createFileInput(
-      'Roughness',
-      'roughness'
-    );
-
-    this.createFileInput(
-      'AO',
-      'ao'
-    );
-
-    this.createFileInput(
-      'Displacement',
-      'displacement'
-    );
-
-    const registerButton =
-      document.createElement('button');
-
-    registerButton.innerText =
-      'RegisterMaterial';
-
-    registerButton.style.padding =
-      '12px';
-
-    registerButton.style.border = 'none';
-
-    registerButton.style.borderRadius =
-      '8px';
-
-    registerButton.style.cursor = 'pointer';
-
-    registerButton.onclick = () => {
-      this.registerMaterial();
-    };
-
-    this.container.appendChild(
-      registerButton
-    );
-  }
-
-  private createFileInput(
-    labelText: string,
-    key: keyof SelectedMaterialFiles
-  ) {
-    const wrapper =
-      document.createElement('div');
-
-    wrapper.style.display = 'flex';
-
-    wrapper.style.flexDirection =
-      'column';
-
-    wrapper.style.gap = '6px';
-
-    const label =
-      document.createElement('label');
-
-    label.innerText = labelText;
-
-    const input =
-      document.createElement('input');
-
-    input.type = 'file';
-
-    input.accept =
-      '.jpg,.jpeg,.png,.webp';
-
-    input.onchange = (e) => {
-      const target =
-        e.target as HTMLInputElement;
-
-      const file =
-        target.files?.[0];
-
-      if (!file) return;
-
-      this.files[key] = file;
-
-      console.log(
-        `${labelText} selected`,
-        file.name
+        materialId
       );
-    };
 
-    wrapper.appendChild(label);
+    //
+    // CREATE DIRECTORY
+    //
 
-    wrapper.appendChild(input);
-
-    this.container.appendChild(wrapper);
-  }
-
-  private async registerMaterial() {
-    const formData = new FormData();
-
-    Object.entries(this.files).forEach(
-      ([key, file]) => {
-        if (!file) return;
-
-        formData.append(key, file);
+    fs.mkdirSync(
+      materialDir,
+      {
+        recursive: true,
       }
     );
 
-    try {
-      const response = await fetch(
-        '/api/material/register',
-        {
-          method: 'POST',
+    //
+    // DESCRIPTOR
+    //
 
-          body: formData,
-        }
+    const descriptor:
+      Record<string, string>
+        = {};
+
+    //
+    // SAVE FILES
+    //
+
+    for (
+      const [key, value]
+      of formData.entries()
+    ) {
+
+      if (
+        !(value instanceof File)
+      ) {
+        continue;
+      }
+
+      const bytes =
+        await value.arrayBuffer();
+
+      const buffer =
+        Buffer.from(bytes);
+
+      //
+      // EXTENSION
+      //
+
+      const extension =
+        value.name
+          .split('.')
+          .pop();
+
+      //
+      // OUTPUT FILENAME
+      //
+
+      const filename =
+        `${key}.${extension}`;
+
+      //
+      // OUTPUT PATH
+      //
+
+      const filepath =
+        path.join(
+          materialDir,
+          filename
+        );
+
+      //
+      // WRITE FILE
+      //
+
+      fs.writeFileSync(
+        filepath,
+        buffer
       );
 
-      const result =
-        await response.json();
+      //
+      // DESCRIPTOR ENTRY
+      //
 
-      console.log(
-        'REGISTER SUCCESS',
-        result
-      );
-    } catch (err) {
-      console.error(
-        'REGISTER FAILED',
-        err
-      );
+      descriptor[key] =
+        `/materials/${materialId}/${filename}`;
     }
+
+    //
+    // WRITE MATERIAL.JSON
+    //
+
+    fs.writeFileSync(
+
+      path.join(
+        materialDir,
+        'material.json'
+      ),
+
+      JSON.stringify(
+        descriptor,
+        null,
+        2
+      )
+    );
+
+    console.log(
+      'MATERIAL REGISTERED',
+      materialId
+    );
+
+    return Response.json({
+      success: true,
+
+      materialId,
+
+      descriptor,
+    });
+
+  } catch (err) {
+
+    console.error(err);
+
+    return Response.json(
+      {
+        success: false,
+      },
+
+      {
+        status: 500,
+      }
+    );
   }
 }
