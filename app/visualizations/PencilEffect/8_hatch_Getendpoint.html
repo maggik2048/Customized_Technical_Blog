@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Threshold + Reduced Pencil Hatching</title>
+  <title>Connected Hatch Stroke End Highlight</title>
   <style>
     body {
       font-family: Arial;
@@ -36,8 +36,7 @@ const ctx = canvas.getContext("2d");
 
 let img = new Image();
 
-//  해치 밀도 줄이기 (값 올라가면 = 해치 줄어듦)
-const blockSize = 12; 
+const blockSize = 12;
 
 upload.addEventListener("change", (e) => {
   const file = e.target.files[0];
@@ -67,22 +66,26 @@ function draw() {
 
   const threshold = parseInt(thresholdInput.value);
 
-  // 1) grayscale → binary
   const bw = [];
+
   for (let i = 0; i < data.length; i += 4) {
     const r = data[i];
     const g = data[i + 1];
     const b = data[i + 2];
 
     const gray = 0.299 * r + 0.587 * g + 0.114 * b;
-    const v = gray < threshold ? 1 : 0;
-    bw.push(v);
+    bw.push(gray < threshold ? 1 : 0);
   }
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   ctx.strokeStyle = "#000";
   ctx.lineWidth = 1;
+
+  const strokes = [];
+
+  // 1) collect hatch segments
+  const grid = [];
 
   for (let y = 0; y < canvas.height; y += blockSize) {
     for (let x = 0; x < canvas.width; x += blockSize) {
@@ -104,38 +107,85 @@ function draw() {
 
       const ratio = blackCount / total;
 
-      // 🔧 더 강한 조건 → 해치 줄어듦
       if (ratio > 0.65) {
-        drawHatch(x, y, blockSize);
+        grid.push({ x, y });
       }
     }
   }
-}
 
-//  해치 + 시작/끝 점
-function drawHatch(x, y, size) {
-  const x1 = x;
-  const y1 = y + size;
-  const x2 = x + size;
-  const y2 = y;
+  // 2) group into strokes (simple adjacency clustering)
+  const visited = new Set();
 
-  // hatch line
-  ctx.beginPath();
-  ctx.moveTo(x1, y1);
-  ctx.lineTo(x2, y2);
-  ctx.stroke();
+  function key(p) {
+    return `${p.x},${p.y}`;
+  }
 
-  // 시작점 (파랑)
-  ctx.fillStyle = "blue";
-  ctx.beginPath();
-  ctx.arc(x1, y1, 2.5, 0, Math.PI * 2);
-  ctx.fill();
+  function neighbors(p) {
+    return grid.filter(n =>
+      (Math.abs(n.x - p.x) === blockSize && Math.abs(n.y - p.y) === blockSize)
+    );
+  }
 
-  // 끝점 (보라)
-  ctx.fillStyle = "purple";
-  ctx.beginPath();
-  ctx.arc(x2, y2, 2.5, 0, Math.PI * 2);
-  ctx.fill();
+  for (const p of grid) {
+    if (visited.has(key(p))) continue;
+
+    const stack = [p];
+    const stroke = [];
+
+    while (stack.length) {
+      const cur = stack.pop();
+      const k = key(cur);
+
+      if (visited.has(k)) continue;
+      visited.add(k);
+
+      stroke.push(cur);
+
+      const ns = neighbors(cur);
+      for (const n of ns) {
+        if (!visited.has(key(n))) {
+          stack.push(n);
+        }
+      }
+    }
+
+    strokes.push(stroke);
+  }
+
+  // 3) draw strokes
+  for (const stroke of strokes) {
+    if (stroke.length === 0) continue;
+
+    stroke.sort((a, b) => a.x + a.y - (b.x + b.y));
+
+    for (let i = 0; i < stroke.length; i++) {
+      const p = stroke[i];
+
+      const x1 = p.x;
+      const y1 = p.y + blockSize;
+      const x2 = p.x + blockSize;
+      const y2 = p.y;
+
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+
+      // start (blue)
+      ctx.fillStyle = "blue";
+      ctx.beginPath();
+      ctx.arc(x1, y1, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+
+      // end (purple or orange only if last in stroke)
+      const isLast = (i === stroke.length - 1);
+
+      ctx.fillStyle = isLast ? "orange" : "purple";
+      ctx.beginPath();
+      ctx.arc(x2, y2, 2.5, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
 }
 </script>
 
