@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Wet Watercolor Brush</title>
+<title>Wet Continuous Watercolor Brush</title>
 
 <style>
     html, body {
@@ -26,113 +26,126 @@
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 
-resize();
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-window.addEventListener("resize", resize);
-
-function resize() {
+window.addEventListener("resize", () => {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-}
+});
 
 let drawing = false;
+
+// current + previous position (핵심: stroke continuity)
+let prev = null;
 let mouse = { x: 0, y: 0 };
 
 const wetSpots = [];
 
 canvas.addEventListener("mousedown", (e) => {
     drawing = true;
-    updateMouse(e);
+    prev = { x: e.clientX, y: e.clientY };
 });
 
 canvas.addEventListener("mouseup", () => {
     drawing = false;
+    prev = null;
 });
 
 canvas.addEventListener("mouseleave", () => {
     drawing = false;
+    prev = null;
 });
 
 canvas.addEventListener("mousemove", (e) => {
-    updateMouse(e);
-
-    if (drawing) {
-        createInk(mouse.x, mouse.y);
-    }
-});
-
-function updateMouse(e) {
     mouse.x = e.clientX;
     mouse.y = e.clientY;
+
+    if (!drawing) return;
+
+    const current = { x: mouse.x, y: mouse.y };
+
+    if (prev) {
+        drawStroke(prev, current);
+    }
+
+    prev = current;
+});
+
+function lerp(a, b, t) {
+    return a + (b - a) * t;
+}
+
+// 핵심: 두 점 사이를 촘촘하게 샘플링해서 stroke 만들기
+function drawStroke(p1, p2) {
+    const dx = p2.x - p1.x;
+    const dy = p2.y - p1.y;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
+    const step = 2; // 작을수록 더 부드러운 stroke (핵심 튜닝 포인트)
+    const steps = Math.max(1, Math.floor(dist / step));
+
+    for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+
+        const x = lerp(p1.x, p2.x, t);
+        const y = lerp(p1.y, p2.y, t);
+
+        createInk(x, y);
+    }
 }
 
 function createInk(x, y) {
 
-    // Main stroke
+    // main stroke (연속 라인 느낌 강화)
     ctx.beginPath();
-    ctx.arc(x, y, 5, 0, Math.PI * 2);
-    ctx.fillStyle = "rgba(0,0,0,0.22)";
+    ctx.arc(x, y, 4, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(0,0,0,0.18)";
     ctx.fill();
 
-    // Smaller and shorter watercolor spread
+    // wet particle (너가 좋아한 "젖은 번짐")
     wetSpots.push({
         x,
         y,
-        radius: 3 + Math.random() * 3,
-        alpha: 0.12,
-        spread: 0.08 + Math.random() * 0.12,
-        maxRadius: 18 + Math.random() * 10
+        radius: 2 + Math.random() * 2.5,
+        alpha: 0.10,
+        spread: 0.06 + Math.random() * 0.08,
+        maxRadius: 14 + Math.random() * 8
     });
 }
 
 function animate() {
 
-    // Very light blending
-    ctx.fillStyle = "rgba(255,255,255,0.01)";
+    // dry down layer (마르는 느낌 유지)
+    ctx.fillStyle = "rgba(255,255,255,0.012)";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     for (let i = wetSpots.length - 1; i >= 0; i--) {
 
         const p = wetSpots[i];
 
-        // Controlled spreading
         if (p.radius < p.maxRadius) {
             p.radius += p.spread;
         }
 
-        // Faster fade
-        p.alpha *= 0.97;
+        p.alpha *= 0.965;
 
-        const gradient = ctx.createRadialGradient(
+        const g = ctx.createRadialGradient(
             p.x, p.y, 0,
             p.x, p.y, p.radius
         );
 
-        gradient.addColorStop(0, `rgba(0,0,0,${p.alpha})`);
-        gradient.addColorStop(1, `rgba(0,0,0,0)`);
+        g.addColorStop(0, `rgba(0,0,0,${p.alpha})`);
+        g.addColorStop(1, "rgba(0,0,0,0)");
 
         ctx.beginPath();
-        ctx.fillStyle = gradient;
+        ctx.fillStyle = g;
         ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
         ctx.fill();
 
-        // Remove earlier
-        if (p.alpha < 0.01) {
+        if (p.alpha < 0.008) {
             wetSpots.splice(i, 1);
         }
-    }
-
-    // Small pooling while holding
-    if (drawing) {
-
-        wetSpots.push({
-            x: mouse.x + (Math.random() - 0.5) * 2,
-            y: mouse.y + (Math.random() - 0.5) * 2,
-            radius: 2 + Math.random() * 2,
-            alpha: 0.05,
-            spread: 0.05 + Math.random() * 0.08,
-            maxRadius: 12 + Math.random() * 6
-        });
     }
 
     requestAnimationFrame(animate);
