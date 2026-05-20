@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 type TextureSet = {
   albedo?: File;
@@ -11,15 +11,109 @@ type TextureSet = {
   metallic?: File;
 };
 
+type RegisterStatus =
+  | ''
+  | 'Material is already registered'
+  | 'Material is Newly registered'
+  | 'Material is updated';
+
 export default function RegisterMaterialPanel() {
 
   const [textures, setTextures] =
     useState<TextureSet>({});
 
+  const [status, setStatus] =
+    useState<RegisterStatus>('');
+
+  //
+  // 이전 등록 상태 저장
+  //
+
+  const lastRegisteredRef =
+    useRef<TextureSet | null>(null);
+
+  //
+  // FILE 비교용
+  //
+
+  const isSameFile = (
+    a?: File,
+    b?: File
+  ) => {
+
+    if (!a || !b) return false;
+
+    return (
+      a.name === b.name &&
+      a.size === b.size &&
+      a.lastModified === b.lastModified
+    );
+  };
+
+  //
+  // TextureSet 전체 비교
+  //
+
+  const compareTextureSets = (
+    oldSet: TextureSet,
+    newSet: TextureSet
+  ) => {
+
+    const keys: (keyof TextureSet)[] = [
+      'albedo',
+      'normal',
+      'roughness',
+      'ao',
+      'displacement',
+      'metallic',
+    ];
+
+    let changedCount = 0;
+
+    keys.forEach((key) => {
+
+      const oldFile = oldSet[key];
+      const newFile = newSet[key];
+
+      //
+      // 둘다 없음
+      //
+
+      if (!oldFile && !newFile) {
+        return;
+      }
+
+      //
+      // 하나만 있음
+      //
+
+      if (
+        (!oldFile && newFile) ||
+        (oldFile && !newFile)
+      ) {
+        changedCount++;
+        return;
+      }
+
+      //
+      // 둘다 있는데 다름
+      //
+
+      if (
+        !isSameFile(
+          oldFile,
+          newFile
+        )
+      ) {
+        changedCount++;
+      }
+    });
+
+    return changedCount;
+  };
+
   //
   // AUTO PARSER
-  //
-  // Blender Node Wrangler Ctrl+Shift+T 느낌
   //
 
   const parseTextures = (
@@ -35,7 +129,7 @@ export default function RegisterMaterialPanel() {
           file.name.toLowerCase();
 
         //
-        // ALBEDO / COLOR
+        // ALBEDO
         //
 
         if (
@@ -126,10 +220,111 @@ export default function RegisterMaterialPanel() {
   const registerMaterial =
     async () => {
 
+      //
+      // 최초 등록
+      //
+
+      if (
+        !lastRegisteredRef.current
+      ) {
+
+        await uploadMaterial(
+          textures
+        );
+
+        lastRegisteredRef.current =
+          textures;
+
+        setStatus(
+          'Material is Newly registered'
+        );
+
+        return;
+      }
+
+      //
+      // 비교
+      //
+
+      const changedCount =
+        compareTextureSets(
+          lastRegisteredRef.current,
+          textures
+        );
+
+      //
+      // 완전히 동일
+      //
+
+      if (changedCount === 0) {
+
+        setStatus(
+          'Material is already registered'
+        );
+
+        console.log(
+          'ALREADY REGISTERED'
+        );
+
+        return;
+      }
+
+      //
+      // 모든 파일 변경
+      //
+
+      const totalChannels =
+        Object.keys(textures).length;
+
+      if (
+        changedCount === totalChannels
+      ) {
+
+        await uploadMaterial(
+          textures
+        );
+
+        lastRegisteredRef.current =
+          textures;
+
+        setStatus(
+          'Material is Newly registered'
+        );
+
+        return;
+      }
+
+      //
+      // 일부만 변경
+      //
+
+      await uploadMaterial(
+        textures
+      );
+
+      lastRegisteredRef.current =
+        textures;
+
+      setStatus(
+        'Material is updated'
+      );
+    };
+
+  //
+  // 업로드 함수
+  //
+
+  const uploadMaterial =
+    async (
+      textureData: TextureSet
+    ) => {
+
       const formData =
         new FormData();
 
-      Object.entries(textures).forEach(
+      Object.entries(
+        textureData
+      ).forEach(
         ([key, file]) => {
 
           if (!file) return;
@@ -148,7 +343,6 @@ export default function RegisterMaterialPanel() {
             '/api/material/register',
             {
               method: 'POST',
-
               body: formData,
             }
           );
@@ -302,6 +496,24 @@ export default function RegisterMaterialPanel() {
             '-'}
         </div>
 
+      </div>
+
+      {/* STATUS */}
+
+      <div
+        style={{
+          fontSize: 13,
+
+          color:
+            status ===
+            'Material is already registered'
+              ? '#ff8080'
+              : '#80ffaa',
+
+          fontWeight: 600,
+        }}
+      >
+        {status}
       </div>
 
       {/* REGISTER BUTTON */}

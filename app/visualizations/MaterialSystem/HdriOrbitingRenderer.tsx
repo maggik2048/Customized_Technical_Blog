@@ -14,8 +14,8 @@ from 'three/examples/jsm/controls/OrbitControls.js';
 import { EXRLoader }
 from 'three/examples/jsm/loaders/EXRLoader.js';
 
-import MaterialMapper
-from './MaterialMapper';
+import LoadRegisteredMaterial
+from './LoadRegisteredMaterial';
 
 interface Props {
 
@@ -30,9 +30,9 @@ export default function HdriOrbitingRenderer({
     useRef<HTMLDivElement>(null);
 
   const materialRef =
-    useRef<THREE.MeshStandardMaterial | null>(
-      null
-    );
+    useRef<
+      THREE.MeshStandardMaterial | null
+    >(null);
 
   useEffect(() => {
 
@@ -40,22 +40,25 @@ export default function HdriOrbitingRenderer({
       return;
 
     //
-    // Scene
+    // SCENE
     //
 
     const scene =
       new THREE.Scene();
 
     //
-    // Camera
+    // CAMERA
     //
 
     const camera =
       new THREE.PerspectiveCamera(
         75,
+
         window.innerWidth /
         window.innerHeight,
+
         0.1,
+
         1000
       );
 
@@ -66,12 +69,12 @@ export default function HdriOrbitingRenderer({
     );
 
     //
-    // Renderer
+    // RENDERER
     //
 
     const renderer =
       new THREE.WebGLRenderer({
-        antialias: true
+        antialias: true,
       });
 
     renderer.setSize(
@@ -97,7 +100,7 @@ export default function HdriOrbitingRenderer({
     );
 
     //
-    // Controls
+    // CONTROLS
     //
 
     const controls =
@@ -116,7 +119,7 @@ export default function HdriOrbitingRenderer({
       -0.25;
 
     //
-    // EXR HDRI Load
+    // HDRI
     //
 
     const exrLoader =
@@ -157,7 +160,7 @@ export default function HdriOrbitingRenderer({
     );
 
     //
-    // Sphere Geometry
+    // GEOMETRY
     //
 
     const geometry =
@@ -168,8 +171,7 @@ export default function HdriOrbitingRenderer({
       );
 
     //
-    // IMPORTANT:
-    // AO MAP NEEDS UV2
+    // AO NEEDS UV2
     //
 
     geometry.setAttribute(
@@ -183,7 +185,7 @@ export default function HdriOrbitingRenderer({
     );
 
     //
-    // Material
+    // MATERIAL
     //
 
     const material =
@@ -200,7 +202,7 @@ export default function HdriOrbitingRenderer({
       material;
 
     //
-    // Sphere
+    // MESH
     //
 
     const sphere =
@@ -212,7 +214,7 @@ export default function HdriOrbitingRenderer({
     scene.add(sphere);
 
     //
-    // Light
+    // LIGHT
     //
 
     const light =
@@ -230,7 +232,7 @@ export default function HdriOrbitingRenderer({
     scene.add(light);
 
     //
-    // Animate
+    // ANIMATION
     //
 
     let animationId: number;
@@ -253,7 +255,7 @@ export default function HdriOrbitingRenderer({
     animate();
 
     //
-    // Resize
+    // RESIZE
     //
 
     const onResize = () => {
@@ -276,7 +278,7 @@ export default function HdriOrbitingRenderer({
     );
 
     //
-    // Cleanup
+    // CLEANUP
     //
 
     return () => {
@@ -312,20 +314,33 @@ export default function HdriOrbitingRenderer({
   }, []);
 
   //
-  // APPLY MATERIAL MAPPING
+  // APPLY REGISTERED MATERIAL
   //
 
   useEffect(() => {
 
-    if (
-      shouldDoMapping &&
-      materialRef.current
-    ) {
+    const applyMaterial =
+      async () => {
 
-      MaterialMapper(
-        materialRef.current
-      );
-    }
+        if (
+          shouldDoMapping &&
+          materialRef.current
+        ) {
+
+          //
+          // 네 실제 material folder 이름
+          //
+
+          await LoadRegisteredMaterial(
+
+            materialRef.current,
+
+            'material_1746583021'
+          );
+        }
+      };
+
+    applyMaterial();
 
   }, [shouldDoMapping]);
 
@@ -333,11 +348,15 @@ export default function HdriOrbitingRenderer({
 
     <div
       ref={containerRef}
+
       style={{
         width: '100vw',
+
         height: '100vh',
+
         overflow: 'hidden',
-        background: 'black'
+
+        background: 'black',
       }}
     />
 
