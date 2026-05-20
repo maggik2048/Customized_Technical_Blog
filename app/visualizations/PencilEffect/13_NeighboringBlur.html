@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Real Charcoal Smudge Tool</title>
+
+<style>
+    body{
+        margin:0;
+        background:#d7d7d7;
+        display:flex;
+        flex-direction:column;
+        align-items:center;
+        justify-content:center;
+        height:100vh;
+        overflow:hidden;
+        font-family:Arial;
+        gap:15px;
+    }
+
+    .toolbar{
+        display:flex;
+        gap:20px;
+        align-items:center;
+    }
+
+    canvas{
+        background:white;
+        box-shadow:0 10px 30px rgba(0,0,0,0.25);
+        cursor:crosshair;
+        max-width:92vw;
+        max-height:82vh;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="toolbar">
+    <input type="file" id="upload" accept="image/*">
+
+    <label>
+        Brush Size
+        <input type="range" id="size" min="5" max="80" value="25">
+    </label>
+
+    <label>
+        Strength
+        <input type="range" id="strength" min="1" max="100" value="60">
+    </label>
+</div>
+
+<canvas id="canvas"></canvas>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+const upload = document.getElementById("upload");
+const sizeSlider = document.getElementById("size");
+const strengthSlider = document.getElementById("strength");
+
+let drawing = false;
+
+upload.addEventListener("change", e => {
+
+    const file = e.target.files[0];
+    if(!file) return;
+
+    const img = new Image();
+
+    img.onload = () => {
+
+        canvas.width = img.width;
+        canvas.height = img.height;
+
+        ctx.drawImage(img,0,0);
+    };
+
+    img.src = URL.createObjectURL(file);
+});
+
+canvas.addEventListener("mousedown", () => {
+    drawing = true;
+});
+
+canvas.addEventListener("mouseup", () => {
+    drawing = false;
+});
+
+canvas.addEventListener("mouseleave", () => {
+    drawing = false;
+});
+
+canvas.addEventListener("mousemove", e => {
+
+    if(!drawing) return;
+
+    const rect = canvas.getBoundingClientRect();
+
+    // FIXED mouse coordinate
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+    const x = (e.clientX - rect.left) * scaleX;
+    const y = (e.clientY - rect.top) * scaleY;
+
+    smudge(x,y);
+});
+
+function smudge(cx,cy){
+
+    const radius = parseInt(sizeSlider.value);
+    const strength = parseInt(strengthSlider.value) / 100;
+
+    const startX = Math.max(0, Math.floor(cx - radius));
+    const startY = Math.max(0, Math.floor(cy - radius));
+
+    const endX = Math.min(canvas.width, Math.floor(cx + radius));
+    const endY = Math.min(canvas.height, Math.floor(cy + radius));
+
+    const imageData = ctx.getImageData(
+        startX,
+        startY,
+        endX - startX,
+        endY - startY
+    );
+
+    const data = imageData.data;
+    const copy = new Uint8ClampedArray(data);
+
+    const localWidth = imageData.width;
+
+    for(let y=0; y<imageData.height; y++){
+
+        for(let x=0; x<imageData.width; x++){
+
+            const dx = x - radius;
+            const dy = y - radius;
+
+            const dist = Math.sqrt(dx*dx + dy*dy);
+
+            if(dist > radius) continue;
+
+            const i = (y * localWidth + x) * 4;
+
+            const r = copy[i];
+            const g = copy[i+1];
+            const b = copy[i+2];
+
+            // darkness check
+            const brightness = (r + g + b) / 3;
+
+            // only dark areas affected
+            if(brightness < 190){
+
+                let totalR = 0;
+                let totalG = 0;
+                let totalB = 0;
+                let count = 0;
+
+                // REAL blur averaging nearby pixels
+                for(let oy=-2; oy<=2; oy++){
+
+                    for(let ox=-2; ox<=2; ox++){
+
+                        const nx = x + ox;
+                        const ny = y + oy;
+
+                        if(nx < 0 || ny < 0 ||
+                           nx >= imageData.width ||
+                           ny >= imageData.height){
+                            continue;
+                        }
+
+                        const ni = (ny * localWidth + nx) * 4;
+
+                        totalR += copy[ni];
+                        totalG += copy[ni+1];
+                        totalB += copy[ni+2];
+
+                        count++;
+                    }
+                }
+
+                const blurR = totalR / count;
+                const blurG = totalG / count;
+                const blurB = totalB / count;
+
+                const fade = 1 - (dist / radius);
+
+                const blend = strength * fade;
+
+                // TRUE blur blend
+                data[i] =
+                    r + (blurR - r) * blend;
+
+                data[i+1] =
+                    g + (blurG - g) * blend;
+
+                data[i+2] =
+                    b + (blurB - b) * blend;
+            }
+        }
+    }
+
+    ctx.putImageData(imageData,startX,startY);
+}
+</script>
+
+</body>
+</html>
