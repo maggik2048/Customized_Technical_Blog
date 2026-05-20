@@ -1,6 +1,13 @@
 'use client';
 
-export default function AssetBrowserInterface() {
+interface Props {
+
+  onDoMapping: () => void;
+}
+
+export default function AssetBrowserInterface({
+  onDoMapping,
+}: Props) {
 
   const dummyAssets =
     Array.from(
@@ -105,6 +112,48 @@ export default function AssetBrowserInterface() {
           fontSize: 14,
         }}
       />
+
+      {/* DO MAPPING BUTTON */}
+
+      <button
+        onClick={onDoMapping}
+        style={{
+
+          width: '100%',
+
+          height: 48,
+
+          border: 'none',
+
+          outline: 'none',
+
+          borderRadius: 14,
+
+          marginBottom: 24,
+
+          cursor: 'pointer',
+
+          color: 'white',
+
+          fontSize: 14,
+
+          fontWeight: 700,
+
+          background:
+            'rgba(255,255,255,0.08)',
+
+          backdropFilter:
+            'blur(12px)',
+
+          border:
+            '1px solid rgba(255,255,255,0.08)',
+
+          transition:
+            '0.25s ease',
+        }}
+      >
+        doMapping
+      </button>
 
       {/* GRID */}
 

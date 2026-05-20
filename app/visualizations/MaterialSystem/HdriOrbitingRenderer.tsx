@@ -1,7 +1,9 @@
 'use client';
 
-import { useEffect, useRef }
-from 'react';
+import {
+  useEffect,
+  useRef,
+} from 'react';
 
 import * as THREE
 from 'three';
@@ -12,10 +14,25 @@ from 'three/examples/jsm/controls/OrbitControls.js';
 import { EXRLoader }
 from 'three/examples/jsm/loaders/EXRLoader.js';
 
-export default function HdriOrbitingRenderer() {
+import MaterialMapper
+from './MaterialMapper';
+
+interface Props {
+
+  shouldDoMapping?: boolean;
+}
+
+export default function HdriOrbitingRenderer({
+  shouldDoMapping,
+}: Props) {
 
   const containerRef =
     useRef<HTMLDivElement>(null);
+
+  const materialRef =
+    useRef<THREE.MeshStandardMaterial | null>(
+      null
+    );
 
   useEffect(() => {
 
@@ -140,26 +157,56 @@ export default function HdriOrbitingRenderer() {
     );
 
     //
-    // Test Sphere
+    // Sphere Geometry
+    //
+
+    const geometry =
+      new THREE.SphereGeometry(
+        1,
+        256,
+        256
+      );
+
+    //
+    // IMPORTANT:
+    // AO MAP NEEDS UV2
+    //
+
+    geometry.setAttribute(
+
+      'uv2',
+
+      new THREE.BufferAttribute(
+        geometry.attributes.uv.array,
+        2
+      )
+    );
+
+    //
+    // Material
+    //
+
+    const material =
+      new THREE.MeshStandardMaterial({
+
+        color: 0xffffff,
+
+        metalness: 0,
+
+        roughness: 1,
+      });
+
+    materialRef.current =
+      material;
+
+    //
+    // Sphere
     //
 
     const sphere =
       new THREE.Mesh(
-
-        new THREE.SphereGeometry(
-          1,
-          64,
-          64
-        ),
-
-        new THREE.MeshStandardMaterial({
-
-          color: 0xffffff,
-
-          metalness: 1,
-
-          roughness: 0
-        })
+        geometry,
+        material
       );
 
     scene.add(sphere);
@@ -247,6 +294,10 @@ export default function HdriOrbitingRenderer() {
 
       renderer.dispose();
 
+      geometry.dispose();
+
+      material.dispose();
+
       if (
         containerRef.current &&
         renderer.domElement.parentNode
@@ -259,6 +310,24 @@ export default function HdriOrbitingRenderer() {
     };
 
   }, []);
+
+  //
+  // APPLY MATERIAL MAPPING
+  //
+
+  useEffect(() => {
+
+    if (
+      shouldDoMapping &&
+      materialRef.current
+    ) {
+
+      MaterialMapper(
+        materialRef.current
+      );
+    }
+
+  }, [shouldDoMapping]);
 
   return (
 

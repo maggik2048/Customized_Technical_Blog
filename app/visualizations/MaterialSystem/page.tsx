@@ -1,5 +1,7 @@
 'use client';
 
+import { useState } from 'react';
+
 import HdriOrbitingRenderer
 from './HdriOrbitingRenderer';
 
@@ -7,6 +9,11 @@ import AssetBrowserInterface
 from './assetbrowserinterface';
 
 export default function Page() {
+
+  const [
+    shouldDoMapping,
+    setShouldDoMapping,
+  ] = useState(false);
 
   return (
 
@@ -20,13 +27,18 @@ export default function Page() {
       }}
     >
 
-      {/* LEFT SIDEBAR */}
+      <AssetBrowserInterface
+        onDoMapping={() => {
 
-      <AssetBrowserInterface />
+          setShouldDoMapping(
+            prev => !prev
+          );
+        }}
+      />
 
-      {/* HDRI RENDERER */}
-
-      <HdriOrbitingRenderer />
+      <HdriOrbitingRenderer
+        shouldDoMapping={shouldDoMapping}
+      />
 
     </main>
   );
