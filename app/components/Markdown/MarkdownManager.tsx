@@ -16,7 +16,8 @@ type Props = {
 };
 
 /* =========================
-   HTML → Markdown (핵심)
+   HTML → Markdown (FIXED)
+   → 핵심: block element 줄바꿈 보장
 ========================= */
 function htmlToMarkdown(html: string): string {
   const doc = new DOMParser().parseFromString(html, "text/html");
@@ -34,40 +35,46 @@ function htmlToMarkdown(html: string): string {
     switch (el.tagName) {
       case "H1":
         out += `\n# ${el.textContent}\n\n`;
-        break;
+        return;
 
       case "H2":
         out += `\n## ${el.textContent}\n\n`;
-        break;
+        return;
 
       case "H3":
         out += `\n### ${el.textContent}\n\n`;
-        break;
+        return;
 
+      /* 🔥 FIX 핵심: paragraph 무조건 줄바꿈 */
       case "P":
         out += `\n${el.textContent}\n\n`;
-        break;
+        return;
+
+      /* DIV도 중요 (Edge/GPT 복붙에서 자주 씀) */
+      case "DIV":
+        out += `\n${el.textContent}\n`;
+        return;
 
       case "BR":
         out += "\n";
-        break;
+        return;
 
       case "STRONG":
       case "B":
         out += `**${el.textContent}**`;
-        break;
+        return;
 
       case "EM":
       case "I":
         out += `*${el.textContent}*`;
-        break;
+        return;
 
       case "UL":
         el.querySelectorAll("li").forEach((li) => {
           out += `- ${li.textContent}\n`;
         });
         out += "\n";
-        break;
+        return;
 
       case "OL":
         let i = 1;
@@ -75,7 +82,11 @@ function htmlToMarkdown(html: string): string {
           out += `${i++}. ${li.textContent}\n`;
         });
         out += "\n";
-        break;
+        return;
+
+      case "LI":
+        out += `\n- ${el.textContent}`;
+        return;
 
       default:
         el.childNodes.forEach(walk);
@@ -84,7 +95,11 @@ function htmlToMarkdown(html: string): string {
 
   doc.body.childNodes.forEach(walk);
 
-  return out.trim();
+  /* 🔥 추가 FIX: 문단 붙는 현상 방지 */
+  return out
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
 /* =========================
@@ -96,9 +111,6 @@ export default function MarkdownImageManager({
 }: Props) {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  /* =========================
-     IMAGE RESIZE
-  ========================= */
   const resizeImage = (file: File, maxSize = 1000): Promise<Blob> => {
     return new Promise((resolve) => {
       const img = new Image();
@@ -127,9 +139,6 @@ export default function MarkdownImageManager({
     });
   };
 
-  /* =========================
-     IMAGE UPLOAD
-  ========================= */
   const handleInsertImage = () => {
     fileInputRef.current?.click();
   };
@@ -139,8 +148,6 @@ export default function MarkdownImageManager({
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
-    if (!file.type.startsWith("image/")) return;
 
     const resized = await resizeImage(file, 1000);
     const fileName = `${Date.now()}_${file.name}`;
@@ -158,9 +165,6 @@ export default function MarkdownImageManager({
     setContent((prev) => prev + `\n![](${data.publicUrl})\n`);
   };
 
-  /* =========================
-      PASTE HANDLER (핵심)
-  ========================= */
   const handlePaste = (
     e: React.ClipboardEvent<HTMLTextAreaElement>
   ) => {
@@ -183,17 +187,13 @@ export default function MarkdownImageManager({
     const start = target.selectionStart;
     const end = target.selectionEnd;
 
-    setContent(
-      (prev) =>
-        prev.substring(0, start) +
-        parsed +
-        prev.substring(end)
+    setContent((prev) =>
+      prev.substring(0, start) +
+      parsed +
+      prev.substring(end)
     );
   };
 
-  /* =========================
-     AUTO LINK IMAGE
-========================= */
   const renderContent = content.replace(
     /^(https?:\/\/.*\.(png|jpg|jpeg|gif|webp|bmp|svg))$/gm,
     "![]($1)"
@@ -201,22 +201,19 @@ export default function MarkdownImageManager({
 
   return (
     <div>
-      {/* IMAGE UPLOAD */}
       <div style={{ marginBottom: 10 }}>
         <button onClick={handleInsertImage}>
           Insert Image
         </button>
 
         <input
-          ref={fileInputRef}
           type="file"
-          accept="image/*"
           hidden
+          ref={fileInputRef}
           onChange={handleFileChange}
         />
       </div>
 
-      {/* EDITOR */}
       <div style={{ display: "flex", gap: 20 }}>
         <textarea
           value={content}
@@ -229,7 +226,6 @@ export default function MarkdownImageManager({
           }}
         />
 
-        {/* PREVIEW */}
         <div
           style={{
             width: "50%",
@@ -243,49 +239,6 @@ export default function MarkdownImageManager({
           <ReactMarkdown
             remarkPlugins={[remarkGfm, remarkMath]}
             rehypePlugins={[rehypeKatex]}
-            components={{
-              code({ inline, className, children }) {
-                const text = String(children);
-
-                if (
-                  inline ||
-                  (text.length < 80 && !text.includes("\n"))
-                ) {
-                  return (
-                    <code
-                      style={{
-                        background: "#333",
-                        padding: "2px 6px",
-                      }}
-                    >
-                      {children}
-                    </code>
-                  );
-                }
-
-                const match = /language-(\w+)/.exec(
-                  className || ""
-                );
-
-                return (
-                  <SyntaxHighlighter
-                    style={oneDark}
-                    language={match?.[1] || "text"}
-                  >
-                    {text}
-                  </SyntaxHighlighter>
-                );
-              },
-
-              img({ src }) {
-                return (
-                  <img
-                    src={src}
-                    style={{ maxWidth: "100%" }}
-                  />
-                );
-              },
-            }}
           >
             {renderContent || "Preview..."}
           </ReactMarkdown>
