@@ -72,7 +72,6 @@ function htmlToMarkdown(html: string): string {
   let out = "";
 
   const walk = (node: ChildNode) => {
-    /* ================= TEXT ================= */
     if (node.nodeType === Node.TEXT_NODE) {
       const text = node.textContent || "";
 
@@ -84,7 +83,6 @@ function htmlToMarkdown(html: string): string {
     const el = node as HTMLElement;
 
     switch (el.tagName) {
-      /* ================= HEADINGS ================= */
       case "H1":
         out += `\n# ${el.textContent?.trim()}\n\n`;
         return;
@@ -97,12 +95,10 @@ function htmlToMarkdown(html: string): string {
         out += `\n### ${el.textContent?.trim()}\n\n`;
         return;
 
-      /* ================= PARAGRAPH ================= */
       case "P":
         out += `\n${el.textContent?.trim()}\n\n`;
         return;
 
-      /* ================= DIV ================= */
       case "DIV": {
         const text = el.textContent?.trim();
 
@@ -123,7 +119,6 @@ function htmlToMarkdown(html: string): string {
           ].includes(child.tagName)
         );
 
-        // block 구조면 recursive
         if (hasBlockChild) {
           el.childNodes.forEach(walk);
 
@@ -139,7 +134,6 @@ function htmlToMarkdown(html: string): string {
         return;
       }
 
-      /* ================= SPAN ================= */
       case "SPAN": {
         const text = el.textContent?.trim();
 
@@ -147,7 +141,6 @@ function htmlToMarkdown(html: string): string {
 
         const next = el.nextSibling;
 
-        // GPT clipboard 대응
         if (
           next &&
           next.nodeName === "BR"
@@ -161,12 +154,10 @@ function htmlToMarkdown(html: string): string {
         return;
       }
 
-      /* ================= BR ================= */
       case "BR":
         out += "\n";
         return;
 
-      /* ================= INLINE ================= */
       case "STRONG":
       case "B":
         out += `**${el.textContent}**`;
@@ -177,7 +168,6 @@ function htmlToMarkdown(html: string): string {
         out += `*${el.textContent}*`;
         return;
 
-      /* ================= LIST ================= */
       case "UL":
         Array.from(el.children).forEach((li) => {
           out += `- ${li.textContent?.trim()}\n`;
@@ -200,7 +190,6 @@ function htmlToMarkdown(html: string): string {
         out += `- ${el.textContent?.trim()}\n`;
         return;
 
-      /* ================= TABLE ================= */
       case "TABLE":
         out +=
           "\n" +
@@ -211,7 +200,6 @@ function htmlToMarkdown(html: string): string {
 
         return;
 
-      /* ================= DEFAULT ================= */
       default:
         el.childNodes.forEach(walk);
     }
@@ -279,19 +267,52 @@ export default function MarkdownImageManager({
           height
         );
 
-        canvas.toBlob((blob) => {
-          if (blob) resolve(blob);
-        });
+        canvas.toBlob(
+          (blob) => {
+            if (blob) resolve(blob);
+          },
+          "image/jpeg",
+          0.9
+        );
       };
     });
   };
 
-  /* ================= IMAGE INSERT ================= */
+  /* ================= IMAGE UPLOAD ================= */
+  const uploadImage = async (
+    file: File
+  ) => {
+    const resized = await resizeImage(
+      file,
+      1000
+    );
+
+    const fileName = `${crypto.randomUUID()}.jpg`;
+
+    const { error } = await supabase.storage
+      .from("imagebucket")
+      .upload(fileName, resized, {
+        contentType: "image/jpeg",
+      });
+
+    if (error) {
+      console.error(error);
+      return null;
+    }
+
+    const { data } = supabase.storage
+      .from("imagebucket")
+      .getPublicUrl(fileName);
+
+    return data.publicUrl;
+  };
+
+  /* ================= IMAGE BUTTON ================= */
   const handleInsertImage = () => {
     fileInputRef.current?.click();
   };
 
-  /* ================= IMAGE UPLOAD ================= */
+  /* ================= FILE CHANGE ================= */
   const handleFileChange = async (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
@@ -299,35 +320,61 @@ export default function MarkdownImageManager({
 
     if (!file) return;
 
-    const resized = await resizeImage(
-      file,
-      1000
-    );
+    const url = await uploadImage(file);
 
-    const fileName = `${Date.now()}_${
-      file.name
-    }`;
-
-    const { error } = await supabase.storage
-      .from("imagebucket")
-      .upload(fileName, resized);
-
-    if (error) return;
-
-    const { data } = supabase.storage
-      .from("imagebucket")
-      .getPublicUrl(fileName);
+    if (!url) return;
 
     setContent(
       (prev) =>
-        prev + `\n![](${data.publicUrl})\n`
+        prev + `\n![](${url})\n`
     );
   };
 
-  /* ================= PASTE PROCESSOR ================= */
-  const handlePaste = (
+  /* ================= PASTE ================= */
+  const handlePaste = async (
     e: React.ClipboardEvent<HTMLTextAreaElement>
   ) => {
+    const items = e.clipboardData.items;
+
+    /* ================= IMAGE PASTE ================= */
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+
+      if (item.kind === "file") {
+        e.preventDefault();
+
+        const file = item.getAsFile();
+
+        if (!file) return;
+
+        // await 전에 textarea 위치 저장
+        const target = e.currentTarget;
+
+        const start =
+          target.selectionStart;
+
+        const end =
+          target.selectionEnd;
+
+        const url = await uploadImage(file);
+
+        if (!url) return;
+
+        const markdown = `\n![](${url})\n`;
+
+        setContent(
+          (prev) =>
+            prev.substring(0, start) +
+            markdown +
+            prev.substring(end)
+        );
+
+        return;
+      }
+    }
+
+    /* ================= HTML / TEXT ================= */
+
     const html =
       e.clipboardData.getData("text/html");
 
@@ -359,7 +406,7 @@ export default function MarkdownImageManager({
     );
   };
 
-  /* ================= IMAGE URL AUTO-CONVERT ================= */
+  /* ================= AUTO IMAGE URL ================= */
   const renderContent = content.replace(
     /^(https?:\/\/.*\.(png|jpg|jpeg|gif|webp|bmp|svg))$/gm,
     "![]($1)"
@@ -404,6 +451,7 @@ export default function MarkdownImageManager({
             padding: 10,
             fontFamily: "monospace",
           }}
+          placeholder="Ctrl + V 로 이미지 붙여넣기 가능"
         />
 
         {/* PREVIEW */}
