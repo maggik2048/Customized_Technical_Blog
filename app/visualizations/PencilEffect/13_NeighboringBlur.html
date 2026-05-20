@@ -43,21 +43,53 @@
 
 <div class="toolbar">
 
-    <input type="file" id="upload" accept="image/*">
+    <input type="file"
+           id="upload"
+           accept="image/*">
 
     <label>
         Brush Size
-        <input type="range" id="size" min="5" max="120" value="30">
+        <input type="range"
+               id="size"
+               min="5"
+               max="120"
+               value="30">
     </label>
 
     <label>
         Smudge Strength
-        <input type="range" id="strength" min="1" max="100" value="65">
+        <input type="range"
+               id="strength"
+               min="1"
+               max="100"
+               value="65">
     </label>
 
     <label>
         Pigment Deposit
-        <input type="range" id="deposit" min="0" max="100" value="3">
+        <input type="range"
+               id="deposit"
+               min="0"
+               max="100"
+               value="3">
+    </label>
+
+    <label>
+        Noise Overlay
+        <input type="range"
+               id="noise"
+               min="0"
+               max="100"
+               value="28">
+    </label>
+
+    <label>
+        Grain Scale
+        <input type="range"
+               id="grainScale"
+               min="1"
+               max="20"
+               value="7">
     </label>
 
 </div>
@@ -66,34 +98,62 @@
 
 <script>
 
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
+const canvas =
+    document.getElementById("canvas");
 
-const upload = document.getElementById("upload");
+const ctx =
+    canvas.getContext("2d");
 
-const sizeSlider = document.getElementById("size");
-const strengthSlider = document.getElementById("strength");
-const depositSlider = document.getElementById("deposit");
+const upload =
+    document.getElementById("upload");
+
+const sizeSlider =
+    document.getElementById("size");
+
+const strengthSlider =
+    document.getElementById("strength");
+
+const depositSlider =
+    document.getElementById("deposit");
+
+const noiseSlider =
+    document.getElementById("noise");
+
+const grainScaleSlider =
+    document.getElementById("grainScale");
 
 let drawing = false;
+
+// =====================================================
+// IMAGE UPLOAD
+// =====================================================
 
 upload.addEventListener("change", e => {
 
     const file = e.target.files[0];
+
     if(!file) return;
 
     const img = new Image();
 
     img.onload = () => {
 
-        canvas.width = img.width;
-        canvas.height = img.height;
+        canvas.width =
+            img.width;
+
+        canvas.height =
+            img.height;
 
         ctx.drawImage(img,0,0);
     };
 
-    img.src = URL.createObjectURL(file);
+    img.src =
+        URL.createObjectURL(file);
 });
+
+// =====================================================
+// MOUSE EVENTS
+// =====================================================
 
 canvas.addEventListener("mousedown", () => {
     drawing = true;
@@ -111,16 +171,57 @@ canvas.addEventListener("mousemove", e => {
 
     if(!drawing) return;
 
-    const rect = canvas.getBoundingClientRect();
+    const rect =
+        canvas.getBoundingClientRect();
 
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
+    const scaleX =
+        canvas.width / rect.width;
 
-    const x = (e.clientX - rect.left) * scaleX;
-    const y = (e.clientY - rect.top) * scaleY;
+    const scaleY =
+        canvas.height / rect.height;
+
+    const x =
+        (e.clientX - rect.left)
+        * scaleX;
+
+    const y =
+        (e.clientY - rect.top)
+        * scaleY;
 
     smudge(x,y);
 });
+
+// =====================================================
+// OVERLAY BLEND
+// =====================================================
+
+function overlayBlend(base,blend){
+
+    base /= 255;
+    blend /= 255;
+
+    let result;
+
+    if(base < 0.5){
+
+        result =
+            2 * base * blend;
+
+    }else{
+
+        result =
+            1 -
+            2 *
+            (1 - base) *
+            (1 - blend);
+    }
+
+    return result * 255;
+}
+
+// =====================================================
+// MAIN ENGINE
+// =====================================================
 
 function smudge(cx,cy){
 
@@ -128,39 +229,66 @@ function smudge(cx,cy){
         parseInt(sizeSlider.value);
 
     const smudgeStrength =
-        parseInt(strengthSlider.value) / 100;
+        parseInt(strengthSlider.value)
+        / 100;
 
     const depositStrength =
-        parseInt(depositSlider.value) / 100;
+        parseInt(depositSlider.value)
+        / 100;
+
+    const noiseStrength =
+        parseInt(noiseSlider.value)
+        / 100;
+
+    const grainScale =
+        parseInt(grainScaleSlider.value);
 
     const startX =
-        Math.max(0, Math.floor(cx - radius));
+        Math.max(
+            0,
+            Math.floor(cx - radius)
+        );
 
     const startY =
-        Math.max(0, Math.floor(cy - radius));
+        Math.max(
+            0,
+            Math.floor(cy - radius)
+        );
 
     const endX =
-        Math.min(canvas.width, Math.floor(cx + radius));
+        Math.min(
+            canvas.width,
+            Math.floor(cx + radius)
+        );
 
     const endY =
-        Math.min(canvas.height, Math.floor(cy + radius));
+        Math.min(
+            canvas.height,
+            Math.floor(cy + radius)
+        );
 
-    const imageData = ctx.getImageData(
-        startX,
-        startY,
-        endX - startX,
-        endY - startY
-    );
+    const imageData =
+        ctx.getImageData(
+            startX,
+            startY,
+            endX - startX,
+            endY - startY
+        );
 
-    const data = imageData.data;
+    const data =
+        imageData.data;
 
-    const copy = new Uint8ClampedArray(data);
+    const copy =
+        new Uint8ClampedArray(data);
 
-    const width = imageData.width;
-    const height = imageData.height;
+    const width =
+        imageData.width;
+
+    const height =
+        imageData.height;
 
     // =====================================================
-    // collect average DARK charcoal pigment
+    // COLLECT DARK GRAPHITE
     // =====================================================
 
     let darkR = 0;
@@ -172,22 +300,28 @@ function smudge(cx,cy){
 
         for(let x=0; x<width; x++){
 
-            const dx = x - radius;
-            const dy = y - radius;
+            const dx =
+                x - radius;
 
-            const dist = Math.sqrt(dx*dx + dy*dy);
+            const dy =
+                y - radius;
 
-            if(dist > radius) continue;
+            const dist =
+                Math.sqrt(dx*dx + dy*dy);
 
-            const i = (y * width + x) * 4;
+            if(dist > radius)
+                continue;
+
+            const i =
+                (y * width + x) * 4;
 
             const r = copy[i];
             const g = copy[i+1];
             const b = copy[i+2];
 
-            const brightness = (r+g+b)/3;
+            const brightness =
+                (r+g+b)/3;
 
-            // ONLY use dark graphite tones
             if(brightness < 180){
 
                 darkR += r;
@@ -199,37 +333,45 @@ function smudge(cx,cy){
         }
     }
 
-    if(countDark === 0) return;
+    if(countDark === 0)
+        return;
 
     darkR /= countDark;
     darkG /= countDark;
     darkB /= countDark;
 
     // =====================================================
-    // smudge + dark charcoal deposition
+    // PIXEL PROCESSING
     // =====================================================
 
     for(let y=0; y<height; y++){
 
         for(let x=0; x<width; x++){
 
-            const dx = x - radius;
-            const dy = y - radius;
+            const dx =
+                x - radius;
 
-            const dist = Math.sqrt(dx*dx + dy*dy);
+            const dy =
+                y - radius;
 
-            if(dist > radius) continue;
+            const dist =
+                Math.sqrt(dx*dx + dy*dy);
 
-            const fade = 1 - (dist / radius);
+            if(dist > radius)
+                continue;
 
-            const i = (y * width + x) * 4;
+            const fade =
+                1 - (dist / radius);
+
+            const i =
+                (y * width + x) * 4;
 
             const r = copy[i];
             const g = copy[i+1];
             const b = copy[i+2];
 
             // =================================================
-            // local blur averaging
+            // LOCAL BLUR
             // =================================================
 
             let totalR = 0;
@@ -244,12 +386,17 @@ function smudge(cx,cy){
                     const nx = x + ox;
                     const ny = y + oy;
 
-                    if(nx < 0 || ny < 0 ||
-                       nx >= width || ny >= height){
+                    if(
+                        nx < 0 ||
+                        ny < 0 ||
+                        nx >= width ||
+                        ny >= height
+                    ){
                         continue;
                     }
 
-                    const ni = (ny * width + nx) * 4;
+                    const ni =
+                        (ny * width + nx) * 4;
 
                     totalR += copy[ni];
                     totalG += copy[ni+1];
@@ -259,48 +406,119 @@ function smudge(cx,cy){
                 }
             }
 
-            const blurR = totalR / blurCount;
-            const blurG = totalG / blurCount;
-            const blurB = totalB / blurCount;
+            const blurR =
+                totalR / blurCount;
+
+            const blurG =
+                totalG / blurCount;
+
+            const blurB =
+                totalB / blurCount;
 
             // =================================================
-            // TRUE charcoal smudge blur
+            // SMUDGE
             // =================================================
 
             let nr =
-                r + (blurR - r) *
-                smudgeStrength * fade;
+                r + (blurR - r)
+                * smudgeStrength
+                * fade;
 
             let ng =
-                g + (blurG - g) *
-                smudgeStrength * fade;
+                g + (blurG - g)
+                * smudgeStrength
+                * fade;
 
             let nb =
-                b + (blurB - b) *
-                smudgeStrength * fade;
+                b + (blurB - b)
+                * smudgeStrength
+                * fade;
 
             // =================================================
-            // DARK charcoal pigment deposition
-            // IMPORTANT:
-            // ONLY darkens, NEVER lightens
+            // GRAPHITE DEPOSITION
             // =================================================
 
             nr = Math.min(
                 nr,
-                nr + (darkR - nr) *
-                depositStrength * fade
+                nr + (darkR - nr)
+                * depositStrength
+                * fade
             );
 
             ng = Math.min(
                 ng,
-                ng + (darkG - ng) *
-                depositStrength * fade
+                ng + (darkG - ng)
+                * depositStrength
+                * fade
             );
 
             nb = Math.min(
                 nb,
-                nb + (darkB - nb) *
-                depositStrength * fade
+                nb + (darkB - nb)
+                * depositStrength
+                * fade
+            );
+
+            // =================================================
+            // NOISE OVERLAY
+            // =================================================
+
+            const grainX =
+                Math.floor(x / grainScale);
+
+            const grainY =
+                Math.floor(y / grainScale);
+
+            const random =
+                (
+                    Math.sin(
+                        grainX * 12.9898 +
+                        grainY * 78.233
+                    ) * 43758.5453
+                ) % 1;
+
+            const grain =
+                Math.abs(random) * 255;
+
+            const overlayAmount =
+                noiseStrength
+                * fade;
+
+            nr =
+                nr * (1 - overlayAmount)
+                +
+                overlayBlend(nr,grain)
+                * overlayAmount;
+
+            ng =
+                ng * (1 - overlayAmount)
+                +
+                overlayBlend(ng,grain)
+                * overlayAmount;
+
+            nb =
+                nb * (1 - overlayAmount)
+                +
+                overlayBlend(nb,grain)
+                * overlayAmount;
+
+            // =================================================
+            // CLAMP
+            // =================================================
+
+            nr = Math.max(
+                0,
+                Math.min(255,nr)
+            );
+
+            ng = Math.max(
+                0,
+                Math.min(255,ng)
+            );
+
+            nb = Math.max(
+                0,
+                Math.min(255,nb)
             );
 
             data[i]   = nr;
@@ -309,7 +527,11 @@ function smudge(cx,cy){
         }
     }
 
-    ctx.putImageData(imageData,startX,startY);
+    ctx.putImageData(
+        imageData,
+        startX,
+        startY
+    );
 }
 
 </script>
