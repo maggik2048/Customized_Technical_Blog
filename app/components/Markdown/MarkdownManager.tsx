@@ -16,8 +16,36 @@ type Props = {
 };
 
 /* =========================
-   HTML → Markdown (FIXED)
-   → 핵심: block element 줄바꿈 보장
+   TABLE PARSER
+========================= */
+function tableToMarkdown(table: HTMLTableElement): string {
+  const rows = Array.from(table.querySelectorAll("tr"));
+  if (!rows.length) return "";
+
+  const parsedRows = rows.map((row) => {
+    const cells = Array.from(row.querySelectorAll("th, td"));
+    return cells.map((c) => c.textContent?.trim() || "");
+  });
+
+  const header = parsedRows[0] || [];
+  const body = parsedRows.slice(1);
+
+  let md = "";
+
+  if (header.length) {
+    md += `| ${header.join(" | ")} |\n`;
+    md += `| ${header.map(() => "---").join(" | ")} |\n`;
+  }
+
+  body.forEach((r) => {
+    md += `| ${r.join(" | ")} |\n`;
+  });
+
+  return md + "\n";
+}
+
+/* =========================
+   HTML → Markdown PARSER
 ========================= */
 function htmlToMarkdown(html: string): string {
   const doc = new DOMParser().parseFromString(html, "text/html");
@@ -45,12 +73,10 @@ function htmlToMarkdown(html: string): string {
         out += `\n### ${el.textContent}\n\n`;
         return;
 
-      /* 🔥 FIX 핵심: paragraph 무조건 줄바꿈 */
       case "P":
         out += `\n${el.textContent}\n\n`;
         return;
 
-      /* DIV도 중요 (Edge/GPT 복붙에서 자주 씀) */
       case "DIV":
         out += `\n${el.textContent}\n`;
         return;
@@ -88,6 +114,11 @@ function htmlToMarkdown(html: string): string {
         out += `\n- ${el.textContent}`;
         return;
 
+      /* 🔥 TABLE SUPPORT */
+      case "TABLE":
+        out += "\n" + tableToMarkdown(el as HTMLTableElement) + "\n";
+        return;
+
       default:
         el.childNodes.forEach(walk);
     }
@@ -95,7 +126,6 @@ function htmlToMarkdown(html: string): string {
 
   doc.body.childNodes.forEach(walk);
 
-  /* 🔥 추가 FIX: 문단 붙는 현상 방지 */
   return out
     .replace(/[ \t]+\n/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
