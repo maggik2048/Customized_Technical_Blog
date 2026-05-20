@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Soft Charcoal Eraser</title>
+
+<style>
+    body{
+        margin:0;
+        background:#ccc;
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+        align-items:center;
+        height:100vh;
+        gap:15px;
+        overflow:hidden;
+        font-family:Arial;
+    }
+
+    .toolbar{
+        display:flex;
+        gap:20px;
+        align-items:center;
+        flex-wrap:wrap;
+    }
+
+    canvas{
+        background:white;
+        box-shadow:0 10px 25px rgba(0,0,0,0.2);
+        cursor:crosshair;
+        max-width:92vw;
+        max-height:82vh;
+    }
+
+    label{
+        font-size:14px;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="toolbar">
+
+    <input type="file"
+           id="upload"
+           accept="image/*">
+
+    <label>
+        Eraser Size
+        <input type="range"
+               id="size"
+               min="5"
+               max="120"
+               value="18">
+    </label>
+
+    <label>
+        Erase Strength
+        <input type="range"
+               id="strength"
+               min="1"
+               max="100"
+               value="70">
+    </label>
+
+</div>
+
+<canvas id="canvas"></canvas>
+
+<script>
+
+const canvas =
+    document.getElementById("canvas");
+
+const ctx =
+    canvas.getContext("2d");
+
+const upload =
+    document.getElementById("upload");
+
+const sizeSlider =
+    document.getElementById("size");
+
+const strengthSlider =
+    document.getElementById("strength");
+
+let isDrawing = false;
+
+// =====================================================
+// IMAGE INPUT
+// =====================================================
+
+upload.addEventListener("change", e => {
+
+    const file =
+        e.target.files[0];
+
+    if(!file) return;
+
+    const img = new Image();
+
+    img.onload = () => {
+
+        canvas.width =
+            img.width;
+
+        canvas.height =
+            img.height;
+
+        ctx.clearRect(
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+        ctx.drawImage(
+            img,
+            0,
+            0
+        );
+    };
+
+    img.src =
+        URL.createObjectURL(file);
+});
+
+// =====================================================
+// SOFT ERASE
+// =====================================================
+
+function softErase(x,y){
+
+    const radius =
+        parseInt(sizeSlider.value);
+
+    const strength =
+        parseInt(strengthSlider.value)
+        / 100;
+
+    const gradient =
+        ctx.createRadialGradient(
+            x,
+            y,
+            0,
+            x,
+            y,
+            radius
+        );
+
+    // center
+    gradient.addColorStop(
+        0,
+        `rgba(255,255,255,${strength})`
+    );
+
+    // mid softness
+    gradient.addColorStop(
+        0.55,
+        `rgba(255,255,255,${strength * 0.35})`
+    );
+
+    // edge fade
+    gradient.addColorStop(
+        1,
+        "rgba(255,255,255,0)"
+    );
+
+    ctx.globalCompositeOperation =
+        "source-over";
+
+    ctx.fillStyle =
+        gradient;
+
+    ctx.beginPath();
+
+    ctx.arc(
+        x,
+        y,
+        radius,
+        0,
+        Math.PI * 2
+    );
+
+    ctx.fill();
+}
+
+// =====================================================
+// MOUSE EVENTS
+// =====================================================
+
+canvas.addEventListener("mousedown", e => {
+
+    isDrawing = true;
+
+    draw(e);
+});
+
+canvas.addEventListener("mouseup", () => {
+
+    isDrawing = false;
+});
+
+canvas.addEventListener("mouseleave", () => {
+
+    isDrawing = false;
+});
+
+canvas.addEventListener("mousemove", e => {
+
+    if(!isDrawing) return;
+
+    draw(e);
+});
+
+function draw(e){
+
+    const rect =
+        canvas.getBoundingClientRect();
+
+    const scaleX =
+        canvas.width / rect.width;
+
+    const scaleY =
+        canvas.height / rect.height;
+
+    const x =
+        (e.clientX - rect.left)
+        * scaleX;
+
+    const y =
+        (e.clientY - rect.top)
+        * scaleY;
+
+    softErase(x,y);
+}
+
+</script>
+
+</body>
+</html>
