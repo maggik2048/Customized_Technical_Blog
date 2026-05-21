@@ -1,10 +1,19 @@
 'use client';
 
 interface Props {
-  item: number;
+  assetName: string;
+  previewUrl: string;
+  materialId: string;
+  index: number;
 }
 
-export default function AssetCard({ item }: Props) {
+export default function AssetCard({
+  assetName,
+  previewUrl,
+  materialId,
+  index,
+}: Props) {
+
   return (
     <div
       style={{
@@ -19,16 +28,16 @@ export default function AssetCard({ item }: Props) {
         transition: '0.25s ease',
       }}
     >
-      {/* PREVIEW */}
-      <div
+
+      {/* PREVIEW IMAGE */}
+      <img
+        src={previewUrl}
+        alt={assetName}
         style={{
           width: '100%',
           height: '75%',
-          background: `linear-gradient(
-            ${item * 17}deg,
-            rgba(255,255,255,0.12),
-            rgba(255,255,255,0.02)
-          )`,
+          objectFit: 'cover',
+          display: 'block',
         }}
       />
 
@@ -41,7 +50,7 @@ export default function AssetCard({ item }: Props) {
           width: '100%',
           padding: 10,
           boxSizing: 'border-box',
-          background: 'rgba(0,0,0,0.22)',
+          background: 'rgba(0,0,0,0.35)',
           backdropFilter: 'blur(10px)',
         }}
       >
@@ -52,7 +61,7 @@ export default function AssetCard({ item }: Props) {
             fontWeight: 600,
           }}
         >
-          Material {item + 1}
+          {assetName}
         </div>
 
         <div
@@ -62,9 +71,10 @@ export default function AssetCard({ item }: Props) {
             marginTop: 3,
           }}
         >
-          PBR Surface
+          {materialId}
         </div>
       </div>
+
     </div>
   );
 }
