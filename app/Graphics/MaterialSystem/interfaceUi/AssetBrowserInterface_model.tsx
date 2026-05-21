@@ -86,7 +86,7 @@ export default function AssetBrowserInterface_model({
         }}
         style={styles.registerButton}
       >
-        selectModel
+        registerModel
       </button>
 
       {/* GRID */}
