@@ -123,6 +123,14 @@ export default function AssetCard({
     if (!wrapperRef.current)
       return;
 
+    //
+    // drag 시작 시 hover 제거
+    //
+
+    setIsHoverCard(false);
+
+    setIsHoverPanel(false);
+
     const rect =
       wrapperRef.current
         .getBoundingClientRect();
@@ -179,7 +187,24 @@ export default function AssetCard({
 
   const handlePointerUp = () => {
 
+    //
+    // drag 종료
+    //
+
     setIsDragging(false);
+
+    //
+    // 핵심
+    // interaction lifecycle cleanup
+    //
+
+    setIsHoverCard(false);
+
+    setIsHoverPanel(false);
+
+    //
+    // listeners cleanup
+    //
 
     window.removeEventListener(
       'pointermove',
