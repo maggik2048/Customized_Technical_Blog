@@ -15,8 +15,8 @@ const exportTargets = [
   { name: 'Blender', icon: '/icons/blender.png' },
   { name: 'Houdini', icon: '/icons/houdini.png' },
   { name: 'Maya', icon: '/icons/maya.png' },
-  { name: '3ds Max', icon: '/icons/3dsmax.png' },
-  { name: 'Cinema 4D', icon: '/icons/cinema4d.png' },
+  { name: '3ds Max', icon: '/icons/max.png' },
+  { name: 'Cinema 4D', icon: '/icons/cinema.png' },
 ];
 
 export default function AssetCard({
