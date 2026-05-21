@@ -8,7 +8,11 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
 import { EXRLoader } from 'three/examples/jsm/loaders/EXRLoader.js';
 
-import { addSceneContent } from './SceneManager';
+import { World } from './ecs/World';
+
+import { Scene } from './scene/Scene';
+
+import { RenderSystem } from './systems/RenderSystem';
 
 export default function HdriOrbitingRenderer() {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -17,9 +21,18 @@ export default function HdriOrbitingRenderer() {
     if (!containerRef.current) return;
 
     //
-    // Scene
+    // Scene (Three.js)
     //
     const scene = new THREE.Scene();
+
+    //
+    // ECS World
+    //
+    const world = new World();
+
+    const ecsScene = new Scene(scene, world);
+
+    const renderSystem = new RenderSystem(world);
 
     //
     // Camera
@@ -53,21 +66,17 @@ export default function HdriOrbitingRenderer() {
     // Controls
     //
     const controls = new OrbitControls(camera, renderer.domElement);
-
     controls.enableDamping = true;
     controls.enablePan = false;
     controls.rotateSpeed = -0.25;
 
     //
-    // HDRI Load
+    // HDRI
     //
     const exrLoader = new EXRLoader();
 
-    const hdriPath =
-      '/images/materialsystem/hdri/white_cliff_top_1k.exr';
-
     exrLoader.load(
-      hdriPath,
+      '/images/materialsystem/hdri/white_cliff_top_1k.exr',
       (texture) => {
         texture.mapping = THREE.EquirectangularReflectionMapping;
 
@@ -83,9 +92,18 @@ export default function HdriOrbitingRenderer() {
     );
 
     //
-    // Scene Content (Sphere moved here)
+    // ECS Entity (Sphere moved into ECS)
     //
-    const content = addSceneContent(scene);
+    const sphere = new THREE.Mesh(
+      new THREE.SphereGeometry(1, 64, 64),
+      new THREE.MeshStandardMaterial({
+        color: 0xffffff,
+        metalness: 1,
+        roughness: 0,
+      })
+    );
+
+    ecsScene.addMeshEntity(sphere);
 
     //
     // Light (unchanged)
@@ -102,7 +120,10 @@ export default function HdriOrbitingRenderer() {
     const animate = () => {
       animationId = requestAnimationFrame(animate);
 
+      renderSystem.update();
+
       controls.update();
+
       renderer.render(scene, camera);
     };
 
@@ -129,9 +150,6 @@ export default function HdriOrbitingRenderer() {
       window.removeEventListener('resize', onResize);
 
       controls.dispose();
-
-      content.dispose?.();
-
       renderer.dispose();
 
       if (
