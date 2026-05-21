@@ -3,9 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 export async function POST(request: NextRequest) {
-
   try {
-
     const formData = await request.formData();
 
     //
@@ -26,44 +24,57 @@ export async function POST(request: NextRequest) {
     fs.mkdirSync(materialDir, { recursive: true });
 
     //
-    // DESCRIPTOR (asset 기반 구조)
+    // DESCRIPTOR (STRUCTURED FIX)
     //
-    const descriptor: Record<string, string> = {};
+    const descriptor: {
+      asset: string;
+      textures: Record<string, string>;
+      preview?: string;
+    } = {
+      asset: '',
+      textures: {},
+    };
 
     //
     // SAVE FILES
     //
     for (const [key, value] of formData.entries()) {
+      if (!(value instanceof Blob)) continue;
 
-      if (!(value instanceof File)) {
-        continue;
-      }
+      const file = value as File;
 
-      const bytes = await value.arrayBuffer();
+      const bytes = await file.arrayBuffer();
       const buffer = Buffer.from(bytes);
 
       //
-      // extension
+      // filename (FRONT 그대로 유지)
       //
-      const extension = value.name.split('.').pop();
-
-      //
-      //  FIX: 프론트에서 만든 이름 그대로 사용
-      //
-      const filename = value.name;
+      const filename = file.name;
 
       const filepath = path.join(materialDir, filename);
 
       fs.writeFileSync(filepath, buffer);
 
+      const url = `/materials/${materialId}/${filename}`;
+
       //
-      // descriptor도 asset name 기준으로 저장
+      // asset name (fallback safe)
       //
       const assetMatch = filename.match(/^([a-zA-Z0-9]+)/i);
-      const assetName = assetMatch ? assetMatch[1].toLowerCase() : 'asset';
+      const assetName = assetMatch
+        ? assetMatch[1].toLowerCase()
+        : 'asset';
 
-      descriptor[`${key}`] = `/materials/${materialId}/${filename}`;
-      descriptor[`asset`] = assetName;
+      descriptor.asset = assetName;
+
+      //
+      // preview 분리 저장
+      //
+      if (key === 'preview') {
+        descriptor.preview = url;
+      } else {
+        descriptor.textures[key] = url;
+      }
     }
 
     //
@@ -81,9 +92,7 @@ export async function POST(request: NextRequest) {
       materialId,
       descriptor,
     });
-
   } catch (err) {
-
     console.error(err);
 
     return Response.json(

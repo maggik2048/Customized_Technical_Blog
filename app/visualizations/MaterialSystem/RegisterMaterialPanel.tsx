@@ -8,6 +8,7 @@ import {
 } from './compareTextureSetsbeforeRegister';
 
 import { parseTextureFileName } from './textureNamingParser';
+import { resolvePreview } from './previewResolver';
 
 type RegisterStatus =
   | ''
@@ -15,32 +16,37 @@ type RegisterStatus =
   | 'Material is Newly registered'
   | 'Material is updated';
 
+type ExtendedTextureSet = TextureSet & {
+  preview?: File;
+};
+
 export default function RegisterMaterialPanel() {
-  const [textures, setTextures] = useState<TextureSet & { preview?: File }>({});
+  const [textures, setTextures] = useState<ExtendedTextureSet>({});
   const [status, setStatus] = useState<RegisterStatus>('');
 
-  const lastRegisteredRef = useRef<(TextureSet & { preview?: File }) | null>(null);
+  const lastRegisteredRef = useRef<ExtendedTextureSet | null>(null);
 
-  //
-  // AUTO PARSER (SAFE FIXED)
-  //
+  /**
+   * STEP 1: texture parsing ONLY (no preview logic here)
+   */
   const parseTextures = (files: FileList) => {
-    const parsed: any = {};
+    const parsed: ExtendedTextureSet = {};
 
     Array.from(files).forEach((file) => {
       const { key } = parseTextureFileName(file);
+
       if (!key) return;
 
       parsed[key] = file;
     });
 
     setTextures(parsed);
-    console.log('AUTO PARSED TEXTURES', parsed);
+    console.log('PARSED TEXTURES', parsed);
   };
 
-  //
-  // FILE NAMING FIX
-  //
+  /**
+   * FILE RENAMING (unchanged)
+   */
   const buildStudioFile = (file: File, channelKey: string): File => {
     const name = file.name;
 
@@ -58,16 +64,21 @@ export default function RegisterMaterialPanel() {
     });
   };
 
-  //
-  // UPLOAD
-  //
-  const uploadMaterial = async (textureData: any) => {
+  /**
+   * UPLOAD (preview resolved here, NOT in parser)
+   */
+  const uploadMaterial = async (textureData: ExtendedTextureSet) => {
     const formData = new FormData();
 
-    Object.entries(textureData).forEach(([key, file]) => {
+    const resolved = {
+      ...textureData,
+      preview: resolvePreview(textureData),
+    };
+
+    Object.entries(resolved).forEach(([key, file]) => {
       if (!file) return;
 
-      const studioFile = buildStudioFile(file as File, key);
+      const studioFile = buildStudioFile(file, key);
 
       formData.append(key, studioFile);
     });
@@ -85,9 +96,9 @@ export default function RegisterMaterialPanel() {
     }
   };
 
-  //
-  // REGISTER LOGIC (UNCHANGED BEHAVIOR)
-  //
+  /**
+   * REGISTER LOGIC (unchanged behavior)
+   */
   const registerMaterial = async () => {
     if (!lastRegisteredRef.current) {
       await uploadMaterial(textures);
@@ -118,9 +129,6 @@ export default function RegisterMaterialPanel() {
     );
   };
 
-  //
-  // UI (EXPANDED SAFE)
-  //
   const textureLabels = [
     'albedo',
     'normal',
@@ -139,18 +147,14 @@ export default function RegisterMaterialPanel() {
   ] as const;
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 14,
-        marginBottom: 24,
-        padding: 14,
-        borderRadius: 16,
-        background: 'rgba(255,255,255,0.04)',
-        border: '1px solid rgba(255,255,255,0.08)',
-      }}
-    >
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      gap: 14,
+      padding: 14,
+      borderRadius: 16,
+      background: 'rgba(255,255,255,0.04)',
+    }}>
       <div style={{ color: 'white', fontSize: 18, fontWeight: 700 }}>
         Register Material
       </div>
@@ -163,18 +167,9 @@ export default function RegisterMaterialPanel() {
           if (!e.target.files) return;
           parseTextures(e.target.files);
         }}
-        style={{ color: 'white', fontSize: 12 }}
       />
 
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 6,
-          fontSize: 12,
-          color: 'rgba(255,255,255,0.7)',
-        }}
-      >
+      <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)' }}>
         {textureLabels.map((key) => (
           <div key={key}>
             {key}: {(textures as any)[key]?.name || '-'}
@@ -182,33 +177,11 @@ export default function RegisterMaterialPanel() {
         ))}
       </div>
 
-      <div
-        style={{
-          fontSize: 13,
-          color:
-            status === 'Material is already registered'
-              ? '#ff8080'
-              : '#80ffaa',
-          fontWeight: 600,
-        }}
-      >
+      <div style={{ fontSize: 13, color: '#80ffaa', fontWeight: 600 }}>
         {status}
       </div>
 
-      <button
-        onClick={registerMaterial}
-        style={{
-          width: '100%',
-          height: 44,
-          border: 'none',
-          borderRadius: 12,
-          cursor: 'pointer',
-          color: 'white',
-          fontWeight: 700,
-          background: 'rgba(255,255,255,0.08)',
-          border: '1px solid rgba(255,255,255,0.08)',
-        }}
-      >
+      <button onClick={registerMaterial}>
         RegisterMaterial
       </button>
 
