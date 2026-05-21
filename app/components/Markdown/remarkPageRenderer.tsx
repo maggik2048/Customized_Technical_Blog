@@ -10,11 +10,10 @@ import rehypeRaw from "rehype-raw";
 
 import { Cormorant_SC } from "next/font/google";
 import TableRenderer from "./TableRenderer";
-
 import KaTeXPostProcessor from "./KaTeXPostProcessor";
 
 /* =========================
-   🎯 FONT SYSTEM (완전 분리)
+    FONT SYSTEM (더 두껍게 조정)
 ========================= */
 
 const fontH1 = Cormorant_SC({
@@ -29,13 +28,24 @@ const fontH2 = Cormorant_SC({
 
 const fontH3 = Cormorant_SC({
   subsets: ["latin"],
-  weight: ["500"],
+  weight: ["600"], // ↑ 기존 500 → 600
 });
 
 const fontBody = Cormorant_SC({
   subsets: ["latin"],
-  weight: ["400"],
+  weight: ["500"], // ↑ 기존 400 → 500 (전체적으로 굵게)
 });
+
+/* =========================
+    BASE FONT (영문 가독성 + fallback)
+========================= */
+
+const baseFontFamily =
+  `${fontBody.style.fontFamily}, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif`;
+
+/* =========================
+    COMPONENT
+========================= */
 
 export default function RemarkPageRenderer({
   children,
@@ -46,8 +56,13 @@ export default function RemarkPageRenderer({
 }: any) {
 
   /* =========================
-     🎨 HEADINGS STYLE (기존 유지)
+      TEXT SHADOW (복구 + 강화)
   ========================= */
+
+  const textShadow = `
+    0 1px 0 rgba(255,255,255,0.55),
+    0 1px 2px rgba(0,0,0,0.28)
+  `;
 
   const h1Style = {
     background: "linear-gradient(135deg, #9a9a8f, #e3d7d7, #6b665a)",
@@ -56,7 +71,7 @@ export default function RemarkPageRenderer({
     WebkitTextStroke: "0.9px rgba(0,0,0,0.18)",
     textShadow: `
       0 3px 0 rgba(255,255,255,0.65),
-      0 1px 0px rgba(0,0,0,0.98)
+      0 2px 6px rgba(0,0,0,0.35)
     `,
   };
 
@@ -67,7 +82,7 @@ export default function RemarkPageRenderer({
     WebkitTextStroke: "0.6px rgba(0,0,0,0.15)",
     textShadow: `
       0 1px 0 rgba(255,255,255,0.9),
-      0 1px 7px rgba(0,0,0,0.15)
+      0 2px 6px rgba(0,0,0,0.22)
     `,
   };
 
@@ -78,14 +93,10 @@ export default function RemarkPageRenderer({
     WebkitTextStroke: "0.25px rgba(0,0,0,0.12)",
     filter: "brightness(1.15) saturate(1.15)",
     textShadow: `
-      0 1px 0 rgba(255,255,255,0.65),
-      0 1px 5px rgba(0,0,0,0.12)
+      0 1px 0 rgba(255,255,255,0.55),
+      0 2px 5px rgba(0,0,0,0.18)
     `,
   };
-
-  /* =========================
-     LUXURY BOX (그대로 유지)
-  ========================= */
 
   const luxuryWhiteBox = {
     position: "relative" as const,
@@ -113,26 +124,24 @@ export default function RemarkPageRenderer({
 
   const starMarker = {
     color: "#a8842a",
-    marginRight: 10,
-    fontSize: 13,
+    marginRight: 8,
+    fontSize: 12,
     display: "inline-block",
     transform: "translateY(1px)",
-    textShadow: "0 2px 2px rgba(0,0,0,0.5)",
+    textShadow: "0 2px 2px rgba(0,0,0,0.45)",
   };
 
-  const textShadow = "0 1px 2px rgba(0,0,0,0.22)";
-
   /* =========================
-     HEADINGS RENDERER
+      HEADINGS
   ========================= */
 
   const renderHeading = (level: number) => ({ children }: any) => {
-    const sizeMap: any = { 1: 30, 2: 23, 3: 18 };
+    const sizeMap: any = { 1: 28, 2: 22, 3: 18 };
 
     const marginMap: any = {
-      1: "36px 0 18px",
-      2: "28px 0 12px",
-      3: "20px 0 10px",
+      1: "28px 0 14px",
+      2: "20px 0 10px",
+      3: "14px 0 8px",
     };
 
     const styleMap: any = {
@@ -148,25 +157,23 @@ export default function RemarkPageRenderer({
     };
 
     return (
-      <div style={{ margin: marginMap[level], position: "relative" }}>
-        <div style={{ position: "relative", zIndex: 2, padding: "6px 14px" }}>
-          <span
-            className={fontMap[level].className}
-            style={{
-              ...styleMap[level],
-              fontSize: sizeMap[level],
-              fontWeight: level === 1 ? 800 : 700,
-            }}
-          >
-            {children}
-          </span>
-        </div>
+      <div style={{ margin: marginMap[level] }}>
+        <span
+          className={fontMap[level].className}
+          style={{
+            ...styleMap[level],
+            fontSize: sizeMap[level],
+            fontWeight: 800,
+          }}
+        >
+          {children}
+        </span>
       </div>
     );
   };
 
   /* =========================
-     MARKDOWN CONFIG
+      MARKDOWN CONFIG
   ========================= */
 
   const markdownProps = {
@@ -185,12 +192,13 @@ export default function RemarkPageRenderer({
 
       p: ({ children }: any) => (
         <p
-          className={fontBody.className}
           style={{
-            lineHeight: 1.65,
-            margin: "6px 0",
+            fontFamily: baseFontFamily,
+            lineHeight: 1.42,
+            margin: "3px 0",
             color: "#5a3f1a",
             textShadow,
+            fontWeight: 500, // ↑ 강조
           }}
         >
           {children}
@@ -199,11 +207,22 @@ export default function RemarkPageRenderer({
 
       li: ({ children }: any) => (
         <li
-          className={fontBody.className}
-          style={{ display: "flex", margin: "6px 0" }}
+          style={{
+            display: "flex",
+            margin: "3px 0",
+            fontFamily: baseFontFamily,
+            lineHeight: 1.4,
+            fontWeight: 500, // ↑ 리스트도 굵게
+          }}
         >
           <span style={starMarker}>✦</span>
-          <span style={{ color: "#b48f46", textShadow }}>
+          <span
+            style={{
+              color: "#b48f46",
+              textShadow,
+              fontWeight: 500,
+            }}
+          >
             {children}
           </span>
         </li>
@@ -213,9 +232,9 @@ export default function RemarkPageRenderer({
         <div
           style={{
             ...luxuryWhiteBox,
-            margin: "12px 0",
-            marginLeft: 20,
-            padding: "10px 16px",
+            margin: "8px 0",
+            marginLeft: 16,
+            padding: "8px 14px",
           }}
         >
           <ul style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
@@ -228,9 +247,9 @@ export default function RemarkPageRenderer({
         <div
           style={{
             ...luxuryWhiteBox,
-            margin: "12px 0",
-            marginLeft: 20,
-            padding: "10px 16px",
+            margin: "8px 0",
+            marginLeft: 16,
+            padding: "8px 14px",
           }}
         >
           <ol style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
@@ -251,7 +270,6 @@ export default function RemarkPageRenderer({
   return (
     <>
       <KaTeXPostProcessor />
-
       <ReactMarkdown {...markdownProps}>
         {children}
       </ReactMarkdown>

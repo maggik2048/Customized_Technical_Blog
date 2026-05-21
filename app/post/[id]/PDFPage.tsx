@@ -22,7 +22,7 @@ import { visualizationRegistry } from "@/lib/visualizationRegistry";
 
 import NotepageLines from "@/app/components/markdown/NotepageLines";
 
-import RemarkPageRenderer from "@/app/components/Markdown/remarkPageRenderer";
+import MarkdownRendererCoordinator from "@/app/components/Markdown/MarkdownRendererCoordinator";
 
 import CodeBlockWithCopy from "@/app/components/Markdown/CodeBlockWithCopy";
 
@@ -61,6 +61,7 @@ export default function PDFPage({
 
   localTotal,
 }: Props) {
+
   const { mode } = useDarkMode();
 
   const isDark = mode === "dark";
@@ -89,6 +90,12 @@ export default function PDFPage({
 
       category: data?.category,
     }
+  );
+
+  // category 실제값 확인용
+  console.log(
+    "ACTUAL CATEGORY VALUE:",
+    data?.category
   );
 
   // =========================
@@ -191,14 +198,6 @@ export default function PDFPage({
   // RENDERERS
   // =========================
 
-  const MemoRemarkPageRenderer =
-    React.useMemo(
-      () => React.memo(
-        RemarkPageRenderer
-      ),
-      []
-    );
-
   const mdComponents =
     React.useMemo(
       () => markdownComponents,
@@ -237,6 +236,7 @@ export default function PDFPage({
 
   const parsedParts =
     React.useMemo(() => {
+
       const regex =
         /\[([A-Za-z_][A-Za-z0-9_]*)\]/g;
 
@@ -247,6 +247,7 @@ export default function PDFPage({
         data.content.replace(
           /```[\s\S]*?```/g,
           (match: string) => {
+
             codeBlocks.push(match);
 
             return `__CODE_BLOCK_${
@@ -274,10 +275,12 @@ export default function PDFPage({
           part: string,
           i: number
         ) => {
+
           const Component =
             getVizComponent(part);
 
           if (Component) {
+
             return {
               kind: "viz" as const,
 
@@ -306,8 +309,10 @@ export default function PDFPage({
     >
       <div>
         <div style={pageStyle}>
+
           {/* HEADER */}
           <div style={headerWrapperStyle}>
+
             <img
               src={headerImage}
               style={{
@@ -357,6 +362,7 @@ export default function PDFPage({
 
             {/* TITLE */}
             <div style={titleStyle}>
+
               <h1
                 className={
                   cormorant.className
@@ -377,6 +383,7 @@ export default function PDFPage({
               >
                 {data.title}
               </h1>
+
             </div>
           </div>
 
@@ -387,6 +394,7 @@ export default function PDFPage({
                 HEADER_HEIGHT - 36,
             }}
           >
+
             <MetadataPostalCode
               data={data}
               isDark={isDark}
@@ -410,13 +418,17 @@ export default function PDFPage({
                 marginTop: -2,
               }}
             >
+
               <NotepageLines>
+
                 {parsedParts.map(
                   (item) => {
+
                     if (
                       item.kind ===
                       "viz"
                     ) {
+
                       const Component =
                         item.Component;
 
@@ -432,9 +444,10 @@ export default function PDFPage({
                     }
 
                     return (
-                      <MemoRemarkPageRenderer
-                        key={
-                          item.key
+                      <MarkdownRendererCoordinator
+                        key={item.key}
+                        category={
+                          data?.category
                         }
                         markdownComponents={
                           mdComponents
@@ -447,14 +460,14 @@ export default function PDFPage({
                           CodeBlock
                         }
                       >
-                        {
-                          item.content
-                        }
-                      </MemoRemarkPageRenderer>
+                        {item.content}
+                      </MarkdownRendererCoordinator>
                     );
                   }
                 )}
+
               </NotepageLines>
+
             </div>
 
             <div
@@ -462,6 +475,7 @@ export default function PDFPage({
                 clear: "both",
               }}
             />
+
           </div>
         </div>
       </div>
