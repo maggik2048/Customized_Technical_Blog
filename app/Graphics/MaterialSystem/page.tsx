@@ -6,7 +6,7 @@ import HdriOrbitingRenderer
 from './HdriOrbitingRenderer';
 
 import AssetBrowserInterface
-from './assetbrowserinterface';
+from './interfaceUi/assetbrowserinterface';
 
 export default function Page() {
 

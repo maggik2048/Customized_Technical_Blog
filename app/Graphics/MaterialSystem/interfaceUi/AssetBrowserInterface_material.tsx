@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 
-import RegisterMaterialPanel from './RegisterMaterialPanel';
+import RegisterMaterialPanel from '../RegisterMaterialPanel';
 import AssetCard from './AssetCard';
 import { styles } from './assetbrowserinterfaceStyle';
 
