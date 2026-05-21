@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 
 interface Props {
   assetName: string;
@@ -26,41 +27,62 @@ export default function AssetCard({
 }: Props) {
   const cardRef = useRef<HTMLDivElement | null>(null);
 
-  const [hovered, setHovered] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  const [isHoverCard, setIsHoverCard] = useState(false);
+  const [isHoverPanel, setIsHoverPanel] = useState(false);
+
   const [pos, setPos] = useState({ top: 0, left: 0, width: 0 });
 
-  const handleEnter = () => {
-    if (cardRef.current) {
-      const rect = cardRef.current.getBoundingClientRect();
-      setPos({
-        top: rect.top,
-        left: rect.left,
-        width: rect.width,
-      });
-    }
-    setHovered(true);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const visible = isHoverCard || isHoverPanel;
+
+  const updatePosition = () => {
+    if (!cardRef.current) return;
+
+    const rect = cardRef.current.getBoundingClientRect();
+
+    setPos({
+      top: rect.top,
+      left: rect.left,
+      width: rect.width,
+    });
   };
 
-  const handleLeave = () => {
-    setHovered(false);
+  const handleCardEnter = () => {
+    updatePosition();
+    setIsHoverCard(true);
+  };
+
+  const handleCardLeave = () => {
+    // 바로 닫지 않음 (panel hover 체크 때문에)
+    setTimeout(() => {
+      setIsHoverCard(false);
+    }, 80);
   };
 
   const handleExport = (target: string) => {
     console.log(`export ${materialId} to ${target}`);
   };
 
+  const safeTop = pos.top || 0;
+  const safeLeft = pos.left || 0;
+  const safeWidth = pos.width || 0;
+
   return (
     <>
-      {/* WRAPPER: 카드 + hover 영역 전체 포함 */}
+      {/* CARD */}
       <div
-        onMouseEnter={handleEnter}
-        onMouseLeave={handleLeave}
+        onMouseEnter={handleCardEnter}
+        onMouseLeave={handleCardLeave}
         style={{
           position: 'relative',
           display: 'inline-block',
         }}
       >
-        {/* CARD */}
         <div
           ref={cardRef}
           style={{
@@ -73,7 +95,6 @@ export default function AssetCard({
             backdropFilter: 'blur(12px)',
           }}
         >
-          {/* IMAGE */}
           <img
             src={previewUrl}
             alt={assetName}
@@ -81,11 +102,9 @@ export default function AssetCard({
               width: '100%',
               height: '75%',
               objectFit: 'cover',
-              display: 'block',
             }}
           />
 
-          {/* LABEL */}
           <div
             style={{
               position: 'absolute',
@@ -93,7 +112,6 @@ export default function AssetCard({
               left: 0,
               width: '100%',
               padding: 10,
-              boxSizing: 'border-box',
               background: 'rgba(0,0,0,0.35)',
               backdropFilter: 'blur(10px)',
             }}
@@ -102,31 +120,31 @@ export default function AssetCard({
               {assetName}
             </div>
 
-            <div
-              style={{
-                color: 'rgba(255,255,255,0.5)',
-                fontSize: 11,
-                marginTop: 3,
-              }}
-            >
+            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 11 }}>
               {materialId}
             </div>
           </div>
         </div>
+      </div>
 
-        {/* HOVER UI (OUTSIDE CARD BUT STILL INSIDE WRAPPER LOGIC) */}
-        {hovered && (
+      {/* PORTAL */}
+      {mounted &&
+        visible &&
+        typeof window !== 'undefined' &&
+        createPortal(
           <div
+            onMouseEnter={() => setIsHoverPanel(true)}
+            onMouseLeave={() => setIsHoverPanel(false)}
             style={{
               position: 'fixed',
-              top: pos.top,
-              left: pos.left + pos.width - 180,
-              zIndex: 9999,
+              top: safeTop,
+              left: safeLeft + safeWidth - 180,
+              zIndex: 99999,
 
               width: 180,
               padding: 10,
               borderRadius: 12,
-              background: 'rgba(0,0,0,0.55)',
+              background: 'rgba(0,0,0,0.6)',
               backdropFilter: 'blur(12px)',
 
               display: 'flex',
@@ -155,16 +173,14 @@ export default function AssetCard({
                   style={{
                     width: 16,
                     height: 16,
-                    objectFit: 'contain',
-                    flexShrink: 0,
                   }}
                 />
                 <span>{t.name}</span>
               </div>
             ))}
-          </div>
+          </div>,
+          document.body
         )}
-      </div>
     </>
   );
 }
