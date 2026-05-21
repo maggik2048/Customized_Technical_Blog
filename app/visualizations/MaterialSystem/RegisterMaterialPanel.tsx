@@ -15,9 +15,6 @@ export default function RegisterMaterialPanel() {
   const [textures, setTextures] = useState<TextureSet>({});
   const [status, setStatus] = useState<RegisterStatus>('');
 
-  //
-  // 이전 등록 상태 저장
-  //
   const lastRegisteredRef = useRef<TextureSet | null>(null);
 
   //
@@ -31,9 +28,6 @@ export default function RegisterMaterialPanel() {
 
       const name = file.name.toLowerCase();
 
-      //
-      // ALBEDO
-      //
       if (
         name.includes('albedo') ||
         name.includes('basecolor') ||
@@ -44,9 +38,6 @@ export default function RegisterMaterialPanel() {
         parsed.albedo = file;
       }
 
-      //
-      // NORMAL
-      //
       else if (
         name.includes('normal') ||
         name.includes('nor') ||
@@ -55,9 +46,6 @@ export default function RegisterMaterialPanel() {
         parsed.normal = file;
       }
 
-      //
-      // ROUGHNESS
-      //
       else if (
         name.includes('roughness') ||
         name.includes('rough')
@@ -65,9 +53,6 @@ export default function RegisterMaterialPanel() {
         parsed.roughness = file;
       }
 
-      //
-      // AO
-      //
       else if (
         name.includes('ambientocclusion') ||
         name.includes('ao')
@@ -75,9 +60,6 @@ export default function RegisterMaterialPanel() {
         parsed.ao = file;
       }
 
-      //
-      // DISPLACEMENT
-      //
       else if (
         name.includes('displacement') ||
         name.includes('height') ||
@@ -86,9 +68,6 @@ export default function RegisterMaterialPanel() {
         parsed.displacement = file;
       }
 
-      //
-      // METALLIC
-      //
       else if (
         name.includes('metallic') ||
         name.includes('metalness') ||
@@ -104,6 +83,44 @@ export default function RegisterMaterialPanel() {
   };
 
   //
+  // 🔥 STUDIO NAMING FIXED VERSION
+  //
+  const buildStudioFile = (file: File, channelKey: keyof TextureSet): File => {
+
+    const name = file.name;
+
+    const dotIndex = name.lastIndexOf('.');
+    const ext = dotIndex !== -1 ? name.slice(dotIndex) : '';
+    const base = dotIndex !== -1 ? name.slice(0, dotIndex) : name;
+
+    //
+    // ✅ FIX: asset는 첫 "_" 기준
+    //
+    const assetName = base.split('_')[0].toLowerCase();
+
+    //
+    // channel mapping
+    //
+    const channelMap: Record<string, string> = {
+      albedo: 'albedo',
+      normal: 'normal',
+      roughness: 'roughness',
+      ao: 'ao',
+      displacement: 'displacement',
+      metallic: 'metallic',
+    };
+
+    const channel = channelMap[channelKey] || channelKey;
+
+    const finalName = `${assetName}_${channel}${ext}`;
+
+    return new File([file], finalName, {
+      type: file.type,
+      lastModified: file.lastModified,
+    });
+  };
+
+  //
   // UPLOAD
   //
   const uploadMaterial = async (textureData: TextureSet) => {
@@ -111,8 +128,12 @@ export default function RegisterMaterialPanel() {
     const formData = new FormData();
 
     Object.entries(textureData).forEach(([key, file]) => {
+
       if (!file) return;
-      formData.append(key, file);
+
+      const studioFile = buildStudioFile(file, key as keyof TextureSet);
+
+      formData.append(key, studioFile);
     });
 
     try {
@@ -136,9 +157,6 @@ export default function RegisterMaterialPanel() {
   //
   const registerMaterial = async () => {
 
-    //
-    // 최초 등록
-    //
     if (!lastRegisteredRef.current) {
 
       await uploadMaterial(textures);
@@ -150,17 +168,11 @@ export default function RegisterMaterialPanel() {
       return;
     }
 
-    //
-    // 비교 (외부 로직 사용)
-    //
     const changedCount = compareTextureSets(
       lastRegisteredRef.current,
       textures
     );
 
-    //
-    // 완전히 동일
-    //
     if (changedCount === 0) {
 
       setStatus('Material is already registered');
@@ -170,9 +182,6 @@ export default function RegisterMaterialPanel() {
       return;
     }
 
-    //
-    // 모든 채널 변경
-    //
     const totalChannels = Object.keys(textures).length;
 
     if (changedCount === totalChannels) {
@@ -186,9 +195,6 @@ export default function RegisterMaterialPanel() {
       return;
     }
 
-    //
-    // 일부 변경
-    //
     await uploadMaterial(textures);
 
     lastRegisteredRef.current = textures;
@@ -228,15 +234,13 @@ export default function RegisterMaterialPanel() {
         style={{ color: 'white', fontSize: 12 }}
       />
 
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 6,
-          fontSize: 12,
-          color: 'rgba(255,255,255,0.7)',
-        }}
-      >
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 6,
+        fontSize: 12,
+        color: 'rgba(255,255,255,0.7)',
+      }}>
         <div>Albedo: {textures.albedo?.name || '-'}</div>
         <div>Normal: {textures.normal?.name || '-'}</div>
         <div>Roughness: {textures.roughness?.name || '-'}</div>
@@ -245,16 +249,14 @@ export default function RegisterMaterialPanel() {
         <div>Metallic: {textures.metallic?.name || '-'}</div>
       </div>
 
-      <div
-        style={{
-          fontSize: 13,
-          color:
-            status === 'Material is already registered'
-              ? '#ff8080'
-              : '#80ffaa',
-          fontWeight: 600,
-        }}
-      >
+      <div style={{
+        fontSize: 13,
+        color:
+          status === 'Material is already registered'
+            ? '#ff8080'
+            : '#80ffaa',
+        fontWeight: 600,
+      }}>
         {status}
       </div>
 

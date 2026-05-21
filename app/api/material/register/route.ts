@@ -1,152 +1,84 @@
-import { NextRequest }
-from 'next/server';
-
+import { NextRequest } from 'next/server';
 import fs from 'fs';
-
 import path from 'path';
 
-export async function POST(
-  request: NextRequest
-) {
+export async function POST(request: NextRequest) {
 
   try {
 
-    const formData =
-      await request.formData();
+    const formData = await request.formData();
 
     //
     // MATERIAL ID
     //
-
-    const materialId =
-      `material_${Date.now()}`;
+    const materialId = `material_${Date.now()}`;
 
     //
     // TARGET DIRECTORY
     //
-
-    const materialDir =
-      path.join(
-        process.cwd(),
-
-        'public',
-
-        'materials',
-
-        materialId
-      );
-
-    //
-    // CREATE DIRECTORY
-    //
-
-    fs.mkdirSync(
-      materialDir,
-      {
-        recursive: true,
-      }
+    const materialDir = path.join(
+      process.cwd(),
+      'public',
+      'materials',
+      materialId
     );
 
-    //
-    // DESCRIPTOR
-    //
+    fs.mkdirSync(materialDir, { recursive: true });
 
-    const descriptor:
-      Record<string, string>
-        = {};
+    //
+    // DESCRIPTOR (asset 기반 구조)
+    //
+    const descriptor: Record<string, string> = {};
 
     //
     // SAVE FILES
     //
+    for (const [key, value] of formData.entries()) {
 
-    for (
-      const [key, value]
-      of formData.entries()
-    ) {
-
-      if (
-        !(value instanceof File)
-      ) {
+      if (!(value instanceof File)) {
         continue;
       }
 
-      const bytes =
-        await value.arrayBuffer();
-
-      const buffer =
-        Buffer.from(bytes);
+      const bytes = await value.arrayBuffer();
+      const buffer = Buffer.from(bytes);
 
       //
-      // EXTENSION
+      // extension
       //
-
-      const extension =
-        value.name
-          .split('.')
-          .pop();
+      const extension = value.name.split('.').pop();
 
       //
-      // OUTPUT FILENAME
+      //  FIX: 프론트에서 만든 이름 그대로 사용
       //
+      const filename = value.name;
 
-      const filename =
-        `${key}.${extension}`;
+      const filepath = path.join(materialDir, filename);
 
-      //
-      // OUTPUT PATH
-      //
-
-      const filepath =
-        path.join(
-          materialDir,
-          filename
-        );
+      fs.writeFileSync(filepath, buffer);
 
       //
-      // WRITE FILE
+      // descriptor도 asset name 기준으로 저장
       //
+      const assetMatch = filename.match(/^([a-zA-Z0-9]+)/i);
+      const assetName = assetMatch ? assetMatch[1].toLowerCase() : 'asset';
 
-      fs.writeFileSync(
-        filepath,
-        buffer
-      );
-
-      //
-      // DESCRIPTOR ENTRY
-      //
-
-      descriptor[key] =
-        `/materials/${materialId}/${filename}`;
+      descriptor[`${key}`] = `/materials/${materialId}/${filename}`;
+      descriptor[`asset`] = assetName;
     }
 
     //
     // WRITE MATERIAL.JSON
     //
-
     fs.writeFileSync(
-
-      path.join(
-        materialDir,
-        'material.json'
-      ),
-
-      JSON.stringify(
-        descriptor,
-        null,
-        2
-      )
+      path.join(materialDir, 'material.json'),
+      JSON.stringify(descriptor, null, 2)
     );
 
-    console.log(
-      'MATERIAL REGISTERED',
-      materialId
-    );
+    console.log('MATERIAL REGISTERED', materialId);
 
     return Response.json({
       success: true,
-
       materialId,
-
       descriptor,
     });
 
@@ -155,13 +87,8 @@ export async function POST(
     console.error(err);
 
     return Response.json(
-      {
-        success: false,
-      },
-
-      {
-        status: 500,
-      }
+      { success: false },
+      { status: 500 }
     );
   }
 }
