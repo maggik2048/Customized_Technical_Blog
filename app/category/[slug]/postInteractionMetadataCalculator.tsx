@@ -3,29 +3,29 @@
 import dynamic from "next/dynamic";
 
 const SatProjection = dynamic(
-  () => import("@/app/visualizations/SatProjection"),
+  () => import("@/app/Graphics/SatProjection"),
   { ssr: false }
 );
 
 const Torus = dynamic(
-  () => import("@/app/visualizations/TorusWithNormals"),
+  () => import("@/app/Graphics/TorusWithNormals"),
   { ssr: false }
 );
 
 const ModelSlot = dynamic(
-  () => import("@/app/visualizations/ModelSlot"),
+  () => import("@/app/Graphics/ModelSlot"),
   { ssr: false }
 );
 
 const DrawingOverlay = dynamic(
   () =>
-    import("@/app/visualizations/DrawingNotation/DrawingOverlay"),
+    import("@/app/Graphics/DrawingNotation/DrawingOverlay"),
   { ssr: false }
 );
 
 const Lidar = dynamic(
   () =>
-    import("@/app/visualizations/SphericalToCartesianCoordinates"),
+    import("@/app/Graphics/SphericalToCartesianCoordinates"),
   { ssr: false }
 );
 

@@ -1,7 +1,7 @@
 import dynamic from "next/dynamic";
 
 // 🔥 lazy loading
-const Torus = dynamic(() => import("@/app/visualizations/TorusWithNormals"), {
+const Torus = dynamic(() => import("@/app/Graphics/TorusWithNormals"), {
   ssr: false,
 });
 

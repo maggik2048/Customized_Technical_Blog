@@ -4,7 +4,7 @@ import React from "react";
 import { useDarkMode } from "@/app/context/DarkModeContext";
 
 import DarkModeContextButtonRenderer from "@/app/context/DarkModeContextButtonRenderer";
-import DrawingPenButton from "@/app/visualizations/DrawingNotation/DrawingPenButton";
+import DrawingPenButton from "@/app/Graphics/DrawingNotation/DrawingPenButton";
 
 export default function PostEnvironment({
   children,

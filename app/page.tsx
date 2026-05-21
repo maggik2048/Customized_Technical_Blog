@@ -58,7 +58,7 @@ export default function HomePage() {
             );
 
             router.push(
-              "/visualizations/PencilEffect"
+              "/Graphics/PencilEffect"
             );
           }}
           style={{
@@ -86,7 +86,7 @@ export default function HomePage() {
             );
 
             router.push(
-              "/visualizations/MaterialSystem"
+              "/Graphics/MaterialSystem"
             );
           }}
           style={{

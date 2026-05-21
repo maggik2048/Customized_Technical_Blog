@@ -1,10 +1,10 @@
 import dynamic from "next/dynamic";
 
-const SatProjection = dynamic(() => import("@/app/visualizations/SatProjection"), { ssr: false });
-const Torus = dynamic(() => import("@/app/visualizations/TorusWithNormals"), { ssr: false });
-const ModelSlot = dynamic(() => import("@/app/visualizations/ModelSlot"), { ssr: false });
-const DrawingOverlay = dynamic(() => import("@/app/visualizations/DrawingNotation/DrawingOverlay"), { ssr: false });
-const Lidar = dynamic(() => import("@/app/visualizations/SphericalToCartesianCoordinates"), { ssr: false });
+const SatProjection = dynamic(() => import("@/app/Graphics/SatProjection"), { ssr: false });
+const Torus = dynamic(() => import("@/app/Graphics/TorusWithNormals"), { ssr: false });
+const ModelSlot = dynamic(() => import("@/app/Graphics/ModelSlot"), { ssr: false });
+const DrawingOverlay = dynamic(() => import("@/app/Graphics/DrawingNotation/DrawingOverlay"), { ssr: false });
+const Lidar = dynamic(() => import("@/app/Graphics/SphericalToCartesianCoordinates"), { ssr: false });
 
 export const visualizationRegistry: Record<string, any> = {
   SAT: (props: any) => <SatProjection {...props} />,

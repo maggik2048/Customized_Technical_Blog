@@ -2,7 +2,7 @@
 "use client";
 
 import { MDXRemote } from "next-mdx-remote";
-import SatProjection from "@/app/visualizations/SatProjection";
+import SatProjection from "@/app/Graphics/SatProjection";
 
 const components = {
   SatProjection,
