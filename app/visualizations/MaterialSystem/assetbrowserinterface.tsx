@@ -1,18 +1,9 @@
-// AssetBrowserInterface.tsx
-
 'use client';
 
 import { useState } from 'react';
 
-import RegisterMaterialPanel from './RegisterMaterialPanel';
-import AssetCard from './AssetCard';
+import AssetBrowserInterface_material from './AssetBrowserInterface_material';
 import { styles } from './assetbrowserinterfaceStyle';
-
-type AssetItem = {
-  materialId: string;
-  assetName: string;
-  previewUrl: string;
-};
 
 interface Props {
   onDoMapping: (materialId: string) => void;
@@ -21,22 +12,6 @@ interface Props {
 export default function AssetBrowserInterface({
   onDoMapping,
 }: Props) {
-
-  const [assets, setAssets] = useState<AssetItem[]>([]);
-  const [latestMaterialId, setLatestMaterialId] = useState<string | null>(null);
-
-  const refreshAssets = async () => {
-    try {
-      const res = await fetch('/api/material/list');
-      const data = await res.json();
-
-      setAssets(data);
-
-      console.log('ASSETS REFRESHED:', data);
-    } catch (err) {
-      console.error('REFRESH FAILED', err);
-    }
-  };
 
   return (
     <div style={styles.sidebar}>
@@ -52,57 +27,16 @@ export default function AssetBrowserInterface({
         </div>
       </div>
 
-      {/* SEARCH */}
+      {/* SEARCH (UI only for now) */}
       <input
         placeholder="Search Materials..."
         style={styles.searchInput}
       />
 
-      {/* REFRESH */}
-      <button
-        onClick={refreshAssets}
-        style={styles.button}
-      >
-        Refresh Assets
-      </button>
-
-      {/* REGISTER PANEL */}
-      <RegisterMaterialPanel
-        onRegistered={(materialId: string) => {
-          console.log('MATERIAL REGISTERED:', materialId);
-
-          setLatestMaterialId(materialId);
-          refreshAssets();
-        }}
+      {/* MATERIAL FEATURE MODULE */}
+      <AssetBrowserInterface_material
+        onDoMapping={onDoMapping}
       />
-
-      {/* DO MAPPING */}
-      <button
-        onClick={() => {
-          if (!latestMaterialId) {
-            console.warn('NO MATERIAL ID YET');
-            return;
-          }
-
-          onDoMapping(latestMaterialId);
-        }}
-        style={styles.registerButton}
-      >
-        doMapping
-      </button>
-
-      {/* GRID */}
-      <div style={styles.grid}>
-        {assets.map((asset, index) => (
-          <AssetCard
-            key={asset.materialId}
-            assetName={asset.assetName}
-            previewUrl={asset.previewUrl}
-            materialId={asset.materialId}
-            index={index}
-          />
-        ))}
-      </div>
 
     </div>
   );
