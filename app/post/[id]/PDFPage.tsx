@@ -12,8 +12,6 @@ import PostAdminActions from "@/app/admin/PostAdminActions";
 
 import { markdownComponents } from "@/lib/markdownComponents";
 
-import { sciFiMarkdownComponents } from "@/app/components/Markdown/SciFiMarkdownComponents";
-
 import { useDarkMode } from "@/app/context/DarkModeContext";
 
 import { getHeaderImage } from "@/lib/getHeaderImage";
@@ -213,13 +211,6 @@ export default function PDFPage({
   const mdComponents =
     React.useMemo(
       () => markdownComponents,
-      []
-    );
-
-  const sciFiComponents =
-    React.useMemo(
-      () =>
-        sciFiMarkdownComponents,
       []
     );
 
@@ -463,9 +454,6 @@ export default function PDFPage({
                         }
                         markdownComponents={
                           mdComponents
-                        }
-                        sciFiMarkdownComponents={
-                          sciFiComponents
                         }
                         isDark={isDark}
                         CodeBlock={
