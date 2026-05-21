@@ -1,6 +1,6 @@
 import { TextureSet } from './compareTextureSetsbeforeRegister';
 
-export type TextureKey = keyof TextureSet;
+export type TextureKey = keyof TextureSet | 'preview';
 
 type TextureRule = {
   key: TextureKey;
@@ -8,34 +8,51 @@ type TextureRule = {
 };
 
 const textureRules: TextureRule[] = [
-  { key: 'albedo', patterns: [/albedo/i, /base[_\s-]?color/i, /diffuse/i, /color(?!.*mask)/i] },
-  { key: 'normal', patterns: [/normal/i, /nrm/i, /nor/i] },
-  { key: 'roughness', patterns: [/roughness/i, /rough/i] },
-  { key: 'metallic', patterns: [/metallic/i, /metalness/i, /\bmetal\b/i] },
-  { key: 'ao', patterns: [/ambientocclusion/i, /\bao\b/, /occlusion/i] },
-  { key: 'displacement', patterns: [/displacement/i, /height/i, /disp/i] },
-  { key: 'opacity', patterns: [/opacity/i, /\balpha\b/, /transparency/i, /mask/i] },
-  { key: 'emissive', patterns: [/emissive/i, /emission/i, /emit/i, /glow/i] },
-  { key: 'specular', patterns: [/specular/i, /spec/i] },
-  { key: 'glossiness', patterns: [/glossiness/i, /gloss/i] },
-  { key: 'sss', patterns: [/sss/i, /subsurface/i, /subsurf/i] },
-  { key: 'fuzz', patterns: [/fuzz/i] },
-  { key: 'arm', patterns: [/\barm\b/i, /ao.*rough.*metal/i, /packed/i] },
+  { key: 'albedo', patterns: [/albedo/, /basecolor/, /base_color/, /diffuse/, /color(?!.*mask)/] },
+  { key: 'normal', patterns: [/normal/, /nor/, /normalgl/, /nrm/] },
+  { key: 'roughness', patterns: [/roughness/, /rough/] },
+  { key: 'metallic', patterns: [/metallic/, /metalness/, /\bmetal\b/] },
+  { key: 'ao', patterns: [/ambientocclusion/, /\bao\b/, /occlusion/] },
+  { key: 'displacement', patterns: [/displacement/, /height/, /disp/] },
+  { key: 'opacity', patterns: [/opacity/, /\balpha\b/, /transparency/, /mask/] },
+  { key: 'emissive', patterns: [/emissive/, /emission/, /emit/, /glow/] },
+  { key: 'specular', patterns: [/specular/, /spec/] },
+  { key: 'glossiness', patterns: [/glossiness/, /gloss/] },
+  { key: 'sss', patterns: [/sss/, /subsurface/, /subsurf/] },
+  { key: 'fuzz', patterns: [/fuzz/] },
+  { key: 'arm', patterns: [/\barm\b/, /ao.*rough.*metal/, /armap/, /packed/] },
 ];
 
 /**
- * STEP 1: PURE CLASSIFICATION ONLY
+ * preview keyword detection
+ */
+function isExplicitPreview(file: File): boolean {
+  const n = file.name.toLowerCase();
+  return (
+    n.includes('preview') ||
+    n.includes('thumb') ||
+    n.includes('thumbnail')
+  );
+}
+
+/**
+ * MAIN PARSER (ONLY classification, NO fallback logic)
  */
 export function parseTextureFileName(file: File): {
   key: TextureKey | null;
+  isPreview: boolean;
 } {
   const name = file.name.toLowerCase();
 
+  if (isExplicitPreview(file)) {
+    return { key: 'preview', isPreview: true };
+  }
+
   for (const rule of textureRules) {
     if (rule.patterns.some((p) => p.test(name))) {
-      return { key: rule.key };
+      return { key: rule.key, isPreview: false };
     }
   }
 
-  return { key: null };
+  return { key: null, isPreview: false };
 }

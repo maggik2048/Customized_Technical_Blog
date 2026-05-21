@@ -1,0 +1,11 @@
+{
+  "asset": "paintedplaster014",
+  "textures": {
+    "ao": "/materials/material_1779327723903/paintedplaster014_ao.jpg",
+    "albedo": "/materials/material_1779327723903/paintedplaster014_albedo.jpg",
+    "displacement": "/materials/material_1779327723903/paintedplaster014_displacement.jpg",
+    "normal": "/materials/material_1779327723903/paintedplaster014_normal.jpg",
+    "roughness": "/materials/material_1779327723903/paintedplaster014_roughness.jpg"
+  },
+  "preview": "/materials/material_1779327723903/paintedplaster014_preview.png"
+}

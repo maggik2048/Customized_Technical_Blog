@@ -1,0 +1,11 @@
+{
+  "asset": "leaking012c",
+  "textures": {
+    "albedo": "/materials/material_1779327704643/leaking012c_albedo.jpg",
+    "displacement": "/materials/material_1779327704643/leaking012c_displacement.jpg",
+    "metallic": "/materials/material_1779327704643/leaking012c_metallic.jpg",
+    "normal": "/materials/material_1779327704643/leaking012c_normal.jpg",
+    "roughness": "/materials/material_1779327704643/leaking012c_roughness.jpg"
+  },
+  "preview": "/materials/material_1779327704643/leaking012c_preview.png"
+}
