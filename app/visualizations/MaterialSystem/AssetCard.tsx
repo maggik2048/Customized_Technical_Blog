@@ -2,8 +2,17 @@
 
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import AssetCard_HoverUi from './AssetCard_HoverUi';
+import {
+  useState,
+  useRef,
+  useEffect,
+} from 'react';
+
+import { createPortal }
+from 'react-dom';
+
+import AssetCard_HoverUi
+from './AssetCard_HoverUi';
 
 interface Props {
   assetName: string;
@@ -13,20 +22,24 @@ interface Props {
 }
 
 export default function AssetCard({
+
   assetName,
   previewUrl,
   materialId,
+
 }: Props) {
-  const wrapperRef = useRef<HTMLDivElement | null>(null);
 
-  const cardRef = useRef<HTMLDivElement | null>(null);
+  const wrapperRef =
+    useRef<HTMLDivElement | null>(null);
 
-  const dragOffsetRef = useRef({
-    x: 0,
-    y: 0,
-  });
+  const dragOffsetRef =
+    useRef({
+      x: 0,
+      y: 0,
+    });
 
-  const [mounted, setMounted] = useState(false);
+  const [mounted, setMounted] =
+    useState(false);
 
   const [isHoverCard, setIsHoverCard] =
     useState(false);
@@ -37,32 +50,39 @@ export default function AssetCard({
   const [isDragging, setIsDragging] =
     useState(false);
 
-  // detach 상태 추가
-  const [isDetached, setIsDetached] =
-    useState(false);
+  //
+  // BODY DETACHED POSITION
+  //
 
-  const [pos, setPos] = useState({
-    top: 0,
-    left: 0,
-    width: 0,
-  });
+  const [dragPos, setDragPos] =
+    useState({
+      top: 0,
+      left: 0,
+      width: 220,
+    });
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // drag 중 hover UI 숨김
+  //
+  // HOVER UI
+  //
+
   const visible =
     !isDragging &&
     (isHoverCard || isHoverPanel);
 
   const updatePosition = () => {
-    if (!wrapperRef.current) return;
+
+    if (!wrapperRef.current)
+      return;
 
     const rect =
-      wrapperRef.current.getBoundingClientRect();
+      wrapperRef.current
+        .getBoundingClientRect();
 
-    setPos({
+    setDragPos({
       top: rect.top,
       left: rect.left,
       width: rect.width,
@@ -70,61 +90,60 @@ export default function AssetCard({
   };
 
   const handleCardEnter = () => {
+
     updatePosition();
 
     setIsHoverCard(true);
   };
 
   const handleCardLeave = () => {
+
     setTimeout(() => {
       setIsHoverCard(false);
     }, 80);
   };
 
-  const handleExport = (target: string) => {
-    console.log(`export ${materialId} to ${target}`);
+  const handleExport = (
+    target: string
+  ) => {
+
+    console.log(
+      `export ${materialId} to ${target}`
+    );
   };
 
-  // -----------------------------------
+  //
   // DRAG
-  // -----------------------------------
+  //
 
   const handlePointerDown = (
     e: React.PointerEvent<HTMLDivElement>
   ) => {
-    if (!wrapperRef.current) return;
+
+    if (!wrapperRef.current)
+      return;
 
     const rect =
-      wrapperRef.current.getBoundingClientRect();
+      wrapperRef.current
+        .getBoundingClientRect();
 
     dragOffsetRef.current = {
-      x: e.clientX - rect.left,
-      y: e.clientY - rect.top,
+
+      x:
+        e.clientX - rect.left,
+
+      y:
+        e.clientY - rect.top,
     };
 
-    // 핵심
-    // sidebar/layout flow 에서 완전히 분리
-    wrapperRef.current.style.position =
-      'fixed';
+    setDragPos({
 
-    wrapperRef.current.style.left =
-      `${rect.left}px`;
+      top: rect.top,
 
-    wrapperRef.current.style.top =
-      `${rect.top}px`;
+      left: rect.left,
 
-    wrapperRef.current.style.width =
-      `${rect.width}px`;
-
-    wrapperRef.current.style.height =
-      `${rect.height}px`;
-
-    wrapperRef.current.style.zIndex =
-      '999999';
-
-    wrapperRef.current.style.margin = '0';
-
-    setIsDetached(true);
+      width: rect.width,
+    });
 
     setIsDragging(true);
 
@@ -142,21 +161,16 @@ export default function AssetCard({
   const handlePointerMove = (
     e: PointerEvent
   ) => {
-    if (!wrapperRef.current) return;
 
     const nextLeft =
-      e.clientX - dragOffsetRef.current.x;
+      e.clientX -
+      dragOffsetRef.current.x;
 
     const nextTop =
-      e.clientY - dragOffsetRef.current.y;
+      e.clientY -
+      dragOffsetRef.current.y;
 
-    wrapperRef.current.style.left =
-      `${nextLeft}px`;
-
-    wrapperRef.current.style.top =
-      `${nextTop}px`;
-
-    setPos((prev) => ({
+    setDragPos(prev => ({
       ...prev,
       top: nextTop,
       left: nextLeft,
@@ -164,6 +178,7 @@ export default function AssetCard({
   };
 
   const handlePointerUp = () => {
+
     setIsDragging(false);
 
     window.removeEventListener(
@@ -177,134 +192,202 @@ export default function AssetCard({
     );
   };
 
-  return (
-    <>
-      {/* WRAPPER */}
-      <div
-        ref={wrapperRef}
-        onMouseEnter={handleCardEnter}
-        onMouseLeave={handleCardLeave}
+  //
+  // CARD UI
+  //
+
+  const CardContent = (
+
+    <div
+
+      onPointerDown={
+        handlePointerDown
+      }
+
+      onMouseEnter={
+        handleCardEnter
+      }
+
+      onMouseLeave={
+        handleCardLeave
+      }
+
+      style={{
+
+        aspectRatio: '1 / 1',
+
+        borderRadius: 18,
+
+        overflow: 'hidden',
+
+        cursor:
+          isDragging
+            ? 'grabbing'
+            : 'grab',
+
+        background:
+          'rgba(255,255,255,0.06)',
+
+        border:
+          '1px solid rgba(255,255,255,0.08)',
+
+        backdropFilter:
+          'blur(12px)',
+
+        userSelect: 'none',
+
+        touchAction: 'none',
+
+        width: 220,
+
+        boxShadow:
+          isDragging
+            ? '0 30px 80px rgba(0,0,0,0.45)'
+            : '0 8px 24px rgba(0,0,0,0.18)',
+
+        transform:
+          isDragging
+            ? 'scale(1.03)'
+            : 'scale(1)',
+
+        transition:
+          isDragging
+            ? 'none'
+            : 'transform 0.18s ease, box-shadow 0.18s ease',
+      }}
+    >
+
+      <img
+        src={previewUrl}
+        alt={assetName}
+        draggable={false}
         style={{
-          position: isDetached
-            ? 'fixed'
-            : 'relative',
 
-          display: 'inline-block',
+          width: '100%',
+          height: '75%',
 
-          // detach 이후 body 기준 이동
-          top: isDetached ? pos.top : undefined,
+          objectFit: 'cover',
 
-          left: isDetached
-            ? pos.left
-            : undefined,
+          pointerEvents: 'none',
+        }}
+      />
 
-          zIndex: isDetached
-            ? 999999
-            : undefined,
+      <div
+        style={{
+
+          position: 'absolute',
+
+          bottom: 0,
+          left: 0,
+
+          width: '100%',
+
+          padding: 10,
+
+          background:
+            'rgba(0,0,0,0.35)',
+
+          backdropFilter:
+            'blur(10px)',
         }}
       >
-        {/* CARD */}
+
         <div
-          ref={cardRef}
-          onPointerDown={handlePointerDown}
           style={{
-            aspectRatio: '1 / 1',
-
-            borderRadius: 18,
-
-            overflow: 'hidden',
-
-            cursor: isDragging
-              ? 'grabbing'
-              : 'grab',
-
-            background:
-              'rgba(255,255,255,0.06)',
-
-            border:
-              '1px solid rgba(255,255,255,0.08)',
-
-            backdropFilter: 'blur(12px)',
-
-            userSelect: 'none',
-
-            touchAction: 'none',
-
-            width: 220,
-
-            boxShadow: isDragging
-              ? '0 30px 80px rgba(0,0,0,0.45)'
-              : '0 8px 24px rgba(0,0,0,0.18)',
-
-            transform: isDragging
-              ? 'scale(1.03)'
-              : 'scale(1)',
-
-            transition: isDragging
-              ? 'none'
-              : 'transform 0.18s ease, box-shadow 0.18s ease',
+            color: 'white',
+            fontSize: 13,
+            fontWeight: 600,
           }}
         >
-          <img
-            src={previewUrl}
-            alt={assetName}
-            draggable={false}
-            style={{
-              width: '100%',
-              height: '75%',
-              objectFit: 'cover',
+          {assetName}
+        </div>
 
-              pointerEvents: 'none',
-            }}
-          />
+        <div
+          style={{
+            color:
+              'rgba(255,255,255,0.5)',
+            fontSize: 11,
+          }}
+        >
+          {materialId}
+        </div>
+
+      </div>
+
+    </div>
+  );
+
+  //
+  // DRAGGING => BODY PORTAL
+  //
+
+  if (
+    mounted &&
+    isDragging &&
+    typeof window !== 'undefined'
+  ) {
+
+    return (
+      <>
+        {createPortal(
 
           <div
             style={{
-              position: 'absolute',
 
-              bottom: 0,
-              left: 0,
+              position: 'fixed',
 
-              width: '100%',
+              top: dragPos.top,
 
-              padding: 10,
+              left: dragPos.left,
 
-              background:
-                'rgba(0,0,0,0.35)',
+              width: dragPos.width,
 
-              backdropFilter: 'blur(10px)',
+              zIndex: 999999999,
+
+              pointerEvents: 'auto',
             }}
           >
-            <div
-              style={{
-                color: 'white',
-                fontSize: 13,
-                fontWeight: 600,
-              }}
-            >
-              {assetName}
-            </div>
+            {CardContent}
+          </div>,
 
-            <div
-              style={{
-                color:
-                  'rgba(255,255,255,0.5)',
+          document.body
+        )}
 
-                fontSize: 11,
-              }}
-            >
-              {materialId}
-            </div>
-          </div>
-        </div>
+        <AssetCard_HoverUi
+          mounted={mounted}
+          visible={visible}
+          position={dragPos}
+          setIsHoverPanel={
+            setIsHoverPanel
+          }
+          onExport={handleExport}
+        />
+      </>
+    );
+  }
+
+  //
+  // NORMAL GRID MODE
+  //
+
+  return (
+    <>
+      <div
+        ref={wrapperRef}
+        style={{
+          display: 'inline-block',
+        }}
+      >
+        {CardContent}
       </div>
 
-      {/* HOVER UI */}
       <AssetCard_HoverUi
         mounted={mounted}
         visible={visible}
-        position={pos}
-        setIsHoverPanel={setIsHoverPanel}
+        position={dragPos}
+        setIsHoverPanel={
+          setIsHoverPanel
+        }
         onExport={handleExport}
       />
     </>
