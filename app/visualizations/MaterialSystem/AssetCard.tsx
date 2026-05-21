@@ -28,11 +28,18 @@ export default function AssetCard({
 
   const [mounted, setMounted] = useState(false);
 
-  const [isHoverCard, setIsHoverCard] = useState(false);
+  const [isHoverCard, setIsHoverCard] =
+    useState(false);
 
-  const [isHoverPanel, setIsHoverPanel] = useState(false);
+  const [isHoverPanel, setIsHoverPanel] =
+    useState(false);
 
-  const [isDragging, setIsDragging] = useState(false);
+  const [isDragging, setIsDragging] =
+    useState(false);
+
+  // detach 상태 추가
+  const [isDetached, setIsDetached] =
+    useState(false);
 
   const [pos, setPos] = useState({
     top: 0,
@@ -44,7 +51,7 @@ export default function AssetCard({
     setMounted(true);
   }, []);
 
-  // drag 중에는 hover UI 숨김
+  // drag 중 hover UI 숨김
   const visible =
     !isDragging &&
     (isHoverCard || isHoverPanel);
@@ -95,6 +102,30 @@ export default function AssetCard({
       y: e.clientY - rect.top,
     };
 
+    // 핵심
+    // sidebar/layout flow 에서 완전히 분리
+    wrapperRef.current.style.position =
+      'fixed';
+
+    wrapperRef.current.style.left =
+      `${rect.left}px`;
+
+    wrapperRef.current.style.top =
+      `${rect.top}px`;
+
+    wrapperRef.current.style.width =
+      `${rect.width}px`;
+
+    wrapperRef.current.style.height =
+      `${rect.height}px`;
+
+    wrapperRef.current.style.zIndex =
+      '999999';
+
+    wrapperRef.current.style.margin = '0';
+
+    setIsDetached(true);
+
     setIsDragging(true);
 
     window.addEventListener(
@@ -119,13 +150,11 @@ export default function AssetCard({
     const nextTop =
       e.clientY - dragOffsetRef.current.y;
 
-    wrapperRef.current.style.position = 'fixed';
+    wrapperRef.current.style.left =
+      `${nextLeft}px`;
 
-    wrapperRef.current.style.left = `${nextLeft}px`;
-
-    wrapperRef.current.style.top = `${nextTop}px`;
-
-    wrapperRef.current.style.zIndex = '999999';
+    wrapperRef.current.style.top =
+      `${nextTop}px`;
 
     setPos((prev) => ({
       ...prev,
@@ -156,8 +185,22 @@ export default function AssetCard({
         onMouseEnter={handleCardEnter}
         onMouseLeave={handleCardLeave}
         style={{
-          position: 'relative',
+          position: isDetached
+            ? 'fixed'
+            : 'relative',
+
           display: 'inline-block',
+
+          // detach 이후 body 기준 이동
+          top: isDetached ? pos.top : undefined,
+
+          left: isDetached
+            ? pos.left
+            : undefined,
+
+          zIndex: isDetached
+            ? 999999
+            : undefined,
         }}
       >
         {/* CARD */}
