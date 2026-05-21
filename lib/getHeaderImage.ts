@@ -20,7 +20,7 @@ const categoryHeaderMap: Record<string, string> = {
   // ===== CS =====
   network: "/images/headers/network.png",
   ai: "/images/headers/ai.jpg",
-  sqldb: "/images/headers/sqldb.jpg",
+  sqldb: "/images/headers/sqldb.png",
   compiler: "/images/headers/compiler.jpg",
   embed: "/images/headers/embed.jpg",
   discrete: "/images/headers/discrete.jpg",
