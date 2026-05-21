@@ -36,7 +36,18 @@ export default function AssetBrowserInterface_model({
   };
 
   return (
-    <div style={styles.sidebar}>
+    <div
+      style={{
+        ...styles.sidebar,
+
+        //  RIGHT SIDE FIX
+        right: 0,
+        left: 'auto',
+
+        borderLeft: '1px solid rgba(255,255,255,0.08)',
+        borderRight: 'none',
+      }}
+    >
 
       {/* HEADER */}
       <div style={styles.headerWrapper}>
@@ -84,9 +95,7 @@ export default function AssetBrowserInterface_model({
           <div
             key={model.modelId}
             onClick={() => setLatestModelId(model.modelId)}
-            style={{
-              cursor: 'pointer',
-            }}
+            style={{ cursor: 'pointer' }}
           >
             <AssetCard
               assetName={model.modelName}
