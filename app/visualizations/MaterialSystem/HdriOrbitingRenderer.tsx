@@ -1,9 +1,7 @@
 'use client';
 
-import {
-  useEffect,
-  useRef,
-} from 'react';
+import { useEffect, useRef }
+from 'react';
 
 import * as THREE
 from 'three';
@@ -14,25 +12,10 @@ from 'three/examples/jsm/controls/OrbitControls.js';
 import { EXRLoader }
 from 'three/examples/jsm/loaders/EXRLoader.js';
 
-import LoadRegisteredMaterial
-from './LoadRegisteredMaterial';
-
-interface Props {
-
-  shouldDoMapping?: boolean;
-}
-
-export default function HdriOrbitingRenderer({
-  shouldDoMapping,
-}: Props) {
+export default function HdriOrbitingRenderer() {
 
   const containerRef =
     useRef<HTMLDivElement>(null);
-
-  const materialRef =
-    useRef<
-      THREE.MeshStandardMaterial | null
-    >(null);
 
   useEffect(() => {
 
@@ -40,25 +23,22 @@ export default function HdriOrbitingRenderer({
       return;
 
     //
-    // SCENE
+    // Scene
     //
 
     const scene =
       new THREE.Scene();
 
     //
-    // CAMERA
+    // Camera
     //
 
     const camera =
       new THREE.PerspectiveCamera(
         75,
-
         window.innerWidth /
         window.innerHeight,
-
         0.1,
-
         1000
       );
 
@@ -69,12 +49,12 @@ export default function HdriOrbitingRenderer({
     );
 
     //
-    // RENDERER
+    // Renderer
     //
 
     const renderer =
       new THREE.WebGLRenderer({
-        antialias: true,
+        antialias: true
       });
 
     renderer.setSize(
@@ -100,7 +80,7 @@ export default function HdriOrbitingRenderer({
     );
 
     //
-    // CONTROLS
+    // Controls
     //
 
     const controls =
@@ -119,7 +99,7 @@ export default function HdriOrbitingRenderer({
       -0.25;
 
     //
-    // HDRI
+    // EXR HDRI Load
     //
 
     const exrLoader =
@@ -160,61 +140,32 @@ export default function HdriOrbitingRenderer({
     );
 
     //
-    // GEOMETRY
-    //
-
-    const geometry =
-      new THREE.SphereGeometry(
-        1,
-        256,
-        256
-      );
-
-    //
-    // AO NEEDS UV2
-    //
-
-    geometry.setAttribute(
-
-      'uv2',
-
-      new THREE.BufferAttribute(
-        geometry.attributes.uv.array,
-        2
-      )
-    );
-
-    //
-    // MATERIAL
-    //
-
-    const material =
-      new THREE.MeshStandardMaterial({
-
-        color: 0xffffff,
-
-        metalness: 0,
-
-        roughness: 1,
-      });
-
-    materialRef.current =
-      material;
-
-    //
-    // MESH
+    // Test Sphere
     //
 
     const sphere =
       new THREE.Mesh(
-        geometry,
-        material
+
+        new THREE.SphereGeometry(
+          1,
+          64,
+          64
+        ),
+
+        new THREE.MeshStandardMaterial({
+
+          color: 0xffffff,
+
+          metalness: 1,
+
+          roughness: 0
+        })
       );
 
     scene.add(sphere);
 
     //
-    // LIGHT
+    // Light
     //
 
     const light =
@@ -232,7 +183,7 @@ export default function HdriOrbitingRenderer({
     scene.add(light);
 
     //
-    // ANIMATION
+    // Animate
     //
 
     let animationId: number;
@@ -255,7 +206,7 @@ export default function HdriOrbitingRenderer({
     animate();
 
     //
-    // RESIZE
+    // Resize
     //
 
     const onResize = () => {
@@ -278,7 +229,7 @@ export default function HdriOrbitingRenderer({
     );
 
     //
-    // CLEANUP
+    // Cleanup
     //
 
     return () => {
@@ -296,10 +247,6 @@ export default function HdriOrbitingRenderer({
 
       renderer.dispose();
 
-      geometry.dispose();
-
-      material.dispose();
-
       if (
         containerRef.current &&
         renderer.domElement.parentNode
@@ -313,50 +260,15 @@ export default function HdriOrbitingRenderer({
 
   }, []);
 
-  //
-  // APPLY REGISTERED MATERIAL
-  //
-
-  useEffect(() => {
-
-    const applyMaterial =
-      async () => {
-
-        if (
-          shouldDoMapping &&
-          materialRef.current
-        ) {
-
-          //
-          // 네 실제 material folder 이름
-          //
-
-          await LoadRegisteredMaterial(
-
-            materialRef.current,
-
-            'material_1746583021'
-          );
-        }
-      };
-
-    applyMaterial();
-
-  }, [shouldDoMapping]);
-
   return (
 
     <div
       ref={containerRef}
-
       style={{
         width: '100vw',
-
         height: '100vh',
-
         overflow: 'hidden',
-
-        background: 'black',
+        background: 'black'
       }}
     />
 
