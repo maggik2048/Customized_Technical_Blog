@@ -1,12 +1,6 @@
 import { TextureSet } from './compareTextureSetsbeforeRegister';
 
-/**
- * Rule-based texture parser
- * - 확장 가능한 keyword matching system
- * - supports PBR + advanced material workflows
- */
-
-type TextureKey = keyof TextureSet;
+export type TextureKey = keyof TextureSet | 'preview';
 
 type TextureRule = {
   key: TextureKey;
@@ -38,19 +32,19 @@ const textureRules: TextureRule[] = [
     patterns: [/metallic/, /metalness/, /\bmetal\b/],
   },
 
-  // Ambient Occlusion
+  // AO
   {
     key: 'ao',
     patterns: [/ambientocclusion/, /\bao\b/, /occlusion/],
   },
 
-  // Height / Displacement
+  // Displacement
   {
     key: 'displacement',
     patterns: [/displacement/, /height/, /disp/],
   },
 
-  // Opacity / Alpha
+  // Opacity
   {
     key: 'opacity',
     patterns: [/opacity/, /\balpha\b/, /transparency/, /mask/],
@@ -62,31 +56,31 @@ const textureRules: TextureRule[] = [
     patterns: [/emissive/, /emission/, /emit/, /glow/],
   },
 
-  // Specular (legacy / workflows)
+  // Specular
   {
     key: 'specular',
     patterns: [/specular/, /spec/],
   },
 
-  // Glossiness (inverse roughness workflow)
+  // Glossiness
   {
     key: 'glossiness',
     patterns: [/glossiness/, /gloss/],
   },
 
-  // Subsurface Scattering
+  // SSS
   {
     key: 'sss',
     patterns: [/sss/, /subsurface/, /subsurf/],
   },
 
-  // Fuzz (fabric / cloth shading)
+  // Fuzz
   {
     key: 'fuzz',
     patterns: [/fuzz/],
   },
 
-  // ARM packed maps (AoRoughMetal)
+  // ARM packed
   {
     key: 'arm',
     patterns: [/\barm\b/, /ao.*rough.*metal/, /armap/, /packed/],
@@ -94,12 +88,30 @@ const textureRules: TextureRule[] = [
 ];
 
 /**
- * Main parser
+ * preview detection
+ */
+function isPreview(file: File): boolean {
+  const n = file.name.toLowerCase();
+
+  return (
+    n.includes('preview') ||
+    n.includes('previewimage') ||
+    n.includes('thumbnail') ||
+    n.includes('thumb')
+  );
+}
+
+/**
+ * MAIN PARSER
  */
 export function parseTextureFileName(file: File): {
   key: TextureKey | null;
 } {
   const name = file.name.toLowerCase();
+
+  if (isPreview(file)) {
+    return { key: 'preview' };
+  }
 
   for (const rule of textureRules) {
     if (rule.patterns.some((p) => p.test(name))) {

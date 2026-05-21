@@ -16,20 +16,22 @@ type RegisterStatus =
   | 'Material is updated';
 
 export default function RegisterMaterialPanel() {
-  const [textures, setTextures] = useState<TextureSet>({});
+  const [textures, setTextures] = useState<TextureSet & { preview?: File }>({});
   const [status, setStatus] = useState<RegisterStatus>('');
 
-  const lastRegisteredRef = useRef<TextureSet | null>(null);
+  const lastRegisteredRef = useRef<(TextureSet & { preview?: File }) | null>(null);
 
   //
-  // AUTO PARSER (cleaned)
+  // AUTO PARSER (SAFE FIXED)
   //
   const parseTextures = (files: FileList) => {
-    const parsed: TextureSet = {};
+    const parsed: any = {};
 
     Array.from(files).forEach((file) => {
       const { key } = parseTextureFileName(file);
-      if (key) parsed[key] = file;
+      if (!key) return;
+
+      parsed[key] = file;
     });
 
     setTextures(parsed);
@@ -39,10 +41,7 @@ export default function RegisterMaterialPanel() {
   //
   // FILE NAMING FIX
   //
-  const buildStudioFile = (
-    file: File,
-    channelKey: keyof TextureSet
-  ): File => {
+  const buildStudioFile = (file: File, channelKey: string): File => {
     const name = file.name;
 
     const dotIndex = name.lastIndexOf('.');
@@ -62,16 +61,13 @@ export default function RegisterMaterialPanel() {
   //
   // UPLOAD
   //
-  const uploadMaterial = async (textureData: TextureSet) => {
+  const uploadMaterial = async (textureData: any) => {
     const formData = new FormData();
 
     Object.entries(textureData).forEach(([key, file]) => {
       if (!file) return;
 
-      const studioFile = buildStudioFile(
-        file,
-        key as keyof TextureSet
-      );
+      const studioFile = buildStudioFile(file as File, key);
 
       formData.append(key, studioFile);
     });
@@ -90,7 +86,7 @@ export default function RegisterMaterialPanel() {
   };
 
   //
-  // REGISTER
+  // REGISTER LOGIC (UNCHANGED BEHAVIOR)
   //
   const registerMaterial = async () => {
     if (!lastRegisteredRef.current) {
@@ -111,33 +107,36 @@ export default function RegisterMaterialPanel() {
       return;
     }
 
-    const totalChannels = Object.keys(textures).length;
-
-    if (changedCount === totalChannels) {
-      await uploadMaterial(textures);
-
-      lastRegisteredRef.current = textures;
-      setStatus('Material is Newly registered');
-      return;
-    }
-
     await uploadMaterial(textures);
 
     lastRegisteredRef.current = textures;
-    setStatus('Material is updated');
+
+    setStatus(
+      changedCount === Object.keys(textures).length
+        ? 'Material is Newly registered'
+        : 'Material is updated'
+    );
   };
 
   //
-  // UI labels (clean improvement)
+  // UI (EXPANDED SAFE)
   //
-  const textureLabels: (keyof TextureSet)[] = [
+  const textureLabels = [
     'albedo',
     'normal',
     'roughness',
     'ao',
     'displacement',
     'metallic',
-  ];
+    'opacity',
+    'emissive',
+    'specular',
+    'glossiness',
+    'sss',
+    'fuzz',
+    'arm',
+    'preview',
+  ] as const;
 
   return (
     <div
@@ -178,7 +177,7 @@ export default function RegisterMaterialPanel() {
       >
         {textureLabels.map((key) => (
           <div key={key}>
-            {key}: {textures[key]?.name || '-'}
+            {key}: {(textures as any)[key]?.name || '-'}
           </div>
         ))}
       </div>
