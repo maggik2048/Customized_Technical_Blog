@@ -17,12 +17,22 @@ export default function AssetCard({
   previewUrl,
   materialId,
 }: Props) {
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+
   const cardRef = useRef<HTMLDivElement | null>(null);
+
+  const dragOffsetRef = useRef({
+    x: 0,
+    y: 0,
+  });
 
   const [mounted, setMounted] = useState(false);
 
   const [isHoverCard, setIsHoverCard] = useState(false);
+
   const [isHoverPanel, setIsHoverPanel] = useState(false);
+
+  const [isDragging, setIsDragging] = useState(false);
 
   const [pos, setPos] = useState({
     top: 0,
@@ -34,12 +44,16 @@ export default function AssetCard({
     setMounted(true);
   }, []);
 
-  const visible = isHoverCard || isHoverPanel;
+  // drag 중에는 hover UI 숨김
+  const visible =
+    !isDragging &&
+    (isHoverCard || isHoverPanel);
 
   const updatePosition = () => {
-    if (!cardRef.current) return;
+    if (!wrapperRef.current) return;
 
-    const rect = cardRef.current.getBoundingClientRect();
+    const rect =
+      wrapperRef.current.getBoundingClientRect();
 
     setPos({
       top: rect.top,
@@ -50,6 +64,7 @@ export default function AssetCard({
 
   const handleCardEnter = () => {
     updatePosition();
+
     setIsHoverCard(true);
   };
 
@@ -63,10 +78,81 @@ export default function AssetCard({
     console.log(`export ${materialId} to ${target}`);
   };
 
+  // -----------------------------------
+  // DRAG
+  // -----------------------------------
+
+  const handlePointerDown = (
+    e: React.PointerEvent<HTMLDivElement>
+  ) => {
+    if (!wrapperRef.current) return;
+
+    const rect =
+      wrapperRef.current.getBoundingClientRect();
+
+    dragOffsetRef.current = {
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top,
+    };
+
+    setIsDragging(true);
+
+    window.addEventListener(
+      'pointermove',
+      handlePointerMove
+    );
+
+    window.addEventListener(
+      'pointerup',
+      handlePointerUp
+    );
+  };
+
+  const handlePointerMove = (
+    e: PointerEvent
+  ) => {
+    if (!wrapperRef.current) return;
+
+    const nextLeft =
+      e.clientX - dragOffsetRef.current.x;
+
+    const nextTop =
+      e.clientY - dragOffsetRef.current.y;
+
+    wrapperRef.current.style.position = 'fixed';
+
+    wrapperRef.current.style.left = `${nextLeft}px`;
+
+    wrapperRef.current.style.top = `${nextTop}px`;
+
+    wrapperRef.current.style.zIndex = '999999';
+
+    setPos((prev) => ({
+      ...prev,
+      top: nextTop,
+      left: nextLeft,
+    }));
+  };
+
+  const handlePointerUp = () => {
+    setIsDragging(false);
+
+    window.removeEventListener(
+      'pointermove',
+      handlePointerMove
+    );
+
+    window.removeEventListener(
+      'pointerup',
+      handlePointerUp
+    );
+  };
+
   return (
     <>
-      {/* CARD */}
+      {/* WRAPPER */}
       <div
+        ref={wrapperRef}
         onMouseEnter={handleCardEnter}
         onMouseLeave={handleCardLeave}
         style={{
@@ -74,36 +160,75 @@ export default function AssetCard({
           display: 'inline-block',
         }}
       >
+        {/* CARD */}
         <div
           ref={cardRef}
+          onPointerDown={handlePointerDown}
           style={{
             aspectRatio: '1 / 1',
+
             borderRadius: 18,
+
             overflow: 'hidden',
-            cursor: 'pointer',
-            background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(255,255,255,0.08)',
+
+            cursor: isDragging
+              ? 'grabbing'
+              : 'grab',
+
+            background:
+              'rgba(255,255,255,0.06)',
+
+            border:
+              '1px solid rgba(255,255,255,0.08)',
+
             backdropFilter: 'blur(12px)',
+
+            userSelect: 'none',
+
+            touchAction: 'none',
+
+            width: 220,
+
+            boxShadow: isDragging
+              ? '0 30px 80px rgba(0,0,0,0.45)'
+              : '0 8px 24px rgba(0,0,0,0.18)',
+
+            transform: isDragging
+              ? 'scale(1.03)'
+              : 'scale(1)',
+
+            transition: isDragging
+              ? 'none'
+              : 'transform 0.18s ease, box-shadow 0.18s ease',
           }}
         >
           <img
             src={previewUrl}
             alt={assetName}
+            draggable={false}
             style={{
               width: '100%',
               height: '75%',
               objectFit: 'cover',
+
+              pointerEvents: 'none',
             }}
           />
 
           <div
             style={{
               position: 'absolute',
+
               bottom: 0,
               left: 0,
+
               width: '100%',
+
               padding: 10,
-              background: 'rgba(0,0,0,0.35)',
+
+              background:
+                'rgba(0,0,0,0.35)',
+
               backdropFilter: 'blur(10px)',
             }}
           >
@@ -119,7 +244,9 @@ export default function AssetCard({
 
             <div
               style={{
-                color: 'rgba(255,255,255,0.5)',
+                color:
+                  'rgba(255,255,255,0.5)',
+
                 fontSize: 11,
               }}
             >
@@ -129,6 +256,7 @@ export default function AssetCard({
         </div>
       </div>
 
+      {/* HOVER UI */}
       <AssetCard_HoverUi
         mounted={mounted}
         visible={visible}
