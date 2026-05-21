@@ -44,6 +44,19 @@ type Props = {
   localTotal?: number;
 };
 
+/* =========================
+   MEMOIZED COORDINATOR
+========================= */
+
+const MemoMarkdownRendererCoordinator =
+  React.memo(
+    MarkdownRendererCoordinator
+  );
+
+/* =========================
+   FONT
+========================= */
+
 const cormorant = Cormorant_SC({
   subsets: ["latin"],
 
@@ -92,7 +105,6 @@ export default function PDFPage({
     }
   );
 
-  // category 실제값 확인용
   console.log(
     "ACTUAL CATEGORY VALUE:",
     data?.category
@@ -444,7 +456,7 @@ export default function PDFPage({
                     }
 
                     return (
-                      <MarkdownRendererCoordinator
+                      <MemoMarkdownRendererCoordinator
                         key={item.key}
                         category={
                           data?.category
@@ -461,7 +473,7 @@ export default function PDFPage({
                         }
                       >
                         {item.content}
-                      </MarkdownRendererCoordinator>
+                      </MemoMarkdownRendererCoordinator>
                     );
                   }
                 )}

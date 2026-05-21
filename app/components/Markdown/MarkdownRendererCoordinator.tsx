@@ -80,19 +80,30 @@ function shouldUseNoteRenderer(
     return false;
   }
 
-  const normalized =
-    category.trim();
-
   return NOTE_STYLE_CATEGORIES.includes(
-    normalized
+    category.trim()
   );
 }
+
+/* =========================
+   MEMOIZED RENDERERS
+========================= */
+
+const MemoRemarkPageRenderer =
+  React.memo(
+    RemarkPageRenderer
+  );
+
+const MemoNotePageRenderer =
+  React.memo(
+    NotePageRenderer
+  );
 
 /* =========================
    COMPONENT
 ========================= */
 
-export default function MarkdownRendererCoordinator({
+function MarkdownRendererCoordinatorComponent({
   category,
 
   children,
@@ -107,8 +118,12 @@ export default function MarkdownRendererCoordinator({
 }: Props) {
 
   const useNoteRenderer =
-    shouldUseNoteRenderer(
-      category
+    React.useMemo(
+      () =>
+        shouldUseNoteRenderer(
+          category
+        ),
+      [category]
     );
 
   // =========================
@@ -130,13 +145,13 @@ export default function MarkdownRendererCoordinator({
   );
 
   // =========================
-  // NOTE RENDERER
+  // NOTE
   // =========================
 
   if (useNoteRenderer) {
 
     return (
-      <NotePageRenderer
+      <MemoNotePageRenderer
         markdownComponents={
           markdownComponents
         }
@@ -147,16 +162,16 @@ export default function MarkdownRendererCoordinator({
         CodeBlock={CodeBlock}
       >
         {children}
-      </NotePageRenderer>
+      </MemoNotePageRenderer>
     );
   }
 
   // =========================
-  // DEFAULT RENDERER
+  // DEFAULT
   // =========================
 
   return (
-    <RemarkPageRenderer
+    <MemoRemarkPageRenderer
       markdownComponents={
         markdownComponents
       }
@@ -167,6 +182,17 @@ export default function MarkdownRendererCoordinator({
       CodeBlock={CodeBlock}
     >
       {children}
-    </RemarkPageRenderer>
+    </MemoRemarkPageRenderer>
   );
 }
+
+/* =========================
+   EXPORT MEMOIZED
+========================= */
+
+const MarkdownRendererCoordinator =
+  React.memo(
+    MarkdownRendererCoordinatorComponent
+  );
+
+export default MarkdownRendererCoordinator;
