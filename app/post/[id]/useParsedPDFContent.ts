@@ -17,42 +17,137 @@ export function useParsedPDFContent(
   getVizComponent: (key: string) => any
 ) {
   return React.useMemo<ParsedPart[]>(() => {
-    const regex = /\[([A-Za-z_][A-Za-z0-9_]*)\]/g;
+
+    /* =========================
+       PROTECT CODE BLOCKS
+    ========================= */
 
     const codeBlocks: string[] = [];
 
     const protectedContent = content.replace(
       /```[\s\S]*?```/g,
       (match: string) => {
+        const id = codeBlocks.length;
+
         codeBlocks.push(match);
-        return `__CODE_BLOCK_${codeBlocks.length - 1}__`;
+
+        return `__CODE_BLOCK_${id}__`;
       }
     );
 
-    const parts = protectedContent.split(regex);
+    /* =========================
+       VIZ TOKEN
+       [[VIZ:Graph]]
+    ========================= */
 
-    const restore = (text: string) =>
+    const regex =
+      /\[\[VIZ:([A-Za-z_][A-Za-z0-9_]*)\]\]/g;
+
+    const restoreCodeBlocks = (
+      text: string
+    ) =>
       text.replace(
         /__CODE_BLOCK_(\d+)__/g,
-        (_, i) => codeBlocks[Number(i)]
+        (_, i) =>
+          codeBlocks[Number(i)] || ""
       );
 
-    return parts.map((part, i) => {
-      const Component = getVizComponent(part);
+    const result: ParsedPart[] = [];
 
-      if (Component) {
-        return {
-          kind: "viz",
-          Component,
-          key: i,
-        };
+    let lastIndex = 0;
+
+    /* =========================
+       PARSE
+    ========================= */
+
+    for (const match of protectedContent.matchAll(
+      regex
+    )) {
+      const fullMatch = match[0];
+
+      const vizName = match[1];
+
+      const index =
+        match.index ?? 0;
+
+      /* =========================
+         MARKDOWN BEFORE TOKEN
+      ========================= */
+
+      const before =
+        protectedContent.slice(
+          lastIndex,
+          index
+        );
+
+      if (before.trim()) {
+        result.push({
+          kind: "md",
+
+          content:
+            restoreCodeBlocks(before),
+
+          key: result.length,
+        });
       }
 
-      return {
+      /* =========================
+         VIZ COMPONENT
+      ========================= */
+
+      const Component =
+        getVizComponent(vizName);
+
+      if (Component) {
+        result.push({
+          kind: "viz",
+
+          Component,
+
+          key: result.length,
+        });
+      } else {
+
+        // fallback:
+        // keep raw token if component missing
+
+        result.push({
+          kind: "md",
+
+          content:
+            restoreCodeBlocks(
+              fullMatch
+            ),
+
+          key: result.length,
+        });
+      }
+
+      lastIndex =
+        index + fullMatch.length;
+    }
+
+    /* =========================
+       REMAINING MARKDOWN
+    ========================= */
+
+    const remain =
+      protectedContent.slice(
+        lastIndex
+      );
+
+    if (remain.trim()) {
+      result.push({
         kind: "md",
-        content: restore(part),
-        key: i,
-      };
-    });
+
+        content:
+          restoreCodeBlocks(remain),
+
+        key: result.length,
+      });
+    }
+
+    return result;
+
   }, [content, getVizComponent]);
 }
