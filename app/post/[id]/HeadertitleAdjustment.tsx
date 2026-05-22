@@ -36,10 +36,13 @@ export default function HeadertitleAdjustment({ title, children }: Props) {
 
     // interpolation progressive à partir de 30
     const ratio = (len - 30) / (60 - 30);
-    const fontSize = Math.round(maxSize - ratio * (maxSize - minSize));
+    let fontSize = maxSize - ratio * (maxSize - minSize);
+
+    //  핵심 수정: 너무 작아지는 것만 살짝 방지
+    fontSize = Math.max(30, fontSize);
 
     return {
-      fontSize,
+      fontSize: Math.round(fontSize),
       lineHeight: 1.12,
       letterSpacing: "0.02em",
       textShadow: "0 3px 18px rgba(0,0,0,0.5)",
