@@ -17,6 +17,8 @@ import CodeBlockThemeCoordinator from "@/app/components/Markdown/CodeBlockThemeC
 import MetadataPostalCode from "@/app/components/papers/MetadataPostalCode";
 
 import PDFPageHeader from "./PDFPageHeader";
+import GotoTheTop from "./GotoTheTop";
+
 import { useParsedPDFContent } from "./useParsedPDFContent";
 
 type Props = {
@@ -40,9 +42,11 @@ export default function PDFPage({
   localTotal,
 }: Props) {
   const { mode } = useDarkMode();
+
   const isDark = mode === "dark";
 
   const headerImage = getHeaderImage(data);
+
   const textColor = isDark ? "#eee" : "#111";
 
   const HEADER_HEIGHT = 560;
@@ -58,15 +62,23 @@ export default function PDFPage({
   const pageStyle = React.useMemo(
     () => ({
       width: 860,
+
       margin: "40px auto",
+
       position: "relative" as const,
+
       background: isDark
         ? "rgba(60,60,60,0.6)"
         : "rgba(255,255,255,0.72)",
+
       paddingLeft: 64,
+
       paddingRight: 64,
+
       borderRadius: 12,
+
       overflow: "hidden" as const,
+
       boxShadow: isDark
         ? "0 8px 30px rgba(0,0,0,0.6)"
         : "0 8px 30px rgba(0,0,0,0.15)",
@@ -74,7 +86,10 @@ export default function PDFPage({
     [isDark]
   );
 
-  const mdComponents = React.useMemo(() => markdownComponents, []);
+  const mdComponents = React.useMemo(
+    () => markdownComponents,
+    []
+  );
 
   const CodeBlock = React.useMemo(
     () => CodeBlockThemeCoordinator,
@@ -87,8 +102,9 @@ export default function PDFPage({
   );
 
   // =========================
-  // 🔥 extracted logic (핵심)
+  //  extracted logic (핵심)
   // =========================
+
   const parsedParts = useParsedPDFContent(
     data.content,
     getVizComponent
@@ -123,8 +139,11 @@ export default function PDFPage({
             <div
               style={{
                 float: "left",
+
                 width: 165,
+
                 height: 110,
+
                 pointerEvents: "none",
               }}
             />
@@ -158,6 +177,9 @@ export default function PDFPage({
             </div>
 
             <div style={{ clear: "both" }} />
+
+            {/* GO TO TOP */}
+            <GotoTheTop isDark={isDark} />
           </div>
         </div>
       </div>
