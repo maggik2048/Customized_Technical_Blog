@@ -20,13 +20,11 @@ export default function MarkdownImageManager({
   const editorRef = React.useRef<HTMLTextAreaElement>(null);
   const previewRef = React.useRef<HTMLDivElement>(null);
 
-  /* ================= IMAGE BUTTON ================= */
+  /* ================= IMAGE ================= */
 
   const handleInsertImage = () => {
     fileInputRef.current?.click();
   };
-
-  /* ================= FILE UPLOAD ================= */
 
   const handleFileChange = async (
     e: React.ChangeEvent<HTMLInputElement>
@@ -40,7 +38,7 @@ export default function MarkdownImageManager({
     setContent((prev) => prev + `\n![](${url})\n`);
   };
 
-  /* ================= PASTE HANDLING ================= */
+  /* ================= PASTE ================= */
 
   const handlePaste = async (
     e: React.ClipboardEvent<HTMLTextAreaElement>
@@ -118,7 +116,7 @@ export default function MarkdownImageManager({
       (preview.scrollHeight - preview.clientHeight);
   };
 
-  /* ================= AUTO IMAGE URL ================= */
+  /* ================= AUTO IMAGE ================= */
 
   const renderContent = content.replace(
     /^(https?:\/\/.*\.(png|jpg|jpeg|gif|webp|bmp|svg))$/gm,
@@ -126,24 +124,15 @@ export default function MarkdownImageManager({
   );
 
   return (
-    <div>
-      {/* IMAGE BUTTON */}
-      <div style={{ marginBottom: 10 }}>
-        <button type="button" onClick={handleInsertImage}>
-          Insert Image
-        </button>
-
-        <input
-          type="file"
-          hidden
-          ref={fileInputRef}
-          onChange={handleFileChange}
-        />
-      </div>
-
-      {/* EDITOR + PREVIEW */}
-      <div style={{ display: "flex", gap: 20 }}>
-        {/* EDITOR */}
+    <div
+      style={{
+        display: "flex",
+        width: "100vw",
+        height: "100vh",
+      }}
+    >
+      {/* EDITOR */}
+      <div style={{ width: "50%", height: "100%" }}>
         <textarea
           ref={editorRef}
           value={content}
@@ -151,21 +140,33 @@ export default function MarkdownImageManager({
           onPaste={handlePaste}
           onScroll={handleScrollSync}
           style={{
-            width: "50%",
-            height: 400,
-            padding: 10,
+            width: "100%",
+            height: "100%",
+            padding: 20,
             fontFamily: "monospace",
+            fontSize: 14,
+            border: "none",
+            outline: "none",
+            resize: "none",
             overflow: "auto",
           }}
-          placeholder="Ctrl + V 로 이미지 붙여넣기 가능"
-        />
-
-        {/* PREVIEW */}
-        <MarkdownPreview
-          content={renderContent}
-          previewRef={previewRef}
+          placeholder="Ctrl + V로 이미지 붙여넣기 가능"
         />
       </div>
+
+      {/* PREVIEW */}
+      <MarkdownPreview
+        content={renderContent}
+        previewRef={previewRef}
+      />
+
+      {/* IMAGE INPUT */}
+      <input
+        type="file"
+        hidden
+        ref={fileInputRef}
+        onChange={handleFileChange}
+      />
     </div>
   );
 }

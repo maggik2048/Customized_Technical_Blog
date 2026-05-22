@@ -32,12 +32,11 @@ export default function MarkdownPreview({
       ref={previewRef}
       style={{
         width: "50%",
-        height: 400,
+        height: "100%",
         overflow: "auto",
-        padding: 10,
+        padding: 20,
         background: "#111",
         color: "#fff",
-        borderRadius: 8,
       }}
     >
       <ReactMarkdown
@@ -81,7 +80,7 @@ export default function MarkdownPreview({
                 alt={alt}
                 style={{
                   maxWidth: "100%",
-                  maxHeight: 300,
+                  maxHeight: 400,
                   display: "block",
                   margin: "10px 0",
                   borderRadius: 6,
