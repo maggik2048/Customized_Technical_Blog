@@ -1,12 +1,11 @@
 "use client";
 
 import React from "react";
-
 import { Cormorant_SC } from "next/font/google";
 
 import PostAdminActions from "@/app/admin/PostAdminActions";
-
 import PDFPageIndexPanel from "./PDFPageIndexPanel";
+import HeadertitleAdjustment from "./HeadertitleAdjustment";
 
 const cormorant = Cormorant_SC({
   subsets: ["latin"],
@@ -15,17 +14,11 @@ const cormorant = Cormorant_SC({
 
 type Props = {
   data: any;
-
   isDark: boolean;
-
   headerImage: string;
-
   globalIndex?: number;
-
   localIndex?: number;
-
   localTotal?: number;
-
   headerHeight?: number;
 };
 
@@ -41,9 +34,7 @@ export default function PDFPageHeader({
   const headerOverlayStyle = React.useMemo(
     () => ({
       position: "absolute" as const,
-
       inset: 0,
-
       background: isDark
         ? `
           linear-gradient(
@@ -72,30 +63,21 @@ export default function PDFPageHeader({
   const headerWrapperStyle = React.useMemo(
     () => ({
       position: "absolute" as const,
-
       top: 0,
-
       left: 0,
-
       width: "100%",
-
       height: headerHeight,
-
       overflow: "hidden" as const,
     }),
     [headerHeight]
   );
 
-  const titleStyle = React.useMemo(
+  const titleContainerStyle = React.useMemo(
     () => ({
       position: "absolute" as const,
-
       bottom: 38,
-
       left: 48,
-
       right: 48,
-
       color: "#fff",
     }),
     []
@@ -107,13 +89,9 @@ export default function PDFPageHeader({
         src={headerImage}
         style={{
           width: "100%",
-
           height: "100%",
-
           objectFit: "cover",
-
           objectPosition: "center center",
-
           transform: "scale(1.02)",
         }}
       />
@@ -121,19 +99,11 @@ export default function PDFPageHeader({
       <div style={headerOverlayStyle} />
 
       {/* ADMIN */}
-      <div
-        style={{
-          position: "absolute",
-
-          top: 16,
-
-          right: 40,
-        }}
-      >
+      <div style={{ position: "absolute", top: 16, right: 40 }}>
         <PostAdminActions postId={data.id} />
       </div>
 
-      {/* INDEX PANEL */}
+      {/* INDEX */}
       <PDFPageIndexPanel
         globalIndex={globalIndex}
         localIndex={localIndex}
@@ -142,24 +112,17 @@ export default function PDFPageHeader({
       />
 
       {/* TITLE */}
-      <div style={titleStyle}>
-        <h1
-          className={cormorant.className}
-          style={{
-            fontSize: 42,
-
-            margin: 0,
-
-            lineHeight: 1.08,
-
-            letterSpacing: "0.02em",
-
-            textShadow:
-              "0 3px 18px rgba(0,0,0,0.5)",
-          }}
-        >
-          {data.title}
-        </h1>
+      <div style={titleContainerStyle}>
+        <HeadertitleAdjustment title={data.title}>
+          {(style) => (
+            <h1
+              className={cormorant.className}
+              style={style}
+            >
+              {data.title}
+            </h1>
+          )}
+        </HeadertitleAdjustment>
       </div>
     </div>
   );
