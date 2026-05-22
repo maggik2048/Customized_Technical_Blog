@@ -1,21 +1,76 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 type Props = {
-  scrollStep?: number;
-  smooth?: boolean;
+  scrollSpeed?: number;
 };
 
 export default function ScrollWithKeyboardArrow({
-  scrollStep = 140,
-  smooth = true,
+  scrollSpeed = 12,
 }: Props) {
+  const pressedKeys = useRef<
+    Set<string>
+  >(new Set());
+
+  const animationFrame =
+    useRef<number | null>(null);
+
   useEffect(() => {
+    const getContainer = () =>
+      document.getElementById(
+        "viewport-scroll-container"
+      );
+
+    // =========================
+    // LOOP
+    // =========================
+
+    const loop = () => {
+      const container =
+        getContainer();
+
+      if (!container) {
+        animationFrame.current =
+          requestAnimationFrame(loop);
+
+        return;
+      }
+
+      let delta = 0;
+
+      // continuous movement
+      if (
+        pressedKeys.current.has(
+          "ArrowUp"
+        )
+      ) {
+        delta -= scrollSpeed;
+      }
+
+      if (
+        pressedKeys.current.has(
+          "ArrowDown"
+        )
+      ) {
+        delta += scrollSpeed;
+      }
+
+      if (delta !== 0) {
+        container.scrollTop += delta;
+      }
+
+      animationFrame.current =
+        requestAnimationFrame(loop);
+    };
+
+    // =========================
+    // KEY DOWN
+    // =========================
+
     const handleKeyDown = (
       e: KeyboardEvent
     ) => {
-      // INPUT / TEXTAREA 등에서는 무시
       const target =
         e.target as HTMLElement | null;
 
@@ -29,59 +84,40 @@ export default function ScrollWithKeyboardArrow({
 
       if (isTyping) return;
 
-      // scroll container
       const container =
-        document.getElementById(
-          "viewport-scroll-container"
-        );
+        getContainer();
 
       if (!container) return;
 
-      // =========================
-      // UP
-      // =========================
-
-      if (e.key === "ArrowUp") {
+      // prevent browser scroll
+      if (
+        [
+          "ArrowUp",
+          "ArrowDown",
+          "PageUp",
+          "PageDown",
+          "Home",
+          "End",
+        ].includes(e.key)
+      ) {
         e.preventDefault();
-
-        container.scrollBy({
-          top: -scrollStep,
-          behavior: smooth
-            ? "smooth"
-            : "auto",
-        });
       }
 
-      // =========================
-      // DOWN
-      // =========================
-
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-
-        container.scrollBy({
-          top: scrollStep,
-          behavior: smooth
-            ? "smooth"
-            : "auto",
-        });
-      }
+      // hold support
+      pressedKeys.current.add(
+        e.key
+      );
 
       // =========================
       // PAGE UP
       // =========================
 
       if (e.key === "PageUp") {
-        e.preventDefault();
-
         container.scrollBy({
           top:
             -window.innerHeight *
             0.82,
-
-          behavior: smooth
-            ? "smooth"
-            : "auto",
+          behavior: "smooth",
         });
       }
 
@@ -90,16 +126,11 @@ export default function ScrollWithKeyboardArrow({
       // =========================
 
       if (e.key === "PageDown") {
-        e.preventDefault();
-
         container.scrollBy({
           top:
             window.innerHeight *
             0.82,
-
-          behavior: smooth
-            ? "smooth"
-            : "auto",
+          behavior: "smooth",
         });
       }
 
@@ -108,13 +139,9 @@ export default function ScrollWithKeyboardArrow({
       // =========================
 
       if (e.key === "Home") {
-        e.preventDefault();
-
         container.scrollTo({
           top: 0,
-          behavior: smooth
-            ? "smooth"
-            : "auto",
+          behavior: "smooth",
         });
       }
 
@@ -123,18 +150,40 @@ export default function ScrollWithKeyboardArrow({
       // =========================
 
       if (e.key === "End") {
-        e.preventDefault();
-
         container.scrollTo({
           top:
             container.scrollHeight,
-
-          behavior: smooth
-            ? "smooth"
-            : "auto",
+          behavior: "smooth",
         });
       }
     };
+
+    // =========================
+    // KEY UP
+    // =========================
+
+    const handleKeyUp = (
+      e: KeyboardEvent
+    ) => {
+      pressedKeys.current.delete(
+        e.key
+      );
+    };
+
+    // =========================
+    // WINDOW BLUR
+    // =========================
+
+    const clearKeys = () => {
+      pressedKeys.current.clear();
+    };
+
+    // =========================
+    // START LOOP
+    // =========================
+
+    animationFrame.current =
+      requestAnimationFrame(loop);
 
     window.addEventListener(
       "keydown",
@@ -144,13 +193,41 @@ export default function ScrollWithKeyboardArrow({
       }
     );
 
+    window.addEventListener(
+      "keyup",
+      handleKeyUp
+    );
+
+    window.addEventListener(
+      "blur",
+      clearKeys
+    );
+
     return () => {
+      if (
+        animationFrame.current
+      ) {
+        cancelAnimationFrame(
+          animationFrame.current
+        );
+      }
+
       window.removeEventListener(
         "keydown",
         handleKeyDown
       );
+
+      window.removeEventListener(
+        "keyup",
+        handleKeyUp
+      );
+
+      window.removeEventListener(
+        "blur",
+        clearKeys
+      );
     };
-  }, [scrollStep, smooth]);
+  }, [scrollSpeed]);
 
   return null;
 }
