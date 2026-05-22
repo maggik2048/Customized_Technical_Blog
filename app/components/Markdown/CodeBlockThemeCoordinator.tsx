@@ -4,7 +4,7 @@ import React from "react";
 
 import { useDarkMode } from "@/app/context/DarkModeContext";
 
-import CodeBlockWithCopy from "./CodeBlockWithCopy";
+import CodeBlockWithCopy from "./CodeBlock_black";
 
 import CodeBlock_white from "./CodeBlock_white";
 

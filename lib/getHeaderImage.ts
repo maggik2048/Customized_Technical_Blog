@@ -29,7 +29,7 @@ const categoryHeaderMap: Record<string, string> = {
   systems: "/images/headers/systems.jpg",
   dsa: "/images/headers/dsa.jpg",
   cpp: "/images/headers/cpp.jpg",
-  se: "/images/headers/se.jpg",
+  se: "/images/headers/se5.png",
   security: "/images/headers/security.jpg",
   mt_concurrency: "/images/headers/concurrency.jpg",
   graphics_pipeline: "/images/headers/graphics_pipeline.jpg",
@@ -41,14 +41,14 @@ const categoryHeaderMap: Record<string, string> = {
 };
 
 export function getHeaderImage(post: Post): string {
-  // 1️⃣ post 직접 지정
+  // 1️ post 직접 지정!
   if (post.header_image) return post.header_image;
 
-  // 2️⃣ category 기반
+  // 2️ category 기반
   if (post.category && categoryHeaderMap[post.category]) {
     return categoryHeaderMap[post.category];
   }
 
-  // 3️⃣ fallback
+  // 3️ fallback
   return categoryHeaderMap.default;
 }
