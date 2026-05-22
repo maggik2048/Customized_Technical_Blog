@@ -18,6 +18,7 @@ import MetadataPostalCode from "@/app/components/papers/MetadataPostalCode";
 
 import PDFPageHeader from "./PDFPageHeader";
 import GotoTheTop from "./GotoTheTop";
+import ScrollWithKeyboardArrow from "./ScrollWithKeyboardArrow";
 
 import { useParsedPDFContent } from "./useParsedPDFContent";
 
@@ -102,7 +103,7 @@ export default function PDFPage({
   );
 
   // =========================
-  //  extracted logic (핵심)
+  // extracted logic
   // =========================
 
   const parsedParts = useParsedPDFContent(
@@ -112,6 +113,9 @@ export default function PDFPage({
 
   return (
     <motion.div style={{ color: textColor }}>
+      {/* KEYBOARD SCROLL */}
+      <ScrollWithKeyboardArrow />
+
       <div>
         <div style={pageStyle}>
           {/* HEADER */}
