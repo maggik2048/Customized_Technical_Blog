@@ -9,10 +9,15 @@ import MarkdownImageManager from "@/app/components/Markdown/MarkdownManager";
 
 type Props = {
   mode: "create" | "edit";
-  postId?: string; //  UUID
+  postId?: string;
+  defaultCategory?: string;
 };
 
-export default function PostForm({ mode, postId }: Props) {
+export default function PostForm({
+  mode,
+  postId,
+  defaultCategory,
+}: Props) {
   const router = useRouter();
 
   const [menu, setMenu] = useState<Item[]>([]);
@@ -20,40 +25,55 @@ export default function PostForm({ mode, postId }: Props) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
-  // 메뉴 로드
+  // 1. 메뉴만 로드 (절대 category 세팅하지 않음)
   useEffect(() => {
     const loadMenu = async () => {
       const data = await getMenu();
       setMenu(data);
-
-      const first = data[0]?.children?.[0]?.href?.split("/").pop() || "";
-      setCategory(first);
     };
 
     loadMenu();
   }, []);
 
-  //  기존 글 불러오기 (UUID)
+  // 2. category 초기화 로직 (단일 책임)
+  useEffect(() => {
+    if (!menu.length) return;
+
+    // EDIT 모드 → DB 값이 우선 (아래 fetchPost에서 처리됨)
+    if (mode === "create") {
+      if (defaultCategory) {
+        setCategory(defaultCategory);
+        return;
+      }
+
+      const fallback =
+        menu[0]?.children?.[0]?.slug || "";
+
+      setCategory(fallback);
+    }
+  }, [menu, defaultCategory, mode]);
+
+  // 3. edit 데이터 로드
   useEffect(() => {
     if (mode !== "edit" || !postId) return;
 
     const fetchPost = async () => {
-      console.log("fetch UUID:", postId);
-
       const { data, error } = await supabase
         .from("posts")
         .select("*")
-        .eq("id", postId) //  핵심
+        .eq("id", postId)
         .single();
 
       if (error) {
-        console.error("fetch error:", error);
+        console.error(error);
         return;
       }
 
       if (data) {
         setTitle(data.title);
         setContent(data.content);
+
+        // edit에서는 DB 값이 최종 override
         setCategory(data.category);
       }
     };
@@ -61,18 +81,9 @@ export default function PostForm({ mode, postId }: Props) {
     fetchPost();
   }, [mode, postId]);
 
-  //  submit
+  // submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    //  DB에 실제 어떤 id들이 있는지 확인
-  const { data } = await supabase
-    .from("posts")
-    .select("id");
-
-  console.log(" ALL IDS:", data);
-
-    console.log("SUBMIT UUID:", postId);
 
     if (!title || !content || !category) {
       alert("모든 필드를 입력하세요");
@@ -99,10 +110,8 @@ export default function PostForm({ mode, postId }: Props) {
       const { data, error } = await supabase
         .from("posts")
         .update({ title, content, category })
-        .eq("id", postId) //  UUID 그대로
+        .eq("id", postId)
         .select();
-
-      console.log("updated:", data);
 
       if (error) {
         console.error(error);
@@ -121,7 +130,7 @@ export default function PostForm({ mode, postId }: Props) {
 
   return (
     <form onSubmit={handleSubmit}>
-      {/* 카테고리 */}
+      {/* CATEGORY */}
       <div style={{ marginBottom: 16 }}>
         <label>Category</label>
         <br />
@@ -132,7 +141,10 @@ export default function PostForm({ mode, postId }: Props) {
         >
           {menu.map((cat) =>
             cat.children?.map((child) => (
-              <option key={child.slug} value={child.slug}>
+              <option
+                key={child.slug}
+                value={child.slug}
+              >
                 {child.name}
               </option>
             ))
@@ -140,7 +152,7 @@ export default function PostForm({ mode, postId }: Props) {
         </select>
       </div>
 
-      {/* 제목 */}
+      {/* TITLE */}
       <div style={{ marginBottom: 16 }}>
         <label>Title</label>
         <br />
@@ -151,8 +163,11 @@ export default function PostForm({ mode, postId }: Props) {
         />
       </div>
 
-      {/* 내용 */}
-      <MarkdownImageManager content={content} setContent={setContent} />
+      {/* CONTENT */}
+      <MarkdownImageManager
+        content={content}
+        setContent={setContent}
+      />
 
       <button
         type="submit"
