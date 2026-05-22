@@ -13,7 +13,35 @@ export default function GotoTheTop({
   isDark = false,
 }: Props) {
   const handleClick = () => {
+    // =========================
+    // DEBUG
+    // =========================
+
+    console.log(
+      "window.scrollY:",
+      window.scrollY
+    );
+
+    const el =
+      document.getElementById(
+        "viewport-scroll-container"
+      );
+
+    console.log(
+      "viewport-scroll-container.scrollTop:",
+      el?.scrollTop
+    );
+
+    // =========================
+    // TEMP TEST
+    // =========================
+
     window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+
+    el?.scrollTo({
       top: 0,
       behavior: "smooth",
     });
