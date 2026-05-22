@@ -12,6 +12,21 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 
 import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
 
+import type { Components } from "react-markdown";
+
+/* =========================
+   TYPES
+========================= */
+
+type CodeProps =
+  Components["code"] extends React.ComponentType<infer P>
+    ? P
+    : any;
+
+/* =========================
+   ICONS
+========================= */
+
 const CopyIcon = () => (
   <svg
     width="16"
@@ -51,32 +66,47 @@ const CheckIcon = () => (
   </svg>
 );
 
-interface Props {
-  inline?: boolean;
-
-  className?: string;
-
-  children: React.ReactNode;
-}
+/* =========================
+   COMPONENT
+========================= */
 
 export default function CodeBlock_white({
   inline,
   className,
   children,
-}: Props) {
-  const [copied, setCopied] = useState(false);
+  ...props
+}: CodeProps) {
+  const [copied, setCopied] =
+    useState(false);
 
-  const [hovered, setHovered] = useState(false);
+  const [hovered, setHovered] =
+    useState(false);
 
-  const timerRef = useRef<NodeJS.Timeout | null>(
-    null
+  const timerRef =
+    useRef<NodeJS.Timeout | null>(null);
+
+  const text = String(children).replace(
+    /\n$/,
+    ""
   );
-
-  const text = String(children);
 
   const match = /language-(.+)/.exec(
     className || ""
   );
+
+  /* =========================
+     INLINE DETECTION
+  ========================= */
+
+  const isInline =
+    inline ||
+    (!className &&
+      text.length < 80 &&
+      !text.includes("\n"));
+
+  /* =========================
+     CLEANUP
+  ========================= */
 
   useEffect(() => {
     return () => {
@@ -86,9 +116,15 @@ export default function CodeBlock_white({
     };
   }, []);
 
+  /* =========================
+     COPY
+  ========================= */
+
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(text);
+      await navigator.clipboard.writeText(
+        text
+      );
 
       setCopied(true);
 
@@ -100,10 +136,15 @@ export default function CodeBlock_white({
     }
   };
 
-  // INLINE CODE
-  if (inline) {
+  /* =========================
+     INLINE CODE
+  ========================= */
+
+  if (isInline) {
     return (
       <code
+        {...props}
+        className={className}
         style={{
           background:
             "rgba(0,0,0,0.04)",
@@ -121,8 +162,13 @@ export default function CodeBlock_white({
 
           backdropFilter: "blur(8px)",
 
+          WebkitBackdropFilter:
+            "blur(8px)",
+
           fontFamily:
             "ui-monospace, SFMono-Regular, Menlo, monospace",
+
+          wordBreak: "break-word",
         }}
       >
         {children}
@@ -130,10 +176,18 @@ export default function CodeBlock_white({
     );
   }
 
+  /* =========================
+     BLOCK CODE
+  ========================= */
+
   return (
     <motion.div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseEnter={() =>
+        setHovered(true)
+      }
+      onMouseLeave={() =>
+        setHovered(false)
+      }
       style={{
         position: "relative",
 
@@ -154,16 +208,21 @@ export default function CodeBlock_white({
 
         boxShadow:
           "0 10px 28px rgba(0,0,0,0.08)",
+
+        margin: "18px 0",
       }}
     >
       {/* COPY BUTTON */}
+
       <motion.button
         onClick={handleCopy}
         initial={false}
         animate={{
-          opacity: hovered || copied ? 1 : 0.5,
+          opacity:
+            hovered || copied ? 1 : 0.5,
 
-          y: hovered || copied ? 0 : -2,
+          y:
+            hovered || copied ? 0 : -2,
 
           scale: copied ? 1.02 : 1,
         }}
@@ -180,7 +239,9 @@ export default function CodeBlock_white({
           height: 34,
 
           display: "flex",
+
           alignItems: "center",
+
           justifyContent: "center",
 
           border: "none",
@@ -212,10 +273,15 @@ export default function CodeBlock_white({
             "background 0.18s ease, color 0.18s ease",
         }}
       >
-        {copied ? <CheckIcon /> : <CopyIcon />}
+        {copied ? (
+          <CheckIcon />
+        ) : (
+          <CopyIcon />
+        )}
       </motion.button>
 
-      {/* CODE BLOCK */}
+      {/* SYNTAX */}
+
       <SyntaxHighlighter
         language={match?.[1] || "text"}
         PreTag="div"
@@ -228,6 +294,8 @@ export default function CodeBlock_white({
             ],
 
             background: "transparent",
+
+            margin: 0,
           },
 
           'code[class*="language-"]': {
@@ -237,7 +305,10 @@ export default function CodeBlock_white({
 
             background: "transparent",
 
-            color: "rgba(20,20,20,0.92)",
+            color:
+              "rgba(20,20,20,0.92)",
+
+            textShadow: "none",
           },
         }}
         customStyle={{
@@ -256,8 +327,14 @@ export default function CodeBlock_white({
           fontFamily:
             "ui-monospace, SFMono-Regular, Menlo, monospace",
         }}
+        codeTagProps={{
+          style: {
+            fontFamily:
+              "ui-monospace, SFMono-Regular, Menlo, monospace",
+          },
+        }}
       >
-        {text.replace(/\n$/, "")}
+        {text}
       </SyntaxHighlighter>
     </motion.div>
   );
