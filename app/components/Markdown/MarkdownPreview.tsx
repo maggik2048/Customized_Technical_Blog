@@ -15,9 +15,13 @@ import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 type Props = {
   content: string;
+  previewRef: React.RefObject<HTMLDivElement>;
 };
 
-export default function MarkdownPreview({ content }: Props) {
+export default function MarkdownPreview({
+  content,
+  previewRef,
+}: Props) {
   const renderContent = content.replace(
     /^(https?:\/\/.*\.(png|jpg|jpeg|gif|webp|bmp|svg))$/gm,
     "![]($1)"
@@ -25,6 +29,7 @@ export default function MarkdownPreview({ content }: Props) {
 
   return (
     <div
+      ref={previewRef}
       style={{
         width: "50%",
         height: 400,

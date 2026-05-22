@@ -17,13 +17,16 @@ export default function MarkdownImageManager({
 }: Props) {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
+  const editorRef = React.useRef<HTMLTextAreaElement>(null);
+  const previewRef = React.useRef<HTMLDivElement>(null);
+
   /* ================= IMAGE BUTTON ================= */
 
   const handleInsertImage = () => {
     fileInputRef.current?.click();
   };
 
-  /* ================= FILE CHANGE ================= */
+  /* ================= FILE UPLOAD ================= */
 
   const handleFileChange = async (
     e: React.ChangeEvent<HTMLInputElement>
@@ -37,7 +40,7 @@ export default function MarkdownImageManager({
     setContent((prev) => prev + `\n![](${url})\n`);
   };
 
-  /* ================= PASTE ================= */
+  /* ================= PASTE HANDLING ================= */
 
   const handlePaste = async (
     e: React.ClipboardEvent<HTMLTextAreaElement>
@@ -98,6 +101,23 @@ export default function MarkdownImageManager({
     );
   };
 
+  /* ================= SCROLL SYNC ================= */
+
+  const handleScrollSync = () => {
+    const editor = editorRef.current;
+    const preview = previewRef.current;
+
+    if (!editor || !preview) return;
+
+    const ratio =
+      editor.scrollTop /
+      (editor.scrollHeight - editor.clientHeight);
+
+    preview.scrollTop =
+      ratio *
+      (preview.scrollHeight - preview.clientHeight);
+  };
+
   /* ================= AUTO IMAGE URL ================= */
 
   const renderContent = content.replace(
@@ -125,20 +145,26 @@ export default function MarkdownImageManager({
       <div style={{ display: "flex", gap: 20 }}>
         {/* EDITOR */}
         <textarea
+          ref={editorRef}
           value={content}
           onChange={(e) => setContent(e.target.value)}
           onPaste={handlePaste}
+          onScroll={handleScrollSync}
           style={{
             width: "50%",
             height: 400,
             padding: 10,
             fontFamily: "monospace",
+            overflow: "auto",
           }}
           placeholder="Ctrl + V 로 이미지 붙여넣기 가능"
         />
 
-        {/* PREVIEW (분리됨) */}
-        <MarkdownPreview content={renderContent} />
+        {/* PREVIEW */}
+        <MarkdownPreview
+          content={renderContent}
+          previewRef={previewRef}
+        />
       </div>
     </div>
   );
