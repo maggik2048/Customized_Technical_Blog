@@ -22,7 +22,7 @@ import NotepageLines from "@/app/components/markdown/NotepageLines";
 
 import MarkdownRendererCoordinator from "@/app/components/Markdown/MarkdownRendererCoordinator";
 
-import CodeBlockWithCopy from "@/app/components/Markdown/CodeBlockWithCopy";
+import CodeBlockThemeCoordinator from "@/app/components/Markdown/CodeBlockThemeCoordinator";
 
 import MetadataPostalCode from "@/app/components/papers/MetadataPostalCode";
 
@@ -216,7 +216,7 @@ export default function PDFPage({
 
   const CodeBlock =
     React.useMemo(
-      () => CodeBlockWithCopy,
+      () => CodeBlockThemeCoordinator,
       []
     );
 
