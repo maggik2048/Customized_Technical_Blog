@@ -4,17 +4,23 @@ import { useEffect, useRef } from "react";
 
 type Props = {
   scrollSpeed?: number;
+  acceleration?: number;
+  friction?: number;
 };
 
 export default function ScrollWithKeyboardArrow({
-  scrollSpeed = 12,
+  scrollSpeed = 1.2,
+  acceleration = 0.9,
+  friction = 0.9,
 }: Props) {
-  const pressedKeys = useRef<
-    Set<string>
-  >(new Set());
+  const pressedKeys = useRef<Set<string>>(
+    new Set()
+  );
 
   const animationFrame =
     useRef<number | null>(null);
+
+  const velocity = useRef(0);
 
   useEffect(() => {
     const getContainer = () =>
@@ -37,15 +43,14 @@ export default function ScrollWithKeyboardArrow({
         return;
       }
 
-      let delta = 0;
-
-      // continuous movement
+      // acceleration
       if (
         pressedKeys.current.has(
           "ArrowUp"
         )
       ) {
-        delta -= scrollSpeed;
+        velocity.current -=
+          acceleration;
       }
 
       if (
@@ -53,12 +58,32 @@ export default function ScrollWithKeyboardArrow({
           "ArrowDown"
         )
       ) {
-        delta += scrollSpeed;
+        velocity.current +=
+          acceleration;
       }
 
-      if (delta !== 0) {
-        container.scrollTop += delta;
+      // max speed clamp
+      velocity.current = Math.max(
+        -20,
+        Math.min(
+          20,
+          velocity.current
+        )
+      );
+
+      // apply movement
+      if (
+        Math.abs(
+          velocity.current
+        ) > 0.01
+      ) {
+        container.scrollTop +=
+          velocity.current *
+          scrollSpeed;
       }
+
+      // friction / easing
+      velocity.current *= friction;
 
       animationFrame.current =
         requestAnimationFrame(loop);
@@ -89,7 +114,6 @@ export default function ScrollWithKeyboardArrow({
 
       if (!container) return;
 
-      // prevent browser scroll
       if (
         [
           "ArrowUp",
@@ -103,15 +127,11 @@ export default function ScrollWithKeyboardArrow({
         e.preventDefault();
       }
 
-      // hold support
       pressedKeys.current.add(
         e.key
       );
 
-      // =========================
       // PAGE UP
-      // =========================
-
       if (e.key === "PageUp") {
         container.scrollBy({
           top:
@@ -121,10 +141,7 @@ export default function ScrollWithKeyboardArrow({
         });
       }
 
-      // =========================
       // PAGE DOWN
-      // =========================
-
       if (e.key === "PageDown") {
         container.scrollBy({
           top:
@@ -134,10 +151,7 @@ export default function ScrollWithKeyboardArrow({
         });
       }
 
-      // =========================
       // HOME
-      // =========================
-
       if (e.key === "Home") {
         container.scrollTo({
           top: 0,
@@ -145,10 +159,7 @@ export default function ScrollWithKeyboardArrow({
         });
       }
 
-      // =========================
       // END
-      // =========================
-
       if (e.key === "End") {
         container.scrollTo({
           top:
@@ -170,17 +181,9 @@ export default function ScrollWithKeyboardArrow({
       );
     };
 
-    // =========================
-    // WINDOW BLUR
-    // =========================
-
     const clearKeys = () => {
       pressedKeys.current.clear();
     };
-
-    // =========================
-    // START LOOP
-    // =========================
 
     animationFrame.current =
       requestAnimationFrame(loop);
@@ -227,7 +230,11 @@ export default function ScrollWithKeyboardArrow({
         clearKeys
       );
     };
-  }, [scrollSpeed]);
+  }, [
+    scrollSpeed,
+    acceleration,
+    friction,
+  ]);
 
   return null;
 }
