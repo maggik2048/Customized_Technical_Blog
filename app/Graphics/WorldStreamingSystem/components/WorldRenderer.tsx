@@ -8,20 +8,24 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { useWorldStore } from "../state/worldStore";
 import { initialWorld } from "../data/initialWorld";
 
+// layers
+import { addRoadLayer } from "../layers/roadLayer";
+import { addIntersectionLayer } from "../layers/intersectionLayer";
+import { addDistrictLayer } from "../layers/districtLayer";
+
 export default function WorldRenderer() {
   const ref = useRef<HTMLDivElement | null>(null);
-
   const mapRef = useRef<maplibregl.Map | null>(null);
 
   const features = useWorldStore((s) => s.features);
   const addRoad = useWorldStore((s) => s.addRoad);
 
-  // 1. init world state once
+  // 1. init world state
   useEffect(() => {
     useWorldStore.setState({ features: initialWorld as any });
   }, []);
 
-  // 2. init map once
+  // 2. init map
   useEffect(() => {
     if (!ref.current) return;
 
@@ -39,31 +43,40 @@ export default function WorldRenderer() {
         type: "geojson",
         data: {
           type: "FeatureCollection",
-          features: features as any,
+          features: useWorldStore.getState().features as any,
+        },
+      });
+
+      // =========================
+      // LAYERS (CRITICAL ORDER)
+      // =========================
+
+      // 1. POLYGON FIRST (BASE LAYER)
+      map.addLayer({
+        id: "district-fill",
+        type: "fill",
+        source: "world",
+        paint: {
+          "fill-color": "#2c5cff",
+          "fill-opacity": 0.35,
         },
       });
 
       map.addLayer({
-        id: "roads",
+        id: "district-outline",
         type: "line",
         source: "world",
-        filter: ["==", ["geometry-type"], "LineString"],
         paint: {
-          "line-color": ["get", "debugColor"],
-          "line-width": 5,
+          "line-color": "#2c5cff",
+          "line-width": 1,
         },
       });
 
-      map.addLayer({
-        id: "nodes",
-        type: "circle",
-        source: "world",
-        filter: ["==", ["geometry-type"], "Point"],
-        paint: {
-          "circle-radius": 6,
-          "circle-color": "#ffffff",
-        },
-      });
+      // 2. ROADS
+      addRoadLayer(map);
+
+      // 3. INTERSECTIONS
+      addIntersectionLayer(map);
     });
 
     return () => {
@@ -72,7 +85,7 @@ export default function WorldRenderer() {
     };
   }, []);
 
-  // 3. runtime mutation example (engine behavior test)
+  // 3. runtime mutation test
   useEffect(() => {
     const interval = setInterval(() => {
       addRoad({
@@ -99,13 +112,12 @@ export default function WorldRenderer() {
     return () => clearInterval(interval);
   }, [addRoad]);
 
-  // 4. 핵심: state → map sync (이게 엔진 핵심)
+  // 4. state sync → map
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
 
     const source = map.getSource("world") as maplibregl.GeoJSONSource;
-
     if (!source) return;
 
     source.setData({
@@ -117,7 +129,10 @@ export default function WorldRenderer() {
   return (
     <div
       ref={ref}
-      style={{ width: "100%", height: "100vh" }}
+      style={{
+        width: "100%",
+        height: "100vh",
+      }}
     />
   );
 }
