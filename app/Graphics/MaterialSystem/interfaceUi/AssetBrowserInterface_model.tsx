@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 
 import AssetCard from './AssetCard';
 import { styles } from './assetbrowserinterfaceStyle';
@@ -22,9 +22,15 @@ export default function AssetBrowserInterface_model({
   const [models, setModels] = useState<ModelItem[]>([]);
   const [latestModelId, setLatestModelId] = useState<string | null>(null);
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  //
+  // REFRESH
+  //
   const refreshModels = async () => {
     try {
       const res = await fetch('/api/model/list');
+
       const data = await res.json();
 
       setModels(data);
@@ -35,12 +41,48 @@ export default function AssetBrowserInterface_model({
     }
   };
 
+  //
+  // REGISTER MODEL
+  //
+  const handleRegisterClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  //
+  // FILE SELECT
+  //
+  const handleFileChange = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+
+    if (!file) return;
+
+    try {
+      const formData = new FormData();
+
+      formData.append('model', file);
+
+      const res = await fetch('/api/model/register', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      console.log('MODEL REGISTERED', data);
+
+      await refreshModels();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <div
       style={{
         ...styles.sidebar,
 
-        //  RIGHT SIDE FIX
         right: 0,
         left: 'auto',
 
@@ -48,6 +90,15 @@ export default function AssetBrowserInterface_model({
         borderRight: 'none',
       }}
     >
+
+      {/* HIDDEN FILE INPUT */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".glb,.gltf,.fbx,.obj"
+        style={{ display: 'none' }}
+        onChange={handleFileChange}
+      />
 
       {/* HEADER */}
       <div style={styles.headerWrapper}>
@@ -74,16 +125,9 @@ export default function AssetBrowserInterface_model({
         Refresh Models
       </button>
 
-      {/* SELECT ACTION */}
+      {/* REGISTER */}
       <button
-        onClick={() => {
-          if (!latestModelId) {
-            console.warn('NO MODEL SELECTED');
-            return;
-          }
-
-          onSelectModel(latestModelId);
-        }}
+        onClick={handleRegisterClick}
         style={styles.registerButton}
       >
         registerModel
@@ -94,7 +138,11 @@ export default function AssetBrowserInterface_model({
         {models.map((model, index) => (
           <div
             key={model.modelId}
-            onClick={() => setLatestModelId(model.modelId)}
+            onClick={() => {
+              setLatestModelId(model.modelId);
+
+              onSelectModel(model.modelId);
+            }}
             style={{ cursor: 'pointer' }}
           >
             <AssetCard

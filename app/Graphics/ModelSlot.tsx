@@ -65,7 +65,7 @@ export default function ModelSlot() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const url = URL.createObjectURL(file); // 🔥 local blob url
+    const url = URL.createObjectURL(file); //  local blob url
     setLoaded(true);
     initThree(url);
   };
