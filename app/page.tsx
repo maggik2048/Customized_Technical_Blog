@@ -105,6 +105,34 @@ export default function HomePage() {
           HDRI Renderer
         </button>
 
+        {/* World Stream Renderer Button */}
+        <button
+          onClick={() => {
+
+            console.log(
+              "WORLD STREAM BUTTON CLICKED"
+            );
+
+            router.push(
+              "/Graphics/WorldStreamingSystem"
+            );
+          }}
+          style={{
+            position: "absolute",
+            top: 120,
+            right: 20,
+            zIndex: 9999,
+            padding: "10px 16px",
+            borderRadius: 8,
+            border: "none",
+            cursor: "pointer",
+            background: "#2c5cff",
+            color: "#fff",
+          }}
+        >
+          WorldStreamRenderer
+        </button>
+
         <div
           style={{
             height: "18vh",
