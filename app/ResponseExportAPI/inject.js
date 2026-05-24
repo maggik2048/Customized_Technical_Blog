@@ -1,61 +1,199 @@
-console.log("INJECT SCRIPT RUNNING");
-
-window.addEventListener("message", (event) => {
-  // 자기 자신 메시지만 허용
-  if (event.source !== window) return;
-
-  // FINAL_MESSAGE만 처리
-  if (event.data?.type !== "FINAL_MESSAGE") return;
-
-  console.log("WRITE PAGE RECEIVED FINAL_MESSAGE");
-  console.log(event.data.payload);
-
-  // 필요하면 전역 저장도 가능
-  window.latestAIMessage = event.data.payload;
-});
+console.log("=================================");
+console.log("INJECT SCRIPT LOADED");
+console.log("CURRENT URL:", location.href);
+console.log("TIME:", new Date().toISOString());
+console.log("=================================");
 
 // ==========================================
-// write page 자동 textarea 주입
+// CHROME DEBUG
 // ==========================================
 
-function injectToEditor(text) {
-  // textarea 찾기
-  const textarea = document.querySelector("textarea");
+try {
+  console.log("chrome exists:", !!chrome);
 
-  if (!textarea) {
-    console.log("EDITOR NOT FOUND");
-    return;
-  }
+  console.log("chrome object:");
+  console.log(chrome);
 
-  // React controlled textarea 대응
-  const nativeInputValueSetter =
-    Object.getOwnPropertyDescriptor(
-      window.HTMLTextAreaElement.prototype,
-      "value"
-    )?.set;
+  console.log("chrome.storage:");
+  console.log(chrome.storage);
 
-  nativeInputValueSetter?.call(textarea, text);
-
-  // React state 갱신 트리거
-  textarea.dispatchEvent(
-    new Event("input", { bubbles: true })
-  );
-
-  console.log("EDITOR UPDATED");
+  console.log("chrome.runtime.id:");
+  console.log(chrome.runtime?.id);
+} catch (err) {
+  console.error("CHROME DEBUG FAILED");
+  console.error(err);
 }
 
 // ==========================================
-// FINAL_MESSAGE 수신 시 자동 주입
+// textarea inject
 // ==========================================
 
-window.addEventListener("message", (event) => {
-  if (event.source !== window) return;
+function injectToEditor(text) {
+  console.log("=================================");
+  console.log("injectToEditor CALLED");
+  console.log("=================================");
 
-  if (event.data?.type !== "FINAL_MESSAGE") return;
+  const textarea = document.querySelector("textarea");
 
-  const text = event.data?.payload?.text;
+  console.log("textarea query result:");
+  console.log(textarea);
 
-  if (!text) return;
+  if (!textarea) {
+    console.log("TEXTAREA NOT FOUND");
+    return false;
+  }
 
-  injectToEditor(text);
-});
+  console.log("TEXTAREA FOUND");
+
+  console.log("TEXT LENGTH:");
+  console.log(text.length);
+
+  console.log("TEXT PREVIEW:");
+  console.log(text.slice(0, 300));
+
+  console.log("TEXTAREA VALUE BEFORE:");
+  console.log(textarea.value);
+
+  const descriptor =
+    Object.getOwnPropertyDescriptor(
+      window.HTMLTextAreaElement.prototype,
+      "value"
+    );
+
+  console.log("DESCRIPTOR:");
+  console.log(descriptor);
+
+  const nativeSetter = descriptor?.set;
+
+  if (!nativeSetter) {
+    console.log("NATIVE SETTER NOT FOUND");
+    return false;
+  }
+
+  try {
+    console.log("CALLING NATIVE SETTER");
+
+    nativeSetter.call(textarea, text);
+
+    console.log("DISPATCHING INPUT EVENT");
+
+    textarea.dispatchEvent(
+      new Event("input", {
+        bubbles: true,
+      })
+    );
+
+    console.log("DISPATCHING CHANGE EVENT");
+
+    textarea.dispatchEvent(
+      new Event("change", {
+        bubbles: true,
+      })
+    );
+
+    console.log("TEXTAREA VALUE AFTER:");
+    console.log(textarea.value);
+
+    console.log("FINAL TEXTAREA LENGTH:");
+    console.log(textarea.value.length);
+
+    console.log("INJECTION SUCCESS");
+
+    return true;
+  } catch (err) {
+    console.error("INJECTION ERROR");
+    console.error(err);
+
+    return false;
+  }
+}
+
+// ==========================================
+// retry loop
+// ==========================================
+
+function waitForEditorAndInject(text) {
+  console.log("=================================");
+  console.log("WAITING FOR EDITOR");
+  console.log("=================================");
+
+  let tries = 0;
+
+  const interval = setInterval(() => {
+    tries++;
+
+    console.log("TRY COUNT:", tries);
+
+    const allTextareas =
+      document.querySelectorAll("textarea");
+
+    console.log("TEXTAREA COUNT:");
+    console.log(allTextareas.length);
+
+    const success = injectToEditor(text);
+
+    if (success) {
+      console.log("=================================");
+      console.log("DONE");
+      console.log("=================================");
+
+      clearInterval(interval);
+    }
+
+    if (tries >= 40) {
+      console.log("=================================");
+      console.log("FAILED MAX RETRY");
+      console.log("=================================");
+
+      clearInterval(interval);
+    }
+  }, 500);
+}
+
+// ==========================================
+// STORAGE READ
+// ==========================================
+
+try {
+  console.log("STARTING STORAGE READ");
+
+  chrome.storage.local.get(
+    ["latestFinalMessage"],
+    (result) => {
+      console.log("=================================");
+      console.log("STORAGE CALLBACK FIRED");
+      console.log("=================================");
+
+      console.log("chrome.runtime.lastError:");
+      console.log(chrome.runtime.lastError);
+
+      console.log("RAW STORAGE RESULT:");
+      console.log(result);
+
+      if (!result) {
+        console.log("RESULT EMPTY");
+        return;
+      }
+
+      const text = result.latestFinalMessage;
+
+      console.log("latestFinalMessage:");
+      console.log(text);
+
+      if (!text) {
+        console.log("NO latestFinalMessage");
+        return;
+      }
+
+      console.log("MESSAGE FOUND");
+
+      console.log("MESSAGE LENGTH:");
+      console.log(text.length);
+
+      waitForEditorAndInject(text);
+    }
+  );
+} catch (err) {
+  console.error("STORAGE READ ERROR");
+  console.error(err);
+}
