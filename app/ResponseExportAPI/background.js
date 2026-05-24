@@ -1,14 +1,11 @@
 chrome.runtime.onMessage.addListener((msg) => {
-  if (msg.type === "EXPORT") {
-    fetch("https://YOUR-SERVER.com/api/post", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        content: msg.payload,
-        source: "chatgpt"
-      })
-    });
-  }
+  if (msg.type !== "FINAL_MESSAGE") return;
+
+  chrome.storage.local.set({
+    latest_post: msg.payload,
+  });
+
+  chrome.tabs.create({
+    url: "http://localhost:3000/admin/write",
+  });
 });

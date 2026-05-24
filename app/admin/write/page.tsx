@@ -2,6 +2,7 @@
 
 import PostForm from "@/app/admin/PostForm";
 import { useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 
 export default function WritePage() {
   const searchParams = useSearchParams();

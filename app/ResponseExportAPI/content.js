@@ -1,53 +1,50 @@
 console.log("EXTENSION LOADED");
-console.log("INIT RUNNING");
 
 function getLastAssistantMessage() {
-  const messages = document.querySelectorAll('[data-message-author-role="assistant"]');
-  if (messages.length === 0) return null;
+  const messages = document.querySelectorAll(
+    '[data-message-author-role="assistant"]'
+  );
+
+  if (!messages.length) return null;
+
   return messages[messages.length - 1];
 }
 
-// 글로벌 상태 (클립보드 역할)
-window.__AI_API_STATE__ = {
-  lastFinalMessage: "",
-  updatedAt: 0
-};
-
 let lastText = "";
-let timeout = null;
+let debounceTimer = null;
 
 const observer = new MutationObserver(() => {
   const lastMsg = getLastAssistantMessage();
   if (!lastMsg) return;
 
-  const text = lastMsg.innerText;
+  const text = lastMsg.innerText?.trim();
+
   if (!text) return;
 
-  // streaming update
   if (text !== lastText) {
     lastText = text;
 
-    if (timeout) clearTimeout(timeout);
+    console.log("STREAM UPDATE:");
+    console.log(text);
 
-    // idle 기반 final 판정
-    timeout = setTimeout(() => {
-      const finalText = lastText;
+    clearTimeout(debounceTimer);
 
+    debounceTimer = setTimeout(() => {
       console.log("FINAL ASSISTANT MESSAGE:");
-      console.log(finalText);
+      console.log(lastText);
 
-      //  핵심: 무조건 덮어쓰기 (single source of truth)
-      window.__AI_API_STATE__.lastFinalMessage = finalText;
-      window.__AI_API_STATE__.updatedAt = Date.now();
-
-      console.log("STATE UPDATED:", window.__AI_API_STATE__);
-
-    }, 1200);
+      chrome.runtime.sendMessage({
+        type: "FINAL_MESSAGE",
+        payload: lastText,
+      });
+    }, 1500);
   }
 });
 
 observer.observe(document.body, {
   childList: true,
   subtree: true,
-  characterData: true
+  characterData: true,
 });
+
+console.log("OBSERVER STARTED");

@@ -25,7 +25,7 @@ export default function PostForm({
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
-  // 1. 메뉴만 로드 (절대 category 세팅하지 않음)
+  // MENU LOAD
   useEffect(() => {
     const loadMenu = async () => {
       const data = await getMenu();
@@ -35,11 +35,10 @@ export default function PostForm({
     loadMenu();
   }, []);
 
-  // 2. category 초기화 로직 (단일 책임)
+  // CATEGORY INIT
   useEffect(() => {
     if (!menu.length) return;
 
-    // EDIT 모드 → DB 값이 우선 (아래 fetchPost에서 처리됨)
     if (mode === "create") {
       if (defaultCategory) {
         setCategory(defaultCategory);
@@ -53,7 +52,7 @@ export default function PostForm({
     }
   }, [menu, defaultCategory, mode]);
 
-  // 3. edit 데이터 로드
+  // EDIT LOAD
   useEffect(() => {
     if (mode !== "edit" || !postId) return;
 
@@ -72,8 +71,6 @@ export default function PostForm({
       if (data) {
         setTitle(data.title);
         setContent(data.content);
-
-        // edit에서는 DB 값이 최종 override
         setCategory(data.category);
       }
     };
@@ -81,8 +78,31 @@ export default function PostForm({
     fetchPost();
   }, [mode, postId]);
 
-  // submit
-  const handleSubmit = async (e: React.FormEvent) => {
+  // EXTENSION STORAGE LOAD
+  useEffect(() => {
+    if (typeof chrome === "undefined") return;
+    if (!chrome.storage?.local) return;
+
+    chrome.storage.local.get(
+      ["latest_post"],
+      (result) => {
+        if (!result.latest_post) return;
+
+        console.log(
+          "LOADED FROM EXTENSION:"
+        );
+
+        console.log(result.latest_post);
+
+        setContent(result.latest_post);
+      }
+    );
+  }, []);
+
+  // SUBMIT
+  const handleSubmit = async (
+    e: React.FormEvent
+  ) => {
     e.preventDefault();
 
     if (!title || !content || !category) {
@@ -90,11 +110,16 @@ export default function PostForm({
       return;
     }
 
-    // CREATE
     if (mode === "create") {
       const { error } = await supabase
         .from("posts")
-        .insert([{ title, content, category }]);
+        .insert([
+          {
+            title,
+            content,
+            category,
+          },
+        ]);
 
       if (error) {
         console.error(error);
@@ -105,11 +130,14 @@ export default function PostForm({
       return;
     }
 
-    // EDIT
     if (mode === "edit" && postId) {
       const { data, error } = await supabase
         .from("posts")
-        .update({ title, content, category })
+        .update({
+          title,
+          content,
+          category,
+        })
         .eq("id", postId)
         .select();
 
@@ -119,7 +147,7 @@ export default function PostForm({
       }
 
       if (!data || data.length === 0) {
-        alert("업데이트 실패: id mismatch");
+        alert("업데이트 실패");
         return;
       }
 
@@ -130,14 +158,19 @@ export default function PostForm({
 
   return (
     <form onSubmit={handleSubmit}>
-      {/* CATEGORY */}
       <div style={{ marginBottom: 16 }}>
         <label>Category</label>
         <br />
+
         <select
           value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          style={{ width: "100%", padding: 8 }}
+          onChange={(e) =>
+            setCategory(e.target.value)
+          }
+          style={{
+            width: "100%",
+            padding: 8,
+          }}
         >
           {menu.map((cat) =>
             cat.children?.map((child) => (
@@ -152,18 +185,22 @@ export default function PostForm({
         </select>
       </div>
 
-      {/* TITLE */}
       <div style={{ marginBottom: 16 }}>
         <label>Title</label>
         <br />
+
         <input
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          style={{ width: "100%", padding: 8 }}
+          onChange={(e) =>
+            setTitle(e.target.value)
+          }
+          style={{
+            width: "100%",
+            padding: 8,
+          }}
         />
       </div>
 
-      {/* CONTENT */}
       <MarkdownImageManager
         content={content}
         setContent={setContent}
@@ -180,7 +217,9 @@ export default function PostForm({
           cursor: "pointer",
         }}
       >
-        {mode === "create" ? "Submit" : "Update"}
+        {mode === "create"
+          ? "Submit"
+          : "Update"}
       </button>
     </form>
   );

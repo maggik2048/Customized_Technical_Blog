@@ -1,14 +1,24 @@
 {
   "manifest_version": 3,
-  "name": "GPT F2 Extension",
+
+  "name": "AI Export Extension",
   "version": "1.0",
 
-  "permissions": ["activeTab"],
+  "permissions": [
+    "activeTab",
+    "storage",
+    "tabs"
+  ],
 
   "host_permissions": [
     "https://chatgpt.com/*",
-    "https://chat.openai.com/*"
+    "https://chat.openai.com/*",
+    "http://localhost:3000/*"
   ],
+
+  "background": {
+    "service_worker": "background.js"
+  },
 
   "content_scripts": [
     {
@@ -17,6 +27,14 @@
         "https://chat.openai.com/*"
       ],
       "js": ["content.js"],
+      "run_at": "document_idle"
+    },
+
+    {
+      "matches": [
+        "http://localhost:3000/*"
+      ],
+      "js": ["inject.js"],
       "run_at": "document_idle"
     }
   ]
