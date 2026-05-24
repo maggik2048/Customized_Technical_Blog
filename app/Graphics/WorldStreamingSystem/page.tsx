@@ -1,6 +1,6 @@
 "use client";
 
-import RoadMap from "./components/RoadMap";
+import RoadMap from "./components/WorldRenderer";
 
 export default function Page() {
 
