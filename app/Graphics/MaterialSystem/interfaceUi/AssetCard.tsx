@@ -1,5 +1,3 @@
-// AssetCard.tsx
-
 'use client';
 
 import {
@@ -16,8 +14,11 @@ from './AssetCard_HoverUi';
 
 interface Props {
   assetName: string;
+
   previewUrl: string;
+
   materialId: string;
+
   index: number;
 }
 
@@ -103,15 +104,6 @@ export default function AssetCard({
     }, 80);
   };
 
-  const handleExport = (
-    target: string
-  ) => {
-
-    console.log(
-      `export ${materialId} to ${target}`
-    );
-  };
-
   //
   // DRAG
   //
@@ -194,8 +186,7 @@ export default function AssetCard({
     setIsDragging(false);
 
     //
-    // 핵심
-    // interaction lifecycle cleanup
+    // interaction cleanup
     //
 
     setIsHoverCard(false);
@@ -238,6 +229,8 @@ export default function AssetCard({
       }
 
       style={{
+
+        position: 'relative',
 
         aspectRatio: '1 / 1',
 
@@ -343,6 +336,13 @@ export default function AssetCard({
   );
 
   //
+  // MATERIAL FOLDER
+  //
+
+  const materialFolder =
+    `materials/${materialId}`;
+
+  //
   // DRAGGING => BODY PORTAL
   //
 
@@ -380,12 +380,18 @@ export default function AssetCard({
 
         <AssetCard_HoverUi
           mounted={mounted}
+
           visible={visible}
+
           position={dragPos}
+
           setIsHoverPanel={
             setIsHoverPanel
           }
-          onExport={handleExport}
+
+          materialFolder={
+            materialFolder
+          }
         />
       </>
     );
@@ -408,12 +414,18 @@ export default function AssetCard({
 
       <AssetCard_HoverUi
         mounted={mounted}
+
         visible={visible}
+
         position={dragPos}
+
         setIsHoverPanel={
           setIsHoverPanel
         }
-        onExport={handleExport}
+
+        materialFolder={
+          materialFolder
+        }
       />
     </>
   );
