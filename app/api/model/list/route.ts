@@ -23,30 +23,39 @@ export async function GET() {
 
   for (const folder of folders) {
 
-    const folderPath = path.join(dir, folder);
+    const folderPath =
+      path.join(dir, folder);
 
-    const jsonPath = path.join(
-      folderPath,
-      'model.json'
-    );
+    const jsonPath =
+      path.join(
+        folderPath,
+        'model.json'
+      );
 
     if (!fs.existsSync(jsonPath)) {
       continue;
     }
 
     const json = JSON.parse(
-      fs.readFileSync(jsonPath, 'utf-8')
+      fs.readFileSync(
+        jsonPath,
+        'utf-8'
+      )
     );
 
     result.push({
-      modelId: json.modelId,
-      modelName: json.modelName,
 
-      //
-      // preview fallback
-      //
+      modelId:
+        json.modelId,
+
+      modelName:
+        json.modelName,
+
       previewUrl:
+        json.previewUrl ||
+
         '/default_model_preview.png',
+
     });
   }
 

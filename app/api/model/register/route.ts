@@ -3,16 +3,34 @@ import { NextRequest } from 'next/server';
 import fs from 'fs';
 import path from 'path';
 
-export async function POST(request: NextRequest) {
+export async function POST(
+  request: NextRequest
+) {
+
   try {
 
-    const formData = await request.formData();
+    const formData =
+      await request.formData();
 
-    const file = formData.get('model') as File;
+    //
+    // MODEL FILE
+    //
+    const model =
+      formData.get('model') as File;
 
-    if (!file) {
+    //
+    // PREVIEW FILE
+    //
+    const preview =
+      formData.get('preview') as File;
+
+    if (!model) {
+
       return Response.json(
-        { success: false, error: 'NO FILE' },
+        {
+          success: false,
+          error: 'NO MODEL',
+        },
         { status: 400 }
       );
     }
@@ -20,56 +38,114 @@ export async function POST(request: NextRequest) {
     //
     // MODEL ID
     //
-    const modelId = `model_${Date.now()}`;
+    const modelId =
+      `model_${Date.now()}`;
 
     //
     // TARGET DIR
     //
-    const modelDir = path.join(
-      process.cwd(),
-      'public',
-      'models',
-      modelId
-    );
+    const modelDir =
+      path.join(
+        process.cwd(),
+        'public',
+        'models',
+        modelId
+      );
 
-    fs.mkdirSync(modelDir, { recursive: true });
+    fs.mkdirSync(
+      modelDir,
+      { recursive: true }
+    );
 
     //
     // SAVE MODEL
     //
-    const bytes = await file.arrayBuffer();
+    const modelBytes =
+      await model.arrayBuffer();
 
-    const buffer = Buffer.from(bytes);
+    fs.writeFileSync(
 
-    const filename = file.name;
+      path.join(
+        modelDir,
+        model.name
+      ),
 
-    const filepath = path.join(modelDir, filename);
-
-    fs.writeFileSync(filepath, buffer);
+      Buffer.from(modelBytes)
+    );
 
     //
-    // MODEL NAME
+    // SAVE PREVIEW
     //
-    const nameWithoutExt = filename.replace(/\.[^/.]+$/, '');
+    let previewUrl = '';
+
+    if (preview) {
+
+      const previewBytes =
+        await preview.arrayBuffer();
+
+      const previewName =
+        'preview.png';
+
+      fs.writeFileSync(
+
+        path.join(
+          modelDir,
+          previewName
+        ),
+
+        Buffer.from(previewBytes)
+      );
+
+      previewUrl =
+        `/models/${modelId}/${previewName}`;
+    }
+
+    //
+    // NAME
+    //
+    const modelName =
+      model.name.replace(
+        /\.[^/.]+$/,
+        ''
+      );
 
     //
     // DESCRIPTOR
     //
     const descriptor = {
+
       modelId,
-      modelName: nameWithoutExt,
-      modelUrl: `/models/${modelId}/${filename}`,
+
+      modelName,
+
+      modelUrl:
+        `/models/${modelId}/${model.name}`,
+
+      previewUrl,
+
     };
 
     //
     // WRITE JSON
     //
     fs.writeFileSync(
-      path.join(modelDir, 'model.json'),
-      JSON.stringify(descriptor, null, 2)
+
+      path.join(
+        modelDir,
+        'model.json'
+      ),
+
+      JSON.stringify(
+        descriptor,
+        null,
+        2
+      )
     );
 
-    console.log('MODEL REGISTERED', modelId);
+    console.log(
+      'MODEL REGISTERED',
+      modelId
+    );
 
     return Response.json({
       success: true,

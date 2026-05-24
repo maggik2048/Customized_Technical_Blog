@@ -1,9 +1,12 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import AssetCard from './AssetCard';
 import { styles } from './assetbrowserinterfaceStyle';
+
+import { ThumbnailRenderer }
+from '../ThumbnailRenderer';
 
 type ModelItem = {
   modelId: string;
@@ -19,33 +22,79 @@ export default function AssetBrowserInterface_model({
   onSelectModel,
 }: Props) {
 
-  const [models, setModels] = useState<ModelItem[]>([]);
-  const [latestModelId, setLatestModelId] = useState<string | null>(null);
+  //
+  // STATE
+  //
+  const [models, setModels] =
+    useState<ModelItem[]>([]);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [latestModelId, setLatestModelId] =
+    useState<string | null>(null);
+
+  const [isUploading, setIsUploading] =
+    useState(false);
+
+  //
+  // REFS
+  //
+  const fileInputRef =
+    useRef<HTMLInputElement>(null);
+
+  //
+  // THUMBNAIL RENDERER
+  //
+  const thumbnailRenderer =
+    useRef(
+      new ThumbnailRenderer()
+    );
+
+  //
+  // INITIAL LOAD
+  //
+  useEffect(() => {
+
+    refreshModels();
+
+  }, []);
 
   //
   // REFRESH
   //
   const refreshModels = async () => {
-    try {
-      const res = await fetch('/api/model/list');
 
-      const data = await res.json();
+    try {
+
+      const res = await fetch(
+        '/api/model/list'
+      );
+
+      const data =
+        await res.json();
 
       setModels(data);
 
-      console.log('MODELS REFRESHED:', data);
+      console.log(
+        'MODELS REFRESHED:',
+        data
+      );
+
     } catch (err) {
-      console.error('MODEL REFRESH FAILED', err);
+
+      console.error(
+        'MODEL REFRESH FAILED',
+        err
+      );
+
     }
   };
 
   //
-  // REGISTER MODEL
+  // OPEN FILE PICKER
   //
   const handleRegisterClick = () => {
+
     fileInputRef.current?.click();
+
   };
 
   //
@@ -54,27 +103,89 @@ export default function AssetBrowserInterface_model({
   const handleFileChange = async (
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
-    const file = e.target.files?.[0];
+
+    const file =
+      e.target.files?.[0];
 
     if (!file) return;
 
     try {
-      const formData = new FormData();
 
-      formData.append('model', file);
+      setIsUploading(true);
 
-      const res = await fetch('/api/model/register', {
-        method: 'POST',
-        body: formData,
-      });
+      console.log(
+        'GENERATING THUMBNAIL...'
+      );
 
-      const data = await res.json();
+      //
+      // GENERATE PREVIEW
+      //
+      const previewBlob =
+        await thumbnailRenderer.current
+          .generatePreview(file);
 
-      console.log('MODEL REGISTERED', data);
+      console.log(
+        'THUMBNAIL GENERATED'
+      );
 
+      //
+      // FORM DATA
+      //
+      const formData =
+        new FormData();
+
+      formData.append(
+        'model',
+        file
+      );
+
+      formData.append(
+        'preview',
+        previewBlob,
+        'preview.png'
+      );
+
+      //
+      // REGISTER MODEL
+      //
+      const res = await fetch(
+        '/api/model/register',
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
+
+      const data =
+        await res.json();
+
+      console.log(
+        'MODEL REGISTERED',
+        data
+      );
+
+      //
+      // REFRESH
+      //
       await refreshModels();
+
     } catch (err) {
-      console.error(err);
+
+      console.error(
+        'MODEL REGISTER FAILED',
+        err
+      );
+
+    } finally {
+
+      setIsUploading(false);
+
+      //
+      // RESET INPUT
+      //
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -83,10 +194,15 @@ export default function AssetBrowserInterface_model({
       style={{
         ...styles.sidebar,
 
+        //
+        // RIGHT SIDE FIX
+        //
         right: 0,
         left: 'auto',
 
-        borderLeft: '1px solid rgba(255,255,255,0.08)',
+        borderLeft:
+          '1px solid rgba(255,255,255,0.08)',
+
         borderRight: 'none',
       }}
     >
@@ -96,12 +212,15 @@ export default function AssetBrowserInterface_model({
         ref={fileInputRef}
         type="file"
         accept=".glb,.gltf,.fbx,.obj"
-        style={{ display: 'none' }}
+        style={{
+          display: 'none',
+        }}
         onChange={handleFileChange}
       />
 
       {/* HEADER */}
       <div style={styles.headerWrapper}>
+
         <h1 style={styles.headerTitle}>
           3D Model Browser
         </h1>
@@ -109,6 +228,7 @@ export default function AssetBrowserInterface_model({
         <div style={styles.headerSubtitle}>
           Model Library
         </div>
+
       </div>
 
       {/* SEARCH */}
@@ -129,30 +249,62 @@ export default function AssetBrowserInterface_model({
       <button
         onClick={handleRegisterClick}
         style={styles.registerButton}
+        disabled={isUploading}
       >
-        registerModel
+        {
+          isUploading
+            ? 'Generating Preview...'
+            : 'registerModel'
+        }
       </button>
 
       {/* GRID */}
       <div style={styles.grid}>
-        {models.map((model, index) => (
-          <div
-            key={model.modelId}
-            onClick={() => {
-              setLatestModelId(model.modelId);
 
-              onSelectModel(model.modelId);
-            }}
-            style={{ cursor: 'pointer' }}
-          >
-            <AssetCard
-              assetName={model.modelName}
-              previewUrl={model.previewUrl}
-              materialId={model.modelId}
-              index={index}
-            />
-          </div>
-        ))}
+        {models.map(
+          (model, index) => (
+
+            <div
+              key={model.modelId}
+
+              onClick={() => {
+
+                setLatestModelId(
+                  model.modelId
+                );
+
+                onSelectModel(
+                  model.modelId
+                );
+              }}
+
+              style={{
+                cursor: 'pointer',
+              }}
+            >
+
+              <AssetCard
+
+                assetName={
+                  model.modelName
+                }
+
+                previewUrl={
+                  model.previewUrl
+                }
+
+                materialId={
+                  model.modelId
+                }
+
+                index={index}
+
+              />
+
+            </div>
+          )
+        )}
+
       </div>
 
     </div>
