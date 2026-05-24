@@ -7,6 +7,12 @@ function getLastAssistantMessage() {
   return messages[messages.length - 1];
 }
 
+// 글로벌 상태 (클립보드 역할)
+window.__AI_API_STATE__ = {
+  lastFinalMessage: "",
+  updatedAt: 0
+};
+
 let lastText = "";
 let timeout = null;
 
@@ -15,26 +21,28 @@ const observer = new MutationObserver(() => {
   if (!lastMsg) return;
 
   const text = lastMsg.innerText;
-
   if (!text) return;
 
-  // 계속 업데이트 중이면 저장만
+  // streaming update
   if (text !== lastText) {
     lastText = text;
 
-    console.log("STREAM UPDATE:", text);
-
-    //  변경 감지되면 타이머 리셋
     if (timeout) clearTimeout(timeout);
 
+    // idle 기반 final 판정
     timeout = setTimeout(() => {
+      const finalText = lastText;
+
       console.log("FINAL ASSISTANT MESSAGE:");
-      console.log(lastText);
+      console.log(finalText);
 
-      //  여기서 “완성 응답” 처리하면 됨
-      // sendToServer(lastText);
+      //  핵심: 무조건 덮어쓰기 (single source of truth)
+      window.__AI_API_STATE__.lastFinalMessage = finalText;
+      window.__AI_API_STATE__.updatedAt = Date.now();
 
-    }, 1200); // 1.2초 동안 변화 없으면 완료로 간주
+      console.log("STATE UPDATED:", window.__AI_API_STATE__);
+
+    }, 1200);
   }
 });
 
