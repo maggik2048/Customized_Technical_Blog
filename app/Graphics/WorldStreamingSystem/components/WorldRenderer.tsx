@@ -5,133 +5,496 @@ import maplibregl from "maplibre-gl";
 
 import "maplibre-gl/dist/maplibre-gl.css";
 
-import { useWorldStore } from "../state/worldStore";
-import { initialWorld } from "../data/initialWorld";
-
-// layers
-import { addRoadLayer } from "../layers/roadLayer";
-import { addIntersectionLayer } from "../layers/intersectionLayer";
-import { addDistrictLayer } from "../layers/districtLayer";
+/**
+ * =====================================================
+ * UNIVERSAL GIS RENDERER
+ * =====================================================
+ *
+ * 지원:
+ * - Point
+ * - LineString
+ * - Polygon
+ * - MultiPolygon
+ *
+ * semantic filtering 없이
+ * geometry 기반으로 전부 렌더
+ *
+ * 파일:
+ * /public/gis/losAngeles.geojson
+ *
+ * =====================================================
+ */
 
 export default function WorldRenderer() {
-  const ref = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<maplibregl.Map | null>(null);
+  const mapContainer = useRef<HTMLDivElement | null>(null);
 
-  const features = useWorldStore((s) => s.features);
-  const addRoad = useWorldStore((s) => s.addRoad);
-
-  // 1. init world state
   useEffect(() => {
-    useWorldStore.setState({ features: initialWorld as any });
-  }, []);
+    if (!mapContainer.current) return;
 
-  // 2. init map
-  useEffect(() => {
-    if (!ref.current) return;
+    /**
+     * =====================================================
+     * MAP INIT
+     * =====================================================
+     */
 
     const map = new maplibregl.Map({
-      container: ref.current,
-      style: "https://demotiles.maplibre.org/style.json",
-      center: [128.587, 35.152],
-      zoom: 15,
+      container: mapContainer.current,
+
+      style: {
+        version: 8,
+
+        sources: {},
+
+        layers: [
+          {
+            id: "background",
+            type: "background",
+            paint: {
+              "background-color": "#050505",
+            },
+          },
+        ],
+      },
+
+      center: [-118.2437, 34.0522],
+      zoom: 11,
     });
 
-    mapRef.current = map;
+    /**
+     * =====================================================
+     * LOAD GEOJSON
+     * =====================================================
+     */
 
-    map.on("load", () => {
-      map.addSource("world", {
-        type: "geojson",
-        data: {
-          type: "FeatureCollection",
-          features: useWorldStore.getState().features as any,
-        },
-      });
+    map.on("load", async () => {
+      try {
+        const res = await fetch(
+          "/gis/losAngeles.geojson"
+        );
 
-      // =========================
-      // LAYERS (CRITICAL ORDER)
-      // =========================
+        const geojson = await res.json();
 
-      // 1. POLYGON FIRST (BASE LAYER)
-      map.addLayer({
-        id: "district-fill",
-        type: "fill",
-        source: "world",
-        paint: {
-          "fill-color": "#2c5cff",
-          "fill-opacity": 0.35,
-        },
-      });
+        console.log("FULL GIS:", geojson);
 
-      map.addLayer({
-        id: "district-outline",
-        type: "line",
-        source: "world",
-        paint: {
-          "line-color": "#2c5cff",
-          "line-width": 1,
-        },
-      });
+        /**
+         * =====================================================
+         * FEATURE SAFETY
+         * =====================================================
+         */
 
-      // 2. ROADS
-      addRoadLayer(map);
+        if (!geojson.features) {
+          console.error(
+            "No features found"
+          );
+          return;
+        }
 
-      // 3. INTERSECTIONS
-      addIntersectionLayer(map);
+        /**
+         * =====================================================
+         * SOURCE
+         * =====================================================
+         */
+
+        map.addSource("world", {
+          type: "geojson",
+
+          data: geojson,
+        });
+
+        /**
+         * =====================================================
+         * POLYGON FILL
+         * =====================================================
+         */
+
+        map.addLayer({
+          id: "polygon-fill",
+
+          type: "fill",
+
+          source: "world",
+
+          filter: [
+            "any",
+
+            ["==", ["geometry-type"], "Polygon"],
+
+            [
+              "==",
+              ["geometry-type"],
+              "MultiPolygon",
+            ],
+          ],
+
+          paint: {
+            "fill-color": [
+              "case",
+
+              /**
+               * semantic coloring examples
+               */
+
+              [
+                "has",
+                "building",
+              ],
+              "#444444",
+
+              [
+                "has",
+                "landuse",
+              ],
+              "#224422",
+
+              [
+                "has",
+                "highway",
+              ],
+              "#553311",
+
+              "#2c5cff",
+            ],
+
+            "fill-opacity": 0.35,
+          },
+        });
+
+        /**
+         * =====================================================
+         * POLYGON OUTLINE
+         * =====================================================
+         */
+
+        map.addLayer({
+          id: "polygon-outline",
+
+          type: "line",
+
+          source: "world",
+
+          filter: [
+            "any",
+
+            ["==", ["geometry-type"], "Polygon"],
+
+            [
+              "==",
+              ["geometry-type"],
+              "MultiPolygon",
+            ],
+          ],
+
+          paint: {
+            "line-color": "#88aaff",
+
+            "line-width": 1,
+
+            "line-opacity": 0.7,
+          },
+        });
+
+        /**
+         * =====================================================
+         * LINESTRING ROADS
+         * =====================================================
+         */
+
+        map.addLayer({
+          id: "line-features",
+
+          type: "line",
+
+          source: "world",
+
+          filter: [
+            "any",
+
+            [
+              "==",
+              ["geometry-type"],
+              "LineString",
+            ],
+
+            [
+              "==",
+              ["geometry-type"],
+              "MultiLineString",
+            ],
+          ],
+
+          paint: {
+            /**
+             * semantic coloring
+             */
+
+            "line-color": [
+              "case",
+
+              [
+                "==",
+                ["get", "highway"],
+                "motorway",
+              ],
+              "#ff5533",
+
+              [
+                "==",
+                ["get", "highway"],
+                "primary",
+              ],
+              "#ffaa00",
+
+              [
+                "==",
+                ["get", "highway"],
+                "secondary",
+              ],
+              "#ffee88",
+
+              "#00ffff",
+            ],
+
+            /**
+             * semantic width
+             */
+
+            "line-width": [
+              "case",
+
+              [
+                "==",
+                ["get", "highway"],
+                "motorway",
+              ],
+              7,
+
+              [
+                "==",
+                ["get", "highway"],
+                "primary",
+              ],
+              5,
+
+              [
+                "==",
+                ["get", "highway"],
+                "secondary",
+              ],
+              3,
+
+              1.5,
+            ],
+
+            "line-opacity": 0.95,
+          },
+        });
+
+        /**
+         * =====================================================
+         * POINT FEATURES
+         * =====================================================
+         */
+
+        map.addLayer({
+          id: "point-features",
+
+          type: "circle",
+
+          source: "world",
+
+          filter: [
+            "==",
+            ["geometry-type"],
+            "Point",
+          ],
+
+          paint: {
+            "circle-radius": 4,
+
+            "circle-color": "#ffee00",
+
+            "circle-opacity": 0.9,
+
+            "circle-stroke-width": 1,
+
+            "circle-stroke-color": "#000000",
+          },
+        });
+
+        /**
+         * =====================================================
+         * LABELS
+         * =====================================================
+         */
+
+        map.addLayer({
+          id: "labels",
+
+          type: "symbol",
+
+          source: "world",
+
+          layout: {
+            "text-field": [
+              "coalesce",
+
+              ["get", "name"],
+
+              ["get", "highway"],
+
+              ["get", "landuse"],
+
+              "unknown",
+            ],
+
+            "text-size": 10,
+
+            "text-offset": [0, 1.2],
+          },
+
+          paint: {
+            "text-color": "#ffffff",
+
+            "text-halo-color":
+              "#000000",
+
+            "text-halo-width": 1,
+          },
+        });
+
+        /**
+         * =====================================================
+         * CLICK DEBUG INSPECTOR
+         * =====================================================
+         */
+
+        map.on("click", (e) => {
+          const features =
+            map.queryRenderedFeatures(
+              e.point
+            );
+
+          if (!features.length) return;
+
+          const f = features[0];
+
+          console.log(
+            "CLICKED FEATURE:",
+            f
+          );
+
+          new maplibregl.Popup()
+            .setLngLat(e.lngLat)
+            .setHTML(`
+              <div style="font-family:sans-serif;">
+                <b>
+                  ${
+                    f.properties?.name ||
+                    "Unnamed"
+                  }
+                </b>
+
+                <br/>
+
+                Geometry:
+                ${f.geometry.type}
+
+                <br/>
+
+                Highway:
+                ${
+                  f.properties?.highway ||
+                  "none"
+                }
+
+                <br/>
+
+                Landuse:
+                ${
+                  f.properties?.landuse ||
+                  "none"
+                }
+              </div>
+            `)
+            .addTo(map);
+        });
+
+        /**
+         * =====================================================
+         * FIT BOUNDS
+         * =====================================================
+         */
+
+        const bounds =
+          new maplibregl.LngLatBounds();
+
+        geojson.features.forEach(
+          (f: any) => {
+            const g = f.geometry;
+
+            if (!g) return;
+
+            /**
+             * recursive coord walker
+             */
+
+            const walk = (
+              coords: any
+            ) => {
+              if (
+                typeof coords[0] ===
+                "number"
+              ) {
+                bounds.extend([
+                  coords[0],
+                  coords[1],
+                ]);
+
+                return;
+              }
+
+              coords.forEach(walk);
+            };
+
+            walk(g.coordinates);
+          }
+        );
+
+        if (!bounds.isEmpty()) {
+          map.fitBounds(bounds, {
+            padding: 40,
+          });
+        }
+
+        console.log(
+          "GIS RENDER COMPLETE"
+        );
+      } catch (err) {
+        console.error(
+          "GIS LOAD ERROR:",
+          err
+        );
+      }
     });
+
+    /**
+     * =====================================================
+     * CLEANUP
+     * =====================================================
+     */
 
     return () => {
       map.remove();
-      mapRef.current = null;
     };
   }, []);
 
-  // 3. runtime mutation test
-  useEffect(() => {
-    const interval = setInterval(() => {
-      addRoad({
-        id: "road_dynamic_" + Date.now(),
-        type: "Feature",
-        properties: {
-          name: "dynamic road",
-          roadClass: "residential",
-          lanesForward: 1,
-          lanesBackward: 1,
-          speedLimit: 30,
-          debugColor: "#33ffaa",
-        },
-        geometry: {
-          type: "LineString",
-          coordinates: [
-            [128.588, 35.150],
-            [128.589, 35.151],
-          ],
-        },
-      });
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [addRoad]);
-
-  // 4. state sync → map
-  useEffect(() => {
-    const map = mapRef.current;
-    if (!map) return;
-
-    const source = map.getSource("world") as maplibregl.GeoJSONSource;
-    if (!source) return;
-
-    source.setData({
-      type: "FeatureCollection",
-      features: features as any,
-    });
-  }, [features]);
-
   return (
     <div
-      ref={ref}
+      ref={mapContainer}
       style={{
         width: "100%",
         height: "100vh",
+        background: "#000",
       }}
     />
   );

@@ -1,20 +1,43 @@
-export function addRoadLayer(map: any) {
+export function addRoadLayer(
+  map: any
+) {
   map.addLayer({
-    id: "road-lines",
+    id: "roads",
+
     type: "line",
+
     source: "world",
 
     filter: [
-      "any",
-      ["==", ["geometry-type"], "LineString"],
+      "==",
+      ["geometry-type"],
+      "LineString",
     ],
 
     paint: {
-      "line-color": ["get", "debugColor"],
+      "line-color": [
+        "match",
+        ["get", "highway"],
+
+        "motorway",
+        "#ff8844",
+
+        "primary",
+        "#ffcc44",
+
+        "#888888",
+      ],
+
       "line-width": [
-        "case",
-        ["==", ["get", "roadClass"], "arterial"], 8,
-        ["==", ["get", "roadClass"], "residential"], 4,
+        "match",
+        ["get", "highway"],
+
+        "motorway",
+        6,
+
+        "primary",
+        4,
+
         2,
       ],
     },
