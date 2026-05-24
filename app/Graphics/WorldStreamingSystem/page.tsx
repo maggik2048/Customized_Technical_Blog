@@ -1,6 +1,6 @@
 "use client";
 
-import RoadMap from "./RoadMap";
+import RoadMap from "./components/RoadMap";
 
 export default function Page() {
 
@@ -12,9 +12,11 @@ export default function Page() {
         height: "100vh",
         overflow: "hidden",
         background: "#111",
+        position: "relative",
       }}
     >
 
+      {/* HUD / TITLE OVERLAY */}
       <div
         style={{
           position: "absolute",
@@ -26,15 +28,15 @@ export default function Page() {
           fontWeight: "bold",
           padding: "12px 18px",
           borderRadius: "10px",
-          background:
-            "rgba(0,0,0,0.55)",
-          backdropFilter:
-            "blur(6px)",
+          background: "rgba(0,0,0,0.55)",
+          backdropFilter: "blur(6px)",
+          pointerEvents: "none",
         }}
       >
         World Streaming System
       </div>
 
+      {/* MAP RENDERER */}
       <RoadMap />
 
     </div>
