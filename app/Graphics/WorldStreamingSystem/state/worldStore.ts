@@ -1,22 +1,12 @@
 import { create } from "zustand";
-
-export type WorldFeature =
-  GeoJSON.Feature;
+import type { Feature } from "geojson";
 
 type WorldState = {
-  features: WorldFeature[];
-
-  setFeatures: (
-    features: WorldFeature[]
-  ) => void;
+  features: Feature[];
+  setFeatures: (features: Feature[]) => void;
 };
 
-export const useWorldStore =
-  create<WorldState>((set) => ({
-    features: [],
-
-    setFeatures: (features) =>
-      set({
-        features,
-      }),
-  }));
+export const useWorldStore = create<WorldState>((set) => ({
+  features: [],
+  setFeatures: (features) => set({ features }),
+}));

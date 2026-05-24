@@ -5,6 +5,8 @@ import maplibregl from "maplibre-gl";
 
 import "maplibre-gl/dist/maplibre-gl.css";
 
+import { useWorldStore } from "../state/worldStore";
+
 /**
  * =====================================================
  * UNIVERSAL GIS RENDERER
@@ -27,6 +29,11 @@ import "maplibre-gl/dist/maplibre-gl.css";
 
 export default function WorldRenderer() {
   const mapContainer = useRef<HTMLDivElement | null>(null);
+
+  /**
+   * 🔥 STORE (exporter용)
+   */
+  const setFeatures = useWorldStore((s) => s.setFeatures);
 
   useEffect(() => {
     if (!mapContainer.current) return;
@@ -68,9 +75,7 @@ export default function WorldRenderer() {
 
     map.on("load", async () => {
       try {
-        const res = await fetch(
-          "/gis/losAngeles.geojson"
-        );
+        const res = await fetch("/gis/losAngeles.geojson");
 
         const geojson = await res.json();
 
@@ -83,11 +88,15 @@ export default function WorldRenderer() {
          */
 
         if (!geojson.features) {
-          console.error(
-            "No features found"
-          );
+          console.error("No features found");
           return;
         }
+
+        /**
+         * 🔥 핵심 추가 (유일 변경점)
+         * exporter / houdini / unreal pipeline용 canonical state
+         */
+        setFeatures(geojson.features);
 
         /**
          * =====================================================
@@ -97,7 +106,6 @@ export default function WorldRenderer() {
 
         map.addSource("world", {
           type: "geojson",
-
           data: geojson,
         });
 
@@ -119,37 +127,20 @@ export default function WorldRenderer() {
 
             ["==", ["geometry-type"], "Polygon"],
 
-            [
-              "==",
-              ["geometry-type"],
-              "MultiPolygon",
-            ],
+            ["==", ["geometry-type"], "MultiPolygon"],
           ],
 
           paint: {
             "fill-color": [
               "case",
 
-              /**
-               * semantic coloring examples
-               */
-
-              [
-                "has",
-                "building",
-              ],
+              ["has", "building"],
               "#444444",
 
-              [
-                "has",
-                "landuse",
-              ],
+              ["has", "landuse"],
               "#224422",
 
-              [
-                "has",
-                "highway",
-              ],
+              ["has", "highway"],
               "#553311",
 
               "#2c5cff",
@@ -177,11 +168,7 @@ export default function WorldRenderer() {
 
             ["==", ["geometry-type"], "Polygon"],
 
-            [
-              "==",
-              ["geometry-type"],
-              "MultiPolygon",
-            ],
+            ["==", ["geometry-type"], "MultiPolygon"],
           ],
 
           paint: {
@@ -209,77 +196,37 @@ export default function WorldRenderer() {
           filter: [
             "any",
 
-            [
-              "==",
-              ["geometry-type"],
-              "LineString",
-            ],
+            ["==", ["geometry-type"], "LineString"],
 
-            [
-              "==",
-              ["geometry-type"],
-              "MultiLineString",
-            ],
+            ["==", ["geometry-type"], "MultiLineString"],
           ],
 
           paint: {
-            /**
-             * semantic coloring
-             */
-
             "line-color": [
               "case",
 
-              [
-                "==",
-                ["get", "highway"],
-                "motorway",
-              ],
+              ["==", ["get", "highway"], "motorway"],
               "#ff5533",
 
-              [
-                "==",
-                ["get", "highway"],
-                "primary",
-              ],
+              ["==", ["get", "highway"], "primary"],
               "#ffaa00",
 
-              [
-                "==",
-                ["get", "highway"],
-                "secondary",
-              ],
+              ["==", ["get", "highway"], "secondary"],
               "#ffee88",
 
               "#00ffff",
             ],
 
-            /**
-             * semantic width
-             */
-
             "line-width": [
               "case",
 
-              [
-                "==",
-                ["get", "highway"],
-                "motorway",
-              ],
+              ["==", ["get", "highway"], "motorway"],
               7,
 
-              [
-                "==",
-                ["get", "highway"],
-                "primary",
-              ],
+              ["==", ["get", "highway"], "primary"],
               5,
 
-              [
-                "==",
-                ["get", "highway"],
-                "secondary",
-              ],
+              ["==", ["get", "highway"], "secondary"],
               3,
 
               1.5,
@@ -302,11 +249,7 @@ export default function WorldRenderer() {
 
           source: "world",
 
-          filter: [
-            "==",
-            ["geometry-type"],
-            "Point",
-          ],
+          filter: ["==", ["geometry-type"], "Point"],
 
           paint: {
             "circle-radius": 4,
@@ -355,8 +298,7 @@ export default function WorldRenderer() {
           paint: {
             "text-color": "#ffffff",
 
-            "text-halo-color":
-              "#000000",
+            "text-halo-color": "#000000",
 
             "text-halo-width": 1,
           },
@@ -369,51 +311,25 @@ export default function WorldRenderer() {
          */
 
         map.on("click", (e) => {
-          const features =
-            map.queryRenderedFeatures(
-              e.point
-            );
+          const features = map.queryRenderedFeatures(e.point);
 
           if (!features.length) return;
 
           const f = features[0];
 
-          console.log(
-            "CLICKED FEATURE:",
-            f
-          );
+          console.log("CLICKED FEATURE:", f);
 
           new maplibregl.Popup()
             .setLngLat(e.lngLat)
             .setHTML(`
               <div style="font-family:sans-serif;">
-                <b>
-                  ${
-                    f.properties?.name ||
-                    "Unnamed"
-                  }
-                </b>
-
+                <b>${f.properties?.name || "Unnamed"}</b>
                 <br/>
-
-                Geometry:
-                ${f.geometry.type}
-
+                Geometry: ${f.geometry.type}
                 <br/>
-
-                Highway:
-                ${
-                  f.properties?.highway ||
-                  "none"
-                }
-
+                Highway: ${f.properties?.highway || "none"}
                 <br/>
-
-                Landuse:
-                ${
-                  f.properties?.landuse ||
-                  "none"
-                }
+                Landuse: ${f.properties?.landuse || "none"}
               </div>
             `)
             .addTo(map);
@@ -425,63 +341,33 @@ export default function WorldRenderer() {
          * =====================================================
          */
 
-        const bounds =
-          new maplibregl.LngLatBounds();
+        const bounds = new maplibregl.LngLatBounds();
 
-        geojson.features.forEach(
-          (f: any) => {
-            const g = f.geometry;
+        geojson.features.forEach((f: any) => {
+          const g = f.geometry;
 
-            if (!g) return;
+          if (!g) return;
 
-            /**
-             * recursive coord walker
-             */
+          const walk = (coords: any) => {
+            if (typeof coords[0] === "number") {
+              bounds.extend([coords[0], coords[1]]);
+              return;
+            }
+            coords.forEach(walk);
+          };
 
-            const walk = (
-              coords: any
-            ) => {
-              if (
-                typeof coords[0] ===
-                "number"
-              ) {
-                bounds.extend([
-                  coords[0],
-                  coords[1],
-                ]);
-
-                return;
-              }
-
-              coords.forEach(walk);
-            };
-
-            walk(g.coordinates);
-          }
-        );
+          walk(g.coordinates);
+        });
 
         if (!bounds.isEmpty()) {
-          map.fitBounds(bounds, {
-            padding: 40,
-          });
+          map.fitBounds(bounds, { padding: 40 });
         }
 
-        console.log(
-          "GIS RENDER COMPLETE"
-        );
+        console.log("GIS RENDER COMPLETE");
       } catch (err) {
-        console.error(
-          "GIS LOAD ERROR:",
-          err
-        );
+        console.error("GIS LOAD ERROR:", err);
       }
     });
-
-    /**
-     * =====================================================
-     * CLEANUP
-     * =====================================================
-     */
 
     return () => {
       map.remove();
