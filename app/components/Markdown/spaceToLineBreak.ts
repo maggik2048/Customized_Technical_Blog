@@ -1,11 +1,3 @@
-/**
- * GPT / browser paste용 space → line break 복원 유틸
- *
- * 특징:
- * - 2개 이상 공백을 "의미 있는 구분"으로 보고 줄바꿈 처리
- * - 과도한 분해 방지용 안전 규칙 포함
- */
-
 export function spaceToLineBreak(input: string): string {
   if (!input || typeof input !== "string") return "";
 
@@ -14,29 +6,31 @@ export function spaceToLineBreak(input: string): string {
   // 1. CRLF → LF 통일
   text = text.replace(/\r\n/g, "\n");
 
-  // 2. 탭 → space
+  // 2. tab → space
   text = text.replace(/\t/g, " ");
 
   /**
-   * 3. 핵심 규칙
-   * -------------------------
-   * GPT/브라우저 복붙에서는
-   * "  " (2칸 이상 space)가
-   * 시각적으로 줄 구분 역할을 하는 경우가 많음
-   *
-   * → 이를 줄바꿈으로 승격
+   * 3. 핵심: 2칸 이상 space → 줄바꿈
+   * (layout hint를 구조로 변환)
    */
   text = text.replace(/ {2,}/g, "\n");
 
-  // 4. 연속 줄바꿈 정리 (너무 많이 깨지는 것 방지)
+  // 4. 연속 줄바꿈 정리
   text = text.replace(/\n{3,}/g, "\n\n");
 
-  // 5. 줄 단위 trim (깔끔한 출력)
+  /**
+   * 5. 🔥 중요 수정
+   * 기존: line.trim() → indentation 삭제됨 (문제)
+   *
+   * 변경:
+   * - 앞쪽 space 유지 (indentation 보존)
+   * - 뒤쪽만 정리
+   */
   text = text
     .split("\n")
-    .map((line) => line.trim())
+    .map((line) => line.replace(/\s+$/g, "")) // trailing만 제거
     .join("\n");
 
-  // 6. 최종 trim
+  // 6. 최종 정리
   return text.trim();
 }

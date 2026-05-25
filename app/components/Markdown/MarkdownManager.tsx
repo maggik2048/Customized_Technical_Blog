@@ -37,7 +37,7 @@ export default function MarkdownImageManager({
     (text: string) => {
       const processed = spaceToLineBreak(text);
 
-      // 🔥 중요: 변경된 경우만 업데이트
+      // 변경된 경우만 업데이트
       if (processed !== text) {
         setContent(processed);
       }
@@ -138,7 +138,7 @@ export default function MarkdownImageManager({
             },
           });
 
-          // 🔥 핵심: 즉시 말고 post-process 예약
+          // 즉시 말고 post-process 예약
           schedulePostProcess(next);
 
           return true;
@@ -151,7 +151,7 @@ export default function MarkdownImageManager({
         if (update.docChanged) {
           setContent(update.state.doc.toString());
 
-          // 🔥 typing에도 약하게 post process 적용
+          //  typing에도 약하게 post process 적용
           schedulePostProcess(update.state.doc.toString());
         }
       }),
