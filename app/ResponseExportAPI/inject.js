@@ -61,6 +61,10 @@ function htmlToMarkdown(html) {
   let out = "";
 
   const walk = (node) => {
+    /**
+     * TEXT NODE
+     */
+
     if (node.nodeType === Node.TEXT_NODE) {
       const text = node.textContent || "";
 
@@ -72,6 +76,10 @@ function htmlToMarkdown(html) {
     const el = node;
 
     switch (el.tagName) {
+      /**
+       * HEADINGS
+       */
+
       case "H1":
         out += `\n# ${el.textContent?.trim()}\n\n`;
         return;
@@ -84,9 +92,17 @@ function htmlToMarkdown(html) {
         out += `\n### ${el.textContent?.trim()}\n\n`;
         return;
 
+      /**
+       * PARAGRAPH
+       */
+
       case "P":
         out += `\n${el.textContent?.trim()}\n\n`;
         return;
+
+      /**
+       * DIV
+       */
 
       case "DIV": {
         const hasBlockChild = Array.from(
@@ -126,6 +142,10 @@ function htmlToMarkdown(html) {
         return;
       }
 
+      /**
+       * SPAN
+       */
+
       case "SPAN": {
         const text =
           el.textContent || "";
@@ -135,19 +155,35 @@ function htmlToMarkdown(html) {
         return;
       }
 
+      /**
+       * BR
+       */
+
       case "BR":
         out += "\n";
         return;
+
+      /**
+       * STRONG
+       */
 
       case "STRONG":
       case "B":
         out += `**${el.textContent}**`;
         return;
 
+      /**
+       * EMPHASIS
+       */
+
       case "EM":
       case "I":
         out += `*${el.textContent}*`;
         return;
+
+      /**
+       * UL
+       */
 
       case "UL":
         Array.from(el.children).forEach(
@@ -160,6 +196,10 @@ function htmlToMarkdown(html) {
 
         return;
 
+      /**
+       * OL
+       */
+
       case "OL":
         Array.from(el.children).forEach(
           (li, idx) => {
@@ -171,9 +211,17 @@ function htmlToMarkdown(html) {
 
         return;
 
+      /**
+       * LI
+       */
+
       case "LI":
         out += `- ${el.textContent?.trim()}\n`;
         return;
+
+      /**
+       * TABLE
+       */
 
       case "TABLE":
         out +=
@@ -183,13 +231,25 @@ function htmlToMarkdown(html) {
 
         return;
 
+      /**
+       * PRE
+       */
+
       case "PRE":
         out += `\n\`\`\`\n${el.textContent}\n\`\`\`\n`;
         return;
 
+      /**
+       * INLINE CODE
+       */
+
       case "CODE":
         out += `\`${el.textContent}\``;
         return;
+
+      /**
+       * LINK
+       */
 
       case "A": {
         const href =
@@ -205,6 +265,10 @@ function htmlToMarkdown(html) {
         return;
       }
 
+      /**
+       * IMAGE
+       */
+
       case "IMG": {
         const src =
           el.getAttribute("src");
@@ -215,6 +279,10 @@ function htmlToMarkdown(html) {
 
         return;
       }
+
+      /**
+       * DEFAULT
+       */
 
       default:
         el.childNodes.forEach(walk);
@@ -227,91 +295,6 @@ function htmlToMarkdown(html) {
     .replace(/\r/g, "")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
-}
-
-/* =========================================
-   INJECT TO TEXTAREA
-========================================= */
-
-function injectToEditor(text) {
-  console.log(
-    "injectToEditor CALLED"
-  );
-
-  const textarea =
-    document.querySelector("textarea");
-
-  if (!textarea) {
-    console.log("TEXTAREA NOT FOUND");
-    return false;
-  }
-
-  console.log("TEXTAREA FOUND");
-
-  const nativeSetter =
-    Object.getOwnPropertyDescriptor(
-      window.HTMLTextAreaElement.prototype,
-      "value"
-    )?.set;
-
-  if (!nativeSetter) {
-    console.log(
-      "NATIVE SETTER NOT FOUND"
-    );
-
-    return false;
-  }
-
-  nativeSetter.call(textarea, text);
-
-  textarea.dispatchEvent(
-    new Event("input", {
-      bubbles: true,
-    })
-  );
-
-  console.log(
-    "TEXTAREA VALUE AFTER:"
-  );
-
-  console.log(textarea.value);
-
-  console.log("INJECTION SUCCESS");
-
-  return true;
-}
-
-/* =========================================
-   WAIT FOR EDITOR
-========================================= */
-
-function waitForEditorAndInject(text) {
-  console.log("WAITING FOR EDITOR");
-
-  let tries = 0;
-
-  const interval = setInterval(() => {
-    tries++;
-
-    console.log("TRY:", tries);
-
-    const success =
-      injectToEditor(text);
-
-    if (success) {
-      clearInterval(interval);
-
-      console.log("DONE");
-    }
-
-    if (tries >= 40) {
-      clearInterval(interval);
-
-      console.log(
-        "FAILED MAX RETRY"
-      );
-    }
-  }, 500);
 }
 
 /* =========================================
@@ -349,6 +332,12 @@ chrome.storage.local.get(
     console.log("HTML FOUND:");
     console.log(html);
 
+    /**
+     * =====================================
+     * HTML -> MARKDOWN
+     * =====================================
+     */
+
     const markdown =
       htmlToMarkdown(html);
 
@@ -366,8 +355,29 @@ chrome.storage.local.get(
 
     console.log(markdown);
 
-    waitForEditorAndInject(
-      markdown
-    );
+    /**
+     * =====================================
+     * WAIT FOR REACT HYDRATION
+     * =====================================
+     */
+
+    setTimeout(() => {
+      console.log(
+        "POSTING GPT_MARKDOWN..."
+      );
+
+      window.postMessage(
+        {
+          type: "GPT_MARKDOWN",
+
+          payload: markdown,
+        },
+        "*"
+      );
+
+      console.log(
+        "GPT_MARKDOWN POSTED"
+      );
+    }, 1500);
   }
 );

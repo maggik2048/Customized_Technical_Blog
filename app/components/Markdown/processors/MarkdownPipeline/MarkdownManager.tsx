@@ -46,12 +46,6 @@ const turndown = new TurndownService({
   emDelimiter: "*",
 });
 
-/**
- * =========================================
- * GFM
- * =========================================
- */
-
 turndown.use(gfm);
 
 /**
@@ -72,6 +66,107 @@ export default function MarkdownManager({
 
   const previewRef =
     React.useRef<HTMLDivElement>(null);
+
+  /**
+   * =====================================
+   * CODEMIRROR VIEW REF
+   * =====================================
+   */
+
+  const editorViewRef =
+    React.useRef<EditorView | null>(
+      null
+    );
+
+  /**
+   * =====================================
+   * GPT EXTENSION INJECTION
+   * =====================================
+   */
+
+  React.useEffect(() => {
+    const handler = (
+      event: MessageEvent
+    ) => {
+      if (
+        event.data?.type !==
+        "GPT_MARKDOWN"
+      ) {
+        return;
+      }
+
+      const markdown =
+        event.data?.payload;
+
+      if (
+        typeof markdown !==
+        "string"
+      ) {
+        return;
+      }
+
+      console.log(
+        "================================="
+      );
+
+      console.log(
+        "GPT MARKDOWN RECEIVED"
+      );
+
+      console.log(
+        "================================="
+      );
+
+      console.log(markdown);
+
+      /**
+       * react state sync
+       */
+
+      setContent(markdown);
+
+      /**
+       * codemirror sync
+       */
+
+      const view =
+        editorViewRef.current;
+
+      if (!view) {
+        console.log(
+          "EDITOR VIEW NOT READY"
+        );
+
+        return;
+      }
+
+      view.dispatch({
+        changes: {
+          from: 0,
+
+          to: view.state.doc.length,
+
+          insert: markdown,
+        },
+      });
+
+      console.log(
+        "EDITOR CONTENT REPLACED"
+      );
+    };
+
+    window.addEventListener(
+      "message",
+      handler
+    );
+
+    return () => {
+      window.removeEventListener(
+        "message",
+        handler
+      );
+    };
+  }, [setContent]);
 
   /**
    * =====================================
@@ -98,7 +193,9 @@ export default function MarkdownManager({
       view.dispatch({
         changes: {
           from: 0,
+
           to: current.length,
+
           insert: next,
         },
       });
@@ -224,7 +321,7 @@ export default function MarkdownManager({
 
   /**
    * =====================================
-   * GPT HTML -> MARKDOWN
+   * HTML -> MARKDOWN
    * =====================================
    */
 
@@ -257,6 +354,10 @@ export default function MarkdownManager({
             child.tagName.toLowerCase() ===
             "pre"
           ) {
+            /**
+             * raw html
+             */
+
             const rawHtml =
               child.innerHTML || "";
 
@@ -285,8 +386,16 @@ export default function MarkdownManager({
             const code =
               temp.textContent || "";
 
+            /**
+             * language detect
+             */
+
             const language =
               detectLanguage(code);
+
+            /**
+             * fenced markdown
+             */
 
             result +=
               "\n```" +
@@ -310,7 +419,10 @@ export default function MarkdownManager({
             ) + "\n\n";
         }
 
-        return result.trim();
+        return result
+          .replace(/\r/g, "")
+          .replace(/\n{3,}/g, "\n\n")
+          .trim();
       },
       [detectLanguage]
     );
@@ -328,6 +440,26 @@ export default function MarkdownManager({
 
         EditorView.lineWrapping,
 
+        /**
+         * editor view capture
+         */
+
+        EditorView.updateListener.of(
+          (update) => {
+            editorViewRef.current =
+              update.view;
+
+            if (
+              update.docChanged
+            ) {
+              const next =
+                update.state.doc.toString();
+
+              setContent(next);
+            }
+          }
+        ),
+
         EditorView.domEventHandlers(
           {
             paste: (
@@ -340,10 +472,6 @@ export default function MarkdownManager({
 
               event.preventDefault();
 
-              /**
-               * clipboard snapshot
-               */
-
               const clipboardData =
                 event.clipboardData;
 
@@ -352,10 +480,6 @@ export default function MarkdownManager({
               ) {
                 return true;
               }
-
-              /**
-               * upfront extraction
-               */
 
               const items =
                 Array.from(
@@ -371,10 +495,6 @@ export default function MarkdownManager({
                 clipboardData.getData(
                   "text/plain"
                 ) || "";
-
-              /**
-               * async pipeline
-               */
 
               (async () => {
                 console.log(
@@ -518,7 +638,7 @@ export default function MarkdownManager({
 
                 /**
                  * =================================
-                 * CODE BLOCK
+                 * RAW CODE PASTE
                  * =================================
                  */
 
@@ -539,7 +659,7 @@ export default function MarkdownManager({
 
                 /**
                  * =================================
-                 * NORMAL MARKDOWN
+                 * HTML -> MARKDOWN
                  * =================================
                  */
 
@@ -576,23 +696,6 @@ export default function MarkdownManager({
 
               return true;
             },
-          }
-        ),
-
-        /**
-         * DOC CHANGE
-         */
-
-        EditorView.updateListener.of(
-          (update) => {
-            if (
-              update.docChanged
-            ) {
-              const next =
-                update.state.doc.toString();
-
-              setContent(next);
-            }
           }
         ),
       ],
