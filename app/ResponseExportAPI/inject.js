@@ -235,9 +235,92 @@ function htmlToMarkdown(html) {
        * PRE
        */
 
-      case "PRE":
-        out += `\n\`\`\`\n${el.textContent}\n\`\`\`\n`;
+      case "PRE": {
+        /**
+         * GPT 내부 HTML 유지
+         */
+
+        const rawHtml =
+          el.innerHTML || "";
+
+        /**
+         * <br> -> newline
+         */
+
+        const withBreaks =
+          rawHtml.replace(
+            /<br\s*\/?>/gi,
+            "\n"
+          );
+
+        /**
+         * HTML decode
+         */
+
+        const temp =
+          document.createElement(
+            "div"
+          );
+
+        temp.innerHTML =
+          withBreaks;
+
+        /**
+         * 실제 코드 추출
+         */
+
+        let code =
+          temp.textContent || "";
+
+        /**
+         * trim
+         */
+
+        code = code
+          .replace(/^\n+/, "")
+          .replace(/\n+$/, "");
+
+        /**
+         * language 추출
+         */
+
+        let language = "";
+
+        const langElement =
+          el.querySelector(
+            ".text-sm.font-medium"
+          );
+
+        if (langElement) {
+          language =
+            langElement.textContent?.trim() ||
+            "";
+        }
+
+        /**
+         * 맨 앞 중복 language 제거
+         *
+         * 예:
+         * C++#include ...
+         */
+
+        if (
+          language &&
+          code.startsWith(language)
+        ) {
+          code = code.slice(
+            language.length
+          );
+        }
+
+        /**
+         * markdown fenced block
+         */
+
+        out += `\n\`\`\`${language.toLowerCase()}\n${code}\n\`\`\`\n`;
+
         return;
+      }
 
       /**
        * INLINE CODE

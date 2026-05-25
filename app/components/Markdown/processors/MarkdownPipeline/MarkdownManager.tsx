@@ -372,7 +372,9 @@ export default function MarkdownManager({
               );
 
             /**
-             * html -> text
+             * html -> rendered text
+             * 핵심:
+             * innerText 사용
              */
 
             const temp =
@@ -384,7 +386,7 @@ export default function MarkdownManager({
               withBreaks;
 
             const code =
-              temp.textContent || "";
+              temp.innerText || "";
 
             /**
              * language detect
