@@ -16,6 +16,8 @@ import { gfm } from "turndown-plugin-gfm";
 
 import MarkdownPreview from "./MarkdownPreview";
 
+import { uploadImage } from "../../imagehandle/uploadImage";
+
 /**
  * =========================================
  * TYPES
@@ -46,13 +48,8 @@ const turndown = new TurndownService({
 
 /**
  * =========================================
- * GITHUB FLAVORED MARKDOWN
+ * GFM
  * =========================================
- *
- * 지원:
- * - table
- * - strikethrough
- * - task list
  */
 
 turndown.use(gfm);
@@ -234,10 +231,6 @@ export default function MarkdownManager({
   const convertGPTClipboard =
     React.useCallback(
       (html: string) => {
-        /**
-         * html parse
-         */
-
         const parser =
           new DOMParser();
 
@@ -247,15 +240,7 @@ export default function MarkdownManager({
             "text/html"
           );
 
-        /**
-         * 최종 markdown
-         */
-
         let result = "";
-
-        /**
-         * body children
-         */
 
         const children = Array.from(
           doc.body.children
@@ -272,11 +257,6 @@ export default function MarkdownManager({
             child.tagName.toLowerCase() ===
             "pre"
           ) {
-            /**
-             * GPT clipboard 는
-             * br 기반 linebreak 많음
-             */
-
             const rawHtml =
               child.innerHTML || "";
 
@@ -305,16 +285,8 @@ export default function MarkdownManager({
             const code =
               temp.textContent || "";
 
-            /**
-             * language detect
-             */
-
             const language =
               detectLanguage(code);
-
-            /**
-             * fenced markdown
-             */
 
             result +=
               "\n```" +
@@ -332,14 +304,6 @@ export default function MarkdownManager({
            * =================================
            */
 
-          /**
-           * GFM plugin 덕분에:
-           * - table
-           * - task list
-           * - strikethrough
-           * 지원됨
-           */
-
           result +=
             turndown.turndown(
               child.outerHTML
@@ -349,86 +313,6 @@ export default function MarkdownManager({
         return result.trim();
       },
       [detectLanguage]
-    );
-
-  /**
-   * =====================================
-   * CUSTOM PASTE
-   * =====================================
-   */
-
-  const handleMarkdownPaste =
-    React.useCallback(
-      (
-        event: ClipboardEvent,
-        view: EditorView
-      ) => {
-        /**
-         * html
-         */
-
-        const html =
-          event.clipboardData?.getData(
-            "text/html"
-          ) || "";
-
-        /**
-         * plain
-         */
-
-        const plain =
-          event.clipboardData?.getData(
-            "text/plain"
-          ) || "";
-
-        console.log("[HTML]");
-        console.log(html);
-
-        console.log("[PLAIN]");
-        console.log(plain);
-
-        /**
-         * =================================
-         * HTML EXISTS
-         * =================================
-         */
-
-        if (
-          html.trim().length > 0
-        ) {
-          const markdown =
-            convertGPTClipboard(
-              html
-            );
-
-          console.log(
-            "[FINAL MARKDOWN]"
-          );
-
-          console.log(markdown);
-
-          insertText(
-            view,
-            markdown
-          );
-
-          return true;
-        }
-
-        /**
-         * =================================
-         * PLAIN TEXT FALLBACK
-         * =================================
-         */
-
-        insertText(view, plain);
-
-        return true;
-      },
-      [
-        convertGPTClipboard,
-        insertText,
-      ]
     );
 
   /**
@@ -450,69 +334,247 @@ export default function MarkdownManager({
               event,
               view
             ) => {
-              console.log(
-                "===== PASTE EVENT ====="
-              );
-
               /**
-               * AST 출력
-               */
-
-              logCurrentMarkdownTree(
-                view
-              );
-
-              /**
-               * 현재 code block 내부?
-               */
-
-              const insideCode =
-                isInsideCodeBlock(
-                  view
-                );
-
-              /**
-               * =================================
-               * INSIDE CODE BLOCK
-               * =================================
-               */
-
-              if (insideCode) {
-                console.log(
-                  "[PASTE] RAW CODE BLOCK PASTE"
-                );
-
-                /**
-                 * 기본 paste 허용
-                 */
-
-                return false;
-              }
-
-              /**
-               * =================================
-               * NORMAL MARKDOWN AREA
-               * =================================
-               */
-
-              console.log(
-                "[PASTE] CUSTOM HTML -> MARKDOWN"
-              );
-
-              /**
-               * 기본 paste 막기
+               * native paste 차단
                */
 
               event.preventDefault();
 
               /**
-               * custom paste
+               * clipboard snapshot
                */
 
-              return handleMarkdownPaste(
-                event as ClipboardEvent,
-                view
-              );
+              const clipboardData =
+                event.clipboardData;
+
+              if (
+                !clipboardData
+              ) {
+                return true;
+              }
+
+              /**
+               * upfront extraction
+               */
+
+              const items =
+                Array.from(
+                  clipboardData.items
+                );
+
+              const html =
+                clipboardData.getData(
+                  "text/html"
+                ) || "";
+
+              const plain =
+                clipboardData.getData(
+                  "text/plain"
+                ) || "";
+
+              /**
+               * async pipeline
+               */
+
+              (async () => {
+                console.log(
+                  "===== PASTE EVENT ====="
+                );
+
+                /**
+                 * =================================
+                 * IMAGE FIRST
+                 * =================================
+                 */
+
+                for (const item of items) {
+                  /**
+                   * FILE IMAGE
+                   */
+
+                  if (
+                    item.kind ===
+                      "file" &&
+                    item.type.startsWith(
+                      "image/"
+                    )
+                  ) {
+                    const file =
+                      item.getAsFile();
+
+                    if (!file) {
+                      continue;
+                    }
+
+                    console.log(
+                      "[IMAGE] uploading..."
+                    );
+
+                    const url =
+                      await uploadImage(
+                        file
+                      );
+
+                    if (url) {
+                      insertText(
+                        view,
+                        `\n![](${url})\n`
+                      );
+                    }
+
+                    return;
+                  }
+
+                  /**
+                   * BASE64 IMAGE
+                   */
+
+                  if (
+                    item.kind ===
+                      "string" &&
+                    item.type ===
+                      "text/html"
+                  ) {
+                    const htmlString =
+                      await new Promise<string>(
+                        (
+                          resolve
+                        ) => {
+                          item.getAsString(
+                            resolve
+                          );
+                        }
+                      );
+
+                    const match =
+                      htmlString.match(
+                        /src="data:image\/(\w+);base64,([^"]+)"/
+                      );
+
+                    if (!match) {
+                      continue;
+                    }
+
+                    const mime =
+                      match[1];
+
+                    const base64 =
+                      match[2];
+
+                    const blob =
+                      await (
+                        await fetch(
+                          `data:image/${mime};base64,${base64}`
+                        )
+                      ).blob();
+
+                    const file =
+                      new File(
+                        [blob],
+                        `paste.${mime}`,
+                        {
+                          type: `image/${mime}`,
+                        }
+                      );
+
+                    console.log(
+                      "[IMAGE] uploading base64..."
+                    );
+
+                    const url =
+                      await uploadImage(
+                        file
+                      );
+
+                    if (url) {
+                      insertText(
+                        view,
+                        `\n![](${url})\n`
+                      );
+                    }
+
+                    return;
+                  }
+                }
+
+                /**
+                 * =================================
+                 * AST
+                 * =================================
+                 */
+
+                logCurrentMarkdownTree(
+                  view
+                );
+
+                /**
+                 * inside code block?
+                 */
+
+                const insideCode =
+                  isInsideCodeBlock(
+                    view
+                  );
+
+                /**
+                 * =================================
+                 * CODE BLOCK
+                 * =================================
+                 */
+
+                if (
+                  insideCode
+                ) {
+                  console.log(
+                    "[PASTE] RAW CODE"
+                  );
+
+                  insertText(
+                    view,
+                    plain
+                  );
+
+                  return;
+                }
+
+                /**
+                 * =================================
+                 * NORMAL MARKDOWN
+                 * =================================
+                 */
+
+                console.log(
+                  "[PASTE] HTML -> MARKDOWN"
+                );
+
+                if (
+                  html.trim()
+                    .length > 0
+                ) {
+                  const markdown =
+                    convertGPTClipboard(
+                      html
+                    );
+
+                  insertText(
+                    view,
+                    markdown
+                  );
+
+                  return;
+                }
+
+                /**
+                 * plain fallback
+                 */
+
+                insertText(
+                  view,
+                  plain
+                );
+              })();
+
+              return true;
             },
           }
         ),
@@ -535,7 +597,8 @@ export default function MarkdownManager({
         ),
       ],
       [
-        handleMarkdownPaste,
+        convertGPTClipboard,
+        insertText,
         isInsideCodeBlock,
         logCurrentMarkdownTree,
         setContent,
