@@ -1,6 +1,10 @@
+// htmlToMarkdown.ts
+
 import { tableToMarkdown } from "./tableToMarkdown";
 
-export function htmlToMarkdown(html: string): string {
+export function htmlToMarkdown(
+  html: string
+): string {
   const doc = new DOMParser().parseFromString(
     html,
     "text/html"
@@ -13,8 +17,11 @@ export function htmlToMarkdown(html: string): string {
        TEXT NODE
     ========================================= */
 
-    if (node.nodeType === Node.TEXT_NODE) {
-      const text = node.textContent || "";
+    if (
+      node.nodeType === Node.TEXT_NODE
+    ) {
+      const text =
+        node.textContent || "";
 
       out += text;
 
@@ -24,10 +31,14 @@ export function htmlToMarkdown(html: string): string {
     const el = node as HTMLElement;
 
     /* =========================================
-       HEADINGS
+       TAG SWITCH
     ========================================= */
 
     switch (el.tagName) {
+      /* =========================================
+         HEADINGS
+      ========================================= */
+
       case "H1":
         out += `\n# ${el.textContent?.trim()}\n\n`;
         return;
@@ -44,42 +55,117 @@ export function htmlToMarkdown(html: string): string {
          PARAGRAPH
       ========================================= */
 
-      case "P":
-        out += `\n${el.textContent?.trim()}\n\n`;
+      case "P": {
+        const text =
+          el.textContent?.trim();
+
+        if (!text) return;
+
+        out += `${text}\n\n`;
+
         return;
+      }
 
       /* =========================================
-         DIV
+         GPT CODEMIRROR BLOCK
       ========================================= */
 
       case "DIV": {
-        const text = el.textContent?.trim();
+        const isGPTCodeBlock =
+          el.id ===
+            "code-block-viewer" ||
+          el.classList.contains(
+            "cm-editor"
+          ) ||
+          !!el.querySelector(
+            ".cm-content"
+          );
 
-        if (!text && !el.children.length) {
+        /* =========================================
+           GPT CODE BLOCK
+        ========================================= */
+
+        if (isGPTCodeBlock) {
+          const raw =
+            (
+              el.textContent || ""
+            )
+              .replace(
+                /\u00A0/g,
+                " "
+              )
+              .replace(/\r/g, "");
+
+          // language 추론
+          let lang = "";
+
+          const languageEl =
+            el.querySelector(
+              "[class*=language]"
+            );
+
+          if (
+            languageEl?.className
+          ) {
+            const match =
+              languageEl.className.match(
+                /language-([\w#+-]+)/
+              );
+
+            lang =
+              match?.[1] || "";
+          }
+
+          out +=
+            `\n\`\`\`${lang}\n` +
+            raw.trimEnd() +
+            `\n\`\`\`\n\n`;
+
           return;
         }
 
-        const hasBlockChild = Array.from(
-          el.children
-        ).some((child) =>
-          [
-            "DIV",
-            "P",
-            "H1",
-            "H2",
-            "H3",
-            "UL",
-            "OL",
-            "TABLE",
-            "PRE",
-            "BLOCKQUOTE",
-          ].includes(child.tagName)
-        );
+        /* =========================================
+           NORMAL DIV
+        ========================================= */
+
+        const text =
+          el.textContent?.trim();
+
+        if (
+          !text &&
+          !el.children.length
+        ) {
+          return;
+        }
+
+        const hasBlockChild =
+          Array.from(
+            el.children
+          ).some((child) =>
+            [
+              "DIV",
+              "P",
+              "H1",
+              "H2",
+              "H3",
+              "UL",
+              "OL",
+              "TABLE",
+              "PRE",
+              "BLOCKQUOTE",
+            ].includes(
+              child.tagName
+            )
+          );
 
         if (hasBlockChild) {
-          el.childNodes.forEach(walk);
+          el.childNodes.forEach(
+            walk
+          );
 
-          if (!out.endsWith("\n\n")) {
+          if (
+            !out.endsWith("\n\n")
+          ) {
             out += "\n";
           }
 
@@ -98,7 +184,8 @@ export function htmlToMarkdown(html: string): string {
       ========================================= */
 
       case "SPAN": {
-        const text = el.textContent;
+        const text =
+          el.textContent;
 
         if (!text) return;
 
@@ -121,7 +208,10 @@ export function htmlToMarkdown(html: string): string {
 
       case "STRONG":
       case "B":
-        out += `**${el.textContent || ""}**`;
+        out += `**${
+          el.textContent || ""
+        }**`;
+
         return;
 
       /* =========================================
@@ -130,7 +220,10 @@ export function htmlToMarkdown(html: string): string {
 
       case "EM":
       case "I":
-        out += `*${el.textContent || ""}*`;
+        out += `*${
+          el.textContent || ""
+        }*`;
+
         return;
 
       /* =========================================
@@ -138,9 +231,12 @@ export function htmlToMarkdown(html: string): string {
       ========================================= */
 
       case "UL": {
-        Array.from(el.children).forEach((li) => {
+        Array.from(
+          el.children
+        ).forEach((li) => {
           const text =
-            li.textContent?.trim() || "";
+            li.textContent?.trim() ||
+            "";
 
           out += `- ${text}\n`;
         });
@@ -155,12 +251,17 @@ export function htmlToMarkdown(html: string): string {
       ========================================= */
 
       case "OL": {
-        Array.from(el.children).forEach(
+        Array.from(
+          el.children
+        ).forEach(
           (li, idx) => {
             const text =
-              li.textContent?.trim() || "";
+              li.textContent?.trim() ||
+              "";
 
-            out += `${idx + 1}. ${text}\n`;
+            out += `${
+              idx + 1
+            }. ${text}\n`;
           }
         );
 
@@ -183,7 +284,8 @@ export function htmlToMarkdown(html: string): string {
 
       case "BLOCKQUOTE": {
         const text =
-          el.textContent?.trim() || "";
+          el.textContent?.trim() ||
+          "";
 
         out += `\n> ${text}\n\n`;
 
@@ -205,12 +307,14 @@ export function htmlToMarkdown(html: string): string {
         return;
 
       /* =========================================
-         PRE (MULTILINE CODE BLOCK)
+         PRE
       ========================================= */
 
       case "PRE": {
         const code =
-          el.querySelector("code");
+          el.querySelector(
+            "code"
+          );
 
         const className =
           code?.className || "";
@@ -229,7 +333,10 @@ export function htmlToMarkdown(html: string): string {
             el.textContent ||
             ""
           )
-            .replace(/\u00A0/g, " ")
+            .replace(
+              /\u00A0/g,
+              " "
+            )
             .replace(/\t/g, "  ")
             .replace(/\r/g, "");
 
@@ -246,10 +353,9 @@ export function htmlToMarkdown(html: string): string {
       ========================================= */
 
       case "CODE": {
-        // PRE 내부 CODE는 PRE에서 처리
         if (
-          el.parentElement?.tagName ===
-          "PRE"
+          el.parentElement
+            ?.tagName === "PRE"
         ) {
           return;
         }
@@ -263,18 +369,22 @@ export function htmlToMarkdown(html: string): string {
       }
 
       /* =========================================
-         DEFAULT RECURSIVE WALK
+         DEFAULT
       ========================================= */
 
       default:
-        el.childNodes.forEach(walk);
+        el.childNodes.forEach(
+          walk
+        );
     }
   };
 
-  doc.body.childNodes.forEach(walk);
+  doc.body.childNodes.forEach(
+    walk
+  );
 
   /* =========================================
-     FINAL NORMALIZATION
+     FINAL NORMALIZE
   ========================================= */
 
   return out
