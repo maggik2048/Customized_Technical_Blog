@@ -42,26 +42,6 @@ const turndown = new TurndownService({
 
 /**
  * =========================================
- * GPT / CHATGPT HTML -> MARKDOWN
- * =========================================
- *
- * 핵심 전략:
- *
- * 1. 일반 텍스트
- *    -> turndown
- *
- * 2. code/pre
- *    -> plain text 기반 fenced code block
- *
- * 이유:
- * text/html 의 code block 은
- * flatten 되는 경우가 많음.
- *
- * plain text 는 indentation 유지됨.
- */
-
-/**
- * =========================================
  * COMPONENT
  * =========================================
  */
@@ -184,10 +164,13 @@ export default function MarkdownManager({
 
   const detectLanguage =
     React.useCallback((text: string) => {
-      const lower = text.toLowerCase();
+      const lower =
+        text.toLowerCase();
 
       if (
-        lower.includes("import threading")
+        lower.includes(
+          "import threading"
+        )
       ) {
         return "python";
       }
@@ -199,19 +182,25 @@ export default function MarkdownManager({
       }
 
       if (
-        lower.includes("console.log")
+        lower.includes(
+          "console.log"
+        )
       ) {
         return "js";
       }
 
       if (
-        lower.includes("interface ")
+        lower.includes(
+          "interface "
+        )
       ) {
         return "ts";
       }
 
       if (
-        lower.includes("public class")
+        lower.includes(
+          "public class"
+        )
       ) {
         return "java";
       }
@@ -221,32 +210,19 @@ export default function MarkdownManager({
 
   /**
    * =====================================
-   * EXTRACT GPT CODE BLOCKS
+   * GPT HTML -> MARKDOWN
    * =====================================
-   *
-   * GPT clipboard 특징:
-   *
-   * - text/html 에 code/pre 있음
-   * - text/plain 은 indentation 유지
-   *
-   * 그래서:
-   *
-   * HTML 구조 기준으로
-   * code block 개수 파악 후
-   * plain text 에서 fenced wrapping
    */
 
   const convertGPTClipboard =
     React.useCallback(
-      (
-        html: string,
-        plain: string
-      ) => {
+      (html: string) => {
         /**
-         * DOM parse
+         * html parse
          */
 
-        const parser = new DOMParser();
+        const parser =
+          new DOMParser();
 
         const doc =
           parser.parseFromString(
@@ -255,32 +231,13 @@ export default function MarkdownManager({
           );
 
         /**
-         * GPT code block 존재?
-         */
-
-        const codeNodes = Array.from(
-          doc.querySelectorAll("pre")
-        );
-
-        /**
-         * code block 없으면
-         * 일반 turndown
-         */
-
-        if (codeNodes.length === 0) {
-          return turndown.turndown(html);
-        }
-
-        /**
-         * =================================
-         * GPT MIXED CONTENT PARSE
-         * =================================
+         * 최종 markdown
          */
 
         let result = "";
 
         /**
-         * body children 순회
+         * body children
          */
 
         const children = Array.from(
@@ -299,11 +256,37 @@ export default function MarkdownManager({
             "pre"
           ) {
             /**
-             * code text
+             * GPT clipboard는
+             * br 기반 줄바꿈 많음
              */
 
+            const rawHtml =
+              child.innerHTML || "";
+
+            /**
+             * br -> newline
+             */
+
+            const withBreaks =
+              rawHtml.replace(
+                /<br\s*\/?>/gi,
+                "\n"
+              );
+
+            /**
+             * html -> text
+             */
+
+            const temp =
+              document.createElement(
+                "div"
+              );
+
+            temp.innerHTML =
+              withBreaks;
+
             const code =
-              child.textContent || "";
+              temp.textContent || "";
 
             /**
              * language detect
@@ -312,11 +295,15 @@ export default function MarkdownManager({
             const language =
               detectLanguage(code);
 
+            /**
+             * fenced markdown
+             */
+
             result +=
               "\n```" +
               language +
               "\n" +
-              code.replace(/\n$/, "") +
+              code.trimEnd() +
               "\n```\n\n";
 
             continue;
@@ -351,10 +338,6 @@ export default function MarkdownManager({
         event: ClipboardEvent,
         view: EditorView
       ) => {
-        console.log(
-          "===== CUSTOM MARKDOWN PASTE ====="
-        );
-
         /**
          * html
          */
@@ -385,17 +368,24 @@ export default function MarkdownManager({
          * =================================
          */
 
-        if (html.trim().length > 0) {
+        if (
+          html.trim().length > 0
+        ) {
           const markdown =
             convertGPTClipboard(
-              html,
-              plain
+              html
             );
 
-          console.log("[MARKDOWN]");
+          console.log(
+            "[FINAL MARKDOWN]"
+          );
+
           console.log(markdown);
 
-          insertText(view, markdown);
+          insertText(
+            view,
+            markdown
+          );
 
           return true;
         }
@@ -410,7 +400,10 @@ export default function MarkdownManager({
 
         return true;
       },
-      [convertGPTClipboard, insertText]
+      [
+        convertGPTClipboard,
+        insertText,
+      ]
     );
 
   /**
@@ -419,98 +412,110 @@ export default function MarkdownManager({
    * =====================================
    */
 
-  const extensions = React.useMemo(
-    () => [
-      markdown(),
+  const extensions =
+    React.useMemo(
+      () => [
+        markdown(),
 
-      EditorView.lineWrapping,
+        EditorView.lineWrapping,
 
-      EditorView.domEventHandlers({
-        paste: (event, view) => {
-          console.log(
-            "===== PASTE EVENT ====="
-          );
+        EditorView.domEventHandlers(
+          {
+            paste: (
+              event,
+              view
+            ) => {
+              console.log(
+                "===== PASTE EVENT ====="
+              );
 
-          /**
-           * AST 출력
-           */
+              /**
+               * AST 출력
+               */
 
-          logCurrentMarkdownTree(view);
+              logCurrentMarkdownTree(
+                view
+              );
 
-          /**
-           * 현재 code block 내부?
-           */
+              /**
+               * 현재 code block 내부?
+               */
 
-          const insideCode =
-            isInsideCodeBlock(view);
+              const insideCode =
+                isInsideCodeBlock(
+                  view
+                );
 
-          /**
-           * =================================
-           * INSIDE CODE BLOCK
-           * =================================
-           */
+              /**
+               * =================================
+               * INSIDE CODE BLOCK
+               * =================================
+               */
 
-          if (insideCode) {
-            console.log(
-              "[PASTE] RAW CODE BLOCK PASTE"
-            );
+              if (insideCode) {
+                console.log(
+                  "[PASTE] RAW CODE BLOCK PASTE"
+                );
 
-            /**
-             * 기본 paste 허용
-             */
+                /**
+                 * 기본 paste 허용
+                 */
 
-            return false;
+                return false;
+              }
+
+              /**
+               * =================================
+               * NORMAL MARKDOWN AREA
+               * =================================
+               */
+
+              console.log(
+                "[PASTE] CUSTOM HTML -> MARKDOWN"
+              );
+
+              /**
+               * 기본 paste 막기
+               */
+
+              event.preventDefault();
+
+              /**
+               * custom paste
+               */
+
+              return handleMarkdownPaste(
+                event as ClipboardEvent,
+                view
+              );
+            },
           }
+        ),
 
-          /**
-           * =================================
-           * NORMAL MARKDOWN AREA
-           * =================================
-           */
+        /**
+         * DOC CHANGE
+         */
 
-          console.log(
-            "[PASTE] CUSTOM HTML -> MARKDOWN"
-          );
+        EditorView.updateListener.of(
+          (update) => {
+            if (
+              update.docChanged
+            ) {
+              const next =
+                update.state.doc.toString();
 
-          /**
-           * 기본 paste 막기
-           */
-
-          event.preventDefault();
-
-          /**
-           * custom paste
-           */
-
-          return handleMarkdownPaste(
-            event as ClipboardEvent,
-            view
-          );
-        },
-      }),
-
-      /**
-       * DOC CHANGE
-       */
-
-      EditorView.updateListener.of(
-        (update) => {
-          if (update.docChanged) {
-            const next =
-              update.state.doc.toString();
-
-            setContent(next);
+              setContent(next);
+            }
           }
-        }
-      ),
-    ],
-    [
-      handleMarkdownPaste,
-      isInsideCodeBlock,
-      logCurrentMarkdownTree,
-      setContent,
-    ]
-  );
+        ),
+      ],
+      [
+        handleMarkdownPaste,
+        isInsideCodeBlock,
+        logCurrentMarkdownTree,
+        setContent,
+      ]
+    );
 
   /**
    * =====================================
@@ -539,7 +544,9 @@ export default function MarkdownManager({
         <CodeMirror
           value={content}
           height="100%"
-          extensions={extensions}
+          extensions={
+            extensions
+          }
         />
       </div>
 
@@ -549,7 +556,9 @@ export default function MarkdownManager({
 
       <MarkdownPreview
         content={content}
-        previewRef={previewRef}
+        previewRef={
+          previewRef
+        }
       />
     </div>
   );
