@@ -1,294 +1,77 @@
-// app/components/Markdown/coordinator.tsx
+import { markdownSegmenter, Block } from "./segmenter";
+import { BlockRouter } from "./BlockRouter";
 
-import {
-  markdownSegmenter,
-  Block,
-} from "./segmenter";
-
-import { astManager } from "./astManager";
-
-/**
- * =========================================
- * TYPES
- * =========================================
- */
-
-export type PipelineType =
-  | "segmented";
+export type PipelineType = "segmented";
 
 export type PipelineResult = {
   pipeline: PipelineType;
-
   output: string;
-
   blocks: Block[];
 };
 
 /**
- * =========================================
- * MarkdownCoordinator
- * =========================================
+ * Coordinator 역할:
+ * - raw input 받기
+ * - segmentation
+ * - routing
+ * - rendering
  *
- * 역할:
- * pasted mixed-content를
- * segmentation 기반으로 orchestration
- *
- * FLOW:
- *
- * clipboard
- *   ↓
- * coordinator
- *   ↓
- * segmenter
- *   ↓
- * blocks
- *   ↓
- * render markdown
- *
+ * ❗ 절대 markdown/code 로직 포함하지 않음
  */
-
 export class MarkdownCoordinator {
-  /**
-   * =====================================
-   * PUBLIC ENTRY
-   * =====================================
-   */
+  processPaste(html: string, text: string): PipelineResult {
+    // 1. input normalize
+    const raw = this.getRawInput(html, text);
 
-  processPaste(
-    html: string,
-    text: string
-  ): PipelineResult {
-    console.log(
-      "================================="
-    );
+    // 2. segment
+    const blocks = this.segment(raw);
 
-    console.log(
-      "[COORDINATOR] PROCESS START"
-    );
+    // 3. process (router only)
+    const processedBlocks = this.processBlocks(blocks);
 
-    console.log(
-      "================================="
-    );
-
-    /**
-     * raw input
-     */
-
-    const raw =
-      text || html || "";
-
-    console.log(
-      "[COORDINATOR] RAW INPUT:"
-    );
-
-    console.log(
-      JSON.stringify(raw)
-    );
-
-    /**
-     * =================================
-     * SEGMENT
-     * =================================
-     */
-
-    const blocks =
-      markdownSegmenter.segment(
-        raw
-      );
-
-    console.log(
-      "[COORDINATOR] SEGMENTED BLOCKS:"
-    );
-
-    console.log(blocks);
-
-    /**
-     * =================================
-     * AST PRESERVATION
-     * =================================
-     *
-     * code block만 preserve
-     */
-
-    const processedBlocks =
-      blocks.map((block) => {
-        /**
-         * markdown block
-         */
-
-        if (
-          block.type ===
-          "markdown"
-        ) {
-          console.log(
-            "[COORDINATOR] MARKDOWN BLOCK"
-          );
-
-          return {
-            ...block,
-
-            content:
-              this.markdownPipeline(
-                block.content
-              ),
-          };
-        }
-
-        /**
-         * code block
-         */
-
-        console.log(
-          "[COORDINATOR] CODE BLOCK"
-        );
-
-        const preserved =
-          astManager.parsePaste(
-            "",
-            block.content
-          );
-
-        return {
-          ...block,
-
-          content: preserved,
-        };
-      });
-
-    console.log(
-      "[COORDINATOR] PROCESSED BLOCKS:"
-    );
-
-    console.log(
-      processedBlocks
-    );
-
-    /**
-     * =================================
-     * FINAL RENDER
-     * =================================
-     */
-
-    const output =
-      markdownSegmenter.renderBlocks(
-        processedBlocks
-      );
-
-    console.log(
-      "[COORDINATOR] FINAL OUTPUT:"
-    );
-
-    console.log(
-      JSON.stringify(output)
-    );
-
-    console.log(
-      "================================="
-    );
-
-    console.log(
-      "[COORDINATOR] PROCESS END"
-    );
-
-    console.log(
-      "================================="
-    );
+    // 4. render
+    const output = this.render(processedBlocks);
 
     return {
-      pipeline:
-        "segmented",
-
+      pipeline: "segmented",
       output,
-
-      blocks:
-        processedBlocks,
+      blocks: processedBlocks,
     };
   }
 
   /**
-   * =====================================
-   * MARKDOWN PIPELINE
-   * =====================================
-   *
-   * prose/text 전용
+   * raw input 결정만 담당
    */
+  private getRawInput(html: string, text: string): string {
+    return text || html || "";
+  }
 
-  markdownPipeline(
-    text: string
-  ): string {
-    console.log(
-      "[MARKDOWN PIPELINE] START"
+  /**
+   * segmentation 위임
+   */
+  private segment(raw: string): Block[] {
+    return markdownSegmenter.segment(raw);
+  }
+
+  /**
+   * block processing → router로 완전 위임
+   */
+  private processBlocks(blocks: Block[]): Block[] {
+    return blocks.map((block) =>
+      BlockRouter.process(block)
     );
+  }
 
-    if (!text) {
-      return "";
-    }
-
-    let result = text;
-
-    /**
-     * normalize line endings
-     */
-
-    result =
-      result.replace(
-        /\r\n/g,
-        "\n"
-      );
-
-    /**
-     * tabs → spaces
-     */
-
-    result =
-      result.replace(
-        /\t/g,
-        "  "
-      );
-
-    /**
-     * excessive newline cleanup
-     */
-
-    result =
-      result.replace(
-        /\n{3,}/g,
-        "\n\n"
-      );
-
-    /**
-     * trailing whitespace cleanup
-     */
-
-    result = result
-      .split("\n")
-      .map((line) =>
-        line.replace(
-          /\s+$/g,
-          ""
-        )
-      )
-      .join("\n");
-
-    console.log(
-      "[MARKDOWN PIPELINE] RESULT:"
-    );
-
-    console.log(
-      JSON.stringify(
-        result
-      )
-    );
-
-    return result;
+  /**
+   * rendering 위임
+   */
+  private render(blocks: Block[]): string {
+    return markdownSegmenter.renderBlocks(blocks);
   }
 }
 
 /**
- * =========================================
- * SINGLETON EXPORT
- * =========================================
+ * singleton
  */
-
 export const markdownCoordinator =
   new MarkdownCoordinator();
