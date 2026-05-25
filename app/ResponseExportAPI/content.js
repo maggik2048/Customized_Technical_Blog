@@ -1,61 +1,174 @@
 console.log("EXTENSION LOADED");
 
-function getLastAssistantMessage() {
-  const messages = document.querySelectorAll(
-    '[data-message-author-role="assistant"]'
-  );
+/* =========================================
+   STATE
+========================================= */
 
-  if (!messages.length) return null;
+let lastMessageCount = 0;
 
-  return messages[messages.length - 1];
-}
+let lastFinalText = "";
 
-let lastHTML = "";
 let debounceTimer = null;
 
+/* =========================================
+   GET ASSISTANT MESSAGES
+========================================= */
+
+function getAssistantMessages() {
+  return document.querySelectorAll(
+    '[data-message-author-role="assistant"]'
+  );
+}
+
+/* =========================================
+   OBSERVER
+========================================= */
+
 const observer = new MutationObserver(() => {
-  const lastMsg = getLastAssistantMessage();
+  const messages =
+    getAssistantMessages();
 
-  if (!lastMsg) return;
+  if (!messages.length) {
+    return;
+  }
 
-  const html = lastMsg.innerHTML?.trim();
+  /**
+   * 현재 마지막 assistant
+   */
 
-  if (!html) return;
+  const lastMsg =
+    messages[messages.length - 1];
 
-  if (html !== lastHTML) {
-    lastHTML = html;
+  /**
+   * 실제 텍스트
+   */
 
-    console.log("STREAM UPDATE HTML:");
+  const text =
+    lastMsg.textContent?.trim() ||
+    "";
+
+  /**
+   * html
+   */
+
+  const html =
+    lastMsg.innerHTML?.trim() ||
+    "";
+
+  if (!html || !text) {
+    return;
+  }
+
+  /**
+   * =====================================
+   * 새 assistant message 추가 감지
+   * =====================================
+   */
+
+  const messageCount =
+    messages.length;
+
+  const isNewMessage =
+    messageCount >
+    lastMessageCount;
+
+  /**
+   * 새 응답 아니면 무시
+   */
+
+  if (!isNewMessage) {
+    return;
+  }
+
+  /**
+   * streaming debounce
+   */
+
+  clearTimeout(debounceTimer);
+
+  debounceTimer = setTimeout(() => {
+    /**
+     * 최종 text
+     */
+
+    const finalText =
+      lastMsg.textContent?.trim() ||
+      "";
+
+    /**
+     * 중복 방지
+     */
+
+    if (
+      finalText ===
+      lastFinalText
+    ) {
+      console.log(
+        "SAME RESPONSE SKIPPED"
+      );
+
+      return;
+    }
+
+    /**
+     * save state
+     */
+
+    lastFinalText =
+      finalText;
+
+    lastMessageCount =
+      messageCount;
+
+    console.log(
+      "================================="
+    );
+
+    console.log(
+      "FINAL ASSISTANT HTML"
+    );
+
+    console.log(
+      "================================="
+    );
+
     console.log(html);
 
-    clearTimeout(debounceTimer);
+    /**
+     * send
+     */
 
-    debounceTimer = setTimeout(() => {
-      console.log("=================================");
-      console.log("FINAL ASSISTANT HTML");
-      console.log("=================================");
-      console.log(lastHTML);
+    try {
+      chrome.runtime.sendMessage({
+        type: "FINAL_MESSAGE",
 
-      try {
-        chrome.runtime.sendMessage({
-          type: "FINAL_MESSAGE",
-          payload: {
-            html: lastHTML,
-          },
-        });
+        payload: {
+          html,
+        },
+      });
 
-        console.log("MESSAGE SENT TO BACKGROUND");
-      } catch (err) {
-        console.error("SEND MESSAGE ERROR:");
-        console.error(err);
-      }
-    }, 1500);
-  }
+      console.log(
+        "MESSAGE SENT TO BACKGROUND"
+      );
+    } catch (err) {
+      console.error(
+        "SEND MESSAGE ERROR:"
+      );
+
+      console.error(err);
+    }
+  }, 1500);
 });
+
+/* =========================================
+   START OBSERVER
+========================================= */
 
 observer.observe(document.body, {
   childList: true,
+
   subtree: true,
+
   characterData: true,
 });
 
