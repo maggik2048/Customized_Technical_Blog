@@ -14,161 +14,11 @@ import MarkdownPreview from "./MarkdownPreview";
 
 import { uploadImage } from "./uploadImage";
 
-/**
- * =========================================
- * AST MANAGER
- * =========================================
- */
-
-class ASTManager {
-  normalize(input: string): string {
-    console.log(
-      "[AST] normalize input:",
-      JSON.stringify(input)
-    );
-
-    if (!input || typeof input !== "string") {
-      console.log(
-        "[AST] normalize -> empty"
-      );
-
-      return "";
-    }
-
-    const normalized =
-      input.replace(/\r\n/g, "\n");
-
-    console.log(
-      "[AST] normalize output:",
-      JSON.stringify(normalized)
-    );
-
-    return normalized;
-  }
-
-  spaceToLineBreak(
-    input: string
-  ): string {
-    console.log(
-      "[AST] spaceToLineBreak input:",
-      JSON.stringify(input)
-    );
-
-    const result =
-      this.normalize(input);
-
-    console.log(
-      "[AST] spaceToLineBreak output:",
-      JSON.stringify(result)
-    );
-
-    return result;
-  }
-
-  parse(input: string) {
-    console.log(
-      "[AST] parse input:",
-      JSON.stringify(input)
-    );
-
-    const normalized =
-      this.normalize(input);
-
-    const parsed = {
-      raw: input,
-      normalized,
-      lines:
-        normalized.split("\n"),
-    };
-
-    console.log(
-      "[AST] parse output:",
-      parsed
-    );
-
-    return parsed;
-  }
-
-  render(input: string): string {
-    console.log(
-      "[AST] render input:",
-      JSON.stringify(input)
-    );
-
-    const result =
-      this.normalize(input);
-
-    console.log(
-      "[AST] render output:",
-      JSON.stringify(result)
-    );
-
-    return result;
-  }
-
-  parsePaste(
-    html: string,
-    text: string
-  ): string {
-    console.log(
-      "[AST] parsePaste START"
-    );
-
-    console.log(
-      "[AST] RAW HTML:"
-    );
-
-    console.log(
-      JSON.stringify(html)
-    );
-
-    console.log(
-      "[AST] RAW TEXT:"
-    );
-
-    console.log(
-      JSON.stringify(text)
-    );
-
-    console.log(
-      "[AST] TEXT LINES:"
-    );
-
-    console.log(
-      text.split("\n")
-    );
-
-    const result =
-      this.normalize(
-        text || html || ""
-      );
-
-    console.log(
-      "[AST] parsePaste RESULT:"
-    );
-
-    console.log(
-      JSON.stringify(result)
-    );
-
-    console.log(
-      "[AST] RESULT LINES:"
-    );
-
-    console.log(
-      result.split("\n")
-    );
-
-    return result;
-  }
-}
-
-export const astManager =
-  new ASTManager();
+import { markdownCoordinator } from "./coordinator";
 
 /**
  * =========================================
- * COMPONENT
+ * TYPES
  * =========================================
  */
 
@@ -180,6 +30,12 @@ type Props = {
   >;
 };
 
+/**
+ * =========================================
+ * COMPONENT
+ * =========================================
+ */
+
 export default function MarkdownManager({
   content,
   setContent,
@@ -187,10 +43,88 @@ export default function MarkdownManager({
   const previewRef =
     React.useRef<HTMLDivElement>(null);
 
+  /**
+   * =====================================
+   * INSERT HELPER
+   * =====================================
+   */
+
+  const insertText = React.useCallback(
+    (
+      view: EditorView,
+      insert: string
+    ) => {
+      const current =
+        view.state.doc.toString();
+
+      const sel =
+        view.state.selection.main;
+
+      console.log(
+        "[EDITOR] CURRENT DOC:"
+      );
+
+      console.log(
+        JSON.stringify(current)
+      );
+
+      console.log(
+        "[EDITOR] SELECTION:"
+      );
+
+      console.log(sel);
+
+      const next =
+        current.slice(
+          0,
+          sel.from
+        ) +
+        insert +
+        current.slice(sel.to);
+
+      console.log(
+        "[EDITOR] NEXT DOC:"
+      );
+
+      console.log(
+        JSON.stringify(next)
+      );
+
+      console.log(
+        "[EDITOR] NEXT DOC LINES:"
+      );
+
+      console.log(
+        next.split("\n")
+      );
+
+      view.dispatch({
+        changes: {
+          from: 0,
+          to: current.length,
+          insert: next,
+        },
+      });
+
+      setContent(next);
+
+      console.log(
+        "[EDITOR] INSERT COMPLETE"
+      );
+    },
+    [setContent]
+  );
+
+  /**
+   * =====================================
+   * EXTENSIONS
+   * =====================================
+   */
+
   const extensions = React.useMemo(
     () => [
       /**
-       * markdown extension
+       * markdown language
        */
       markdown(),
 
@@ -208,7 +142,7 @@ export default function MarkdownManager({
           view: EditorView
         ) => {
           console.log(
-            "=========================="
+            "===================================="
           );
 
           console.log(
@@ -216,7 +150,7 @@ export default function MarkdownManager({
           );
 
           console.log(
-            "=========================="
+            "===================================="
           );
 
           const clipboard =
@@ -233,11 +167,14 @@ export default function MarkdownManager({
           event.preventDefault();
 
           /**
-           * IMAGE
+           * =================================
+           * IMAGE PIPELINE
+           * =================================
            */
+
           for (const item of clipboard.items) {
             console.log(
-              "[PASTE] clipboard item:",
+              "[PASTE] ITEM:",
               item.kind,
               item.type
             );
@@ -254,7 +191,7 @@ export default function MarkdownManager({
 
               if (!file) {
                 console.log(
-                  "[PASTE] file null"
+                  "[PASTE] IMAGE FILE NULL"
                 );
 
                 return true;
@@ -262,7 +199,7 @@ export default function MarkdownManager({
 
               (async () => {
                 console.log(
-                  "[PASTE] uploading image..."
+                  "[PASTE] UPLOADING IMAGE..."
                 );
 
                 const url =
@@ -271,7 +208,7 @@ export default function MarkdownManager({
                   );
 
                 console.log(
-                  "[PASTE] uploaded url:",
+                  "[PASTE] IMAGE URL:",
                   url
                 );
 
@@ -279,52 +216,10 @@ export default function MarkdownManager({
                   return;
                 }
 
-                const current =
-                  view.state.doc.toString();
-
-                console.log(
-                  "[PASTE] CURRENT DOC:"
+                insertText(
+                  view,
+                  `\n![](${url})\n`
                 );
-
-                console.log(
-                  JSON.stringify(
-                    current
-                  )
-                );
-
-                const sel =
-                  view.state.selection.main;
-
-                console.log(
-                  "[PASTE] selection:",
-                  sel
-                );
-
-                const next =
-                  current.slice(
-                    0,
-                    sel.from
-                  ) +
-                  `\n![](${url})\n` +
-                  current.slice(sel.to);
-
-                console.log(
-                  "[PASTE] NEXT DOC:"
-                );
-
-                console.log(
-                  JSON.stringify(next)
-                );
-
-                view.dispatch({
-                  changes: {
-                    from: 0,
-                    to: current.length,
-                    insert: next,
-                  },
-                });
-
-                setContent(next);
               })();
 
               return true;
@@ -332,7 +227,9 @@ export default function MarkdownManager({
           }
 
           /**
-           * TEXT / HTML
+           * =================================
+           * TEXT / HTML PIPELINE
+           * =================================
            */
 
           const html =
@@ -369,83 +266,57 @@ export default function MarkdownManager({
             text.split("\n")
           );
 
-          const parsed =
-            astManager.parsePaste(
+          /**
+           * =================================
+           * COORDINATOR
+           * =================================
+           */
+
+          const result =
+            markdownCoordinator.processPaste(
               html,
               text
             );
 
           console.log(
-            "[PASTE] PARSED RESULT:"
+            "[PASTE] PIPELINE:"
           );
 
           console.log(
-            JSON.stringify(parsed)
-          );
-
-          const current =
-            view.state.doc.toString();
-
-          console.log(
-            "[PASTE] CURRENT DOC:"
+            result.pipeline
           );
 
           console.log(
-            JSON.stringify(current)
-          );
-
-          const sel =
-            view.state.selection.main;
-
-          console.log(
-            "[PASTE] selection:",
-            sel
-          );
-
-          const next =
-            current.slice(
-              0,
-              sel.from
-            ) +
-            parsed +
-            current.slice(sel.to);
-
-          console.log(
-            "[PASTE] FINAL NEXT DOC:"
+            "[PASTE] DETECTION:"
           );
 
           console.log(
-            JSON.stringify(next)
+            result.detection
           );
 
           console.log(
-            "[PASTE] FINAL NEXT DOC LINES:"
+            "[PASTE] FINAL OUTPUT:"
           );
 
           console.log(
-            next.split("\n")
+            JSON.stringify(
+              result.output
+            )
           );
 
-          view.dispatch({
-            changes: {
-              from: 0,
-              to: current.length,
-              insert: next,
-            },
-          });
+          /**
+           * =================================
+           * INSERT
+           * =================================
+           */
 
-          console.log(
-            "[PASTE] dispatch complete"
-          );
-
-          setContent(next);
-
-          console.log(
-            "[PASTE] setContent complete"
+          insertText(
+            view,
+            result.output
           );
 
           console.log(
-            "=========================="
+            "===================================="
           );
 
           console.log(
@@ -453,7 +324,7 @@ export default function MarkdownManager({
           );
 
           console.log(
-            "=========================="
+            "===================================="
           );
 
           return true;
@@ -488,8 +359,17 @@ export default function MarkdownManager({
         }
       ),
     ],
-    [setContent]
+    [
+      insertText,
+      setContent,
+    ]
   );
+
+  /**
+   * =====================================
+   * RENDER
+   * =====================================
+   */
 
   return (
     <div
