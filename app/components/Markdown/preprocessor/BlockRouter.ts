@@ -1,6 +1,6 @@
 import { Block } from "./segmenter";
-import { MarkdownProcessor } from "./processors/MarkdownProcessor";
-import { CodeProcessor } from "./processors/CodeProcessor";
+import { MarkdownProcessor } from "../processors/MarkdownPipeline/MarkdownProcessor";
+import { CodeProcessor } from "../processors/ASTpipeline/CodeProcessor";
 
 export class BlockRouter {
   static process(block: Block): Block {

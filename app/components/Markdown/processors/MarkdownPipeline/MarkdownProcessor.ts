@@ -1,4 +1,4 @@
-import { Block } from "../segmenter";
+import { Block } from "../../preprocessor/segmenter";
 import { MarkdownPipeline } from "./MarkdownPipeline";
 
 export class MarkdownProcessor {

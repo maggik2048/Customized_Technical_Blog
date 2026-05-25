@@ -1,8 +1,8 @@
 "use client";
 
 import { EditorView } from "@codemirror/view";
-import { uploadImage } from "./uploadImage";
-import { markdownCoordinator } from "./coordinator";
+import { uploadImage } from "../imagehandle/uploadImage";
+import { markdownCoordinator } from "../coordinator";
 
 type Params = {
   insertText: (view: EditorView, insert: string) => void;

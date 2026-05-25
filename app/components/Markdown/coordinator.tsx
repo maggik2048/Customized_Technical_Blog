@@ -1,5 +1,5 @@
-import { markdownSegmenter, Block } from "./segmenter";
-import { BlockRouter } from "./BlockRouter";
+import { markdownSegmenter, Block } from "./preprocessor/segmenter";
+import { BlockRouter } from "./preprocessor/BlockRouter";
 
 export type PipelineType = "segmented";
 

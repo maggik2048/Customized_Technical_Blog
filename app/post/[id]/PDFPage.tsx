@@ -11,9 +11,9 @@ import { useDarkMode } from "@/app/context/DarkModeContext";
 import { getHeaderImage } from "@/lib/getHeaderImage";
 import { visualizationRegistry } from "@/lib/visualizationRegistry";
 
-import NotepageLines from "@/app/components/markdown/NotepageLines";
-import MarkdownRendererCoordinator from "@/app/components/Markdown/MarkdownRendererCoordinator";
-import CodeBlockThemeCoordinator from "@/app/components/Markdown/CodeBlockThemeCoordinator";
+import NotepageLines from "@/app/components/Markdown/Theme/NotepageLines";
+import MarkdownRendererCoordinator from "@/app/components/Markdown/Theme/MarkdownRendererCoordinator";
+import CodeBlockThemeCoordinator from "@/app/components/Markdown/Theme/CodeBlockThemeCoordinator";
 import MetadataPostalCode from "@/app/components/papers/MetadataPostalCode";
 
 import PDFPageHeader from "./PDFPageHeader";

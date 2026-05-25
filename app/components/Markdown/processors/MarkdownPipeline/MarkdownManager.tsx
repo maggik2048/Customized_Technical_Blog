@@ -7,7 +7,7 @@ import { markdown } from "@codemirror/lang-markdown";
 import { EditorView } from "@codemirror/view";
 
 import MarkdownPreview from "./MarkdownPreview";
-import { createAPIExportHandler } from "./APIExportHandler";
+import { createAPIExportHandler } from "../../preprocessor/APIExportHandler";
 
 /**
  * =========================================

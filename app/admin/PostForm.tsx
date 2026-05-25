@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { getMenu } from "@/app/components/SidebarCategory/sidebarData";
 import { Item } from "@/app/components/types";
-import MarkdownImageManager from "@/app/components/Markdown/MarkdownManager";
+import MarkdownImageManager from "@/app/components/Markdown/processors/MarkdownPipeline/MarkdownManager";
 
 type Props = {
   mode: "create" | "edit";

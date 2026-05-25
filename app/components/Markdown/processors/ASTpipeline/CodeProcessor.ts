@@ -1,5 +1,5 @@
-import { Block } from "../segmenter";
-import { astManager } from "../astManager";
+import { Block } from "../../preprocessor/segmenter";
+import { astManager } from "./astManager";
 
 export class CodeProcessor {
   static process(block: Block): Block {
