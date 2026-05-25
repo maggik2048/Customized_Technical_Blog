@@ -5,7 +5,6 @@ import ReactMarkdown from "react-markdown";
 
 import remarkMath from "remark-math";
 import remarkGfm from "remark-gfm";
-import remarkBreaks from "remark-breaks";
 
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
@@ -37,16 +36,26 @@ export default function MarkdownPreview({
         padding: 20,
         background: "#111",
         color: "#fff",
+
+        // 🔥 중요: 줄 유지
+        whiteSpace: "pre-wrap",
+        wordBreak: "break-word",
       }}
     >
       <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkMath, remarkBreaks]}
+        remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeKatex]}
         components={{
           code({ inline, className, children }: any) {
-            const text = String(children);
+            const text = Array.isArray(children)
+              ? children.join("")
+              : String(children);
 
-            if (inline || (text.length < 80 && !text.includes("\n"))) {
+            // inline code
+            if (
+              inline ||
+              (text.length < 80 && !text.includes("\n"))
+            ) {
               return (
                 <code
                   style={{
@@ -55,21 +64,42 @@ export default function MarkdownPreview({
                     borderRadius: 4,
                   }}
                 >
-                  {children}
+                  {text}
                 </code>
               );
             }
 
-            const match = /language-(\w+)/.exec(className || "");
+            // language
+            const match = /language-(\w+)/.exec(
+              className || ""
+            );
 
+            // 🔥 핵심: code block 자체가 copy 제어
             return (
-              <SyntaxHighlighter
-                style={oneDark}
-                language={match?.[1] || "text"}
-                PreTag="div"
+              <pre
+                onCopy={(e) => {
+                  e.preventDefault();
+                  e.clipboardData?.setData(
+                    "text/plain",
+                    text
+                  );
+                }}
+                style={{
+                  margin: 0,
+                  borderRadius: 6,
+                  overflow: "auto",
+                }}
               >
-                {text}
-              </SyntaxHighlighter>
+                <SyntaxHighlighter
+                  style={oneDark}
+                  language={match?.[1] || "text"}
+                  PreTag="div"
+                  wrapLines={true}
+                  wrapLongLines={false}
+                >
+                  {text}
+                </SyntaxHighlighter>
+              </pre>
             );
           },
 
@@ -95,3 +125,5 @@ export default function MarkdownPreview({
     </div>
   );
 }
+
+

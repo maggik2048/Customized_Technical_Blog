@@ -3,8 +3,13 @@
 import React from "react";
 import MarkdownPreview from "./MarkdownPreview";
 
+import CodeMirror from "@uiw/react-codemirror";
+import { markdown } from "@codemirror/lang-markdown";
+import { EditorView } from "@codemirror/view";
+
 import { uploadImage } from "./uploadImage";
 import { htmlToMarkdown } from "./htmlToMarkdown";
+import { spaceToLineBreak } from "./spaceToLineBreak";
 
 type Props = {
   content: string;
@@ -15,108 +20,145 @@ export default function MarkdownImageManager({
   content,
   setContent,
 }: Props) {
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-
-  const editorRef = React.useRef<HTMLTextAreaElement>(null);
   const previewRef = React.useRef<HTMLDivElement>(null);
+
+  const debounceRef = React.useRef<NodeJS.Timeout | null>(null);
 
   /* ================= IMAGE ================= */
 
-  const handleInsertImage = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = async (
-    e: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const handleImageUpload = async (file: File) => {
     const url = await uploadImage(file);
-    if (!url) return;
-
-    setContent((prev) => prev + `\n![](${url})\n`);
+    return url;
   };
 
-  /* ================= PASTE ================= */
+  /* ================= POST PROCESSOR ================= */
 
-  const handlePaste = async (
-    e: React.ClipboardEvent<HTMLTextAreaElement>
-  ) => {
-    const items = e.clipboardData.items;
+  const runPostProcess = React.useCallback(
+    (text: string) => {
+      const processed = spaceToLineBreak(text);
 
-    for (let i = 0; i < items.length; i++) {
-      const item = items[i];
-
-      if (item.kind === "file") {
-        e.preventDefault();
-
-        const file = item.getAsFile();
-        if (!file) return;
-
-        const target = e.currentTarget;
-        const start = target.selectionStart;
-        const end = target.selectionEnd;
-
-        const url = await uploadImage(file);
-        if (!url) return;
-
-        const markdown = `\n![](${url})\n`;
-
-        setContent((prev) =>
-          prev.substring(0, start) +
-          markdown +
-          prev.substring(end)
-        );
-
-        return;
+      // 🔥 중요: 변경된 경우만 업데이트
+      if (processed !== text) {
+        setContent(processed);
       }
-    }
+    },
+    [setContent]
+  );
 
-    const html = e.clipboardData.getData("text/html");
-    const text = e.clipboardData.getData("text/plain");
+  /* ================= DEBOUNCED POST PROCESS ================= */
 
-    e.preventDefault();
+  const schedulePostProcess = React.useCallback(
+    (text: string) => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
 
-    let parsed = "";
+      debounceRef.current = setTimeout(() => {
+        runPostProcess(text);
+      }, 700); // 0.7초 (0.5~1초 추천)
+    },
+    [runPostProcess]
+  );
 
-    if (html && html.includes("<")) {
-      parsed = htmlToMarkdown(html);
-    } else {
-      parsed = text
-        .replace(/\r\n/g, "\n")
-        .replace(/\n{3,}/g, "\n\n");
-    }
+  /* ================= CODEMIRROR EXTENSIONS ================= */
 
-    const target = e.currentTarget;
-    const start = target.selectionStart;
-    const end = target.selectionEnd;
+  const extensions = React.useMemo(() => {
+    return [
+      markdown(),
+      EditorView.lineWrapping,
 
-    setContent((prev) =>
-      prev.substring(0, start) +
-      parsed +
-      prev.substring(end)
-    );
-  };
+      EditorView.domEventHandlers({
+        paste: (event: ClipboardEvent, view: EditorView) => {
+          const items = event.clipboardData?.items;
+          if (!items) return false;
 
-  /* ================= SCROLL SYNC ================= */
+          event.preventDefault();
 
-  const handleScrollSync = () => {
-    const editor = editorRef.current;
-    const preview = previewRef.current;
+          /* ================= IMAGE ================= */
+          for (const item of items) {
+            if (item.kind === "file") {
+              const file = item.getAsFile();
+              if (!file) return true;
 
-    if (!editor || !preview) return;
+              (async () => {
+                const url = await handleImageUpload(file);
+                if (!url) return;
 
-    const ratio =
-      editor.scrollTop /
-      (editor.scrollHeight - editor.clientHeight);
+                const current = view.state.doc.toString();
 
-    preview.scrollTop =
-      ratio *
-      (preview.scrollHeight - preview.clientHeight);
-  };
+                const sel = view.state.selection.main;
 
-  /* ================= AUTO IMAGE ================= */
+                const next =
+                  current.slice(0, sel.from) +
+                  `\n![](${url})\n` +
+                  current.slice(sel.to);
+
+                view.dispatch({
+                  changes: {
+                    from: 0,
+                    to: current.length,
+                    insert: next,
+                  },
+                });
+
+                schedulePostProcess(next);
+              })();
+
+              return true;
+            }
+          }
+
+          /* ================= TEXT ================= */
+
+          const html = event.clipboardData?.getData("text/html");
+          const text =
+            event.clipboardData?.getData("text/plain") || "";
+
+          let parsed = "";
+
+          if (html && html.includes("<")) {
+            parsed = htmlToMarkdown(html);
+          } else {
+            parsed = text.replace(/\r\n/g, "\n");
+          }
+
+          const current = view.state.doc.toString();
+          const sel = view.state.selection.main;
+
+          const next =
+            current.slice(0, sel.from) +
+            parsed +
+            current.slice(sel.to);
+
+          view.dispatch({
+            changes: {
+              from: 0,
+              to: current.length,
+              insert: next,
+            },
+          });
+
+          // 🔥 핵심: 즉시 말고 post-process 예약
+          schedulePostProcess(next);
+
+          return true;
+        },
+      }),
+
+      /* ================= SYNC ================= */
+
+      EditorView.updateListener.of((update) => {
+        if (update.docChanged) {
+          setContent(update.state.doc.toString());
+
+          // 🔥 typing에도 약하게 post process 적용
+          schedulePostProcess(update.state.doc.toString());
+        }
+      }),
+    ];
+  }, [setContent, schedulePostProcess]);
+
+  /* ================= PREVIEW ================= */
 
   const renderContent = content.replace(
     /^(https?:\/\/.*\.(png|jpg|jpeg|gif|webp|bmp|svg))$/gm,
@@ -124,33 +166,13 @@ export default function MarkdownImageManager({
   );
 
   return (
-    <div
-      style={{
-        display: "flex",
-        width: "100vw",
-        height: "100vh",
-      }}
-    >
+    <div style={{ display: "flex", width: "100vw", height: "100vh" }}>
       {/* EDITOR */}
       <div style={{ width: "50%", height: "100%" }}>
-        <textarea
-          ref={editorRef}
+        <CodeMirror
           value={content}
-          onChange={(e) => setContent(e.target.value)}
-          onPaste={handlePaste}
-          onScroll={handleScrollSync}
-          style={{
-            width: "100%",
-            height: "100%",
-            padding: 20,
-            fontFamily: "monospace",
-            fontSize: 14,
-            border: "none",
-            outline: "none",
-            resize: "none",
-            overflow: "auto",
-          }}
-          placeholder="Ctrl + V로 이미지 붙여넣기 가능"
+          height="100%"
+          extensions={extensions}
         />
       </div>
 
@@ -158,14 +180,6 @@ export default function MarkdownImageManager({
       <MarkdownPreview
         content={renderContent}
         previewRef={previewRef}
-      />
-
-      {/* IMAGE INPUT */}
-      <input
-        type="file"
-        hidden
-        ref={fileInputRef}
-        onChange={handleFileChange}
       />
     </div>
   );

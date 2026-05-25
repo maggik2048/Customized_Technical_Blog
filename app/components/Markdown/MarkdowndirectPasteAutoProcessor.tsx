@@ -2,88 +2,72 @@
 
 import React, { useRef } from "react";
 
-/**
- *  Clipboard → Markdown 자동 정리 엔진
- */
+/* =========================
+   Markdown Normalizer
+========================= */
 function normalizeGPTToMarkdown(input: string): string {
   if (!input) return "";
 
-  let text = input;
-
-  // 줄바꿈 정리
-  text = text.replace(/\r\n/g, "\n");
-
-  // HTML 제거 ( 브라우저 복붙 대응)
-  text = text.replace(/<\/?[^>]+(>|$)/g, "");
-
-  // bullet 통일
-  text = text.replace(/^[\s]*[•\-\*]\s+/gm, "- ");
-
-  // 숫자 리스트 정리
-  text = text.replace(/^\s*(\d+)\.\s+/gm, "$1. ");
-
-  // heading 보정
-  text = text.replace(/^(#{1,6})\s*/gm, "$1 ");
-
-  // URL 자동 링크 변환
-  text = text.replace(
-    /(https?:\/\/[^\s]+)/g,
-    "[$1]($1)"
-  );
-
-  // 과도한 줄바꿈 제거
-  text = text.replace(/\n{3,}/g, "\n\n");
-
-  return text.trim();
+  return input
+    .replace(/\r\n/g, "\n")
+    .replace(/<\/?[^>]+(>|$)/g, "")
+    .replace(/^[\s]*[•\-\*]\s+/gm, "- ")
+    .replace(/^\s*(\d+)\.\s+/gm, "$1. ")
+    .replace(/^(#{1,6})\s*/gm, "$1 ")
+    .replace(/(https?:\/\/[^\s]+)/g, "[$1]($1)")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
-/**
- * textarea paste 자동 Markdown processor
- */
-function useGPTPasteProcessor(
-  value: string,
+/* =========================
+   Hook
+========================= */
+function usePasteHandler(
   setValue: React.Dispatch<React.SetStateAction<string>>
 ) {
   const ref = useRef<HTMLTextAreaElement>(null);
 
   const onPaste = (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    e.preventDefault();
+
+    const el = e.currentTarget;
+
     const clipboard =
       e.clipboardData.getData("text/plain") ||
-      e.clipboardData.getData("text/html");
+      e.clipboardData.getData("text/html") ||
+      "";
 
     if (!clipboard) return;
 
-    e.preventDefault();
-
     const normalized = normalizeGPTToMarkdown(clipboard);
 
-    const el = ref.current;
-    if (!el) return;
+    // 🔥 핵심: paste 순간 selection 기준으로 안전하게 계산
+    const start = el.selectionStart ?? 0;
+    const end = el.selectionEnd ?? 0;
 
-    const start = el.selectionStart;
-    const end = el.selectionEnd;
-
-    setValue((prev) =>
-      prev.substring(0, start) +
-      normalized +
-      prev.substring(end)
-    );
+    setValue((prev) => {
+      return (
+        prev.slice(0, start) +
+        normalized +
+        prev.slice(end)
+      );
+    });
   };
 
   return { ref, onPaste };
 }
 
-/**
- * Main Component
- */
-export default function MarkdowndirectPasteAutoProcessor({
+/* =========================
+   Component
+========================= */
+export default function MarkdownPasteEditor({
   value,
   setValue,
 }: {
   value: string;
   setValue: React.Dispatch<React.SetStateAction<string>>;
 }) {
-  const { ref, onPaste } = useGPTPasteProcessor(value, setValue);
+  const { ref, onPaste } = usePasteHandler(setValue);
 
   return (
     <textarea
@@ -99,6 +83,8 @@ export default function MarkdowndirectPasteAutoProcessor({
         fontFamily: "monospace",
         fontSize: 14,
         lineHeight: 1.5,
+        whiteSpace: "pre-wrap",
+        resize: "none",
       }}
     />
   );
