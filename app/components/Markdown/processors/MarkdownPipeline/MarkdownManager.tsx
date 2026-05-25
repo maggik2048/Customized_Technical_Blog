@@ -12,6 +12,8 @@ import { syntaxTree } from "@codemirror/language";
 
 import TurndownService from "turndown";
 
+import { gfm } from "turndown-plugin-gfm";
+
 import MarkdownPreview from "./MarkdownPreview";
 
 /**
@@ -36,9 +38,24 @@ type Props = {
 
 const turndown = new TurndownService({
   headingStyle: "atx",
+
   codeBlockStyle: "fenced",
+
   emDelimiter: "*",
 });
+
+/**
+ * =========================================
+ * GITHUB FLAVORED MARKDOWN
+ * =========================================
+ *
+ * 지원:
+ * - table
+ * - strikethrough
+ * - task list
+ */
+
+turndown.use(gfm);
 
 /**
  * =========================================
@@ -256,8 +273,8 @@ export default function MarkdownManager({
             "pre"
           ) {
             /**
-             * GPT clipboard는
-             * br 기반 줄바꿈 많음
+             * GPT clipboard 는
+             * br 기반 linebreak 많음
              */
 
             const rawHtml =
@@ -313,6 +330,14 @@ export default function MarkdownManager({
            * =================================
            * NORMAL HTML
            * =================================
+           */
+
+          /**
+           * GFM plugin 덕분에:
+           * - table
+           * - task list
+           * - strikethrough
+           * 지원됨
            */
 
           result +=
@@ -527,7 +552,9 @@ export default function MarkdownManager({
     <div
       style={{
         display: "flex",
+
         width: "100vw",
+
         height: "100vh",
       }}
     >
@@ -538,6 +565,7 @@ export default function MarkdownManager({
       <div
         style={{
           width: "50%",
+
           height: "100%",
         }}
       >
