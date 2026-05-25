@@ -1,42 +1,245 @@
 console.log("=================================");
 console.log("INJECT SCRIPT LOADED");
 console.log("CURRENT URL:", location.href);
-console.log("TIME:", new Date().toISOString());
+console.log(
+  "TIME:",
+  new Date().toISOString()
+);
 console.log("=================================");
 
-// ==========================================
-// CHROME DEBUG
-// ==========================================
+/* =========================================
+   TABLE → MARKDOWN
+========================================= */
 
-try {
-  console.log("chrome exists:", !!chrome);
+function tableToMarkdown(table) {
+  const rows = Array.from(
+    table.querySelectorAll("tr")
+  );
 
-  console.log("chrome object:");
-  console.log(chrome);
+  if (!rows.length) return "";
 
-  console.log("chrome.storage:");
-  console.log(chrome.storage);
+  const parsedRows = rows.map((row) => {
+    const cells = Array.from(
+      row.querySelectorAll("th, td")
+    );
 
-  console.log("chrome.runtime.id:");
-  console.log(chrome.runtime?.id);
-} catch (err) {
-  console.error("CHROME DEBUG FAILED");
-  console.error(err);
+    return cells.map(
+      (c) => c.textContent?.trim() || ""
+    );
+  });
+
+  const header = parsedRows[0] || [];
+  const body = parsedRows.slice(1);
+
+  let md = "";
+
+  if (header.length) {
+    md += `| ${header.join(" | ")} |\n`;
+
+    md += `| ${header
+      .map(() => "---")
+      .join(" | ")} |\n`;
+  }
+
+  body.forEach((r) => {
+    md += `| ${r.join(" | ")} |\n`;
+  });
+
+  return md + "\n";
 }
 
-// ==========================================
-// textarea inject
-// ==========================================
+/* =========================================
+   HTML → MARKDOWN
+========================================= */
+
+function htmlToMarkdown(html) {
+  const doc = new DOMParser().parseFromString(
+    html,
+    "text/html"
+  );
+
+  let out = "";
+
+  const walk = (node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const text = node.textContent || "";
+
+      out += text;
+
+      return;
+    }
+
+    const el = node;
+
+    switch (el.tagName) {
+      case "H1":
+        out += `\n# ${el.textContent?.trim()}\n\n`;
+        return;
+
+      case "H2":
+        out += `\n## ${el.textContent?.trim()}\n\n`;
+        return;
+
+      case "H3":
+        out += `\n### ${el.textContent?.trim()}\n\n`;
+        return;
+
+      case "P":
+        out += `\n${el.textContent?.trim()}\n\n`;
+        return;
+
+      case "DIV": {
+        const hasBlockChild = Array.from(
+          el.children
+        ).some((child) =>
+          [
+            "DIV",
+            "P",
+            "H1",
+            "H2",
+            "H3",
+            "UL",
+            "OL",
+            "TABLE",
+            "PRE",
+            "CODE",
+          ].includes(child.tagName)
+        );
+
+        if (hasBlockChild) {
+          el.childNodes.forEach(walk);
+
+          if (!out.endsWith("\n\n")) {
+            out += "\n";
+          }
+
+          return;
+        }
+
+        const text =
+          el.textContent?.trim();
+
+        if (text) {
+          out += `${text}\n\n`;
+        }
+
+        return;
+      }
+
+      case "SPAN": {
+        const text =
+          el.textContent || "";
+
+        out += text;
+
+        return;
+      }
+
+      case "BR":
+        out += "\n";
+        return;
+
+      case "STRONG":
+      case "B":
+        out += `**${el.textContent}**`;
+        return;
+
+      case "EM":
+      case "I":
+        out += `*${el.textContent}*`;
+        return;
+
+      case "UL":
+        Array.from(el.children).forEach(
+          (li) => {
+            out += `- ${li.textContent?.trim()}\n`;
+          }
+        );
+
+        out += "\n";
+
+        return;
+
+      case "OL":
+        Array.from(el.children).forEach(
+          (li, idx) => {
+            out += `${idx + 1}. ${li.textContent?.trim()}\n`;
+          }
+        );
+
+        out += "\n";
+
+        return;
+
+      case "LI":
+        out += `- ${el.textContent?.trim()}\n`;
+        return;
+
+      case "TABLE":
+        out +=
+          "\n" +
+          tableToMarkdown(el) +
+          "\n";
+
+        return;
+
+      case "PRE":
+        out += `\n\`\`\`\n${el.textContent}\n\`\`\`\n`;
+        return;
+
+      case "CODE":
+        out += `\`${el.textContent}\``;
+        return;
+
+      case "A": {
+        const href =
+          el.getAttribute("href");
+
+        const text =
+          el.textContent?.trim();
+
+        if (href && text) {
+          out += `[${text}](${href})`;
+        }
+
+        return;
+      }
+
+      case "IMG": {
+        const src =
+          el.getAttribute("src");
+
+        if (src) {
+          out += `![](${src})`;
+        }
+
+        return;
+      }
+
+      default:
+        el.childNodes.forEach(walk);
+    }
+  };
+
+  doc.body.childNodes.forEach(walk);
+
+  return out
+    .replace(/\r/g, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+/* =========================================
+   INJECT TO TEXTAREA
+========================================= */
 
 function injectToEditor(text) {
-  console.log("=================================");
-  console.log("injectToEditor CALLED");
-  console.log("=================================");
+  console.log(
+    "injectToEditor CALLED"
+  );
 
-  const textarea = document.querySelector("textarea");
-
-  console.log("textarea query result:");
-  console.log(textarea);
+  const textarea =
+    document.querySelector("textarea");
 
   if (!textarea) {
     console.log("TEXTAREA NOT FOUND");
@@ -45,155 +248,126 @@ function injectToEditor(text) {
 
   console.log("TEXTAREA FOUND");
 
-  console.log("TEXT LENGTH:");
-  console.log(text.length);
-
-  console.log("TEXT PREVIEW:");
-  console.log(text.slice(0, 300));
-
-  console.log("TEXTAREA VALUE BEFORE:");
-  console.log(textarea.value);
-
-  const descriptor =
+  const nativeSetter =
     Object.getOwnPropertyDescriptor(
       window.HTMLTextAreaElement.prototype,
       "value"
-    );
-
-  console.log("DESCRIPTOR:");
-  console.log(descriptor);
-
-  const nativeSetter = descriptor?.set;
+    )?.set;
 
   if (!nativeSetter) {
-    console.log("NATIVE SETTER NOT FOUND");
+    console.log(
+      "NATIVE SETTER NOT FOUND"
+    );
+
     return false;
   }
 
-  try {
-    console.log("CALLING NATIVE SETTER");
+  nativeSetter.call(textarea, text);
 
-    nativeSetter.call(textarea, text);
+  textarea.dispatchEvent(
+    new Event("input", {
+      bubbles: true,
+    })
+  );
 
-    console.log("DISPATCHING INPUT EVENT");
+  console.log(
+    "TEXTAREA VALUE AFTER:"
+  );
 
-    textarea.dispatchEvent(
-      new Event("input", {
-        bubbles: true,
-      })
-    );
+  console.log(textarea.value);
 
-    console.log("DISPATCHING CHANGE EVENT");
+  console.log("INJECTION SUCCESS");
 
-    textarea.dispatchEvent(
-      new Event("change", {
-        bubbles: true,
-      })
-    );
-
-    console.log("TEXTAREA VALUE AFTER:");
-    console.log(textarea.value);
-
-    console.log("FINAL TEXTAREA LENGTH:");
-    console.log(textarea.value.length);
-
-    console.log("INJECTION SUCCESS");
-
-    return true;
-  } catch (err) {
-    console.error("INJECTION ERROR");
-    console.error(err);
-
-    return false;
-  }
+  return true;
 }
 
-// ==========================================
-// retry loop
-// ==========================================
+/* =========================================
+   WAIT FOR EDITOR
+========================================= */
 
 function waitForEditorAndInject(text) {
-  console.log("=================================");
   console.log("WAITING FOR EDITOR");
-  console.log("=================================");
 
   let tries = 0;
 
   const interval = setInterval(() => {
     tries++;
 
-    console.log("TRY COUNT:", tries);
+    console.log("TRY:", tries);
 
-    const allTextareas =
-      document.querySelectorAll("textarea");
-
-    console.log("TEXTAREA COUNT:");
-    console.log(allTextareas.length);
-
-    const success = injectToEditor(text);
+    const success =
+      injectToEditor(text);
 
     if (success) {
-      console.log("=================================");
-      console.log("DONE");
-      console.log("=================================");
-
       clearInterval(interval);
+
+      console.log("DONE");
     }
 
     if (tries >= 40) {
-      console.log("=================================");
-      console.log("FAILED MAX RETRY");
-      console.log("=================================");
-
       clearInterval(interval);
+
+      console.log(
+        "FAILED MAX RETRY"
+      );
     }
   }, 500);
 }
 
-// ==========================================
-// STORAGE READ
-// ==========================================
+/* =========================================
+   STORAGE LOAD
+========================================= */
 
-try {
-  console.log("STARTING STORAGE READ");
+console.log(
+  "STARTING STORAGE READ"
+);
 
-  chrome.storage.local.get(
-    ["latestFinalMessage"],
-    (result) => {
-      console.log("=================================");
-      console.log("STORAGE CALLBACK FIRED");
-      console.log("=================================");
+chrome.storage.local.get(
+  ["latestFinalHTML"],
+  (result) => {
+    console.log("=================================");
+    console.log("STORAGE CALLBACK FIRED");
+    console.log("=================================");
 
-      console.log("chrome.runtime.lastError:");
-      console.log(chrome.runtime.lastError);
+    console.log(
+      "RAW STORAGE RESULT:"
+    );
 
-      console.log("RAW STORAGE RESULT:");
-      console.log(result);
+    console.log(result);
 
-      if (!result) {
-        console.log("RESULT EMPTY");
-        return;
-      }
+    const html =
+      result.latestFinalHTML;
 
-      const text = result.latestFinalMessage;
+    if (!html) {
+      console.log(
+        "NO latestFinalHTML"
+      );
 
-      console.log("latestFinalMessage:");
-      console.log(text);
-
-      if (!text) {
-        console.log("NO latestFinalMessage");
-        return;
-      }
-
-      console.log("MESSAGE FOUND");
-
-      console.log("MESSAGE LENGTH:");
-      console.log(text.length);
-
-      waitForEditorAndInject(text);
+      return;
     }
-  );
-} catch (err) {
-  console.error("STORAGE READ ERROR");
-  console.error(err);
-}
+
+    console.log("HTML FOUND:");
+    console.log(html);
+
+    const markdown =
+      htmlToMarkdown(html);
+
+    console.log(
+      "================================="
+    );
+
+    console.log(
+      "CONVERTED MARKDOWN:"
+    );
+
+    console.log(
+      "================================="
+    );
+
+    console.log(markdown);
+
+    waitForEditorAndInject(
+      markdown
+    );
+  }
+);
