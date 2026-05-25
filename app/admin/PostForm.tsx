@@ -25,7 +25,6 @@ export default function PostForm({
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
 
-  // MENU LOAD
   useEffect(() => {
     const loadMenu = async () => {
       const data = await getMenu();
@@ -35,7 +34,6 @@ export default function PostForm({
     loadMenu();
   }, []);
 
-  // CATEGORY INIT
   useEffect(() => {
     if (!menu.length) return;
 
@@ -45,14 +43,11 @@ export default function PostForm({
         return;
       }
 
-      const fallback =
-        menu[0]?.children?.[0]?.slug || "";
-
+      const fallback = menu[0]?.children?.[0]?.slug || "";
       setCategory(fallback);
     }
   }, [menu, defaultCategory, mode]);
 
-  // EDIT LOAD
   useEffect(() => {
     if (mode !== "edit" || !postId) return;
 
@@ -78,31 +73,21 @@ export default function PostForm({
     fetchPost();
   }, [mode, postId]);
 
-  // EXTENSION STORAGE LOAD
   useEffect(() => {
     if (typeof chrome === "undefined") return;
     if (!chrome.storage?.local) return;
 
-    chrome.storage.local.get(
-      ["latest_post"],
-      (result) => {
-        if (!result.latest_post) return;
+    chrome.storage.local.get(["latest_post"], (result) => {
+      if (!result.latest_post) return;
 
-        console.log(
-          "LOADED FROM EXTENSION:"
-        );
+      console.log("LOADED FROM EXTENSION:");
+      console.log(result.latest_post);
 
-        console.log(result.latest_post);
-
-        setContent(result.latest_post);
-      }
-    );
+      setContent(result.latest_post);
+    });
   }, []);
 
-  // SUBMIT
-  const handleSubmit = async (
-    e: React.FormEvent
-  ) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!title || !content || !category) {
@@ -111,15 +96,9 @@ export default function PostForm({
     }
 
     if (mode === "create") {
-      const { error } = await supabase
-        .from("posts")
-        .insert([
-          {
-            title,
-            content,
-            category,
-          },
-        ]);
+      const { error } = await supabase.from("posts").insert([
+        { title, content, category },
+      ]);
 
       if (error) {
         console.error(error);
@@ -133,11 +112,7 @@ export default function PostForm({
     if (mode === "edit" && postId) {
       const { data, error } = await supabase
         .from("posts")
-        .update({
-          title,
-          content,
-          category,
-        })
+        .update({ title, content, category })
         .eq("id", postId)
         .select();
 
@@ -161,23 +136,14 @@ export default function PostForm({
       <div style={{ marginBottom: 16 }}>
         <label>Category</label>
         <br />
-
         <select
           value={category}
-          onChange={(e) =>
-            setCategory(e.target.value)
-          }
-          style={{
-            width: "100%",
-            padding: 8,
-          }}
+          onChange={(e) => setCategory(e.target.value)}
+          style={{ width: "100%", padding: 8 }}
         >
           {menu.map((cat) =>
             cat.children?.map((child) => (
-              <option
-                key={child.slug}
-                value={child.slug}
-              >
+              <option key={child.slug} value={child.slug}>
                 {child.name}
               </option>
             ))
@@ -188,16 +154,10 @@ export default function PostForm({
       <div style={{ marginBottom: 16 }}>
         <label>Title</label>
         <br />
-
         <input
           value={title}
-          onChange={(e) =>
-            setTitle(e.target.value)
-          }
-          style={{
-            width: "100%",
-            padding: 8,
-          }}
+          onChange={(e) => setTitle(e.target.value)}
+          style={{ width: "100%", padding: 8 }}
         />
       </div>
 
@@ -209,17 +169,18 @@ export default function PostForm({
       <button
         type="submit"
         style={{
-          marginTop: 20,
-          padding: "10px 20px",
+          position: "fixed",
+          right: 24,
+          bottom: 24,
+          padding: "12px 22px",
           background: "#1e40af",
           color: "#fff",
-          borderRadius: 6,
+          borderRadius: 8,
           cursor: "pointer",
+          zIndex: 9999,
         }}
       >
-        {mode === "create"
-          ? "Submit"
-          : "Update"}
+        {mode === "create" ? "Submit" : "Update"}
       </button>
     </form>
   );
