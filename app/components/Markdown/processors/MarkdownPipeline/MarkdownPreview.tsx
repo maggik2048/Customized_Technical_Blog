@@ -9,36 +9,162 @@ import remarkGfm from "remark-gfm";
 import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
 
+import TurndownService from "turndown";
+import { gfm } from "turndown-plugin-gfm";
+
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
 
+/**
+ * =========================================
+ * TURNDOWN
+ * =========================================
+ */
+
+const turndown = new TurndownService({
+  headingStyle: "atx",
+
+  codeBlockStyle: "fenced",
+
+  emDelimiter: "*",
+});
+
+turndown.use(gfm);
+
+/**
+ * =========================================
+ * TYPES
+ * =========================================
+ */
+
 type Props = {
   content: string;
+
+  setContent: React.Dispatch<
+    React.SetStateAction<string>
+  >;
+
   previewRef: React.RefObject<HTMLDivElement>;
 };
 
+/**
+ * =========================================
+ * COMPONENT
+ * =========================================
+ */
+
 export default function MarkdownPreview({
   content,
+  setContent,
   previewRef,
 }: Props) {
+  /**
+   * =====================================
+   * MARKDOWN -> IMAGE
+   * =====================================
+   */
+
   const renderContent = content.replace(
     /^(https?:\/\/.*\.(png|jpg|jpeg|gif|webp|bmp|svg))$/gm,
     "![]($1)"
   );
+
+  /**
+   * =====================================
+   * HTML -> MARKDOWN SYNC
+   * =====================================
+   */
+
+  const syncPreviewToMarkdown =
+    React.useCallback(() => {
+      if (!previewRef.current) {
+        return;
+      }
+
+      /**
+       * editable html
+       */
+
+      const html =
+        previewRef.current.innerHTML;
+
+      /**
+       * html -> markdown
+       */
+
+      const markdown =
+        turndown
+          .turndown(html)
+          .replace(/\r/g, "")
+          .replace(/\n{3,}/g, "\n\n")
+          .trim();
+
+      /**
+       * sync
+       */
+
+      setContent(markdown);
+    }, [previewRef, setContent]);
+
+  /**
+   * =====================================
+   * EDITABLE BLOCK
+   * =====================================
+   */
+
+  const EditableBlock = React.useCallback(
+    ({
+      tag,
+      children,
+    }: {
+      tag: keyof JSX.IntrinsicElements;
+
+      children: React.ReactNode;
+    }) => {
+      const Tag = tag as any;
+
+      return (
+        <Tag
+          contentEditable
+          suppressContentEditableWarning
+          spellCheck={false}
+          onBlur={syncPreviewToMarkdown}
+          style={{
+            outline: "none",
+            cursor: "text",
+          }}
+        >
+          {children}
+        </Tag>
+      );
+    },
+    [syncPreviewToMarkdown]
+  );
+
+  /**
+   * =====================================
+   * RENDER
+   * =====================================
+   */
 
   return (
     <div
       ref={previewRef}
       style={{
         width: "50%",
+
         height: "100%",
+
         overflow: "auto",
+
         padding: 20,
+
         background: "#111",
+
         color: "#fff",
 
-        // 🔥 중요: 줄 유지
         whiteSpace: "pre-wrap",
+
         wordBreak: "break-word",
       }}
     >
@@ -46,22 +172,109 @@ export default function MarkdownPreview({
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeKatex]}
         components={{
-          code({ inline, className, children }: any) {
-            const text = Array.isArray(children)
+          /**
+           * =================================
+           * HEADINGS
+           * =================================
+           */
+
+          h1({ children }) {
+            return (
+              <EditableBlock tag="h1">
+                {children}
+              </EditableBlock>
+            );
+          },
+
+          h2({ children }) {
+            return (
+              <EditableBlock tag="h2">
+                {children}
+              </EditableBlock>
+            );
+          },
+
+          h3({ children }) {
+            return (
+              <EditableBlock tag="h3">
+                {children}
+              </EditableBlock>
+            );
+          },
+
+          /**
+           * =================================
+           * TEXT
+           * =================================
+           */
+
+          p({ children }) {
+            return (
+              <EditableBlock tag="p">
+                {children}
+              </EditableBlock>
+            );
+          },
+
+          li({ children }) {
+            return (
+              <EditableBlock tag="li">
+                {children}
+              </EditableBlock>
+            );
+          },
+
+          blockquote({ children }) {
+            return (
+              <EditableBlock tag="blockquote">
+                {children}
+              </EditableBlock>
+            );
+          },
+
+          /**
+           * =================================
+           * CODE
+           * =================================
+           */
+
+          code({
+            inline,
+
+            className,
+
+            children,
+          }: any) {
+            const text = Array.isArray(
+              children
+            )
               ? children.join("")
               : String(children);
 
-            // inline code
+            /**
+             * inline code
+             */
+
             if (
               inline ||
-              (text.length < 80 && !text.includes("\n"))
+              (text.length < 80 &&
+                !text.includes("\n"))
             ) {
               return (
                 <code
+                  contentEditable
+                  suppressContentEditableWarning
+                  onBlur={
+                    syncPreviewToMarkdown
+                  }
                   style={{
                     background: "#333",
+
                     padding: "2px 6px",
+
                     borderRadius: 4,
+
+                    outline: "none",
                   }}
                 >
                   {text}
@@ -69,16 +282,24 @@ export default function MarkdownPreview({
               );
             }
 
-            // language
-            const match = /language-(\w+)/.exec(
-              className || ""
-            );
+            /**
+             * language
+             */
 
-            // 🔥 핵심: code block 자체가 copy 제어
+            const match =
+              /language-(\w+)/.exec(
+                className || ""
+              );
+
+            /**
+             * block code
+             */
+
             return (
               <pre
                 onCopy={(e) => {
                   e.preventDefault();
+
                   e.clipboardData?.setData(
                     "text/plain",
                     text
@@ -86,13 +307,17 @@ export default function MarkdownPreview({
                 }}
                 style={{
                   margin: 0,
+
                   borderRadius: 6,
+
                   overflow: "auto",
                 }}
               >
                 <SyntaxHighlighter
                   style={oneDark}
-                  language={match?.[1] || "text"}
+                  language={
+                    match?.[1] || "text"
+                  }
                   PreTag="div"
                   wrapLines={true}
                   wrapLongLines={false}
@@ -103,6 +328,12 @@ export default function MarkdownPreview({
             );
           },
 
+          /**
+           * =================================
+           * IMAGE
+           * =================================
+           */
+
           img({ src, alt }: any) {
             return (
               <img
@@ -110,9 +341,13 @@ export default function MarkdownPreview({
                 alt={alt}
                 style={{
                   maxWidth: "100%",
+
                   maxHeight: 400,
+
                   display: "block",
+
                   margin: "10px 0",
+
                   borderRadius: 6,
                 }}
               />
@@ -125,5 +360,3 @@ export default function MarkdownPreview({
     </div>
   );
 }
-
-

@@ -752,6 +752,7 @@ export default function MarkdownManager({
 
       <MarkdownPreview
         content={content}
+        setContent={setContent}
         previewRef={
           previewRef
         }
