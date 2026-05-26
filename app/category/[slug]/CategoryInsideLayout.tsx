@@ -7,10 +7,12 @@ export default function CategoryInsideLayout({
   left,
   right,
   onSearch,
+  initialSearchValue,
 }: {
   left: React.ReactNode;
   right: React.ReactNode;
   onSearch?: (value: string) => void;
+  initialSearchValue?: string;
 }) {
   return (
     <div
@@ -29,7 +31,10 @@ export default function CategoryInsideLayout({
           padding: "12px 0",
         }}
       >
-        <SearchBarButton onSearch={onSearch} />
+        <SearchBarButton
+          onSearch={onSearch}
+          initialValue={initialSearchValue}
+        />
       </div>
 
       {/* MAIN CONTENT ROW */}

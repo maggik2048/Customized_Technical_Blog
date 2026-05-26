@@ -7,13 +7,17 @@ import CalculatorKeyboardInterface from "../../MathematicVisualizer/CalculatorKe
 type Props = {
   onSearch?: (value: string) => void;
   onFilterClick?: () => void;
+
+  // 추가
+  initialValue?: string;
 };
 
 export default function SearchBarButton({
   onSearch,
   onFilterClick,
+  initialValue = "",
 }: Props) {
-  const [value, setValue] = useState("");
+  const [value, setValue] = useState(initialValue);
   const [isActive, setIsActive] = useState(false);
   const [showCalculator, setShowCalculator] = useState(false);
 
@@ -21,7 +25,13 @@ export default function SearchBarButton({
   const [isSearching, setIsSearching] = useState(false);
 
   // DUPLICATE QUERY PREVENTION
-  const [lastSearched, setLastSearched] = useState("");
+  const [lastSearched, setLastSearched] = useState(initialValue);
+
+  // URL QUERY → INPUT SYNC
+  useEffect(() => {
+    setValue(initialValue);
+    setLastSearched(initialValue);
+  }, [initialValue]);
 
   const handleSearch = async () => {
     const trimmed = value.trim();

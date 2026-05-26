@@ -19,10 +19,12 @@ export default function CategoryPostBoxRenderer({
   posts,
   allPosts,
   onSearch,
+  currentQuery,
 }: {
   posts: any[];
   allPosts?: any[];
   onSearch?: (value: string) => void;
+  currentQuery?: string;
 }) {
   const safeAllPosts = Array.isArray(allPosts)
     ? allPosts
@@ -57,7 +59,9 @@ export default function CategoryPostBoxRenderer({
 
   const renderNormalPost = (post: any, index: number) => {
     const contentLength = post.content?.length ?? 0;
+
     const categoryIndex = index + 1;
+
     const globalIndex =
       globalIndexMap.get(post.id) ?? categoryIndex;
 
@@ -172,7 +176,8 @@ export default function CategoryPostBoxRenderer({
                   inset: 0,
                   borderRadius: 14,
                   pointerEvents: "none",
-                  border: "1px solid rgba(255,255,255,0.03)",
+                  border:
+                    "1px solid rgba(255,255,255,0.03)",
                 }}
               />
             </>
@@ -213,7 +218,9 @@ export default function CategoryPostBoxRenderer({
               letterSpacing: "0.08em",
             }}
           >
-            {new Date(post.created_at).toLocaleDateString()}
+            {new Date(
+              post.created_at
+            ).toLocaleDateString()}
           </div>
         </div>
       </Link>
@@ -223,6 +230,7 @@ export default function CategoryPostBoxRenderer({
   return (
     <CategoryInsideLayout
       onSearch={onSearch}
+      currentQuery={currentQuery}
       left={normalPosts.map((post, index) =>
         renderNormalPost(post, index)
       )}
@@ -230,8 +238,12 @@ export default function CategoryPostBoxRenderer({
         <InteractionBoxLayout
           posts={interactivePosts}
           globalIndexMap={globalIndexMap}
-          visualizationRegistry={visualizationRegistry}
-          extractVisualization={extractVisualization}
+          visualizationRegistry={
+            visualizationRegistry
+          }
+          extractVisualization={
+            extractVisualization
+          }
         />
       }
     />
