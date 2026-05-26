@@ -12,9 +12,11 @@ const cormorant = Cormorant_SC({
 export default function PostTitleRenderer({
   text,
   highlight,
+  isSimple,
 }: {
   text: string;
   highlight?: string;
+  isSimple?: boolean;
 }) {
   if (!text) return null;
 
@@ -22,9 +24,26 @@ export default function PostTitleRenderer({
    * dark academia + laboratory metal + luxury graphite
    */
 
+  const highlightColor = isSimple
+    ? "rgba(25,25,25,0.95)"
+    : "#ffe066";
+
+  const highlightShadow = isSimple
+    ? `
+      0 1px 2px rgba(255,255,255,0.15),
+      0 1px 4px rgba(0,0,0,0.08)
+    `
+    : `
+      0 0 10px rgba(255,224,102,0.45),
+      0 0 22px rgba(255,224,102,0.18),
+      0 2px 8px rgba(0,0,0,0.45)
+    `;
+
   const COLORS = {
     // 기본 메인 텍스트
-    base: "#F3F4F6",
+    base: isSimple
+      ? "rgba(20,20,20,0.92)"
+      : "#F3F4F6",
 
     // "="
     equal: "#ffca0a",
@@ -36,16 +55,17 @@ export default function PostTitleRenderer({
     doubleColon: "#e1ff00",
 
     // "::" 이후
-    afterDoubleColon: "#c1b7a9",
+    afterDoubleColon: isSimple
+      ? "rgba(45,45,45,0.88)"
+      : "#c1b7a9",
 
     // vs
     vs: "#ffaf7a",
 
     // ( ... )
-    parentheses: "#bfd2ff",
-
-    // search highlight
-    highlight: "#ffe066",
+    parentheses: isSimple
+      ? "rgba(35,35,35,0.82)"
+      : "#bfd2ff",
   };
 
   /**
@@ -101,20 +121,17 @@ export default function PostTitleRenderer({
         <span
           key={`${key}-${idx}`}
           style={{
-            color: COLORS.highlight,
+            color: highlightColor,
 
             fontWeight: 700,
 
-            textShadow: `
-              0 0 10px rgba(255,224,102,0.45),
-              0 0 22px rgba(255,224,102,0.18),
-              0 2px 8px rgba(0,0,0,0.45)
-            `,
+            textShadow:
+              highlightShadow,
           }}
         >
           {renderStyledText(
             part,
-            COLORS.highlight,
+            highlightColor,
             `${key}-${idx}-highlight`
           )}
         </span>
@@ -170,10 +187,15 @@ export default function PostTitleRenderer({
 
               display: "inline-block",
 
-              textShadow: `
-                0 1px 2px rgba(0,0,0,0.45),
-                0 3px 8px rgba(0,0,0,0.30)
-              `,
+              textShadow: isSimple
+                ? `
+                  0 1px 1px rgba(255,255,255,0.15),
+                  0 1px 3px rgba(0,0,0,0.10)
+                `
+                : `
+                  0 1px 2px rgba(0,0,0,0.45),
+                  0 3px 8px rgba(0,0,0,0.30)
+                `,
             }}
           >
             {seg}
@@ -202,10 +224,15 @@ export default function PostTitleRenderer({
           serif
         `,
 
-        textShadow: `
-          0 1px 2px rgba(0,0,0,0.50),
-          0 3px 8px rgba(0,0,0,0.35)
-        `,
+        textShadow: isSimple
+          ? `
+            0 1px 1px rgba(255,255,255,0.12),
+            0 1px 3px rgba(0,0,0,0.08)
+          `
+          : `
+            0 1px 2px rgba(0,0,0,0.50),
+            0 3px 8px rgba(0,0,0,0.35)
+          `,
 
         WebkitFontSmoothing:
           "antialiased",

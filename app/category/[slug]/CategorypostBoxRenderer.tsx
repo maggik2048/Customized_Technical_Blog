@@ -17,7 +17,8 @@ import {
 
 function highlightText(
   text: string,
-  query?: string
+  query?: string,
+  isSimple?: boolean
 ) {
   if (!query?.trim()) return text;
 
@@ -48,7 +49,10 @@ function highlightText(
         <span
           key={index}
           style={{
-            color: "#ffd866",
+            color: isSimple
+              ? "rgba(20,20,20,0.92)"
+              : "#ffd866",
+
             fontWeight: 700,
           }}
         >
@@ -299,16 +303,11 @@ export default function CategoryPostBoxRenderer({
               fontWeight: 600,
             }}
           >
-            {currentQuery ? (
-              highlightText(
-                post.title,
-                currentQuery
-              )
-            ) : (
-              <PostTitleRenderer
-                text={post.title}
-              />
-            )}
+            <PostTitleRenderer
+              text={post.title}
+              highlight={currentQuery}
+              isSimple={isSimple}
+            />
           </div>
 
           {/* SEARCH META */}
@@ -359,7 +358,8 @@ export default function CategoryPostBoxRenderer({
               >
                 {highlightText(
                   snippet,
-                  currentQuery
+                  currentQuery,
+                  isSimple
                 )}
               </div>
             </div>
