@@ -11,6 +11,7 @@ export class DocumentPostProcessor {
 
     out = this.removeEmojis(out);
     out = this.removePronouns(out);
+    out = this.normalizeSentenceEnding(out);
     out = this.normalize(out);
     out = this.trimSpaces(out);
 
@@ -51,6 +52,23 @@ export class DocumentPostProcessor {
     return text.replace(
       /(^|\s)(?:you|your|니가|네가|너의|너|네|니)(?=\s|$)/giu,
       "$1"
+    );
+  }
+
+  /**
+   * normalizes korean casual sentence ending
+   *
+   * examples:
+   * - "이거 하나야" -> "이거 하나이다."
+   * - "그거야." -> "그거이다."
+   * - "진짜야 " -> "진짜이다. "
+   */
+  private static normalizeSentenceEnding(
+    text: string
+  ): string {
+    return text.replace(
+      /야(?=\s|$|[.?!])/g,
+      "이다."
     );
   }
 
