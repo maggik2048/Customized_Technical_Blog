@@ -13,6 +13,7 @@ export const CATEGORY_TREE: Omit<Item, "href" | "count">[] = [
       { name: "AssetManagementDatabase", slug: "asset_management_database" },
       { name: "NAS&LINUXenvironment", slug: "nas_linux_environment" },
       { name: "HLSL:RayMarchCloud", slug: "hlsl_raymarch_cloud" },
+      { name: "GitDiff_Visualizer", slug: "gitDiff_visualizer" },
     ],
   },
 
