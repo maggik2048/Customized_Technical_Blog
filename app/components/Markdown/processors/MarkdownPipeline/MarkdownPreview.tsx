@@ -185,7 +185,7 @@ export default function MarkdownPreview({
         components={{
           /**
            * =================================
-           * DIFF BLOCK
+           * PRE
            * =================================
            */
 
@@ -224,6 +224,53 @@ export default function MarkdownPreview({
                 <DiffVisualizer
                   raw={raw}
                 />
+              );
+            }
+
+            /**
+             * single line fenced code
+             *
+             * ```hello```
+             * ->
+             * inline highlight style
+             */
+
+            const trimmed =
+              raw.trim();
+
+            const isSingleLine =
+              !trimmed.includes("\n");
+
+            if (
+              isSingleLine &&
+              trimmed.length > 0
+            ) {
+              return (
+                <code
+                  contentEditable
+                  suppressContentEditableWarning
+                  onBlur={
+                    syncPreviewToMarkdown
+                  }
+                  style={{
+                    background: "#333",
+
+                    padding: "2px 6px",
+
+                    borderRadius: 4,
+
+                    outline: "none",
+
+                    display: "inline-block",
+
+                    margin: "2px 0",
+
+                    fontFamily:
+                      "monospace",
+                  }}
+                >
+                  {trimmed}
+                </code>
               );
             }
 
