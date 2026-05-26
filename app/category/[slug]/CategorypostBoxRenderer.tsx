@@ -1,3 +1,5 @@
+// CategoryPostBoxRenderer.tsx
+
 "use client";
 
 import Link from "next/link";
@@ -14,6 +16,49 @@ import {
   extractVisualization,
   partitionPostsByInteraction,
 } from "./postInteractionMetadataCalculator";
+
+function highlightText(
+  text: string,
+  query?: string
+) {
+  if (!query?.trim()) return text;
+
+  const escaped = query.replace(
+    /[.*+?^${}()|[\]\\]/g,
+    "\\$&"
+  );
+
+  const regex = new RegExp(
+    `(${escaped})`,
+    "gi"
+  );
+
+  return text
+    .split(regex)
+    .map((part, index) => {
+      const matched =
+        part.toLowerCase() ===
+        query.toLowerCase();
+
+      if (!matched) {
+        return (
+          <span key={index}>{part}</span>
+        );
+      }
+
+      return (
+        <span
+          key={index}
+          style={{
+            color: "#ffd866",
+            fontWeight: 700,
+          }}
+        >
+          {part}
+        </span>
+      );
+    });
+}
 
 export default function CategoryPostBoxRenderer({
   posts,
@@ -41,40 +86,66 @@ export default function CategoryPostBoxRenderer({
       .map((post, i) => [post.id, i + 1])
   );
 
-  const sortedPosts = [...posts].sort((a, b) => {
-    const aHasViz = !!extractVisualization(a.content);
-    const bHasViz = !!extractVisualization(b.content);
+  const sortedPosts = [...posts].sort(
+    (a, b) => {
+      const aHasViz = !!extractVisualization(
+        a.content
+      );
 
-    if (aHasViz && !bHasViz) return -1;
-    if (!aHasViz && bHasViz) return 1;
+      const bHasViz = !!extractVisualization(
+        b.content
+      );
 
-    return (
-      new Date(b.created_at).getTime() -
-      new Date(a.created_at).getTime()
-    );
-  });
+      if (aHasViz && !bHasViz) return -1;
+      if (!aHasViz && bHasViz) return 1;
 
-  const { interactivePosts, normalPosts } =
-    partitionPostsByInteraction(sortedPosts);
+      return (
+        new Date(b.created_at).getTime() -
+        new Date(a.created_at).getTime()
+      );
+    }
+  );
 
-  const renderNormalPost = (post: any, index: number) => {
-    const contentLength = post.content?.length ?? 0;
+  const {
+    interactivePosts,
+    normalPosts,
+  } = partitionPostsByInteraction(
+    sortedPosts
+  );
+
+  const renderNormalPost = (
+    post: any,
+    index: number
+  ) => {
+    const contentLength =
+      post.content?.length ?? 0;
 
     const categoryIndex = index + 1;
 
     const globalIndex =
-      globalIndexMap.get(post.id) ?? categoryIndex;
+      globalIndexMap.get(post.id) ??
+      categoryIndex;
 
     const isSimple = contentLength < 3000;
 
+    const matchedIn =
+      post.searchMeta?.matchedIn;
+
+    const snippet =
+      post.searchMeta?.snippet;
+
     return (
-      <Link key={post.id} href={`/post/${post.id}`}>
+      <Link
+        key={post.id}
+        href={`/post/${post.id}`}
+      >
         <div
           style={{
             position: "relative",
-            height: 54,
+            minHeight: 74,
             borderRadius: 14,
-            padding: "10px 18px 10px 58px",
+            padding:
+              "10px 18px 12px 58px",
             cursor: "pointer",
             overflow: "hidden",
             transition: "all 0.32s ease",
@@ -94,54 +165,6 @@ export default function CategoryPostBoxRenderer({
                 inset 0 0 0 1px rgba(255,255,255,0.03),
                 0 6px 20px rgba(0,0,0,0.12)
               `,
-
-            backdropFilter: !isSimple
-              ? "blur(1.5px)"
-              : "none",
-
-            WebkitBackdropFilter: !isSimple
-              ? "blur(1.5px)"
-              : "none",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform =
-              "translateX(10px) scale(1.012)";
-
-            e.currentTarget.style.borderColor =
-              isSimple
-                ? "rgba(0,0,0,0.12)"
-                : "rgba(255,255,255,0.18)";
-
-            e.currentTarget.style.boxShadow = isSimple
-              ? `
-                inset 0 1px 0 rgba(255,255,255,0.85),
-                0 10px 24px rgba(0,0,0,0.08)
-              `
-              : `
-                inset 0 1px 0 rgba(255,255,255,0.10),
-                inset 0 0 0 1px rgba(255,255,255,0.04),
-                0 10px 26px rgba(0,0,0,0.18)
-              `;
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform =
-              "translateX(0px) scale(1)";
-
-            e.currentTarget.style.borderColor =
-              isSimple
-                ? "rgba(0,0,0,0.06)"
-                : "rgba(255,255,255,0.12)";
-
-            e.currentTarget.style.boxShadow = isSimple
-              ? `
-                inset 0 1px 0 rgba(255,255,255,0.75),
-                0 4px 18px rgba(0,0,0,0.04)
-              `
-              : `
-                inset 0 1px 0 rgba(255,255,255,0.08),
-                inset 0 0 0 1px rgba(255,255,255,0.03),
-                0 6px 20px rgba(0,0,0,0.12)
-              `;
           }}
         >
           <CategoryPostBoxIndex
@@ -151,40 +174,10 @@ export default function CategoryPostBoxRenderer({
           />
 
           {!isSimple && (
-            <>
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  borderRadius: 14,
-                  pointerEvents: "none",
-                  background: `
-                    linear-gradient(
-                      135deg,
-                      rgba(255,255,255,0.025),
-                      transparent 40%,
-                      transparent 60%,
-                      rgba(255,255,255,0.02)
-                    )
-                  `,
-                }}
-              />
-
-              <div
-                style={{
-                  position: "absolute",
-                  inset: 0,
-                  borderRadius: 14,
-                  pointerEvents: "none",
-                  border:
-                    "1px solid rgba(255,255,255,0.03)",
-                }}
-              />
-            </>
+            <MetadataTagRenderer />
           )}
 
-          {!isSimple && <MetadataTagRenderer />}
-
+          {/* TITLE */}
           <div
             style={{
               position: "relative",
@@ -197,20 +190,56 @@ export default function CategoryPostBoxRenderer({
               whiteSpace: "nowrap",
               overflow: "hidden",
               textOverflow: "ellipsis",
-              textShadow: isSimple
-                ? "none"
-                : "0 1px 4px rgba(0,0,0,0.30)",
               fontWeight: 600,
             }}
           >
-            <PostTitleRenderer text={post.title} />
+            {highlightText(
+              post.title,
+              currentQuery
+            )}
           </div>
 
+          {/* SEARCH META */}
+          {currentQuery &&
+            matchedIn && (
+              <div
+                style={{
+                  marginTop: 6,
+                  fontSize: 11,
+                  lineHeight: 1.5,
+                  color:
+                    "rgba(255,255,255,0.58)",
+                  maxWidth: 620,
+                }}
+              >
+                <div
+                  style={{
+                    marginBottom: 3,
+                    fontSize: 10,
+                    letterSpacing: "0.08em",
+                    color:
+                      "rgba(255,255,255,0.34)",
+                  }}
+                >
+                  MATCHED IN{" "}
+                  {matchedIn.toUpperCase()}
+                </div>
+
+                <div>
+                  {highlightText(
+                    snippet,
+                    currentQuery
+                  )}
+                </div>
+              </div>
+            )}
+
+          {/* DATE */}
           <div
             style={{
               position: "relative",
               zIndex: 5,
-              marginTop: 2,
+              marginTop: 6,
               fontSize: 10,
               color: isSimple
                 ? "rgba(60,60,60,0.45)"
@@ -231,8 +260,9 @@ export default function CategoryPostBoxRenderer({
     <CategoryInsideLayout
       onSearch={onSearch}
       currentQuery={currentQuery}
-      left={normalPosts.map((post, index) =>
-        renderNormalPost(post, index)
+      left={normalPosts.map(
+        (post, index) =>
+          renderNormalPost(post, index)
       )}
       right={
         <InteractionBoxLayout

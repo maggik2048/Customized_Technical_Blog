@@ -11,8 +11,10 @@ const cormorant = Cormorant_SC({
 
 export default function PostTitleRenderer({
   text,
+  highlight,
 }: {
   text: string;
+  highlight?: string;
 }) {
   if (!text) return null;
 
@@ -41,6 +43,83 @@ export default function PostTitleRenderer({
 
     // ( ... )
     parentheses: "#bfd2ff",
+
+    // search highlight
+    highlight: "#ffe066",
+  };
+
+  /**
+   * SEARCH HIGHLIGHT
+   */
+  const renderHighlightedSegment = (
+    value: string,
+    color: string,
+    key: string
+  ) => {
+    if (!highlight?.trim()) {
+      return renderStyledText(
+        value,
+        color,
+        key
+      );
+    }
+
+    const escaped = highlight.replace(
+      /[.*+?^${}()|[\]\\]/g,
+      "\\$&"
+    );
+
+    const regex = new RegExp(
+      `(${escaped})`,
+      "gi"
+    );
+
+    const split = value.split(regex);
+
+    return split.map((part, idx) => {
+      if (!part) return null;
+
+      const matched =
+        part.toLowerCase() ===
+        highlight.toLowerCase();
+
+      if (!matched) {
+        return (
+          <React.Fragment
+            key={`${key}-${idx}`}
+          >
+            {renderStyledText(
+              part,
+              color,
+              `${key}-${idx}`
+            )}
+          </React.Fragment>
+        );
+      }
+
+      return (
+        <span
+          key={`${key}-${idx}`}
+          style={{
+            color: COLORS.highlight,
+
+            fontWeight: 700,
+
+            textShadow: `
+              0 0 10px rgba(255,224,102,0.45),
+              0 0 22px rgba(255,224,102,0.18),
+              0 2px 8px rgba(0,0,0,0.45)
+            `,
+          }}
+        >
+          {renderStyledText(
+            part,
+            COLORS.highlight,
+            `${key}-${idx}-highlight`
+          )}
+        </span>
+      );
+    });
   };
 
   const equalSplit = text.split(/(=)/g);
@@ -78,12 +157,11 @@ export default function PostTitleRenderer({
                 ? "1.28em"
                 : "1em",
 
-              // 영어 optical balance
+              // optical balance
               fontWeight: isEnglish
                 ? 560
                 : 520,
 
-              // baseline 보정
               position: "relative",
 
               top: isEnglish
@@ -115,11 +193,8 @@ export default function PostTitleRenderer({
 
         letterSpacing: "0.015em",
 
-        // 한글 안퍼지게
         fontWeight: 520,
 
-        // 영어는 Cormorant 유지
-        // 한글만 fallback
         fontFamily: `
           ${cormorant.style.fontFamily},
           "Pretendard",
@@ -127,7 +202,6 @@ export default function PostTitleRenderer({
           serif
         `,
 
-        // cinematic but clean
         textShadow: `
           0 1px 2px rgba(0,0,0,0.50),
           0 3px 8px rgba(0,0,0,0.35)
@@ -238,7 +312,11 @@ export default function PostTitleRenderer({
                   `,
                 }}
               >
-                {part}
+                {renderHighlightedSegment(
+                  part,
+                  COLORS.parentheses,
+                  `${i}-${j}`
+                )}
               </span>
             );
           }
@@ -258,7 +336,7 @@ export default function PostTitleRenderer({
             <React.Fragment
               key={`${i}-${j}`}
             >
-              {renderStyledText(
+              {renderHighlightedSegment(
                 part,
                 color,
                 `${i}-${j}`
