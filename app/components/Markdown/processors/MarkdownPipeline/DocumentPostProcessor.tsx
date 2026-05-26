@@ -10,6 +10,7 @@ export class DocumentPostProcessor {
     let out = input;
 
     out = this.removeEmojis(out);
+    out = this.removePronouns(out);
     out = this.normalize(out);
     out = this.trimSpaces(out);
 
@@ -35,6 +36,25 @@ export class DocumentPostProcessor {
   }
 
   /**
+   * removes target pronouns / words
+   *
+   * removes:
+   * - 니가
+   * - 네가
+   * - 네
+   * - 니
+   * - your
+   */
+  private static removePronouns(
+    text: string
+  ): string {
+    return text.replace(
+      /\b(?:your)\b|니가|네가|네|니/giu,
+      ""
+    );
+  }
+
+  /**
    * markdown noise cleanup
    */
   private static normalize(
@@ -42,6 +62,7 @@ export class DocumentPostProcessor {
   ): string {
     return text
       .replace(/\r/g, "")
+      .replace(/[ \t]{2,}/g, " ")
       .replace(/\n{3,}/g, "\n\n")
       .trim();
   }
