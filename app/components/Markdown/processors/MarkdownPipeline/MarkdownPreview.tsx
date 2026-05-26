@@ -7,6 +7,8 @@ import remarkMath from "remark-math";
 import remarkGfm from "remark-gfm";
 
 import rehypeKatex from "rehype-katex";
+import rehypeRaw from "rehype-raw";
+
 import "katex/dist/katex.min.css";
 
 import TurndownService from "turndown";
@@ -174,8 +176,158 @@ export default function MarkdownPreview({
     >
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkMath]}
-        rehypePlugins={[rehypeKatex]}
+        rehypePlugins={[
+          rehypeKatex,
+          rehypeRaw,
+        ]}
         components={{
+          /**
+           * =================================
+           * DIFF BLOCK
+           * =================================
+           */
+
+          pre({
+            children,
+          }: any) {
+            /**
+             * raw text
+             */
+
+            const raw =
+              String(
+                children?.props?.children ||
+                  ""
+              );
+
+            /**
+             * detect diff
+             */
+
+            const className =
+              children?.props?.className ||
+              "";
+
+            const isDiff =
+              className.includes(
+                "language-diff"
+              );
+
+            /**
+             * normal pre
+             */
+
+            if (!isDiff) {
+              return (
+                <pre
+                  style={{
+                    margin: "10px 0",
+
+                    borderRadius: 6,
+
+                    overflow: "auto",
+                  }}
+                >
+                  {children}
+                </pre>
+              );
+            }
+
+            /**
+             * diff render
+             */
+
+            const lines =
+              raw.split("\n");
+
+            return (
+              <div
+                style={{
+                  margin: "10px 0",
+
+                  borderRadius: 8,
+
+                  overflow: "hidden",
+
+                  border:
+                    "1px solid #333",
+
+                  fontFamily:
+                    "monospace",
+
+                  fontSize: 14,
+                }}
+              >
+                {lines.map(
+                  (line, index) => {
+                    let background =
+                      "#1e1e1e";
+
+                    let color =
+                      "#d4d4d4";
+
+                    if (
+                      line.startsWith(
+                        "+"
+                      )
+                    ) {
+                      background =
+                        "#0f2a1f";
+
+                      color =
+                        "#7ee787";
+                    }
+
+                    if (
+                      line.startsWith(
+                        "-"
+                      )
+                    ) {
+                      background =
+                        "#2d1517";
+
+                      color =
+                        "#ff7b72";
+                    }
+
+                    if (
+                      line.startsWith(
+                        "@"
+                      )
+                    ) {
+                      background =
+                        "#1f2937";
+
+                      color =
+                        "#79c0ff";
+                    }
+
+                    return (
+                      <div
+                        key={index}
+                        style={{
+                          background,
+
+                          color,
+
+                          padding:
+                            "2px 10px",
+
+                          whiteSpace:
+                            "pre-wrap",
+
+                          lineHeight: 1.6,
+                        }}
+                      >
+                        {line || " "}
+                      </div>
+                    );
+                  }
+                )}
+              </div>
+            );
+          },
+
           /**
            * =================================
            * HEADINGS
@@ -258,7 +410,9 @@ export default function MarkdownPreview({
             );
           },
 
-          blockquote({ children }) {
+          blockquote({
+            children,
+          }) {
             return (
               <EditableBlock
                 tag="blockquote"
@@ -340,40 +494,21 @@ export default function MarkdownPreview({
              */
 
             return (
-              <pre
-                onCopy={(e) => {
-                  e.preventDefault();
-
-                  e.clipboardData?.setData(
-                    "text/plain",
-                    text
-                  );
-                }}
-                style={{
+              <SyntaxHighlighter
+                style={oneDark}
+                language={
+                  match?.[1] || "text"
+                }
+                wrapLines={true}
+                wrapLongLines={false}
+                customStyle={{
                   margin: "10px 0",
-
                   borderRadius: 6,
-
-                  overflow: "auto",
+                  padding: "12px",
                 }}
               >
-                <SyntaxHighlighter
-                  style={oneDark}
-                  language={
-                    match?.[1] || "text"
-                  }
-                  PreTag="div"
-                  wrapLines={true}
-                  wrapLongLines={false}
-                  customStyle={{
-                    margin: 0,
-                    padding: "0px 8px",
-                    borderRadius: 0,
-                  }}  
-                > 
-                  {text}
-                </SyntaxHighlighter>
-              </pre>
+                {text}
+              </SyntaxHighlighter>
             );
           },
 
