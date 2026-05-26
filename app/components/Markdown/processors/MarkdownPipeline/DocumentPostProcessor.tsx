@@ -12,6 +12,7 @@ export class DocumentPostProcessor {
     out = this.removeEmojis(out);
     out = this.removePronouns(out);
     out = this.normalizeSentenceEnding(out);
+    out = this.normalizeBoxNumbers(out);
     out = this.normalize(out);
     out = this.trimSpaces(out);
 
@@ -50,7 +51,7 @@ export class DocumentPostProcessor {
     text: string
   ): string {
     return text.replace(
-      /(^|\s)(?:you|your|니가|네가|너의|너|네|니)(?=\s|$)/giu,
+      /(^|\s)(?:you|your|니가|네가|너의|너한테|너에게|너|네|니)(?=\s|$)/giu,
       "$1"
     );
   }
@@ -70,6 +71,29 @@ export class DocumentPostProcessor {
       /야(?=\s|$|[.?!])/g,
       "이다."
     );
+  }
+
+  /**
+   * converts boxed unicode numbers into markdown list style
+   *
+   * examples:
+   * - "2⃣ 테스트" -> "2. 테스트"
+   * - "3⃣ hello" -> "3. hello"
+   */
+  private static normalizeBoxNumbers(
+    text: string
+  ): string {
+    return text
+      .replace(/0⃣/g, "0. ")
+      .replace(/1⃣/g, "1. ")
+      .replace(/2⃣/g, "2. ")
+      .replace(/3⃣/g, "3. ")
+      .replace(/4⃣/g, "4. ")
+      .replace(/5⃣/g, "5. ")
+      .replace(/6⃣/g, "6. ")
+      .replace(/7⃣/g, "7. ")
+      .replace(/8⃣/g, "8. ")
+      .replace(/9⃣/g, "9. ");
   }
 
   /**
