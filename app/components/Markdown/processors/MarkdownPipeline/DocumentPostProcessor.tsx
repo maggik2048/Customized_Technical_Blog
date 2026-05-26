@@ -49,7 +49,7 @@ export class DocumentPostProcessor {
     text: string
   ): string {
     return text.replace(
-      /\b(?:your)\b|니가|네가|네|니/giu,
+      /\b(?:you|your)\b|니가|네가|네|니/giu,
       ""
     );
   }
