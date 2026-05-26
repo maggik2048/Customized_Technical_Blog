@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import MorphingTextAnimation from "../../MathematicVisualizer/morphingTextAnimation";
 import CalculatorKeyboardInterface from "../../MathematicVisualizer/CalculatorKeyboardInterface";
 
@@ -17,21 +17,51 @@ export default function SearchBarButton({
   const [isActive, setIsActive] = useState(false);
   const [showCalculator, setShowCalculator] = useState(false);
 
-  // 추가됨
+  // SEARCH STATE
   const [isSearching, setIsSearching] = useState(false);
 
+  // DUPLICATE QUERY PREVENTION
+  const [lastSearched, setLastSearched] = useState("");
+
   const handleSearch = async () => {
-    if (!value.trim()) return;
+    const trimmed = value.trim();
+
+    // EMPTY → RESET SEARCH
+    if (!trimmed) {
+      setLastSearched("");
+      await onSearch?.("");
+      return;
+    }
+
+    // SAME QUERY BLOCK
+    if (trimmed === lastSearched) return;
 
     try {
       setIsSearching(true);
+      setLastSearched(trimmed);
 
       // 부모(CategoryRenderer 등)로 검색어 전달
-      await onSearch?.(value);
+      await onSearch?.(trimmed);
     } finally {
       setIsSearching(false);
     }
   };
+
+  // DEBOUNCE SEARCH
+  useEffect(() => {
+    // INPUT CLEARED
+    if (!value.trim()) {
+      onSearch?.("");
+      setLastSearched("");
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      handleSearch();
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [value]);
 
   const Magnifier = ({ size = 18 }: { size?: number }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
