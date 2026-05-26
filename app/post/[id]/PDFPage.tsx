@@ -16,6 +16,8 @@ import MarkdownRendererCoordinator from "@/app/components/Markdown/Theme/Markdow
 import CodeBlockThemeCoordinator from "@/app/components/Markdown/Theme/CodeBlockThemeCoordinator";
 import MetadataPostalCode from "@/app/components/papers/MetadataPostalCode";
 
+import DiffVisualizer from "@/app/components/Markdown/processors/MarkdownPipeline/DiffVisualizer";
+
 import PDFPageHeader from "./PDFPageHeader";
 import GotoTheTop from "./GotoTheTop";
 import ScrollWithKeyboardArrow from "./ScrollWithKeyboardArrow";
@@ -155,8 +157,15 @@ export default function PDFPage({
             <div style={{ marginTop: -2 }}>
               <NotepageLines>
                 {parsedParts.map((item) => {
+                  /**
+                   * =========================
+                   * VISUALIZATION BLOCK
+                   * =========================
+                   */
+
                   if (item.kind === "viz") {
-                    const Component = item.Component;
+                    const Component =
+                      item.Component;
 
                     return (
                       <div key={item.key}>
@@ -165,11 +174,34 @@ export default function PDFPage({
                     );
                   }
 
+                  /**
+                   * =========================
+                   * DIFF BLOCK
+                   * =========================
+                   */
+
+                  if (item.kind === "diff") {
+                    return (
+                      <DiffVisualizer
+                        key={item.key}
+                        raw={item.content}
+                      />
+                    );
+                  }
+
+                  /**
+                   * =========================
+                   * MARKDOWN BLOCK
+                   * =========================
+                   */
+
                   return (
                     <MemoMarkdownRendererCoordinator
                       key={item.key}
                       category={data?.category}
-                      markdownComponents={mdComponents}
+                      markdownComponents={
+                        mdComponents
+                      }
                       isDark={isDark}
                       CodeBlock={CodeBlock}
                     >
