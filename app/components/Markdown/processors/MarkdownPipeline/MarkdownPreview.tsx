@@ -153,9 +153,9 @@ export default function MarkdownPreview({
       style={{
         width: "50%",
 
-        height: "100%",
+        minHeight: "100vh",
 
-        overflow: "auto",
+        overflow: "visible",
 
         padding: 20,
 
