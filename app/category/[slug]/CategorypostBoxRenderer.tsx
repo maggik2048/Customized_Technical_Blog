@@ -156,6 +156,14 @@ export default function CategoryPostBoxRenderer({
     const snippet =
       post.searchMeta?.snippet;
 
+    //
+    // SEARCH SCORE
+    //
+    const score =
+      typeof post.score === "number"
+        ? post.score.toFixed(2)
+        : null;
+
     const expanded =
       !!currentQuery && !!matchedIn;
 
@@ -353,6 +361,10 @@ export default function CategoryPostBoxRenderer({
             >
               <div
                 style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+
                   fontSize: 9,
 
                   letterSpacing:
@@ -365,8 +377,36 @@ export default function CategoryPostBoxRenderer({
                     : "rgba(255,255,255,0.34)",
                 }}
               >
-                MATCHED IN{" "}
-                {matchedIn.toUpperCase()}
+                <span>
+                  MATCHED IN{" "}
+                  {matchedIn.toUpperCase()}
+                </span>
+
+                {score && (
+                  <span
+                    style={{
+                      padding:
+                        "1px 6px",
+
+                      borderRadius: 999,
+
+                      background: isSimple
+                        ? "rgba(0,0,0,0.05)"
+                        : "rgba(255,255,255,0.08)",
+
+                      color: isSimple
+                        ? "rgba(20,20,20,0.62)"
+                        : "rgba(255,255,255,0.72)",
+
+                      fontWeight: 700,
+
+                      letterSpacing:
+                        "0.04em",
+                    }}
+                  >
+                    SCORE {score}
+                  </span>
+                )}
               </div>
 
               <div
