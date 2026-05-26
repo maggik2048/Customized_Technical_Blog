@@ -15,11 +15,19 @@ function createSnippet(
   const matchIndex =
     lowerContent.indexOf(lowerQuery);
 
+  // NO DIRECT MATCH
   if (matchIndex === -1) {
-    return content.slice(0, 120) + "...";
+    return (
+      content
+        .replace(/\n/g, " ")
+        .slice(0, 140) + "..."
+    );
   }
 
-  const start = Math.max(0, matchIndex - 80);
+  const start = Math.max(
+    0,
+    matchIndex - 80
+  );
 
   const end = Math.min(
     content.length,
@@ -28,7 +36,9 @@ function createSnippet(
 
   return (
     "..." +
-    content.slice(start, end).replace(/\n/g, " ") +
+    content
+      .slice(start, end)
+      .replace(/\n/g, " ") +
     "..."
   );
 }
@@ -36,6 +46,9 @@ function createSnippet(
 export async function semanticSearch(
   query: string
 ) {
+  const normalizedQuery =
+    query.toLowerCase();
+
   //
   // 1. KEYWORD SEARCH
   //
@@ -58,19 +71,89 @@ export async function semanticSearch(
   }
 
   //
-  // 2. VECTOR SEARCH
+  // 2. SCORE KEYWORD RESULTS
+  //
+  const scoredKeywordResults = (
+    keywordResults || []
+  ).map((post: any) => {
+    const lowerTitle =
+      post.title?.toLowerCase?.() || "";
+
+    const lowerContent =
+      post.content?.toLowerCase?.() || "";
+
+    const exactTitleMatch =
+      lowerTitle === normalizedQuery;
+
+    const partialTitleMatch =
+      lowerTitle.includes(
+        normalizedQuery
+      );
+
+    const contentMatch =
+      lowerContent.includes(
+        normalizedQuery
+      );
+
+    let score = 0;
+
+    //
+    // PRIORITY:
+    // exact title > partial title > content
+    //
+    if (exactTitleMatch) {
+      score += 100;
+    }
+
+    if (partialTitleMatch) {
+      score += 50;
+    }
+
+    if (contentMatch) {
+      score += 20;
+    }
+
+    return {
+      ...post,
+
+      score,
+
+      searchMeta: {
+        matchedIn: exactTitleMatch
+          ? "exact-title"
+          : partialTitleMatch
+          ? "title"
+          : "content",
+
+        snippet: createSnippet(
+          post.content || "",
+          query
+        ),
+      },
+    };
+  });
+
+  //
+  // 3. VECTOR SEARCH
   //
   let semanticResults: any[] = [];
 
   try {
-    const queryEmbedding = await embed(query);
+    const queryEmbedding =
+      await embed(query);
 
     const { data, error } =
-      await supabaseServer.rpc("match_posts", {
-        query_embedding: queryEmbedding,
-        match_threshold: 0.1,
-        match_count: 10,
-      });
+      await supabaseServer.rpc(
+        "match_posts",
+        {
+          query_embedding:
+            queryEmbedding,
+
+          match_threshold: 0.1,
+
+          match_count: 10,
+        }
+      );
 
     if (error) {
       console.error(
@@ -88,45 +171,62 @@ export async function semanticSearch(
   }
 
   //
-  // 3. MERGE + DEDUPE
+  // 4. SCORE SEMANTIC RESULTS
+  //
+  const scoredSemanticResults =
+    semanticResults.map(
+      (post: any) => ({
+        ...post,
+
+        //
+        // semantic always lower priority
+        //
+        score:
+          (post.similarity || 0) * 10,
+
+        searchMeta: {
+          matchedIn: "semantic",
+
+          snippet: createSnippet(
+            post.content || "",
+            query
+          ),
+        },
+      })
+    );
+
+  //
+  // 5. MERGE + BEST SCORE PICK
   //
   const mergedMap = new Map();
 
   [
-    ...(keywordResults || []),
-    ...semanticResults,
+    ...scoredSemanticResults,
+    ...scoredKeywordResults,
   ].forEach((post: any) => {
-    const lowerTitle =
-      post.title?.toLowerCase?.() || "";
+    const existing =
+      mergedMap.get(post.id);
 
-    const lowerContent =
-      post.content?.toLowerCase?.() || "";
-
-    const lowerQuery = query.toLowerCase();
-
-    const titleMatched =
-      lowerTitle.includes(lowerQuery);
-
-    const contentMatched =
-      lowerContent.includes(lowerQuery);
-
-    mergedMap.set(post.id, {
-      ...post,
-
-      searchMeta: {
-        matchedIn: titleMatched
-          ? "title"
-          : contentMatched
-          ? "content"
-          : "semantic",
-
-        snippet: createSnippet(
-          post.content || "",
-          query
-        ),
-      },
-    });
+    //
+    // KEEP HIGHER SCORE VERSION
+    //
+    if (
+      !existing ||
+      post.score >
+        (existing.score || 0)
+    ) {
+      mergedMap.set(post.id, post);
+    }
   });
 
-  return Array.from(mergedMap.values());
+  //
+  // 6. FINAL SORT
+  //
+  return Array.from(
+    mergedMap.values()
+  ).sort(
+    (a: any, b: any) =>
+      (b.score || 0) -
+      (a.score || 0)
+  );
 }
