@@ -1,0 +1,32 @@
+{
+  "ground": [
+    "soil",
+    "dirt",
+    "earth",
+    "terrain"
+  ],
+
+  "join": [
+    "merge",
+    "combine",
+    "union"
+  ],
+
+  "ai": [
+    "artificial intelligence",
+    "llm",
+    "model"
+  ],
+
+  "database": [
+    "db",
+    "storage",
+    "sql"
+  ],
+
+  "frontend": [
+    "ui",
+    "ux",
+    "client"
+  ]
+}

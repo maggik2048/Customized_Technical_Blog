@@ -3,19 +3,26 @@
 import { supabaseServer } from "./supabase-server";
 import { embed } from "../scripts/embed";
 
+import synonymMap from "./synonymMap.json";
+
 function createSnippet(
   content: string,
   query: string
 ) {
   if (!content) return "";
 
-  const lowerContent = content.toLowerCase();
-  const lowerQuery = query.toLowerCase();
+  const lowerContent =
+    content.toLowerCase();
+
+  const lowerQuery =
+    query.toLowerCase();
 
   const matchIndex =
     lowerContent.indexOf(lowerQuery);
 
+  //
   // NO DIRECT MATCH
+  //
   if (matchIndex === -1) {
     return (
       content
@@ -31,7 +38,9 @@ function createSnippet(
 
   const end = Math.min(
     content.length,
-    matchIndex + query.length + 80
+    matchIndex +
+      query.length +
+      80
   );
 
   return (
@@ -50,7 +59,31 @@ export async function semanticSearch(
     query.toLowerCase();
 
   //
-  // 1. KEYWORD SEARCH
+  // 1. QUERY EXPANSION
+  //
+  const synonyms =
+    synonymMap[
+      normalizedQuery as keyof typeof synonymMap
+    ] || [];
+
+  const expandedQueries = [
+    normalizedQuery,
+    ...synonyms,
+  ];
+
+  //
+  // 2. BUILD OR QUERY
+  //
+  const orQuery =
+    expandedQueries
+      .map(
+        q =>
+          `title.ilike.%${q}%,content.ilike.%${q}%`
+      )
+      .join(",");
+
+  //
+  // 3. KEYWORD SEARCH
   //
   const {
     data: keywordResults,
@@ -58,10 +91,8 @@ export async function semanticSearch(
   } = await supabaseServer
     .from("posts")
     .select("*")
-    .or(
-      `title.ilike.%${query}%,content.ilike.%${query}%`
-    )
-    .limit(20);
+    .or(orQuery)
+    .limit(30);
 
   if (keywordError) {
     console.error(
@@ -71,19 +102,29 @@ export async function semanticSearch(
   }
 
   //
-  // 2. SCORE KEYWORD RESULTS
+  // 4. SCORE KEYWORD RESULTS
   //
   const scoredKeywordResults = (
     keywordResults || []
   ).map((post: any) => {
     const lowerTitle =
-      post.title?.toLowerCase?.() || "";
+      post.title?.toLowerCase?.() ||
+      "";
 
     const lowerContent =
-      post.content?.toLowerCase?.() || "";
+      post.content?.toLowerCase?.() ||
+      "";
 
+    let score = 0;
+
+    let matchedIn = "semantic";
+
+    //
+    // ORIGINAL QUERY MATCHES
+    //
     const exactTitleMatch =
-      lowerTitle === normalizedQuery;
+      lowerTitle ===
+      normalizedQuery;
 
     const partialTitleMatch =
       lowerTitle.includes(
@@ -95,23 +136,70 @@ export async function semanticSearch(
         normalizedQuery
       );
 
-    let score = 0;
-
     //
-    // PRIORITY:
-    // exact title > partial title > content
+    // STRONG BOOST
     //
     if (exactTitleMatch) {
       score += 100;
+      matchedIn = "exact-title";
     }
 
     if (partialTitleMatch) {
       score += 50;
+      matchedIn = "title";
     }
 
     if (contentMatch) {
       score += 20;
+      matchedIn = "content";
     }
+
+    //
+    // SYNONYM MATCHES
+    //
+    expandedQueries.forEach(
+      expanded => {
+        if (
+          expanded === normalizedQuery
+        ) {
+          return;
+        }
+
+        const titleSynonymMatch =
+          lowerTitle.includes(
+            expanded
+          );
+
+        const contentSynonymMatch =
+          lowerContent.includes(
+            expanded
+          );
+
+        if (titleSynonymMatch) {
+          score += 15;
+
+          if (
+            matchedIn ===
+            "semantic"
+          ) {
+            matchedIn =
+              "synonym-title";
+          }
+        }
+
+        if (contentSynonymMatch) {
+          score += 8;
+
+          if (
+            matchedIn ===
+            "semantic"
+          ) {
+            matchedIn =
+              "synonym-content";
+          }
+        }
+      }
+    );
 
     return {
       ...post,
@@ -119,11 +207,9 @@ export async function semanticSearch(
       score,
 
       searchMeta: {
-        matchedIn: exactTitleMatch
-          ? "exact-title"
-          : partialTitleMatch
-          ? "title"
-          : "content",
+        matchedIn,
+
+        expandedQueries,
 
         snippet: createSnippet(
           post.content || "",
@@ -134,7 +220,7 @@ export async function semanticSearch(
   });
 
   //
-  // 3. VECTOR SEARCH
+  // 5. VECTOR SEARCH
   //
   let semanticResults: any[] = [];
 
@@ -171,7 +257,7 @@ export async function semanticSearch(
   }
 
   //
-  // 4. SCORE SEMANTIC RESULTS
+  // 6. SCORE SEMANTIC RESULTS
   //
   const scoredSemanticResults =
     semanticResults.map(
@@ -179,13 +265,16 @@ export async function semanticSearch(
         ...post,
 
         //
-        // semantic always lower priority
+        // semantic lower priority
         //
         score:
-          (post.similarity || 0) * 10,
+          (post.similarity || 0) *
+          10,
 
         searchMeta: {
           matchedIn: "semantic",
+
+          expandedQueries,
 
           snippet: createSnippet(
             post.content || "",
@@ -196,7 +285,7 @@ export async function semanticSearch(
     );
 
   //
-  // 5. MERGE + BEST SCORE PICK
+  // 7. MERGE + BEST SCORE PICK
   //
   const mergedMap = new Map();
 
@@ -220,7 +309,7 @@ export async function semanticSearch(
   });
 
   //
-  // 6. FINAL SORT
+  // 8. FINAL SORT
   //
   return Array.from(
     mergedMap.values()
