@@ -6,10 +6,7 @@ export async function GET(req: Request) {
   const query = searchParams.get("q");
 
   if (!query) {
-    return NextResponse.json(
-      { error: "Missing query" },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "Missing query" }, { status: 400 });
   }
 
   const results = await semanticSearch(query);

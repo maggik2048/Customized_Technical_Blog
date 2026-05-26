@@ -17,8 +17,20 @@ export default function SearchBarButton({
   const [isActive, setIsActive] = useState(false);
   const [showCalculator, setShowCalculator] = useState(false);
 
-  const handleSearch = () => {
-    onSearch?.(value);
+  // 추가됨
+  const [isSearching, setIsSearching] = useState(false);
+
+  const handleSearch = async () => {
+    if (!value.trim()) return;
+
+    try {
+      setIsSearching(true);
+
+      // 부모(CategoryRenderer 등)로 검색어 전달
+      await onSearch?.(value);
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   const Magnifier = ({ size = 18 }: { size?: number }) => (
@@ -124,7 +136,9 @@ export default function SearchBarButton({
           onFocus={() => setIsActive(true)}
           onBlur={() => setIsActive(false)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") handleSearch();
+            if (e.key === "Enter") {
+              handleSearch();
+            }
           }}
           placeholder="Search On this Category..."
           style={{
@@ -177,6 +191,7 @@ export default function SearchBarButton({
           {/* SEARCH */}
           <button
             onClick={handleSearch}
+            disabled={isSearching}
             style={{
               display: "flex",
               alignItems: "center",
@@ -188,13 +203,14 @@ export default function SearchBarButton({
               background: "rgba(0,0,0,0.04)",
               color: "rgba(0,0,0,0.7)",
               fontSize: 12,
-              cursor: "pointer",
+              cursor: isSearching ? "wait" : "pointer",
+              opacity: isSearching ? 0.7 : 1,
               fontFamily:
                 "ui-serif, Georgia, 'Times New Roman', Times, serif",
             }}
           >
             <Magnifier size={14} />
-            Search
+            {isSearching ? "Searching..." : "Search"}
           </button>
         </div>
 
