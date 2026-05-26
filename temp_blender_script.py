@@ -100,7 +100,7 @@ def create_tex(
 
 
 base = create_tex(
-    r"C:\Users\ggabu\graphics-lab-v2\public\materials\material_1779322136518\rocks012_albedo.jpg",
+    r"C:\Users\ggabu\graphics-lab-v2\public\materials\material_1779797914565\leaking012c_albedo.jpg",
     -800,
     300
 )
@@ -117,7 +117,7 @@ links.new(
 
 
 rough = create_tex(
-    r"C:\Users\ggabu\graphics-lab-v2\public\materials\material_1779322136518\rocks012_roughness.jpg",
+    r"C:\Users\ggabu\graphics-lab-v2\public\materials\material_1779797914565\leaking012c_roughness.jpg",
     -800,
     50,
     True
@@ -134,6 +134,18 @@ links.new(
 # =========================
 
 
+metal = create_tex(
+    r"C:\Users\ggabu\graphics-lab-v2\public\materials\material_1779797914565\leaking012c_metallic.jpg",
+    -800,
+    -150,
+    True
+)
+
+links.new(
+    metal.outputs["Color"],
+    bsdf.inputs["Metallic"]
+)
+
 
 # =========================
 # NORMAL
@@ -141,7 +153,7 @@ links.new(
 
 
 normal_tex = create_tex(
-    r"C:\Users\ggabu\graphics-lab-v2\public\materials\material_1779322136518\rocks012_normal.jpg",
+    r"C:\Users\ggabu\graphics-lab-v2\public\materials\material_1779797914565\leaking012c_normal.jpg",
     -800,
     -400,
     True
@@ -177,7 +189,7 @@ links.new(
 
 
 height_tex = create_tex(
-    r"C:\Users\ggabu\graphics-lab-v2\public\materials\material_1779322136518\rocks012_displacement.jpg",
+    r"C:\Users\ggabu\graphics-lab-v2\public\materials\material_1779797914565\leaking012c_displacement.jpg",
     -800,
     -650,
     True
