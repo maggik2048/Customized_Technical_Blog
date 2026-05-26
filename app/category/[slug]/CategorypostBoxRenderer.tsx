@@ -286,9 +286,7 @@ export default function CategoryPostBoxRenderer({
 
               fontSize: 15,
 
-              color: isSimple
-                ? "rgba(35,35,35,0.88)"
-                : "rgba(255,255,255,0.94)",
+              color: "rgba(255,255,255,0.94)",
 
               letterSpacing: "0.02em",
 

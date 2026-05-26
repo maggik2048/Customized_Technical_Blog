@@ -12,60 +12,38 @@ const cormorant = Cormorant_SC({
 export default function PostTitleRenderer({
   text,
   highlight,
-  isSimple,
 }: {
   text: string;
   highlight?: string;
-  isSimple?: boolean;
 }) {
   if (!text) return null;
 
   /**
-   * dark academia + laboratory metal + luxury graphite
+   * FORCE CINEMATIC WHITE TYPOGRAPHY
+   *
+   * 핵심 수정:
+   * - inline-block 제거
+   * - inheritance 차단
+   * - ellipsis flattening 대응
+   * - root color 강제
    */
 
-  const highlightColor = isSimple
-    ? "rgba(25,25,25,0.95)"
-    : "#ffe066";
-
-  const highlightShadow = isSimple
-    ? `
-      0 1px 2px rgba(255,255,255,0.15),
-      0 1px 4px rgba(0,0,0,0.08)
-    `
-    : `
-      0 0 10px rgba(255,224,102,0.45),
-      0 0 22px rgba(255,224,102,0.18),
-      0 2px 8px rgba(0,0,0,0.45)
-    `;
-
   const COLORS = {
-    // 기본 메인 텍스트
-    base: isSimple
-      ? "rgba(20,20,20,0.92)"
-      : "#F3F4F6",
+    base: "#F3F4F6",
 
-    // "="
     equal: "#ffca0a",
 
-    // "=" 이후
     afterEqual: "#ffb74b",
 
-    // "::"
     doubleColon: "#e1ff00",
 
-    // "::" 이후
-    afterDoubleColon: isSimple
-      ? "rgba(45,45,45,0.88)"
-      : "#c1b7a9",
+    afterDoubleColon: "#c1b7a9",
 
-    // vs
     vs: "#ffaf7a",
 
-    // ( ... )
-    parentheses: isSimple
-      ? "rgba(35,35,35,0.82)"
-      : "#bfd2ff",
+    parentheses: "#bfd2ff",
+
+    highlight: "#ffe066",
   };
 
   /**
@@ -121,17 +99,20 @@ export default function PostTitleRenderer({
         <span
           key={`${key}-${idx}`}
           style={{
-            color: highlightColor,
+            color: COLORS.highlight,
 
             fontWeight: 700,
 
-            textShadow:
-              highlightShadow,
+            textShadow: `
+              0 0 10px rgba(255,224,102,0.45),
+              0 0 22px rgba(255,224,102,0.18),
+              0 2px 8px rgba(0,0,0,0.45)
+            `,
           }}
         >
           {renderStyledText(
             part,
-            highlightColor,
+            COLORS.highlight,
             `${key}-${idx}-highlight`
           )}
         </span>
@@ -145,7 +126,7 @@ export default function PostTitleRenderer({
   let isAfterDoubleColon = false;
 
   /**
-   * 영어만 약간 크게
+   * TYPOGRAPHY RENDER
    */
   const renderStyledText = (
     value: string,
@@ -169,12 +150,10 @@ export default function PostTitleRenderer({
             style={{
               color,
 
-              // 영어만 확대
               fontSize: isEnglish
                 ? "1.28em"
                 : "1em",
 
-              // optical balance
               fontWeight: isEnglish
                 ? 560
                 : 520,
@@ -185,17 +164,21 @@ export default function PostTitleRenderer({
                 ? "0.02em"
                 : "0",
 
-              display: "inline-block",
+              /**
+               * 핵심 수정
+               * inline-block 제거
+               */
+              display: "inline",
 
-              textShadow: isSimple
-                ? `
-                  0 1px 1px rgba(255,255,255,0.15),
-                  0 1px 3px rgba(0,0,0,0.10)
-                `
-                : `
-                  0 1px 2px rgba(0,0,0,0.45),
-                  0 3px 8px rgba(0,0,0,0.30)
-                `,
+              /**
+               * 강제 white 유지
+               */
+              isolation: "isolate",
+
+              textShadow: `
+                0 1px 2px rgba(0,0,0,0.45),
+                0 3px 8px rgba(0,0,0,0.30)
+              `,
             }}
           >
             {seg}
@@ -209,6 +192,14 @@ export default function PostTitleRenderer({
     <span
       className={cormorant.className}
       style={{
+        /**
+         * 핵심 수정
+         * 부모 inheritance 차단
+         */
+        color: "#F3F4F6",
+
+        isolation: "isolate",
+
         fontSize: 16,
 
         lineHeight: 1.18,
@@ -224,15 +215,10 @@ export default function PostTitleRenderer({
           serif
         `,
 
-        textShadow: isSimple
-          ? `
-            0 1px 1px rgba(255,255,255,0.12),
-            0 1px 3px rgba(0,0,0,0.08)
-          `
-          : `
-            0 1px 2px rgba(0,0,0,0.50),
-            0 3px 8px rgba(0,0,0,0.35)
-          `,
+        textShadow: `
+          0 1px 2px rgba(0,0,0,0.50),
+          0 3px 8px rgba(0,0,0,0.35)
+        `,
 
         WebkitFontSmoothing:
           "antialiased",
@@ -247,7 +233,9 @@ export default function PostTitleRenderer({
       {equalSplit.map((chunk, i) => {
         if (!chunk) return null;
 
-        // "="
+        /**
+         * "="
+         */
         if (chunk === "=") {
           isAfterEqual = true;
 
@@ -277,7 +265,9 @@ export default function PostTitleRenderer({
         return parts.map((part, j) => {
           if (!part) return null;
 
-          // ::
+          /**
+           * ::
+           */
           if (part === "::") {
             isAfterDoubleColon = true;
 
@@ -301,7 +291,9 @@ export default function PostTitleRenderer({
             );
           }
 
-          // vs
+          /**
+           * vs
+           */
           if (part === "vs") {
             return (
               <span
@@ -322,7 +314,9 @@ export default function PostTitleRenderer({
             );
           }
 
-          // ( ... )
+          /**
+           * ( ... )
+           */
           if (
             part.startsWith("(") &&
             part.endsWith(")")
@@ -348,7 +342,9 @@ export default function PostTitleRenderer({
             );
           }
 
-          // 기본 텍스트
+          /**
+           * 기본 텍스트
+           */
           let color = COLORS.base;
 
           if (isAfterDoubleColon) {
