@@ -1,11 +1,19 @@
 "use client";
 
 import { useEffect, useState } from "react";
+
 import { useRouter } from "next/navigation";
+
 import { supabase } from "@/lib/supabase";
-import { getMenu } from "@/app/components/SidebarCategory/sidebarData";
-import { Item } from "@/app/components/types";
+
 import MarkdownImageManager from "@/app/components/Markdown/processors/MarkdownPipeline/MarkdownManager";
+
+import { getRecentAccessCategories } from "./GetRecentAccess";
+
+type CategoryItem = {
+  name: string;
+  slug: string;
+};
 
 type Props = {
   mode: "create" | "edit";
@@ -20,19 +28,38 @@ export default function PostForm({
 }: Props) {
   const router = useRouter();
 
-  const [menu, setMenu] = useState<Item[]>([]);
-  const [category, setCategory] = useState("");
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+  const [menu, setMenu] = useState<
+    CategoryItem[]
+  >([]);
+
+  const [category, setCategory] =
+    useState("");
+
+  const [title, setTitle] =
+    useState("");
+
+  const [content, setContent] =
+    useState("");
+
+  /*
+    category menu load
+    recent updated category priority sort
+  */
 
   useEffect(() => {
     const loadMenu = async () => {
-      const data = await getMenu();
+      const data =
+        await getRecentAccessCategories();
+
       setMenu(data);
     };
 
     loadMenu();
   }, []);
+
+  /*
+    default category initialize
+  */
 
   useEffect(() => {
     if (!menu.length) return;
@@ -40,124 +67,245 @@ export default function PostForm({
     if (mode === "create") {
       if (defaultCategory) {
         setCategory(defaultCategory);
+
         return;
       }
 
-      const fallback = menu[0]?.children?.[0]?.slug || "";
+      /*
+        fallback:
+        most recently accessed category
+      */
+
+      const fallback =
+        menu[0]?.slug || "";
+
       setCategory(fallback);
     }
-  }, [menu, defaultCategory, mode]);
+  }, [
+    menu,
+    defaultCategory,
+    mode,
+  ]);
+
+  /*
+    edit mode post fetch
+  */
 
   useEffect(() => {
-    if (mode !== "edit" || !postId) return;
+    if (mode !== "edit") return;
+
+    if (!postId) return;
 
     const fetchPost = async () => {
-      const { data, error } = await supabase
-        .from("posts")
-        .select("*")
-        .eq("id", postId)
-        .single();
+      const { data, error } =
+        await supabase
+          .from("posts")
+          .select("*")
+          .eq("id", postId)
+          .single();
 
       if (error) {
         console.error(error);
+
         return;
       }
 
-      if (data) {
-        setTitle(data.title);
-        setContent(data.content);
-        setCategory(data.category);
-      }
+      if (!data) return;
+
+      setTitle(data.title);
+
+      setContent(data.content);
+
+      setCategory(data.category);
     };
 
     fetchPost();
   }, [mode, postId]);
 
+  /*
+    chrome extension import
+  */
+
   useEffect(() => {
-    if (typeof chrome === "undefined") return;
-    if (!chrome.storage?.local) return;
+    if (typeof chrome === "undefined")
+      return;
 
-    chrome.storage.local.get(["latest_post"], (result) => {
-      if (!result.latest_post) return;
+    if (!chrome.storage?.local)
+      return;
 
-      console.log("LOADED FROM EXTENSION:");
-      console.log(result.latest_post);
+    chrome.storage.local.get(
+      ["latest_post"],
+      (result) => {
+        if (!result.latest_post)
+          return;
 
-      setContent(result.latest_post);
-    });
+        console.log(
+          "LOADED FROM EXTENSION:"
+        );
+
+        console.log(
+          result.latest_post
+        );
+
+        setContent(
+          result.latest_post
+        );
+      }
+    );
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  /*
+    submit
+  */
+
+  const handleSubmit = async (
+    e: React.FormEvent
+  ) => {
     e.preventDefault();
 
-    if (!title || !content || !category) {
+    if (
+      !title ||
+      !content ||
+      !category
+    ) {
       alert("모든 필드를 입력하세요");
+
       return;
     }
+
+    /*
+      create
+    */
 
     if (mode === "create") {
-      const { error } = await supabase.from("posts").insert([
-        { title, content, category },
-      ]);
+      const { error } =
+        await supabase
+          .from("posts")
+          .insert([
+            {
+              title,
+              content,
+              category,
+            },
+          ]);
 
       if (error) {
         console.error(error);
-        return alert("글 저장 실패");
-      }
 
-      router.push(`/category/${category}`);
-      return;
-    }
+        alert("글 저장 실패");
 
-    if (mode === "edit" && postId) {
-      const { data, error } = await supabase
-        .from("posts")
-        .update({ title, content, category })
-        .eq("id", postId)
-        .select();
-
-      if (error) {
-        console.error(error);
-        return alert("수정 실패");
-      }
-
-      if (!data || data.length === 0) {
-        alert("업데이트 실패");
         return;
       }
 
-      router.push(`/post/${postId}`);
+      router.push(
+        `/category/${category}`
+      );
+
+      return;
+    }
+
+    /*
+      edit
+    */
+
+    if (
+      mode === "edit" &&
+      postId
+    ) {
+      const { data, error } =
+        await supabase
+          .from("posts")
+          .update({
+            title,
+            content,
+            category,
+          })
+          .eq("id", postId)
+          .select();
+
+      if (error) {
+        console.error(error);
+
+        alert("수정 실패");
+
+        return;
+      }
+
+      if (
+        !data ||
+        data.length === 0
+      ) {
+        alert("업데이트 실패");
+
+        return;
+      }
+
+      router.push(
+        `/post/${postId}`
+      );
+
       router.refresh();
     }
   };
 
   return (
     <form onSubmit={handleSubmit}>
-      <div style={{ marginBottom: 16 }}>
-        <label>Category</label>
+      <div
+        style={{
+          marginBottom: 16,
+        }}
+      >
+        <label>
+          Category
+        </label>
+
         <br />
+
         <select
           value={category}
-          onChange={(e) => setCategory(e.target.value)}
-          style={{ width: "100%", padding: 8 }}
+          onChange={(e) =>
+            setCategory(
+              e.target.value
+            )
+          }
+          style={{
+            width: "100%",
+            padding: 8,
+          }}
         >
-          {menu.map((cat) =>
-            cat.children?.map((child) => (
-              <option key={child.slug} value={child.slug}>
-                {child.name}
-              </option>
-            ))
-          )}
+          {menu.map((child) => (
+            <option
+              key={child.slug}
+              value={child.slug}
+            >
+              {child.name}
+            </option>
+          ))}
         </select>
       </div>
 
-      <div style={{ marginBottom: 16 }}>
-        <label>Title</label>
+      <div
+        style={{
+          marginBottom: 16,
+        }}
+      >
+        <label>
+          Title
+        </label>
+
         <br />
+
         <input
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          style={{ width: "100%", padding: 8 }}
+          onChange={(e) =>
+            setTitle(
+              e.target.value
+            )
+          }
+          style={{
+            width: "100%",
+            padding: 8,
+          }}
         />
       </div>
 
@@ -170,17 +318,29 @@ export default function PostForm({
         type="submit"
         style={{
           position: "fixed",
+
           right: 24,
+
           bottom: 24,
-          padding: "12px 22px",
-          background: "#1e40af",
+
+          padding:
+            "12px 22px",
+
+          background:
+            "#1e40af",
+
           color: "#fff",
+
           borderRadius: 8,
+
           cursor: "pointer",
+
           zIndex: 9999,
         }}
       >
-        {mode === "create" ? "Submit" : "Update"}
+        {mode === "create"
+          ? "Submit"
+          : "Update"}
       </button>
     </form>
   );
