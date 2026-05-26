@@ -38,19 +38,19 @@ export class DocumentPostProcessor {
   /**
    * removes target pronouns / words
    *
-   * removes:
-   * - 니가
-   * - 네가
-   * - 네
-   * - 니
-   * - your
+   * removes only when separated by spaces
+   *
+   * examples:
+   * - "지금 너의 코드" -> "지금 코드"
+   * - "you are good" -> "are good"
+   * - "아니라" -> untouched
    */
   private static removePronouns(
     text: string
   ): string {
     return text.replace(
-      /\b(?:you|your)\b|니가|네가|네|니/giu,
-      ""
+      /(^|\s)(?:you|your|니가|네가|너의|너|네|니)(?=\s|$)/giu,
+      "$1"
     );
   }
 
