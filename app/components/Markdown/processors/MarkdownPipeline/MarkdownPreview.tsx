@@ -116,10 +116,13 @@ export default function MarkdownPreview({
     ({
       tag,
       children,
+      style,
     }: {
       tag: keyof JSX.IntrinsicElements;
 
       children: React.ReactNode;
+
+      style?: React.CSSProperties;
     }) => {
       const Tag = tag as any;
 
@@ -131,7 +134,10 @@ export default function MarkdownPreview({
           onBlur={syncPreviewToMarkdown}
           style={{
             outline: "none",
+
             cursor: "text",
+
+            ...style,
           }}
         >
           {children}
@@ -163,8 +169,6 @@ export default function MarkdownPreview({
 
         color: "#fff",
 
-        whiteSpace: "pre-wrap",
-
         wordBreak: "break-word",
       }}
     >
@@ -180,7 +184,13 @@ export default function MarkdownPreview({
 
           h1({ children }) {
             return (
-              <EditableBlock tag="h1">
+              <EditableBlock
+                tag="h1"
+                style={{
+                  margin: "18px 0 10px",
+                  lineHeight: 1,
+                }}
+              >
                 {children}
               </EditableBlock>
             );
@@ -188,7 +198,13 @@ export default function MarkdownPreview({
 
           h2({ children }) {
             return (
-              <EditableBlock tag="h2">
+              <EditableBlock
+                tag="h2"
+                style={{
+                  margin: "16px 0 8px",
+                  lineHeight: 1.25,
+                }}
+              >
                 {children}
               </EditableBlock>
             );
@@ -196,7 +212,13 @@ export default function MarkdownPreview({
 
           h3({ children }) {
             return (
-              <EditableBlock tag="h3">
+              <EditableBlock
+                tag="h3"
+                style={{
+                  margin: "14px 0 6px",
+                  lineHeight: 1.3,
+                }}
+              >
                 {children}
               </EditableBlock>
             );
@@ -210,7 +232,13 @@ export default function MarkdownPreview({
 
           p({ children }) {
             return (
-              <EditableBlock tag="p">
+              <EditableBlock
+                tag="p"
+                style={{
+                  margin: "6px 0",
+                  lineHeight: 0.7,
+                }}
+              >
                 {children}
               </EditableBlock>
             );
@@ -218,7 +246,13 @@ export default function MarkdownPreview({
 
           li({ children }) {
             return (
-              <EditableBlock tag="li">
+              <EditableBlock
+                tag="li"
+                style={{
+                  margin: "2px 0",
+                  lineHeight: 1.5,
+                }}
+              >
                 {children}
               </EditableBlock>
             );
@@ -226,7 +260,17 @@ export default function MarkdownPreview({
 
           blockquote({ children }) {
             return (
-              <EditableBlock tag="blockquote">
+              <EditableBlock
+                tag="blockquote"
+                style={{
+                  margin: "10px 0",
+                  paddingLeft: 12,
+                  borderLeft:
+                    "3px solid #555",
+                  opacity: 0.9,
+                  lineHeight: 1.5,
+                }}
+              >
                 {children}
               </EditableBlock>
             );
@@ -306,7 +350,7 @@ export default function MarkdownPreview({
                   );
                 }}
                 style={{
-                  margin: 0,
+                  margin: "10px 0",
 
                   borderRadius: 6,
 
@@ -321,7 +365,12 @@ export default function MarkdownPreview({
                   PreTag="div"
                   wrapLines={true}
                   wrapLongLines={false}
-                >
+                  customStyle={{
+                    margin: 0,
+                    padding: "0px 8px",
+                    borderRadius: 0,
+                  }}  
+                > 
                   {text}
                 </SyntaxHighlighter>
               </pre>
