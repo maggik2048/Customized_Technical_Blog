@@ -14,6 +14,8 @@ import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 import type { Components } from "react-markdown";
 
+import DiffVisualizer from "@/app/components/Markdown/processors/MarkdownPipeline/DiffVisualizer";
+
 /* =========================
    TYPES
 ========================= */
@@ -94,6 +96,9 @@ export default function CodeBlock_white({
     className || ""
   );
 
+  const language =
+    match?.[1]?.toLowerCase() || "";
+
   /* =========================
      INLINE DETECTION
   ========================= */
@@ -103,6 +108,14 @@ export default function CodeBlock_white({
     (!className &&
       text.length < 80 &&
       !text.includes("\n"));
+
+  /* =========================
+     DIFF DETECTION
+  ========================= */
+
+  const isDiff =
+    language === "diff" ||
+    language === "patch";
 
   /* =========================
      CLEANUP
@@ -173,6 +186,22 @@ export default function CodeBlock_white({
       >
         {children}
       </code>
+    );
+  }
+
+  /* =========================
+     DIFF VISUALIZER
+  ========================= */
+
+  if (isDiff) {
+    return (
+      <div
+        style={{
+          margin: "18px 0",
+        }}
+      >
+        <DiffVisualizer raw={text} />
+      </div>
     );
   }
 
@@ -283,7 +312,7 @@ export default function CodeBlock_white({
       {/* SYNTAX */}
 
       <SyntaxHighlighter
-        language={match?.[1] || "text"}
+        language={language || "text"}
         PreTag="div"
         style={{
           ...oneLight,
