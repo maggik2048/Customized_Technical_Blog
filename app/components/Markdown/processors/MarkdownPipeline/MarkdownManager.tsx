@@ -18,6 +18,8 @@ import MarkdownPreview from "./MarkdownPreview";
 
 import { uploadImage } from "../../imagehandle/uploadImage";
 
+import { DocumentPostProcessor } from "./DocumentPostProcessor";
+
 /**
  * =========================================
  * TYPES
@@ -120,10 +122,19 @@ export default function MarkdownManager({
       console.log(markdown);
 
       /**
+       * FINAL POST PROCESS
+       */
+
+      const processed =
+        DocumentPostProcessor.process(
+          markdown
+        );
+
+      /**
        * react state sync
        */
 
-      setContent(markdown);
+      setContent(processed);
 
       /**
        * codemirror sync
@@ -146,7 +157,7 @@ export default function MarkdownManager({
 
           to: view.state.doc.length,
 
-          insert: markdown,
+          insert: processed,
         },
       });
 
@@ -179,6 +190,15 @@ export default function MarkdownManager({
       view: EditorView,
       insert: string
     ) => {
+      /**
+       * FINAL POST PROCESS
+       */
+
+      const processed =
+        DocumentPostProcessor.process(
+          insert
+        );
+
       const current =
         view.state.doc.toString();
 
@@ -187,7 +207,7 @@ export default function MarkdownManager({
 
       const next =
         current.slice(0, sel.from) +
-        insert +
+        processed +
         current.slice(sel.to);
 
       view.dispatch({
