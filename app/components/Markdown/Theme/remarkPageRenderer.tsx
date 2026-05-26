@@ -28,12 +28,12 @@ const fontH2 = Cormorant_SC({
 
 const fontH3 = Cormorant_SC({
   subsets: ["latin"],
-  weight: ["600"], // ↑ 기존 500 → 600
+  weight: ["600"],
 });
 
 const fontBody = Cormorant_SC({
   subsets: ["latin"],
-  weight: ["500"], // ↑ 기존 400 → 500 (전체적으로 굵게)
+  weight: ["500"],
 });
 
 /* =========================
@@ -56,7 +56,7 @@ export default function RemarkPageRenderer({
 }: any) {
 
   /* =========================
-      TEXT SHADOW (복구 + 강화)
+      TEXT SHADOW
   ========================= */
 
   const textShadow = `
@@ -198,7 +198,7 @@ export default function RemarkPageRenderer({
             margin: "3px 0",
             color: "#5a3f1a",
             textShadow,
-            fontWeight: 500, // ↑ 강조
+            fontWeight: 500,
           }}
         >
           {children}
@@ -212,10 +212,11 @@ export default function RemarkPageRenderer({
             margin: "3px 0",
             fontFamily: baseFontFamily,
             lineHeight: 1.4,
-            fontWeight: 500, // ↑ 리스트도 굵게
+            fontWeight: 500,
           }}
         >
           <span style={starMarker}>✦</span>
+
           <span
             style={{
               color: "#b48f46",
@@ -270,9 +271,16 @@ export default function RemarkPageRenderer({
   return (
     <>
       <KaTeXPostProcessor />
-      <ReactMarkdown {...markdownProps}>
-        {children}
-      </ReactMarkdown>
+
+      <div
+        style={{
+          paddingTop: 68,
+        }}
+      >
+        <ReactMarkdown {...markdownProps}>
+          {children}
+        </ReactMarkdown>
+      </div>
     </>
   );
 }
