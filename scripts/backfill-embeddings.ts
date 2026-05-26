@@ -1,11 +1,6 @@
 import "dotenv/config";
-import { createClient } from "@supabase/supabase-js";
+import { supabaseServer } from "../lib/supabase-server";
 import { embed } from "./embed";
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 async function main() {
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
@@ -14,7 +9,7 @@ async function main() {
 
   console.log("Fetching posts...");
 
-  const { data: posts, error } = await supabase
+  const { data: posts, error } = await supabaseServer
     .from("posts")
     .select("id, title, content, category");
 
@@ -39,7 +34,7 @@ async function main() {
 
       const vector = await embed(text);
 
-      const { error: updateError } = await supabase
+      const { error: updateError } = await supabaseServer
         .from("posts")
         .update({ embedding: vector })
         .eq("id", post.id);

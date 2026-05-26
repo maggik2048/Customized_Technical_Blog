@@ -236,7 +236,7 @@ export default function MarkdownPreview({
                 tag="p"
                 style={{
                   margin: "6px 0",
-                  lineHeight: 0.7,
+                  lineHeight: 1.2,
                 }}
               >
                 {children}
