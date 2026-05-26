@@ -88,25 +88,45 @@ export default function CategoryPostBoxRenderer({
       .map((post, i) => [post.id, i + 1])
   );
 
-  const sortedPosts = [...posts].sort(
-    (a, b) => {
-      const aHasViz = !!extractVisualization(
-        a.content
-      );
+  //
+  // IMPORTANT:
+  //
+  // 검색 중(currentQuery 존재 시):
+  // semanticSearch() 의 score sorting 유지
+  //
+  // 일반 browsing:
+  // 기존 visualization/date sorting 유지
+  //
+  const sortedPosts = !!currentQuery
+    ? [...posts]
+    : [...posts].sort(
+        (a, b) => {
+          const aHasViz =
+            !!extractVisualization(
+              a.content
+            );
 
-      const bHasViz = !!extractVisualization(
-        b.content
-      );
+          const bHasViz =
+            !!extractVisualization(
+              b.content
+            );
 
-      if (aHasViz && !bHasViz) return -1;
-      if (!aHasViz && bHasViz) return 1;
+          if (aHasViz && !bHasViz)
+            return -1;
 
-      return (
-        new Date(b.created_at).getTime() -
-        new Date(a.created_at).getTime()
+          if (!aHasViz && bHasViz)
+            return 1;
+
+          return (
+            new Date(
+              b.created_at
+            ).getTime() -
+            new Date(
+              a.created_at
+            ).getTime()
+          );
+        }
       );
-    }
-  );
 
   const {
     interactivePosts,
@@ -286,7 +306,9 @@ export default function CategoryPostBoxRenderer({
 
               fontSize: 15,
 
-              color: "rgba(255,255,255,0.94)",
+              color: isSimple
+                ? "rgba(20,20,20,0.92)"
+                : "rgba(255,255,255,0.94)",
 
               letterSpacing: "0.02em",
 
