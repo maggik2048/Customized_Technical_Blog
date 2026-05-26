@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
+
 import CategoryPostBoxRenderer from "./CategoryPostBoxRenderer";
 import CategoryInsideBackgroundRenderer from "./CategoryInsideBackgroundRenderer";
 import GlobalCinematicCanvas from "./GlobalCinematicCanvas";
-import SearchBarButton from "./SearchBarButton";
 
 export default function CategoryRenderer({
   posts,
@@ -19,30 +19,34 @@ export default function CategoryRenderer({
   const [mode, setMode] = useState<"default" | "search">("default");
 
   const handleSearch = async (value: string) => {
-    if (!value) {
+    if (!value.trim()) {
       setSearchResults(null);
       setMode("default");
       return;
     }
 
-    const res = await fetch(`/api/search?q=${encodeURIComponent(value)}`);
-    const data = await res.json();
+    try {
+      const res = await fetch(
+        `/api/search?q=${encodeURIComponent(value)}`
+      );
 
-    setSearchResults(data);
-    setMode("search");
+      const data = await res.json();
+
+      setSearchResults(data);
+      setMode("search");
+    } catch (err) {
+      console.error("Search failed:", err);
+    }
   };
 
   const displayPosts =
-    mode === "search" && searchResults ? searchResults : posts;
+    mode === "search" && searchResults
+      ? searchResults
+      : posts;
 
   return (
     <>
       <GlobalCinematicCanvas />
-
-      {/* SEARCH BAR */}
-      <div style={{ display: "flex", justifyContent: "center" }}>
-        <SearchBarButton onSearch={handleSearch} />
-      </div>
 
       <div
         style={{
@@ -60,21 +64,48 @@ export default function CategoryRenderer({
         <CategoryInsideBackgroundRenderer />
 
         {/* HEADER */}
-        <div style={{ marginBottom: 42, textAlign: "center", width: 720 }}>
-          <div style={{ fontSize: 14, letterSpacing: "0.25em" }}>
-            {mode === "search" ? "SEARCH RESULTS" : "ARCHIVE CATEGORY"}
+        <div
+          style={{
+            marginBottom: 42,
+            textAlign: "center",
+            width: 720,
+          }}
+        >
+          <div
+            style={{
+              fontSize: 14,
+              letterSpacing: "0.25em",
+            }}
+          >
+            {mode === "search"
+              ? "SEARCH RESULTS"
+              : "ARCHIVE CATEGORY"}
           </div>
 
-          <h1 style={{ fontSize: 44, margin: 0 }}>
-            {mode === "search" ? "RESULTS" : slug.toUpperCase()}
+          <h1
+            style={{
+              fontSize: 44,
+              margin: 0,
+            }}
+          >
+            {mode === "search"
+              ? "RESULTS"
+              : slug.toUpperCase()}
           </h1>
         </div>
 
         {/* CONTENT */}
-        <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            justifyContent: "center",
+          }}
+        >
           <CategoryPostBoxRenderer
             posts={displayPosts}
             allPosts={allPosts}
+            onSearch={handleSearch}
           />
         </div>
       </div>

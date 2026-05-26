@@ -18,9 +18,11 @@ import {
 export default function CategoryPostBoxRenderer({
   posts,
   allPosts,
+  onSearch,
 }: {
   posts: any[];
   allPosts?: any[];
+  onSearch?: (value: string) => void;
 }) {
   const safeAllPosts = Array.isArray(allPosts)
     ? allPosts
@@ -89,7 +91,6 @@ export default function CategoryPostBoxRenderer({
                 0 6px 20px rgba(0,0,0,0.12)
               `,
 
-            // 여기 블러 강도 거의 안 보이게 낮춤
             backdropFilter: !isSimple
               ? "blur(1.5px)"
               : "none",
@@ -221,6 +222,7 @@ export default function CategoryPostBoxRenderer({
 
   return (
     <CategoryInsideLayout
+      onSearch={onSearch}
       left={normalPosts.map((post, index) =>
         renderNormalPost(post, index)
       )}
