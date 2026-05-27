@@ -10,6 +10,10 @@ import MarkdownImageManager from "@/app/components/Markdown/processors/MarkdownP
 
 import { getRecentAccessCategories } from "./GetRecentAccess";
 
+import { PROJECT_TREE } from "@/app/components/SidebarCategory/Data/ProjectTree";
+
+import { TAG_TREE } from "@/app/components/SidebarCategory/Data/TagTree";
+
 type CategoryItem = {
   name: string;
   slug: string;
@@ -28,12 +32,30 @@ export default function PostForm({
 }: Props) {
   const router = useRouter();
 
+  /*
+    category menu
+  */
+
   const [menu, setMenu] = useState<
     CategoryItem[]
   >([]);
 
-  const [category, setCategory] =
-    useState("");
+  /*
+    metadata states
+  */
+
+  const [categorySlugs, setCategorySlugs] =
+    useState<string[]>([]);
+
+  const [projectSlugs, setProjectSlugs] =
+    useState<string[]>([]);
+
+  const [tagSlugs, setTagSlugs] =
+    useState<string[]>([]);
+
+  /*
+    content states
+  */
 
   const [title, setTitle] =
     useState("");
@@ -43,7 +65,6 @@ export default function PostForm({
 
   /*
     category menu load
-    recent updated category priority sort
   */
 
   useEffect(() => {
@@ -64,23 +85,24 @@ export default function PostForm({
   useEffect(() => {
     if (!menu.length) return;
 
-    if (mode === "create") {
-      if (defaultCategory) {
-        setCategory(defaultCategory);
+    if (mode !== "create") return;
 
-        return;
-      }
+    if (defaultCategory) {
+      setCategorySlugs([
+        defaultCategory,
+      ]);
 
-      /*
-        fallback:
-        most recently accessed category
-      */
-
-      const fallback =
-        menu[0]?.slug || "";
-
-      setCategory(fallback);
+      return;
     }
+
+    const fallback =
+      menu[0]?.slug;
+
+    if (!fallback) return;
+
+    setCategorySlugs([
+      fallback,
+    ]);
   }, [
     menu,
     defaultCategory,
@@ -88,7 +110,7 @@ export default function PostForm({
   ]);
 
   /*
-    edit mode post fetch
+    edit mode fetch
   */
 
   useEffect(() => {
@@ -112,11 +134,23 @@ export default function PostForm({
 
       if (!data) return;
 
-      setTitle(data.title);
+      setTitle(data.title || "");
 
-      setContent(data.content);
+      setContent(
+        data.content || ""
+      );
 
-      setCategory(data.category);
+      setCategorySlugs(
+        data.category_slugs || []
+      );
+
+      setProjectSlugs(
+        data.project_slugs || []
+      );
+
+      setTagSlugs(
+        data.tag_slugs || []
+      );
     };
 
     fetchPost();
@@ -139,20 +173,24 @@ export default function PostForm({
         if (!result.latest_post)
           return;
 
-        console.log(
-          "LOADED FROM EXTENSION:"
-        );
-
-        console.log(
-          result.latest_post
-        );
-
         setContent(
           result.latest_post
         );
       }
     );
   }, []);
+
+  /*
+    multi select helper
+  */
+
+  const getSelectedValues = (
+    e: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    return Array.from(
+      e.target.selectedOptions
+    ).map((option) => option.value);
+  };
 
   /*
     submit
@@ -163,15 +201,24 @@ export default function PostForm({
   ) => {
     e.preventDefault();
 
-    if (
-      !title ||
-      !content ||
-      !category
-    ) {
-      alert("모든 필드를 입력하세요");
+    if (!title || !content) {
+      alert("제목과 내용을 입력하세요");
 
       return;
     }
+
+    const payload = {
+      title,
+      content,
+
+      category_slugs:
+        categorySlugs,
+
+      project_slugs:
+        projectSlugs,
+
+      tag_slugs: tagSlugs,
+    };
 
     /*
       create
@@ -181,13 +228,7 @@ export default function PostForm({
       const { error } =
         await supabase
           .from("posts")
-          .insert([
-            {
-              title,
-              content,
-              category,
-            },
-          ]);
+          .insert([payload]);
 
       if (error) {
         console.error(error);
@@ -197,9 +238,9 @@ export default function PostForm({
         return;
       }
 
-      router.push(
-        `/category/${category}`
-      );
+      router.push("/");
+
+      router.refresh();
 
       return;
     }
@@ -212,30 +253,16 @@ export default function PostForm({
       mode === "edit" &&
       postId
     ) {
-      const { data, error } =
+      const { error } =
         await supabase
           .from("posts")
-          .update({
-            title,
-            content,
-            category,
-          })
-          .eq("id", postId)
-          .select();
+          .update(payload)
+          .eq("id", postId);
 
       if (error) {
         console.error(error);
 
         alert("수정 실패");
-
-        return;
-      }
-
-      if (
-        !data ||
-        data.length === 0
-      ) {
-        alert("업데이트 실패");
 
         return;
       }
@@ -250,39 +277,124 @@ export default function PostForm({
 
   return (
     <form onSubmit={handleSubmit}>
+      {/* Categories */}
+
       <div
         style={{
-          marginBottom: 16,
+          marginBottom: 24,
         }}
       >
         <label>
-          Category
+          Categories
         </label>
 
         <br />
 
         <select
-          value={category}
+          multiple
+          value={categorySlugs}
           onChange={(e) =>
-            setCategory(
-              e.target.value
+            setCategorySlugs(
+              getSelectedValues(e)
             )
           }
           style={{
             width: "100%",
+            minHeight: 120,
             padding: 8,
           }}
         >
-          {menu.map((child) => (
+          {menu.map((item) => (
             <option
-              key={child.slug}
-              value={child.slug}
+              key={item.slug}
+              value={item.slug}
             >
-              {child.name}
+              {item.name}
             </option>
           ))}
         </select>
       </div>
+
+      {/* Projects */}
+
+      <div
+        style={{
+          marginBottom: 24,
+        }}
+      >
+        <label>
+          Projects
+        </label>
+
+        <br />
+
+        <select
+          multiple
+          value={projectSlugs}
+          onChange={(e) =>
+            setProjectSlugs(
+              getSelectedValues(e)
+            )
+          }
+          style={{
+            width: "100%",
+            minHeight: 120,
+            padding: 8,
+          }}
+        >
+          {PROJECT_TREE.map(
+            (project) => (
+              <option
+                key={project.slug}
+                value={project.slug}
+              >
+                {project.name}
+              </option>
+            )
+          )}
+        </select>
+      </div>
+
+      {/* Tags */}
+
+      <div
+        style={{
+          marginBottom: 24,
+        }}
+      >
+        <label>
+          Tags
+        </label>
+
+        <br />
+
+        <select
+          multiple
+          value={tagSlugs}
+          onChange={(e) =>
+            setTagSlugs(
+              getSelectedValues(e)
+            )
+          }
+          style={{
+            width: "100%",
+            minHeight: 180,
+            padding: 8,
+          }}
+        >
+          {TAG_TREE.map((tag) => (
+            <option
+              key={tag.slug}
+              value={tag.slug}
+            >
+              [{tag.group}]{" "}
+              {tag.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Title */}
 
       <div
         style={{
@@ -309,10 +421,14 @@ export default function PostForm({
         />
       </div>
 
+      {/* Markdown */}
+
       <MarkdownImageManager
         content={content}
         setContent={setContent}
       />
+
+      {/* Submit */}
 
       <button
         type="submit"
