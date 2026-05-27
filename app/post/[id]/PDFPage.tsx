@@ -22,7 +22,7 @@ import PDFPageHeader from "./PDFPageHeader";
 import GotoTheTop from "./GotoTheTop";
 import ScrollWithKeyboardArrow from "./ScrollWithKeyboardArrow";
 
-import MetadataRenderer from "./MetadataRenderer";
+import MetadataRenderer from "./MetadataFetcher";
 
 import { useParsedPDFContent } from "./useParsedPDFContent";
 
