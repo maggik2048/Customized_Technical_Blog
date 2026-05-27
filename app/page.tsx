@@ -49,6 +49,73 @@ export default function HomePage() {
 
         <SocialIcons />
 
+        {/* ACCESS / AUTH BUTTONS */}
+        <div
+          style={{
+            display: "flex",
+            gap: "12px",
+            marginTop: "16px",
+            marginLeft: "4px",
+            flexWrap: "wrap",
+          }}
+        >
+
+          {/* PUBLIC SITE ACCESS */}
+          <button
+            onClick={() =>
+              router.push("/enter")
+            }
+            style={{
+              padding: "10px 18px",
+              borderRadius: 8,
+              border: "none",
+              cursor: "pointer",
+              background: "#2c5cff",
+              color: "#fff",
+              fontWeight: 600,
+            }}
+          >
+            Enter Site
+          </button>
+
+          {/* ADMIN LOGIN */}
+          <button
+            onClick={() =>
+              router.push("/login")
+            }
+            style={{
+              padding: "10px 18px",
+              borderRadius: 8,
+              border: "none",
+              cursor: "pointer",
+              background: "#111",
+              color: "#fff",
+              fontWeight: 600,
+            }}
+          >
+            Admin Login
+          </button>
+
+          {/* ADMIN SIGNUP */}
+          <button
+            onClick={() =>
+              router.push("/signup")
+            }
+            style={{
+              padding: "10px 18px",
+              borderRadius: 8,
+              border: "1px solid #999",
+              cursor: "pointer",
+              background: "#fff",
+              color: "#111",
+              fontWeight: 600,
+            }}
+          >
+            Admin Sign Up
+          </button>
+
+        </div>
+
         {/* Pencil Effect Button */}
         <button
           onClick={() => {
