@@ -14,6 +14,7 @@ import { visualizationRegistry } from "@/lib/visualizationRegistry";
 import NotepageLines from "@/app/components/Markdown/Theme/NotepageLines";
 import MarkdownRendererCoordinator from "@/app/components/Markdown/Theme/MarkdownRendererCoordinator";
 import CodeBlockThemeCoordinator from "@/app/components/Markdown/Theme/CodeBlockThemeCoordinator";
+
 import MetadataPostalCode from "@/app/components/papers/MetadataPostalCode";
 
 import DiffVisualizer from "@/app/components/Markdown/processors/MarkdownPipeline/DiffVisualizer";
@@ -22,154 +23,198 @@ import PDFPageHeader from "./PDFPageHeader";
 import GotoTheTop from "./GotoTheTop";
 import ScrollWithKeyboardArrow from "./ScrollWithKeyboardArrow";
 
-import MetadataRenderer from "./MetadataFetcher";
-
 import { useParsedPDFContent } from "./useParsedPDFContent";
 
 type Props = {
   data: any;
+
   isActive?: boolean;
+
   isStandalone?: boolean;
+
   globalIndex?: number;
+
   localIndex?: number;
+
   localTotal?: number;
 };
 
-const MemoMarkdownRendererCoordinator = React.memo(
-  MarkdownRendererCoordinator
-);
+const MemoMarkdownRendererCoordinator =
+  React.memo(
+    MarkdownRendererCoordinator
+  );
 
 export default function PDFPage({
   data,
+
   isActive = true,
+
   globalIndex,
+
   localIndex,
+
   localTotal,
 }: Props) {
   const { mode } = useDarkMode();
 
   const isDark = mode === "dark";
 
-  const headerImage = getHeaderImage(data);
+  const headerImage =
+    getHeaderImage(data);
 
-  const textColor = isDark ? "#eee" : "#111";
+  const textColor = isDark
+    ? "#eee"
+    : "#111";
 
   const HEADER_HEIGHT = 560;
 
-  console.log("PDF PAGE RECEIVED:", {
-    title: data?.title,
-    globalIndex,
-    localIndex,
-    localTotal,
+  /*
+    debug
+  */
 
-    /*
-      legacy
-    */
-    category: data?.category,
+  console.log(
+    "[PDF PAGE RECEIVED]",
+    {
+      title: data?.title,
 
-    /*
-      new metadata
-    */
-    category_slugs:
-      data?.category_slugs,
+      globalIndex,
 
-    project_slugs:
-      data?.project_slugs,
+      localIndex,
 
-    tag_slugs:
-      data?.tag_slugs,
-  });
+      localTotal,
 
-  const pageStyle = React.useMemo(
-    () => ({
-      width: 860,
+      category:
+        data?.category,
 
-      margin: "40px auto",
+      category_slugs:
+        data?.category_slugs,
 
-      position: "relative" as const,
+      project_slugs:
+        data?.project_slugs,
 
-      background: isDark
-        ? "rgba(60,60,60,0.6)"
-        : "rgba(255,255,255,0.72)",
-
-      paddingLeft: 64,
-
-      paddingRight: 64,
-
-      borderRadius: 12,
-
-      overflow: "hidden" as const,
-
-      boxShadow: isDark
-        ? "0 8px 30px rgba(0,0,0,0.6)"
-        : "0 8px 30px rgba(0,0,0,0.15)",
-    }),
-    [isDark]
+      tag_slugs:
+        data?.tag_slugs,
+    }
   );
 
-  const mdComponents = React.useMemo(
-    () => markdownComponents,
-    []
-  );
+  const pageStyle =
+    React.useMemo(
+      () => ({
+        width: 860,
 
-  const CodeBlock = React.useMemo(
-    () => CodeBlockThemeCoordinator,
-    []
-  );
+        margin: "40px auto",
 
-  const getVizComponent = React.useCallback(
-    (key: string) =>
-      visualizationRegistry[key],
-    []
-  );
+        position:
+          "relative" as const,
+
+        background: isDark
+          ? "rgba(60,60,60,0.6)"
+          : "rgba(255,255,255,0.72)",
+
+        paddingLeft: 64,
+
+        paddingRight: 64,
+
+        borderRadius: 12,
+
+        overflow:
+          "hidden" as const,
+
+        boxShadow: isDark
+          ? "0 8px 30px rgba(0,0,0,0.6)"
+          : "0 8px 30px rgba(0,0,0,0.15)",
+      }),
+      [isDark]
+    );
+
+  const mdComponents =
+    React.useMemo(
+      () => markdownComponents,
+      []
+    );
+
+  const CodeBlock =
+    React.useMemo(
+      () =>
+        CodeBlockThemeCoordinator,
+      []
+    );
+
+  const getVizComponent =
+    React.useCallback(
+      (key: string) =>
+        visualizationRegistry[key],
+      []
+    );
 
   // =========================
-  // extracted logic
+  // PARSED CONTENT
   // =========================
 
-  const parsedParts = useParsedPDFContent(
-    data.content,
-    getVizComponent
-  );
+  const parsedParts =
+    useParsedPDFContent(
+      data.content,
+      getVizComponent
+    );
 
   return (
-    <motion.div style={{ color: textColor }}>
+    <motion.div
+      style={{
+        color: textColor,
+      }}
+    >
       {/* KEYBOARD SCROLL */}
+
       <ScrollWithKeyboardArrow />
 
       <div>
         <div style={pageStyle}>
-          {/* HEADER */}
+          {/* =========================
+              HEADER
+          ========================= */}
+
           <PDFPageHeader
             data={data}
             isDark={isDark}
-            headerImage={headerImage}
-            globalIndex={globalIndex}
-            localIndex={localIndex}
-            localTotal={localTotal}
-            headerHeight={HEADER_HEIGHT}
+            headerImage={
+              headerImage
+            }
+            globalIndex={
+              globalIndex
+            }
+            localIndex={
+              localIndex
+            }
+            localTotal={
+              localTotal
+            }
+            headerHeight={
+              HEADER_HEIGHT
+            }
           />
 
-          {/* CONTENT */}
+          {/* =========================
+              CONTENT
+          ========================= */}
+
           <div
             style={{
               paddingTop:
                 HEADER_HEIGHT - 36,
             }}
           >
+            {/* =========================
+                POSTAL METADATA ONLY
+            ========================= */}
+
             <MetadataPostalCode
               data={data}
               isDark={isDark}
             />
 
             {/* =========================
-                METADATA RENDERER
+                CONTENT FLOAT SPACER
             ========================= */}
-
-            <MetadataRenderer
-              data={data}
-              isDark={isDark}
-            />
 
             <div
               style={{
@@ -179,11 +224,20 @@ export default function PDFPage({
 
                 height: 110,
 
-                pointerEvents: "none",
+                pointerEvents:
+                  "none",
               }}
             />
 
-            <div style={{ marginTop: -2 }}>
+            {/* =========================
+                MARKDOWN CONTENT
+            ========================= */}
+
+            <div
+              style={{
+                marginTop: -2,
+              }}
+            >
               <NotepageLines>
                 {parsedParts.map(
                   (item) => {
@@ -194,14 +248,17 @@ export default function PDFPage({
                      */
 
                     if (
-                      item.kind === "viz"
+                      item.kind ===
+                      "viz"
                     ) {
                       const Component =
                         item.Component;
 
                       return (
                         <div
-                          key={item.key}
+                          key={
+                            item.key
+                          }
                         >
                           <Component />
                         </div>
@@ -215,11 +272,14 @@ export default function PDFPage({
                      */
 
                     if (
-                      item.kind === "diff"
+                      item.kind ===
+                      "diff"
                     ) {
                       return (
                         <DiffVisualizer
-                          key={item.key}
+                          key={
+                            item.key
+                          }
                           raw={
                             item.content
                           }
@@ -235,19 +295,25 @@ export default function PDFPage({
 
                     return (
                       <MemoMarkdownRendererCoordinator
-                        key={item.key}
+                        key={
+                          item.key
+                        }
                         category={
                           data?.category
                         }
                         markdownComponents={
                           mdComponents
                         }
-                        isDark={isDark}
+                        isDark={
+                          isDark
+                        }
                         CodeBlock={
                           CodeBlock
                         }
                       >
-                        {item.content}
+                        {
+                          item.content
+                        }
                       </MemoMarkdownRendererCoordinator>
                     );
                   }
@@ -261,7 +327,10 @@ export default function PDFPage({
               }}
             />
 
-            {/* GO TO TOP */}
+            {/* =========================
+                GO TO TOP
+            ========================= */}
+
             <GotoTheTop
               isDark={isDark}
             />
