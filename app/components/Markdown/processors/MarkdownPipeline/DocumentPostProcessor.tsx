@@ -51,7 +51,7 @@ export class DocumentPostProcessor {
     text: string
   ): string {
     return text.replace(
-      /(^|\s)(?:you|your|니가|네가|너의|너한테|너한텐|너에게|너에겐|너|네|니)(?=\s|$)/giu,
+      /(^|\s)(?:you|your|니가|네가|너의|너한테|너한텐|너에게|너는|너에겐|너|네|니)(?=\s|$)/giu,
       "$1"
     );
   }
