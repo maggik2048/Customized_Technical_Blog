@@ -15,6 +15,7 @@ export const CATEGORY_TREE: Omit<Item, "href" | "count">[] = [
       { name: "HLSL:RayMarchCloud", slug: "hlsl_raymarch_cloud" },
       { name: "GitDiff_Visualizer", slug: "gitDiff_visualizer" },
       { name: "Frontend&Backend Engineering", slug: "fullstack" },
+      { name: "Category&Project&TagSystem", slug: "projecttag" },
     ],
   },
 
