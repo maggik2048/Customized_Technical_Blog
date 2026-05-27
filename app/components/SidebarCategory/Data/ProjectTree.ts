@@ -223,4 +223,22 @@ export const PROJECT_TREE: ProjectItem[] = [
     description:
       "Hierarchical category, project, and tag management system.",
   },
+
+  {
+    name: "AuthSecuritySystem",
+    slug: "authsecurity",
+
+    categories: ["backend", "systems"],
+
+    tags: [
+      "restriction",
+      "security",
+      "authentication",
+      "authorization",
+      "middleware",
+    ],
+
+    description:
+      "Authentication/Authorization.",
+  },
 ];
