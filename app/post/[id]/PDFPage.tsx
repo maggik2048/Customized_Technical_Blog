@@ -167,18 +167,8 @@ export default function PDFPage({
             ========================= */}
 
             <MetadataRenderer
+              data={data}
               isDark={isDark}
-              categories={
-                data?.category_slugs ||
-                []
-              }
-              projects={
-                data?.project_slugs ||
-                []
-              }
-              tags={
-                data?.tag_slugs || []
-              }
             />
 
             <div
