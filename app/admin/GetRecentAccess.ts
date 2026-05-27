@@ -2,70 +2,182 @@ import { supabase } from "@/lib/supabase";
 
 import { CATEGORY_TREE } from "@/app/components/SidebarCategory/Data/CategoryTree";
 
-export async function getRecentAccessCategories() {
- const { data, error } = await supabase
- .from("posts")
- .select("category, updated_at")
- .order("updated_at", {
- ascending: false,
- });
+import { PROJECT_TREE } from "@/app/components/SidebarCategory/Data/ProjectTree";
 
- if (error || !data) {
- console.error(error);
+import { TAG_TREE } from "@/app/components/SidebarCategory/Data/TagTree";
 
- return CATEGORY_TREE.flatMap(
- (parent) => parent.children || []
- );
- }
+type MetadataResult<T> = {
+  items: T[];
 
- /*
- recent category order
- */
+  recentSlugs: string[];
+};
 
- const recentOrder = Array.from(
- new Set(
- data.map((post) => post.category)
- )
- );
+export async function getRecentAccessMetadata() {
+  const { data, error } =
+    await supabase
+      .from("posts")
+      .select(`
+        category_slugs,
+        project_slugs,
+        tag_slugs,
+        updated_at
+      `)
+      .order("updated_at", {
+        ascending: false,
+      });
 
- const priorityMap = new Map<
- string,
- number
- >();
+  /*
+    fallback
+  */
 
- recentOrder.forEach(
- (slug, index) => {
- priorityMap.set(slug, index);
- }
- );
+  if (error || !data) {
+    console.error(error);
 
- /*
- flatten all categories
- */
+    return {
+      categories:
+        CATEGORY_TREE.flatMap(
+          (parent) =>
+            parent.children || []
+        ),
 
- const allCategories =
- CATEGORY_TREE.flatMap(
- (parent) =>
- parent.children || []
- );
+      projects: PROJECT_TREE,
 
- /*
- recent priority sorting
- */
+      tags: TAG_TREE,
+    };
+  }
 
- return [...allCategories].sort(
- (a, b) => {
- const aPriority =
- priorityMap.get(a.slug) ??
- Number.MAX_SAFE_INTEGER;
+  /*
+    flatten metadata
+  */
 
- const bPriority =
- priorityMap.get(b.slug) ??
- Number.MAX_SAFE_INTEGER;
+  const recentCategoryOrder =
+    Array.from(
+      new Set(
+        data.flatMap(
+          (post) =>
+            post.category_slugs ||
+            []
+        )
+      )
+    );
 
- return (
- aPriority - bPriority
- );
- }
- );
+  const recentProjectOrder =
+    Array.from(
+      new Set(
+        data.flatMap(
+          (post) =>
+            post.project_slugs ||
+            []
+        )
+      )
+    );
+
+  const recentTagOrder = Array.from(
+    new Set(
+      data.flatMap(
+        (post) =>
+          post.tag_slugs || []
+      )
+    )
+  );
+
+  /*
+    priority map helper
+  */
+
+  const createPriorityMap = (
+    slugs: string[]
+  ) => {
+    const map = new Map<
+      string,
+      number
+    >();
+
+    slugs.forEach(
+      (slug, index) => {
+        map.set(slug, index);
+      }
+    );
+
+    return map;
+  };
+
+  const categoryPriorityMap =
+    createPriorityMap(
+      recentCategoryOrder
+    );
+
+  const projectPriorityMap =
+    createPriorityMap(
+      recentProjectOrder
+    );
+
+  const tagPriorityMap =
+    createPriorityMap(
+      recentTagOrder
+    );
+
+  /*
+    flatten categories
+  */
+
+  const allCategories =
+    CATEGORY_TREE.flatMap(
+      (parent) =>
+        parent.children || []
+    );
+
+  /*
+    priority sorting helper
+  */
+
+  const prioritySort = <
+    T extends {
+      slug: string;
+    },
+  >(
+    items: T[],
+    priorityMap: Map<
+      string,
+      number
+    >
+  ) => {
+    return [...items].sort(
+      (a, b) => {
+        const aPriority =
+          priorityMap.get(
+            a.slug
+          ) ??
+          Number.MAX_SAFE_INTEGER;
+
+        const bPriority =
+          priorityMap.get(
+            b.slug
+          ) ??
+          Number.MAX_SAFE_INTEGER;
+
+        return (
+          aPriority -
+          bPriority
+        );
+      }
+    );
+  };
+
+  return {
+    categories: prioritySort(
+      allCategories,
+      categoryPriorityMap
+    ),
+
+    projects: prioritySort(
+      PROJECT_TREE,
+      projectPriorityMap
+    ),
+
+    tags: prioritySort(
+      TAG_TREE,
+      tagPriorityMap
+    ),
+  };
 }
