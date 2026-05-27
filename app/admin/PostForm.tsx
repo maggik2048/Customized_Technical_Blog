@@ -211,6 +211,10 @@ export default function PostForm({
       title,
       content,
 
+      // legacy fallback
+      category:
+      categorySlugs[0] || null,
+
       category_slugs:
         categorySlugs,
 
