@@ -213,7 +213,8 @@ export default function PostForm({
 
       // legacy fallback
       category:
-      categorySlugs[0] || null,
+        categorySlugs[0] ||
+        null,
 
       category_slugs:
         categorySlugs,
@@ -281,121 +282,184 @@ export default function PostForm({
 
   return (
     <form onSubmit={handleSubmit}>
-      {/* Categories */}
+      {/* Metadata Panel */}
 
       <div
         style={{
-          marginBottom: 24,
+          display: "grid",
+
+          gridTemplateColumns:
+            "1fr 1fr 1fr",
+
+          gap: 24,
+
+          marginBottom: 32,
+
+          alignItems: "start",
         }}
       >
-        <label>
-          Categories
-        </label>
+        {/* Projects */}
 
-        <br />
+        <div>
+          <label
+            style={{
+              fontWeight: 700,
 
-        <select
-          multiple
-          value={categorySlugs}
-          onChange={(e) =>
-            setCategorySlugs(
-              getSelectedValues(e)
-            )
-          }
-          style={{
-            width: "100%",
-            minHeight: 120,
-            padding: 8,
-          }}
-        >
-          {menu.map((item) => (
-            <option
-              key={item.slug}
-              value={item.slug}
-            >
-              {item.name}
-            </option>
-          ))}
-        </select>
-      </div>
+              display: "block",
 
-      {/* Projects */}
+              marginBottom: 8,
+            }}
+          >
+            Projects
+          </label>
 
-      <div
-        style={{
-          marginBottom: 24,
-        }}
-      >
-        <label>
-          Projects
-        </label>
+          <select
+            multiple
+            value={projectSlugs}
+            onChange={(e) =>
+              setProjectSlugs(
+                getSelectedValues(e)
+              )
+            }
+            style={{
+              width: "100%",
 
-        <br />
+              minHeight: 260,
 
-        <select
-          multiple
-          value={projectSlugs}
-          onChange={(e) =>
-            setProjectSlugs(
-              getSelectedValues(e)
-            )
-          }
-          style={{
-            width: "100%",
-            minHeight: 120,
-            padding: 8,
-          }}
-        >
-          {PROJECT_TREE.map(
-            (project) => (
+              padding: 8,
+
+              border:
+                "1px solid #444",
+
+              borderRadius: 8,
+
+              background:
+                "#111",
+
+              color: "#fff",
+            }}
+          >
+            {PROJECT_TREE.map(
+              (project) => (
+                <option
+                  key={
+                    project.slug
+                  }
+                  value={
+                    project.slug
+                  }
+                >
+                  {project.name}
+                </option>
+              )
+            )}
+          </select>
+        </div>
+
+        {/* Categories */}
+
+        <div>
+          <label
+            style={{
+              fontWeight: 700,
+
+              display: "block",
+
+              marginBottom: 8,
+            }}
+          >
+            Categories
+          </label>
+
+          <select
+            multiple
+            value={categorySlugs}
+            onChange={(e) =>
+              setCategorySlugs(
+                getSelectedValues(e)
+              )
+            }
+            style={{
+              width: "100%",
+
+              minHeight: 260,
+
+              padding: 8,
+
+              border:
+                "1px solid #444",
+
+              borderRadius: 8,
+
+              background:
+                "#111",
+
+              color: "#fff",
+            }}
+          >
+            {menu.map((item) => (
               <option
-                key={project.slug}
-                value={project.slug}
+                key={item.slug}
+                value={item.slug}
               >
-                {project.name}
+                {item.name}
               </option>
-            )
-          )}
-        </select>
-      </div>
+            ))}
+          </select>
+        </div>
 
-      {/* Tags */}
+        {/* Tags */}
 
-      <div
-        style={{
-          marginBottom: 24,
-        }}
-      >
-        <label>
-          Tags
-        </label>
+        <div>
+          <label
+            style={{
+              fontWeight: 700,
 
-        <br />
+              display: "block",
 
-        <select
-          multiple
-          value={tagSlugs}
-          onChange={(e) =>
-            setTagSlugs(
-              getSelectedValues(e)
-            )
-          }
-          style={{
-            width: "100%",
-            minHeight: 180,
-            padding: 8,
-          }}
-        >
-          {TAG_TREE.map((tag) => (
-            <option
-              key={tag.slug}
-              value={tag.slug}
-            >
-              [{tag.group}]{" "}
-              {tag.name}
-            </option>
-          ))}
-        </select>
+              marginBottom: 8,
+            }}
+          >
+            Tags
+          </label>
+
+          <select
+            multiple
+            value={tagSlugs}
+            onChange={(e) =>
+              setTagSlugs(
+                getSelectedValues(e)
+              )
+            }
+            style={{
+              width: "100%",
+
+              minHeight: 260,
+
+              padding: 8,
+
+              border:
+                "1px solid #444",
+
+              borderRadius: 8,
+
+              background:
+                "#111",
+
+              color: "#fff",
+            }}
+          >
+            {TAG_TREE.map((tag) => (
+              <option
+                key={tag.slug}
+                value={tag.slug}
+              >
+                [{tag.group}]{" "}
+                {tag.name}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Title */}
@@ -420,7 +484,18 @@ export default function PostForm({
           }
           style={{
             width: "100%",
+
             padding: 8,
+
+            borderRadius: 8,
+
+            border:
+              "1px solid #444",
+
+            background:
+              "#111",
+
+            color: "#fff",
           }}
         />
       </div>
@@ -456,6 +531,8 @@ export default function PostForm({
           cursor: "pointer",
 
           zIndex: 9999,
+
+          border: "none",
         }}
       >
         {mode === "create"
