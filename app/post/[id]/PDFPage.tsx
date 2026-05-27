@@ -22,6 +22,8 @@ import PDFPageHeader from "./PDFPageHeader";
 import GotoTheTop from "./GotoTheTop";
 import ScrollWithKeyboardArrow from "./ScrollWithKeyboardArrow";
 
+import MetadataRenderer from "./MetadataRenderer";
+
 import { useParsedPDFContent } from "./useParsedPDFContent";
 
 type Props = {
@@ -59,7 +61,23 @@ export default function PDFPage({
     globalIndex,
     localIndex,
     localTotal,
+
+    /*
+      legacy
+    */
     category: data?.category,
+
+    /*
+      new metadata
+    */
+    category_slugs:
+      data?.category_slugs,
+
+    project_slugs:
+      data?.project_slugs,
+
+    tag_slugs:
+      data?.tag_slugs,
   });
 
   const pageStyle = React.useMemo(
@@ -100,7 +118,8 @@ export default function PDFPage({
   );
 
   const getVizComponent = React.useCallback(
-    (key: string) => visualizationRegistry[key],
+    (key: string) =>
+      visualizationRegistry[key],
     []
   );
 
@@ -134,12 +153,32 @@ export default function PDFPage({
           {/* CONTENT */}
           <div
             style={{
-              paddingTop: HEADER_HEIGHT - 36,
+              paddingTop:
+                HEADER_HEIGHT - 36,
             }}
           >
             <MetadataPostalCode
               data={data}
               isDark={isDark}
+            />
+
+            {/* =========================
+                METADATA RENDERER
+            ========================= */}
+
+            <MetadataRenderer
+              isDark={isDark}
+              categories={
+                data?.category_slugs ||
+                []
+              }
+              projects={
+                data?.project_slugs ||
+                []
+              }
+              tags={
+                data?.tag_slugs || []
+              }
             />
 
             <div
@@ -156,66 +195,86 @@ export default function PDFPage({
 
             <div style={{ marginTop: -2 }}>
               <NotepageLines>
-                {parsedParts.map((item) => {
-                  /**
-                   * =========================
-                   * VISUALIZATION BLOCK
-                   * =========================
-                   */
+                {parsedParts.map(
+                  (item) => {
+                    /**
+                     * =========================
+                     * VISUALIZATION BLOCK
+                     * =========================
+                     */
 
-                  if (item.kind === "viz") {
-                    const Component =
-                      item.Component;
+                    if (
+                      item.kind === "viz"
+                    ) {
+                      const Component =
+                        item.Component;
+
+                      return (
+                        <div
+                          key={item.key}
+                        >
+                          <Component />
+                        </div>
+                      );
+                    }
+
+                    /**
+                     * =========================
+                     * DIFF BLOCK
+                     * =========================
+                     */
+
+                    if (
+                      item.kind === "diff"
+                    ) {
+                      return (
+                        <DiffVisualizer
+                          key={item.key}
+                          raw={
+                            item.content
+                          }
+                        />
+                      );
+                    }
+
+                    /**
+                     * =========================
+                     * MARKDOWN BLOCK
+                     * =========================
+                     */
 
                     return (
-                      <div key={item.key}>
-                        <Component />
-                      </div>
-                    );
-                  }
-
-                  /**
-                   * =========================
-                   * DIFF BLOCK
-                   * =========================
-                   */
-
-                  if (item.kind === "diff") {
-                    return (
-                      <DiffVisualizer
+                      <MemoMarkdownRendererCoordinator
                         key={item.key}
-                        raw={item.content}
-                      />
+                        category={
+                          data?.category
+                        }
+                        markdownComponents={
+                          mdComponents
+                        }
+                        isDark={isDark}
+                        CodeBlock={
+                          CodeBlock
+                        }
+                      >
+                        {item.content}
+                      </MemoMarkdownRendererCoordinator>
                     );
                   }
-
-                  /**
-                   * =========================
-                   * MARKDOWN BLOCK
-                   * =========================
-                   */
-
-                  return (
-                    <MemoMarkdownRendererCoordinator
-                      key={item.key}
-                      category={data?.category}
-                      markdownComponents={
-                        mdComponents
-                      }
-                      isDark={isDark}
-                      CodeBlock={CodeBlock}
-                    >
-                      {item.content}
-                    </MemoMarkdownRendererCoordinator>
-                  );
-                })}
+                )}
               </NotepageLines>
             </div>
 
-            <div style={{ clear: "both" }} />
+            <div
+              style={{
+                clear: "both",
+              }}
+            />
 
             {/* GO TO TOP */}
-            <GotoTheTop isDark={isDark} />
+            <GotoTheTop
+              isDark={isDark}
+            />
           </div>
         </div>
       </div>
