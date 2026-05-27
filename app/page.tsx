@@ -10,7 +10,7 @@ import LatestPosts from "./components/LatestPosts";
 import ClickableImageBox from "./components/ClickableImageBox";
 import WritePostButton from "./admin/write/WritePostButton";
 
-import { CATEGORY_TREE } from "./components/SidebarCategory/CategoryTree";
+import { CATEGORY_TREE } from "./components/SidebarCategory/Data/CategoryTree";
 
 export default function HomePage() {
 

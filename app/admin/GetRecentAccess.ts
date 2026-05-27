@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
 
-import { CATEGORY_TREE } from "@/app/components/SidebarCategory/CategoryTree";
+import { CATEGORY_TREE } from "@/app/components/SidebarCategory/Data/CategoryTree";
 
 export async function getRecentAccessCategories() {
  const { data, error } = await supabase
