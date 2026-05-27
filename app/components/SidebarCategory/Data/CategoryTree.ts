@@ -66,6 +66,7 @@ export const CATEGORY_TREE: Omit<Item, "href" | "count">[] = [
       { name: "UnrealEngine Client programming", slug: "unreal" },
       { name: "Digital Twin & Unreal Engine Project", slug: "digitalTwin" },
       { name: "Mathematics for Games", slug: "gameMath" },
+      { name: "(Git&IDE)developer-toolings", slug: "developer-tooling" },
     ],
   },
 

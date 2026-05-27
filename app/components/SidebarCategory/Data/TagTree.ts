@@ -196,4 +196,16 @@ export const TAG_TREE: TagItem[] = [
     slug: "architecture",
     group: "system",
   },
+
+  {
+    name: "Git",
+    slug: "git",
+    group: "devtools",
+  },
+
+  {
+    name: "IDE",
+    slug: "ide",
+    group: "devtools",
+  },
 ];
