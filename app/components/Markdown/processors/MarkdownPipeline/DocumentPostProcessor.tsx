@@ -59,17 +59,23 @@ export class DocumentPostProcessor {
   /**
    * normalizes korean casual sentence ending
    *
-   * examples:
-   * - "이거 하나야" -> "이거 하나이다."
-   * - "그거야." -> "그거이다."
-   * - "진짜야 " -> "진짜이다. "
+   * converts:
+   * - "~야."  -> "~이다."
+   * - "~야!"  -> "~이다!"
+   * - "~야?"  -> "~이다?"
+   * - "~야..." -> "~이다..."
+   *
+   * untouched:
+   * - "해야 한다"
+   * - "가야 한다"
+   * - "먹어야 함"
    */
   private static normalizeSentenceEnding(
     text: string
   ): string {
     return text.replace(
-      /야(?=\s|$|[.?!])/g,
-      "이다."
+      /(?<![가-힣])야(?=$|[.?!])|(?<=[^\s])야(?=$|[.?!])/g,
+      "이다"
     );
   }
 
