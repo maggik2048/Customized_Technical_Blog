@@ -26,9 +26,20 @@ export default function PostPage() {
   const [index, setIndex] =
     useState(0);
 
+  /*
+    visible post cache
+  */
+
   const [cache, setCache] = useState<
     Record<string, any>
   >({});
+
+  /*
+    initial loading
+  */
+
+  const [isInitialLoading, setIsInitialLoading] =
+    useState(true);
 
   // =========================
   // LOAD ALL POSTS
@@ -40,31 +51,33 @@ export default function PostPage() {
         "[LOAD_ALL_POSTS] START"
       );
 
+      setIsInitialLoading(true);
+
       const { data, error } =
         await supabase
           .from("posts")
-          .select("*")
+          .select(`
+            id,
+            title,
+            content,
+            created_at,
+
+            category,
+            category_slugs,
+            project_slugs,
+            tag_slugs
+          `)
           .order("created_at", {
             ascending: true,
           });
-
-      /*
-        DEBUG
-      */
-
-      console.log(
-        "[LOAD_ALL_POSTS] RAW RESPONSE:",
-        {
-          data,
-          error,
-        }
-      );
 
       if (error) {
         console.error(
           "[LOAD_ALL_POSTS] ERROR:",
           error
         );
+
+        setIsInitialLoading(false);
 
         return;
       }
@@ -74,37 +87,54 @@ export default function PostPage() {
           "[LOAD_ALL_POSTS] NO DATA"
         );
 
+        setIsInitialLoading(false);
+
         return;
       }
 
       console.log(
-        "[LOAD_ALL_POSTS] SUCCESS COUNT:",
-        data.length
+        "[LOAD_ALL_POSTS] SUCCESS:",
+        {
+          count: data.length,
+        }
       );
+
+      /*
+        build fast cache immediately
+      */
+
+      const initialCache:
+        Record<string, any> = {};
+
+      data.forEach((post) => {
+        initialCache[post.id] = post;
+      });
+
+      setCache(initialCache);
 
       setAllPosts(data);
 
       /*
-        CATEGORY TYPES
+        target index
       */
 
-      console.log(
-        "[LOAD_ALL_POSTS] CATEGORY TYPES:",
-        [
-          ...new Set(
-            data.map(
-              (p) => p.category
-            )
-          ),
-        ]
+      const idx = data.findIndex(
+        (p) => p.id === id
       );
 
+      console.log(
+        "[LOAD_ALL_POSTS] TARGET INDEX:",
+        idx
+      );
+
+      setIndex(idx >= 0 ? idx : 0);
+
       /*
-        NEW METADATA DEBUG
+        metadata debug
       */
 
       console.log(
-        "[LOAD_ALL_POSTS] METADATA SAMPLE:",
+        "[LOAD_ALL_POSTS] SAMPLE:",
         data.slice(0, 3).map(
           (p) => ({
             title: p.title,
@@ -124,16 +154,7 @@ export default function PostPage() {
         )
       );
 
-      const idx = data.findIndex(
-        (p) => p.id === id
-      );
-
-      console.log(
-        "[LOAD_ALL_POSTS] TARGET INDEX:",
-        idx
-      );
-
-      setIndex(idx >= 0 ? idx : 0);
+      setIsInitialLoading(false);
     };
 
     load();
@@ -149,65 +170,24 @@ export default function PostPage() {
   const currentCategory =
     currentPost?.category;
 
-  console.log(
-    "[CURRENT_POST]",
-    currentPost
-  );
-
   // =========================
   // CATEGORY POSTS
   // =========================
 
-  const categoryPosts = useMemo(() => {
-    if (!currentCategory) {
-      console.warn(
-        "[CATEGORY_POSTS] NO CURRENT CATEGORY"
-      );
+  const categoryPosts =
+    useMemo(() => {
+      if (!currentCategory)
+        return [];
 
-      return [];
-    }
-
-    const filtered =
-      allPosts.filter(
+      return allPosts.filter(
         (p) =>
           p.category ===
           currentCategory
       );
-
-    console.log(
-      "[CATEGORY_POSTS] FILTERED:",
-      {
-        currentCategory,
-        count: filtered.length,
-      }
-    );
-
-    return filtered;
-  }, [allPosts, currentCategory]);
-
-  // =========================
-  // LOCAL INDEX
-  // =========================
-
-  const categoryIndex =
-    useMemo(() => {
-      if (!currentPost)
-        return 0;
-
-      const idx =
-        categoryPosts.findIndex(
-          (p) =>
-            p.id === currentPost.id
-        );
-
-      return idx >= 0 ? idx + 1 : 0;
-    }, [categoryPosts, currentPost]);
-
-  // =========================
-  // GLOBAL INDEX
-  // =========================
-
-  const globalIndex = index + 1;
+    }, [
+      allPosts,
+      currentCategory,
+    ]);
 
   // =========================
   // WINDOW POSTS
@@ -218,237 +198,204 @@ export default function PostPage() {
     index - WINDOW_SIZE
   );
 
-  const windowPosts = allPosts.slice(
+  const windowPosts = useMemo(() => {
+    return allPosts.slice(
+      windowStart,
+      index + WINDOW_SIZE + 1
+    );
+  }, [
+    allPosts,
+    index,
     windowStart,
-    index + WINDOW_SIZE + 1
-  );
-
-  console.log(
-    "[WINDOW_POSTS]",
-    windowPosts.map((p) => ({
-      id: p.id,
-      title: p.title,
-    }))
-  );
+  ]);
 
   // =========================
-  // FETCH VISIBLE POSTS
+  // OPTIONAL WINDOW PREFETCH
+  // =========================
+  // now only fetches missing cache
   // =========================
 
   useEffect(() => {
-    const loadVisible = async () => {
-      const ids = windowPosts.map(
-        (p) => p.id
-      );
+    const loadVisible =
+      async () => {
+        const missingIds =
+          windowPosts
+            .map((p) => p.id)
+            .filter(
+              (id) => !cache[id]
+            );
 
-      console.log(
-        "[LOAD_VISIBLE] IDS:",
-        ids
-      );
+        if (!missingIds.length) {
+          console.log(
+            "[LOAD_VISIBLE] CACHE HIT"
+          );
 
-      if (!ids.length) {
-        console.warn(
-          "[LOAD_VISIBLE] EMPTY IDS"
+          return;
+        }
+
+        console.log(
+          "[LOAD_VISIBLE] FETCH MISSING:",
+          missingIds
         );
 
-        return;
-      }
-
-      const { data, error } =
-        await supabase
-          .from("posts")
-          .select("*")
-          .in("id", ids);
-
-      /*
-        DEBUG
-      */
-
-      console.log(
-        "[LOAD_VISIBLE] RESPONSE:",
-        {
+        const {
           data,
           error,
+        } = await supabase
+          .from("posts")
+          .select("*")
+          .in("id", missingIds);
+
+        if (error) {
+          console.error(
+            "[LOAD_VISIBLE] ERROR:",
+            error
+          );
+
+          return;
         }
-      );
 
-      if (error) {
-        console.error(
-          "[LOAD_VISIBLE] ERROR:",
-          error
-        );
+        if (!data) return;
 
-        return;
-      }
+        setCache((prev) => {
+          const next = {
+            ...prev,
+          };
 
-      if (!data) {
-        console.warn(
-          "[LOAD_VISIBLE] NO DATA"
-        );
+          data.forEach((p) => {
+            next[p.id] = p;
+          });
 
-        return;
-      }
-
-      console.log(
-        "[LOAD_VISIBLE] SUCCESS:",
-        data.map((p) => ({
-          id: p.id,
-          title: p.title,
-        }))
-      );
-
-      setCache((prev) => {
-        const next = { ...prev };
-
-        data.forEach((p) => {
-          next[p.id] = p;
+          return next;
         });
 
         console.log(
-          "[CACHE UPDATED]",
-          Object.keys(next)
+          "[LOAD_VISIBLE] PREFETCH SUCCESS:",
+          data.length
         );
-
-        return next;
-      });
-    };
+      };
 
     loadVisible();
-  }, [windowPosts]);
+  }, [windowPosts, cache]);
 
   // =========================
-  // BUILD POSTS WITH INDEXES
+  // BUILD POSTS
   // =========================
 
-  const posts = windowPosts
-    .map((p) => {
-      const full = cache[p.id];
+  const posts = useMemo(() => {
+    return windowPosts
+      .map((p) => {
+        const full =
+          cache[p.id];
 
-      if (!full) {
-        console.warn(
-          "[POST BUILD] CACHE MISS:",
-          p.id
-        );
+        if (!full) {
+          console.warn(
+            "[POST BUILD] CACHE MISS:",
+            p.id
+          );
 
-        return null;
-      }
-
-      /*
-        SAME CATEGORY POSTS
-      */
-
-      const sameCategoryPosts =
-        allPosts.filter(
-          (x) =>
-            x.category ===
-            full.category
-        );
-
-      /*
-        LOCAL INDEX
-      */
-
-      const localIndex =
-        sameCategoryPosts.findIndex(
-          (x) => x.id === full.id
-        ) + 1;
-
-      /*
-        CATEGORY TOTAL
-      */
-
-      const localTotal =
-        sameCategoryPosts.length;
-
-      /*
-        GLOBAL INDEX
-      */
-
-      const globalIndex =
-        allPosts.findIndex(
-          (x) => x.id === full.id
-        ) + 1;
-
-      console.log(
-        "[POST BUILD SUCCESS]",
-        {
-          title: full.title,
-
-          category:
-            full.category,
-
-          category_slugs:
-            full.category_slugs,
-
-          project_slugs:
-            full.project_slugs,
-
-          tag_slugs:
-            full.tag_slugs,
-
-          globalIndex,
-
-          localIndex,
-
-          localTotal,
+          return null;
         }
-      );
 
-      return {
-        ...full,
+        /*
+          same category posts
+        */
 
-        __globalIndex:
-          globalIndex,
+        const sameCategoryPosts =
+          allPosts.filter(
+            (x) =>
+              x.category ===
+              full.category
+          );
 
-        __localIndex:
-          localIndex,
+        /*
+          local index
+        */
 
-        __localTotal:
-          localTotal,
-      };
-    })
-    .filter(Boolean);
+        const localIndex =
+          sameCategoryPosts.findIndex(
+            (x) =>
+              x.id === full.id
+          ) + 1;
+
+        /*
+          category total
+        */
+
+        const localTotal =
+          sameCategoryPosts.length;
+
+        /*
+          global index
+        */
+
+        const globalIndex =
+          allPosts.findIndex(
+            (x) =>
+              x.id === full.id
+          ) + 1;
+
+        return {
+          ...full,
+
+          __globalIndex:
+            globalIndex,
+
+          __localIndex:
+            localIndex,
+
+          __localTotal:
+            localTotal,
+        };
+      })
+      .filter(Boolean);
+  }, [
+    windowPosts,
+    cache,
+    allPosts,
+  ]);
 
   // =========================
-  // FINAL DEBUG
+  // DEBUG
   // =========================
 
-  console.log(
-    "[FINAL POSTS]",
-    posts.map((p) => ({
-      title: p.title,
+  useEffect(() => {
+    if (!posts.length) return;
 
-      category: p.category,
+    console.log(
+      "[FINAL POSTS]",
+      posts.map((p) => ({
+        title: p.title,
 
-      category_slugs:
-        p.category_slugs,
+        category:
+          p.category,
 
-      project_slugs:
-        p.project_slugs,
+        category_slugs:
+          p.category_slugs,
 
-      tag_slugs:
-        p.tag_slugs,
+        project_slugs:
+          p.project_slugs,
 
-      global:
-        p.__globalIndex,
+        tag_slugs:
+          p.tag_slugs,
 
-      local:
-        p.__localIndex,
+        global:
+          p.__globalIndex,
 
-      total:
-        p.__localTotal,
-    }))
-  );
+        local:
+          p.__localIndex,
+
+        total:
+          p.__localTotal,
+      }))
+    );
+  }, [posts]);
 
   // =========================
   // LOADING
   // =========================
 
-  if (!allPosts.length) {
-    console.warn(
-      "[RENDER] allPosts EMPTY"
-    );
-
+  if (isInitialLoading) {
     return (
       <div>
         Loading all posts...
@@ -457,22 +404,16 @@ export default function PostPage() {
   }
 
   if (!posts.length) {
-    console.warn(
-      "[RENDER] posts EMPTY"
-    );
-
     return (
-      <div>Loading posts...</div>
+      <div>
+        Loading visible posts...
+      </div>
     );
   }
 
   // =========================
   // RENDER
   // =========================
-
-  console.log(
-    "[RENDER] SUCCESS"
-  );
 
   return (
     <PostEnvironment>
@@ -485,8 +426,6 @@ export default function PostPage() {
           height: "100%",
         }}
       >
-        {/* POSTS */}
-
         <StackedPostViewer
           posts={posts}
           index={Math.min(
