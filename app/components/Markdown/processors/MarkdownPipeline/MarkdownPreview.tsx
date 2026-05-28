@@ -61,6 +61,18 @@ SyntaxHighlighter.registerLanguage(
 
 /**
  * =========================================
+ * CONSTANTS
+ * =========================================
+ */
+
+const IMAGE_REGEX =
+  /^(https?:\/\/.*\.(png|jpg|jpeg|gif|webp|bmp|svg))$/gm;
+
+const LANGUAGE_REGEX =
+  /language-(\w+)/;
+
+/**
+ * =========================================
  * TURNDOWN
  * =========================================
  */
@@ -74,6 +86,96 @@ const turndown = new TurndownService({
 });
 
 turndown.use(gfm);
+
+/**
+ * =========================================
+ * PLUGINS
+ * =========================================
+ */
+
+const remarkPlugins = [
+  remarkGfm,
+  remarkMath,
+];
+
+const rehypePlugins = [
+  rehypeKatex,
+  rehypeRaw,
+];
+
+/**
+ * =========================================
+ * STYLES
+ * =========================================
+ */
+
+const INLINE_CODE_STYLE: React.CSSProperties =
+  {
+    background: "#333",
+
+    padding: "2px 6px",
+
+    borderRadius: 4,
+
+    outline: "none",
+
+    fontFamily: "monospace",
+  };
+
+const EDITABLE_BASE_STYLE: React.CSSProperties =
+  {
+    outline: "none",
+
+    cursor: "text",
+  };
+
+const PRE_STYLE: React.CSSProperties =
+  {
+    margin: "10px 0",
+
+    borderRadius: 6,
+
+    overflow: "auto",
+  };
+
+const SYNTAX_STYLE: React.CSSProperties =
+  {
+    margin: "10px 0",
+
+    borderRadius: 6,
+
+    padding: "12px",
+  };
+
+const IMAGE_STYLE: React.CSSProperties =
+  {
+    maxWidth: "100%",
+
+    maxHeight: 400,
+
+    display: "block",
+
+    margin: "10px 0",
+
+    borderRadius: 6,
+  };
+
+const CONTAINER_STYLE: React.CSSProperties =
+  {
+    width: "50%",
+
+    minHeight: "100vh",
+
+    overflow: "visible",
+
+    padding: 20,
+
+    background: "#111",
+
+    color: "#fff",
+
+    wordBreak: "break-word",
+  };
 
 /**
  * =========================================
@@ -101,6 +203,14 @@ type EditableBlockProps = {
   onBlur: () => void;
 };
 
+type EditableCodeProps = {
+  text: string;
+
+  onBlur: () => void;
+
+  inline?: boolean;
+};
+
 /**
  * =========================================
  * EDITABLE BLOCK
@@ -122,16 +232,53 @@ const EditableBlock = React.memo(
         suppressContentEditableWarning
         spellCheck={false}
         onBlur={onBlur}
-        style={{
-          outline: "none",
+        style={
+          style
+            ? {
+                ...EDITABLE_BASE_STYLE,
 
-          cursor: "text",
-
-          ...style,
-        }}
+                ...style,
+              }
+            : EDITABLE_BASE_STYLE
+        }
       >
         {children}
       </Tag>
+    );
+  }
+);
+
+/**
+ * =========================================
+ * EDITABLE CODE
+ * =========================================
+ */
+
+const EditableCode = React.memo(
+  function EditableCode({
+    text,
+    onBlur,
+    inline,
+  }: EditableCodeProps) {
+    return (
+      <code
+        contentEditable
+        suppressContentEditableWarning
+        onBlur={onBlur}
+        style={
+          inline
+            ? INLINE_CODE_STYLE
+            : {
+                ...INLINE_CODE_STYLE,
+
+                display: "inline-block",
+
+                margin: "2px 0",
+              }
+        }
+      >
+        {text}
+      </code>
     );
   }
 );
@@ -153,73 +300,52 @@ function MarkdownPreview({
    * =====================================
    */
 
-  const renderContent = React.useMemo(() => {
-    return content.replace(
-      /^(https?:\/\/.*\.(png|jpg|jpeg|gif|webp|bmp|svg))$/gm,
-      "![]($1)"
-    );
-  }, [content]);
+  const renderContent = React.useMemo(
+    () => {
+      return content.replace(
+        IMAGE_REGEX,
+        "![]($1)"
+      );
+    },
+    [content]
+  );
 
   /**
    * =====================================
-   * HTML -> MARKDOWN SYNC
+   * HTML -> MARKDOWN
    * =====================================
    */
 
+  const frameRef = React.useRef(0);
+
   const syncPreviewToMarkdown =
-    React.useMemo(() => {
-      let frame = 0;
+    React.useCallback(() => {
+      cancelAnimationFrame(
+        frameRef.current
+      );
 
-      return () => {
-        cancelAnimationFrame(frame);
+      frameRef.current =
+        requestAnimationFrame(() => {
+          const root =
+            previewRef.current;
 
-        frame = requestAnimationFrame(() => {
-          if (!previewRef.current) {
+          if (!root) {
             return;
           }
 
-          /**
-           * editable html
-           */
-
-          const html =
-            previewRef.current.innerHTML;
-
-          /**
-           * html -> markdown
-           */
-
           const markdown =
             turndown
-              .turndown(html)
+              .turndown(root.innerHTML)
               .replace(/\r/g, "")
-              .replace(/\n{3,}/g, "\n\n")
+              .replace(
+                /\n{3,}/g,
+                "\n\n"
+              )
               .trim();
-
-          /**
-           * sync
-           */
 
           setContent(markdown);
         });
-      };
     }, [previewRef, setContent]);
-
-  /**
-   * =====================================
-   * PLUGINS
-   * =====================================
-   */
-
-  const remarkPlugins = React.useMemo(
-    () => [remarkGfm, remarkMath],
-    []
-  );
-
-  const rehypePlugins = React.useMemo(
-    () => [rehypeKatex, rehypeRaw],
-    []
-  );
 
   /**
    * =====================================
@@ -228,86 +354,59 @@ function MarkdownPreview({
    */
 
   const markdownComponents =
-    React.useMemo(
-      () => ({
+    React.useMemo(() => {
+      return {
         /**
-         * =================================
+         * ===============================
          * PRE
-         * =================================
+         * ===============================
          */
 
         pre({
           children,
         }: any) {
-          /**
-           * raw text
-           */
+          const childProps =
+            children?.props || {};
 
           const raw = String(
-            children?.props?.children || ""
+            childProps.children || ""
           );
 
+          const className =
+            childProps.className || "";
+
           /**
-           * detect diff
+           * diff
            */
 
-          const className =
-            children?.props?.className || "";
-
-          const isDiff =
+          if (
             className.includes(
               "language-diff"
-            );
-
-          /**
-           * diff render
-           */
-
-          if (isDiff) {
+            )
+          ) {
             return (
               <DiffVisualizer raw={raw} />
             );
           }
 
           /**
-           * single line fenced code
+           * single line
            */
 
-          const trimmed = raw.trim();
-
-          const isSingleLine =
-            !trimmed.includes("\n");
+          const trimmed =
+            raw.trim();
 
           if (
-            isSingleLine &&
-            trimmed.length > 0
+            trimmed &&
+            !trimmed.includes("\n")
           ) {
             return (
-              <code
-                contentEditable
-                suppressContentEditableWarning
+              <EditableCode
+                text={trimmed}
                 onBlur={
                   syncPreviewToMarkdown
                 }
-                style={{
-                  background: "#333",
-
-                  padding: "2px 6px",
-
-                  borderRadius: 4,
-
-                  outline: "none",
-
-                  display: "inline-block",
-
-                  margin: "2px 0",
-
-                  fontFamily:
-                    "monospace",
-                }}
-              >
-                {trimmed}
-              </code>
+              />
             );
           }
 
@@ -316,24 +415,16 @@ function MarkdownPreview({
            */
 
           return (
-            <pre
-              style={{
-                margin: "10px 0",
-
-                borderRadius: 6,
-
-                overflow: "auto",
-              }}
-            >
+            <pre style={PRE_STYLE}>
               {children}
             </pre>
           );
         },
 
         /**
-         * =================================
+         * ===============================
          * HEADINGS
-         * =================================
+         * ===============================
          */
 
         h1({ children }: any) {
@@ -344,7 +435,8 @@ function MarkdownPreview({
                 syncPreviewToMarkdown
               }
               style={{
-                margin: "18px 0 10px",
+                margin:
+                  "18px 0 10px",
 
                 lineHeight: 1,
               }}
@@ -362,7 +454,8 @@ function MarkdownPreview({
                 syncPreviewToMarkdown
               }
               style={{
-                margin: "16px 0 8px",
+                margin:
+                  "16px 0 8px",
 
                 lineHeight: 1.25,
               }}
@@ -380,7 +473,8 @@ function MarkdownPreview({
                 syncPreviewToMarkdown
               }
               style={{
-                margin: "14px 0 6px",
+                margin:
+                  "14px 0 6px",
 
                 lineHeight: 1.3,
               }}
@@ -391,9 +485,9 @@ function MarkdownPreview({
         },
 
         /**
-         * =================================
+         * ===============================
          * TEXT
-         * =================================
+         * ===============================
          */
 
         p({ children }: any) {
@@ -460,9 +554,9 @@ function MarkdownPreview({
         },
 
         /**
-         * =================================
+         * ===============================
          * CODE
-         * =================================
+         * ===============================
          */
 
         code({
@@ -484,24 +578,13 @@ function MarkdownPreview({
 
           if (inline) {
             return (
-              <code
-                contentEditable
-                suppressContentEditableWarning
+              <EditableCode
+                text={text}
+                inline
                 onBlur={
                   syncPreviewToMarkdown
                 }
-                style={{
-                  background: "#333",
-
-                  padding: "2px 6px",
-
-                  borderRadius: 4,
-
-                  outline: "none",
-                }}
-              >
-                {text}
-              </code>
+              />
             );
           }
 
@@ -510,12 +593,12 @@ function MarkdownPreview({
            */
 
           const match =
-            /language-(\w+)/.exec(
+            LANGUAGE_REGEX.exec(
               className || ""
             );
 
           /**
-           * block code
+           * syntax
            */
 
           return (
@@ -524,15 +607,11 @@ function MarkdownPreview({
               language={
                 match?.[1] || "text"
               }
-              wrapLines={true}
+              wrapLines
               wrapLongLines={false}
-              customStyle={{
-                margin: "10px 0",
-
-                borderRadius: 6,
-
-                padding: "12px",
-              }}
+              customStyle={
+                SYNTAX_STYLE
+              }
             >
               {text}
             </SyntaxHighlighter>
@@ -540,9 +619,9 @@ function MarkdownPreview({
         },
 
         /**
-         * =================================
+         * ===============================
          * IMAGE
-         * =================================
+         * ===============================
          */
 
         img({ src, alt }: any) {
@@ -551,23 +630,12 @@ function MarkdownPreview({
               src={src}
               alt={alt}
               loading="lazy"
-              style={{
-                maxWidth: "100%",
-
-                maxHeight: 400,
-
-                display: "block",
-
-                margin: "10px 0",
-
-                borderRadius: 6,
-              }}
+              style={IMAGE_STYLE}
             />
           );
         },
-      }),
-      [syncPreviewToMarkdown]
-    );
+      };
+    }, [syncPreviewToMarkdown]);
 
   /**
    * =====================================
@@ -578,28 +646,21 @@ function MarkdownPreview({
   return (
     <div
       ref={previewRef}
-      style={{
-        width: "50%",
-
-        minHeight: "100vh",
-
-        overflow: "visible",
-
-        padding: 20,
-
-        background: "#111",
-
-        color: "#fff",
-
-        wordBreak: "break-word",
-      }}
+      style={CONTAINER_STYLE}
     >
       <ReactMarkdown
-        remarkPlugins={remarkPlugins}
-        rehypePlugins={rehypePlugins}
-        components={markdownComponents}
+        remarkPlugins={
+          remarkPlugins
+        }
+        rehypePlugins={
+          rehypePlugins
+        }
+        components={
+          markdownComponents
+        }
       >
-        {renderContent || "Preview..."}
+        {renderContent ||
+          "Preview..."}
       </ReactMarkdown>
     </div>
   );
@@ -608,3 +669,4 @@ function MarkdownPreview({
 export default React.memo(
   MarkdownPreview
 );
+
