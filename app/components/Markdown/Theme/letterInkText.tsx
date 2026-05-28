@@ -49,25 +49,25 @@ export function renderInkText(
     color =
       "rgba(40,20,10,0.9)",
 
-    maxBlur = 0.22,
+    maxBlur = 0.182,
 
     maxShiftX = 0.45,
 
-    maxShiftY = 0.7,
+    maxShiftY = 1.97,
 
-    maxRotation = 1.8,
+    maxRotation = 4.8,
 
     minScale = 0.985,
 
-    maxScale = 1.025,
+    maxScale = 1.0525,
 
-    opacityMin = 0.72,
+    opacityMin = 0.62,
 
-    opacityMax = 1,
+    opacityMax = 0.9,
 
     bleedChance = 0.24,
 
-    kerningVariance = 0.06,
+    kerningVariance = 0.0006,
   } = options || {};
 
   return String(text)

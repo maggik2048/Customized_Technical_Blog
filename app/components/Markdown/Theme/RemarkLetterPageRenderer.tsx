@@ -138,7 +138,7 @@ export default function RemarkLetterPageRenderer({
 
     /* REAL PAPER IMAGE */
     backgroundImage: `
-      url("/images/letter4.png")
+      url("/images/letter2.png")
     `,
 
     backgroundSize:
