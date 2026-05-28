@@ -514,7 +514,7 @@ export default function RemarkLetterPageRenderer({
 
               fontSize: 36,
 
-              lineHeight: 1.6,
+              lineHeight: 1.0,
 
               margin:
                 "18px 0",
@@ -678,9 +678,9 @@ export default function RemarkLetterPageRenderer({
               color:
                 inkColor,
 
-              fontSize: 34,
+              fontSize: 49,
 
-              lineHeight: 1.6,
+              lineHeight: 1.0,
 
               margin:
                 "10px 0",
