@@ -70,7 +70,7 @@ function DiamondIndex({
           transform: "rotate(45deg)",
 
           border:
-            "1px solid rgba(255,240,200,0.4)",
+            "1px solid rgba(255, 250, 236, 0.59)",
         }}
       />
 
@@ -102,6 +102,9 @@ function DiamondIndex({
             marginBottom: 6,
 
             fontWeight: 700,
+
+            textShadow:
+              "0 2px 10px rgba(0,0,0,0.45)",
           }}
         >
           Global
@@ -118,7 +121,7 @@ function DiamondIndex({
             color: "#fff7df",
 
             textShadow:
-              "0 0 18px rgba(255,220,120,0.35)",
+              "0 0 18px rgba(255,220,120,0.35), 0 4px 18px rgba(0,0,0,0.42)",
           }}
         >
           {String(value)}
@@ -159,11 +162,14 @@ function LocalProgress({
           textTransform: "uppercase",
 
           color:
-            "rgba(255,255,255,0.56)",
+            "rgb(255, 255, 255)",
 
           fontWeight: 700,
 
           marginLeft: -32,
+
+          textShadow:
+            "0 2px 10px rgba(0,0,0,0.745)",
         }}
       >
         Local Index
@@ -191,7 +197,7 @@ function LocalProgress({
             color: "#dbf4ee",
 
             textShadow:
-              "0 0 18px rgba(170,235,220,0.12)",
+              "0 0 18px rgba(170,235,220,0.12), 0 4px 18px rgba(0,0,0,0.42)",
           }}
         >
           {String(current)}
@@ -210,6 +216,9 @@ function LocalProgress({
               "rgba(255,255,255,0.28)",
 
             paddingBottom: 4,
+
+            textShadow:
+              "0 4px 14px rgba(0,0,0,0.42)",
           }}
         >
           /
@@ -227,7 +236,7 @@ function LocalProgress({
             color: "#f6d58f",
 
             textShadow:
-              "0 0 16px rgba(255,210,120,0.14)",
+              "0 0 16px rgba(255,210,120,0.14), 0 4px 18px rgba(0,0,0,0.42)",
 
             paddingBottom: 2,
           }}
@@ -246,13 +255,16 @@ function LocalProgress({
           textTransform: "uppercase",
 
           color:
-            "rgba(255,245,220,0.66)",
+            "rgb(255, 255, 255)",
 
           fontWeight: 1700,
 
           marginTop: -1,
 
           paddingLeft: 12,
+
+          textShadow:
+            "0 2px 10px rgba(0,0,0,0.85)",
         }}
       >
         Total In Category
@@ -326,9 +338,12 @@ export default function PDFPageIndexPanel({
               "uppercase",
 
             color:
-              "rgba(255,255,255,0.45)",
+              "rgb(255, 255, 255)",
 
-            fontWeight: 700,
+            fontWeight: 1700,
+
+            textShadow:
+              "0 2px 10px rgba(0,0,0,0.45)",
           }}
         >
           Category
@@ -336,16 +351,19 @@ export default function PDFPageIndexPanel({
 
         <div
           style={{
-            fontSize: 18,
+            fontSize: 24,
 
             fontWeight: 700,
 
             color:
-              "rgba(255,255,255,0.92)",
+              "rgb(255, 255, 255)",
 
             lineHeight: 1.2,
 
             maxWidth: 180,
+
+            textShadow:
+              "0 3px 14px rgba(0,0,0,0.48)",
           }}
         >
           {category}
