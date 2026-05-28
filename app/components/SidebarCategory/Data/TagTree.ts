@@ -198,6 +198,12 @@ export const TAG_TREE: TagItem[] = [
   },
 
   {
+    name: "Optimization",
+    slug: "optimization",
+    group: "system",
+  },
+
+  {
     name: "Git",
     slug: "git",
     group: "devtools",
