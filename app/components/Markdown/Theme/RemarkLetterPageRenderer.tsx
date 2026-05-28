@@ -23,6 +23,13 @@ import TableRenderer from "./TableRenderer";
 import KaTeXPostProcessor from "./KaTeXPostProcessor";
 
 /* =========================
+   INK PROCESSING
+========================= */
+
+import { renderInkText }
+from "./letterInkText";
+
+/* =========================
    VINTAGE LETTER FONTS
 ========================= */
 
@@ -230,6 +237,9 @@ export default function RemarkLetterPageRenderer({
         3: 26,
       };
 
+      const seed =
+        level * 999;
+
       return (
 
         <div
@@ -275,7 +285,26 @@ export default function RemarkLetterPageRenderer({
                   : "rotate(-0.5deg)",
             }}
           >
-            {children}
+            {
+              typeof children === "string"
+                ? renderInkText(
+                    children,
+                    seed,
+                    {
+                      color:
+                        headingColor,
+
+                      maxBlur: 0.28,
+
+                      bleedChance: 0.34,
+
+                      maxShiftY: 1.2,
+
+                      maxShiftX: 0.6,
+                    }
+                  )
+                : children
+            }
           </span>
         </div>
       );
@@ -323,7 +352,12 @@ export default function RemarkLetterPageRenderer({
       h2: renderHeading(2),
       h3: renderHeading(3),
 
+      /* =========================
+         PARAGRAPH
+      ========================= */
+
       p: ({ children }: any) => (
+
         <p
           className={
             serifFont.className
@@ -358,7 +392,26 @@ export default function RemarkLetterPageRenderer({
               "0 0 0.2px rgba(0,0,0,0.2)",
           }}
         >
-          {children}
+          {
+            typeof children === "string"
+              ? renderInkText(
+                  children,
+                  1400,
+                  {
+                    color:
+                      inkColor,
+
+                    maxBlur: 0.16,
+
+                    bleedChance: 0.18,
+
+                    maxShiftY: 0.45,
+
+                    maxShiftX: 0.28,
+                  }
+                )
+              : children
+          }
         </p>
       ),
 
@@ -402,11 +455,35 @@ export default function RemarkLetterPageRenderer({
                 : "0 1px 0 rgba(255,255,255,0.5)",
           }}
         >
-          {children}
+          {
+            typeof children === "string"
+              ? renderInkText(
+                  children,
+                  700,
+                  {
+                    color:
+                      headingColor,
+
+                    maxBlur: 0.34,
+
+                    bleedChance: 0.42,
+
+                    maxShiftY: 1.2,
+
+                    maxShiftX: 0.7,
+                  }
+                )
+              : children
+          }
         </strong>
       ),
 
+      /* =========================
+         EMPHASIS
+      ========================= */
+
       em: ({ children }: any) => (
+
         <em
           style={{
 
@@ -417,11 +494,31 @@ export default function RemarkLetterPageRenderer({
               "italic",
           }}
         >
-          {children}
+          {
+            typeof children === "string"
+              ? renderInkText(
+                  children,
+                  2222,
+                  {
+                    color:
+                      fadedInkColor,
+
+                    maxBlur: 0.12,
+
+                    bleedChance: 0.14,
+                  }
+                )
+              : children
+          }
         </em>
       ),
 
+      /* =========================
+         LIST
+      ========================= */
+
       li: ({ children }: any) => (
+
         <li
           style={{
 
@@ -439,7 +536,22 @@ export default function RemarkLetterPageRenderer({
               "10px 0",
           }}
         >
-          {children}
+          {
+            typeof children === "string"
+              ? renderInkText(
+                  children,
+                  3100,
+                  {
+                    color:
+                      inkColor,
+
+                    maxBlur: 0.16,
+
+                    bleedChance: 0.16,
+                  }
+                )
+              : children
+          }
         </li>
       ),
 
@@ -469,9 +581,14 @@ export default function RemarkLetterPageRenderer({
         </ol>
       ),
 
+      /* =========================
+         BLOCKQUOTE
+      ========================= */
+
       blockquote: ({
         children,
       }: any) => (
+
         <blockquote
           style={{
 
@@ -548,3 +665,4 @@ export default function RemarkLetterPageRenderer({
     </div>
   );
 }
+
