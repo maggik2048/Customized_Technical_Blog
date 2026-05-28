@@ -259,4 +259,22 @@ export const PROJECT_TREE: ProjectItem[] = [
     description:
       "naturalistic pen&paper rendering",
   },
+
+  {
+    name: "CategoryPostboxRenderer",
+    slug: "categorypostboxrenderer",
+
+    categories: ["frontend", "systems"],
+
+    tags: [
+      "category",
+      "imagethumbnail",
+      "fetch",
+      "rendering",
+      "post",
+    ],
+
+    description:
+      "sophistication of categorypostbox rendering.유지보수,고도화",
+  },
 ];

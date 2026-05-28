@@ -15,6 +15,45 @@ import {
   partitionPostsByInteraction,
 } from "./postInteractionMetadataCalculator";
 
+//
+// MARKDOWN IMAGE EXTRACTOR
+//
+function extractFirstImage(
+  markdown?: string
+): string | null {
+  if (!markdown) return null;
+
+  //
+  // ![alt](url)
+  //
+  const markdownMatch =
+    markdown.match(
+      /!\[.*?\]\((.*?)\)/
+    );
+
+  if (
+    markdownMatch?.[1]
+  ) {
+    return markdownMatch[1];
+  }
+
+  //
+  // <img src="...">
+  //
+  const htmlMatch =
+    markdown.match(
+      /<img[^>]+src=["']([^"']+)["']/i
+    );
+
+  if (
+    htmlMatch?.[1]
+  ) {
+    return htmlMatch[1];
+  }
+
+  return null;
+}
+
 function highlightText(
   text: string,
   query?: string,
@@ -70,22 +109,32 @@ export default function CategoryPostBoxRenderer({
 }: {
   posts: any[];
   allPosts?: any[];
-  onSearch?: (value: string) => void;
+  onSearch?: (
+    value: string
+  ) => void;
   currentQuery?: string;
 }) {
-  const safeAllPosts = Array.isArray(allPosts)
-    ? allPosts
-    : [];
+  const safeAllPosts =
+    Array.isArray(allPosts)
+      ? allPosts
+      : [];
 
   const globalIndexMap = new Map(
     safeAllPosts
       .slice()
       .sort(
         (a, b) =>
-          new Date(b.created_at).getTime() -
-          new Date(a.created_at).getTime()
+          new Date(
+            b.created_at
+          ).getTime() -
+          new Date(
+            a.created_at
+          ).getTime()
       )
-      .map((post, i) => [post.id, i + 1])
+      .map((post, i) => [
+        post.id,
+        i + 1,
+      ])
   );
 
   //
@@ -97,43 +146,51 @@ export default function CategoryPostBoxRenderer({
   // 일반 browsing:
   // 기존 visualization/date sorting 유지
   //
-  const sortedPosts = !!currentQuery
-    ? [...posts]
-    : [...posts].sort(
-        (a, b) => {
-          const aHasViz =
-            !!extractVisualization(
-              a.content
+  const sortedPosts =
+    !!currentQuery
+      ? [...posts]
+      : [...posts].sort(
+          (a, b) => {
+            const aHasViz =
+              !!extractVisualization(
+                a.content
+              );
+
+            const bHasViz =
+              !!extractVisualization(
+                b.content
+              );
+
+            if (
+              aHasViz &&
+              !bHasViz
+            )
+              return -1;
+
+            if (
+              !aHasViz &&
+              bHasViz
+            )
+              return 1;
+
+            return (
+              new Date(
+                b.created_at
+              ).getTime() -
+              new Date(
+                a.created_at
+              ).getTime()
             );
-
-          const bHasViz =
-            !!extractVisualization(
-              b.content
-            );
-
-          if (aHasViz && !bHasViz)
-            return -1;
-
-          if (!aHasViz && bHasViz)
-            return 1;
-
-          return (
-            new Date(
-              b.created_at
-            ).getTime() -
-            new Date(
-              a.created_at
-            ).getTime()
-          );
-        }
-      );
+          }
+        );
 
   const {
     interactivePosts,
     normalPosts,
-  } = partitionPostsByInteraction(
-    sortedPosts
-  );
+  } =
+    partitionPostsByInteraction(
+      sortedPosts
+    );
 
   const renderNormalPost = (
     post: any,
@@ -142,13 +199,16 @@ export default function CategoryPostBoxRenderer({
     const contentLength =
       post.content?.length ?? 0;
 
-    const categoryIndex = index + 1;
+    const categoryIndex =
+      index + 1;
 
     const globalIndex =
-      globalIndexMap.get(post.id) ??
-      categoryIndex;
+      globalIndexMap.get(
+        post.id
+      ) ?? categoryIndex;
 
-    const isSimple = contentLength < 3000;
+    const isSimple =
+      contentLength < 3000;
 
     const matchedIn =
       post.searchMeta?.matchedIn;
@@ -160,12 +220,36 @@ export default function CategoryPostBoxRenderer({
     // SEARCH SCORE
     //
     const score =
-      typeof post.score === "number"
+      typeof post.score ===
+      "number"
         ? post.score.toFixed(2)
         : null;
 
     const expanded =
-      !!currentQuery && !!matchedIn;
+      !!currentQuery &&
+      !!matchedIn;
+
+    //
+    // IMAGE
+    //
+    const previewImage =
+      extractFirstImage(
+        post.content
+      );
+
+    const hasImage =
+      !!previewImage;
+
+    //
+    // HEIGHT
+    //
+    const boxHeight = hasImage
+      ? expanded
+        ? 158
+        : 126
+      : expanded
+      ? 92
+      : 54;
 
     return (
       <Link
@@ -176,14 +260,13 @@ export default function CategoryPostBoxRenderer({
           style={{
             position: "relative",
 
-            height: expanded
-              ? 92
-              : 54,
+            height: boxHeight,
 
             borderRadius: 14,
 
-            padding:
-              "10px 18px 10px 58px",
+            padding: hasImage
+              ? "10px 18px 10px 58px"
+              : "10px 18px 10px 58px",
 
             cursor: "pointer",
 
@@ -192,7 +275,8 @@ export default function CategoryPostBoxRenderer({
             transition:
               "all 0.32s ease",
 
-            background: "transparent",
+            background:
+              "transparent",
 
             border: isSimple
               ? "1px solid rgba(0,0,0,0.06)"
@@ -209,9 +293,10 @@ export default function CategoryPostBoxRenderer({
                 0 6px 20px rgba(0,0,0,0.12)
               `,
 
-            backdropFilter: !isSimple
-              ? "blur(1.5px)"
-              : "none",
+            backdropFilter:
+              !isSimple
+                ? "blur(1.5px)"
+                : "none",
 
             WebkitBackdropFilter:
               !isSimple
@@ -262,8 +347,12 @@ export default function CategoryPostBoxRenderer({
           }}
         >
           <CategoryPostBoxIndex
-            categoryIndex={categoryIndex}
-            globalIndex={globalIndex}
+            categoryIndex={
+              categoryIndex
+            }
+            globalIndex={
+              globalIndex
+            }
             isSimple={isSimple}
           />
 
@@ -271,10 +360,15 @@ export default function CategoryPostBoxRenderer({
             <>
               <div
                 style={{
-                  position: "absolute",
+                  position:
+                    "absolute",
+
                   inset: 0,
+
                   borderRadius: 14,
-                  pointerEvents: "none",
+
+                  pointerEvents:
+                    "none",
 
                   background: `
                     linear-gradient(
@@ -290,10 +384,15 @@ export default function CategoryPostBoxRenderer({
 
               <div
                 style={{
-                  position: "absolute",
+                  position:
+                    "absolute",
+
                   inset: 0,
+
                   borderRadius: 14,
-                  pointerEvents: "none",
+
+                  pointerEvents:
+                    "none",
 
                   border:
                     "1px solid rgba(255,255,255,0.03)",
@@ -318,25 +417,106 @@ export default function CategoryPostBoxRenderer({
                 ? "rgba(20,20,20,0.92)"
                 : "rgba(255,255,255,0.94)",
 
-              letterSpacing: "0.02em",
+              letterSpacing:
+                "0.02em",
 
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
+              whiteSpace:
+                "nowrap",
 
-              textShadow: isSimple
-                ? "none"
-                : "0 1px 4px rgba(0,0,0,0.30)",
+              overflow:
+                "hidden",
+
+              textOverflow:
+                "ellipsis",
+
+              textShadow:
+                isSimple
+                  ? "none"
+                  : "0 1px 4px rgba(0,0,0,0.30)",
 
               fontWeight: 600,
             }}
           >
             <PostTitleRenderer
               text={post.title}
-              highlight={currentQuery}
+              highlight={
+                currentQuery
+              }
               isSimple={isSimple}
             />
           </div>
+
+          {/* IMAGE PREVIEW */}
+          {hasImage && (
+            <div
+              style={{
+                position:
+                  "relative",
+
+                zIndex: 5,
+
+                marginTop: 10,
+
+                width: "100%",
+
+                height: 56,
+
+                borderRadius: 10,
+
+                overflow:
+                  "hidden",
+
+                border: isSimple
+                  ? "1px solid rgba(0,0,0,0.08)"
+                  : "1px solid rgba(255,255,255,0.08)",
+
+                background:
+                  "rgba(0,0,0,0.04)",
+              }}
+            >
+              <img
+                src={previewImage}
+                alt={
+                  post.title ??
+                  "preview"
+                }
+                loading="lazy"
+                draggable={
+                  false
+                }
+                style={{
+                  width: "100%",
+                  height: "100%",
+
+                  objectFit:
+                    "cover",
+
+                  display:
+                    "block",
+
+                  opacity: 0.96,
+
+                  transform:
+                    "scale(1.02)",
+                }}
+              />
+
+              <div
+                style={{
+                  position:
+                    "absolute",
+
+                  inset: 0,
+
+                  background:
+                    "linear-gradient(to top, rgba(0,0,0,0.18), transparent)",
+
+                  pointerEvents:
+                    "none",
+                }}
+              />
+            </div>
+          )}
 
           {/* SEARCH META */}
           {expanded && (
@@ -354,15 +534,21 @@ export default function CategoryPostBoxRenderer({
                   ? "rgba(50,50,50,0.58)"
                   : "rgba(255,255,255,0.58)",
 
-                overflow: "hidden",
+                overflow:
+                  "hidden",
 
-                textOverflow: "ellipsis",
+                textOverflow:
+                  "ellipsis",
               }}
             >
               <div
                 style={{
-                  display: "flex",
-                  alignItems: "center",
+                  display:
+                    "flex",
+
+                  alignItems:
+                    "center",
+
                   gap: 8,
 
                   fontSize: 9,
@@ -390,13 +576,15 @@ export default function CategoryPostBoxRenderer({
 
                       borderRadius: 999,
 
-                      background: isSimple
-                        ? "rgba(0,0,0,0.05)"
-                        : "rgba(255,255,255,0.08)",
+                      background:
+                        isSimple
+                          ? "rgba(0,0,0,0.05)"
+                          : "rgba(255,255,255,0.08)",
 
-                      color: isSimple
-                        ? "rgba(20,20,20,0.62)"
-                        : "rgba(255,255,255,0.72)",
+                      color:
+                        isSimple
+                          ? "rgba(20,20,20,0.62)"
+                          : "rgba(255,255,255,0.72)",
 
                       fontWeight: 700,
 
@@ -404,16 +592,22 @@ export default function CategoryPostBoxRenderer({
                         "0.04em",
                     }}
                   >
-                    SCORE {score}
+                    SCORE{" "}
+                    {score}
                   </span>
                 )}
               </div>
 
               <div
                 style={{
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
+                  whiteSpace:
+                    "nowrap",
+
+                  overflow:
+                    "hidden",
+
+                  textOverflow:
+                    "ellipsis",
                 }}
               >
                 {highlightText(
@@ -431,9 +625,12 @@ export default function CategoryPostBoxRenderer({
               position: "relative",
               zIndex: 5,
 
-              marginTop: expanded
-                ? 6
-                : 2,
+              marginTop:
+                expanded
+                  ? 6
+                  : hasImage
+                  ? 8
+                  : 2,
 
               fontSize: 10,
 
@@ -441,7 +638,8 @@ export default function CategoryPostBoxRenderer({
                 ? "rgba(60,60,60,0.45)"
                 : "rgba(255,255,255,0.50)",
 
-              letterSpacing: "0.08em",
+              letterSpacing:
+                "0.08em",
             }}
           >
             {new Date(
@@ -456,15 +654,24 @@ export default function CategoryPostBoxRenderer({
   return (
     <CategoryInsideLayout
       onSearch={onSearch}
-      currentQuery={currentQuery}
+      currentQuery={
+        currentQuery
+      }
       left={normalPosts.map(
         (post, index) =>
-          renderNormalPost(post, index)
+          renderNormalPost(
+            post,
+            index
+          )
       )}
       right={
         <InteractionBoxLayout
-          posts={interactivePosts}
-          globalIndexMap={globalIndexMap}
+          posts={
+            interactivePosts
+          }
+          globalIndexMap={
+            globalIndexMap
+          }
           visualizationRegistry={
             visualizationRegistry
           }
