@@ -1,6 +1,9 @@
 "use client";
 
-import React from "react";
+import React, {
+  memo,
+  useMemo,
+} from "react";
 
 import ReactMarkdown from "react-markdown";
 
@@ -33,31 +36,26 @@ from "./letterInkText";
    VINTAGE LETTER FONTS
 ========================= */
 
-/* MAIN TITLE */
 const titleFont = Tangerine({
   subsets: ["latin"],
   weight: ["700"],
 });
 
-/* SECTION HEADINGS */
 const luxuryHeadingFont = Italianno({
   subsets: ["latin"],
   weight: ["400"],
 });
 
-/* BODY */
 const bodyFont = EB_Garamond({
   subsets: ["latin"],
   weight: ["400", "500", "600"],
 });
 
-/* BODY SUB STYLE */
 const serifFont = Cormorant_Garamond({
   subsets: ["latin"],
   weight: ["400", "500"],
 });
 
-/* BOLD CALLIGRAPHY */
 const boldCalligraphyFont =
   Monsieur_La_Doulaise({
     subsets: ["latin"],
@@ -75,6 +73,45 @@ const letterFont = `
 `;
 
 /* =========================
+   STATIC PLUGINS
+========================= */
+
+const remarkPlugins = [
+  remarkMath,
+  remarkGfm,
+];
+
+const rehypePlugins = [
+  rehypeKatex,
+  rehypeRaw,
+];
+
+/* =========================
+   MEMOIZED INK TEXT
+========================= */
+
+const InkText = memo(
+  function InkText({
+    text,
+    seed,
+    options,
+  }: any) {
+
+    return (
+      <>
+        {
+          renderInkText(
+            text,
+            seed,
+            options
+          )
+        }
+      </>
+    );
+  }
+);
+
+/* =========================
    COMPONENT
 ========================= */
 
@@ -89,133 +126,272 @@ export default function RemarkLetterPageRenderer({
      COLORS
   ========================= */
 
-  const paperColor =
-    isDark
-      ? "#171310"
-      : "#f5efe3";
+  const colors = useMemo(
+    () => ({
 
-  const inkColor =
-    isDark
-      ? "#eadfcb"
-      : "#2f241d";
+      paperColor:
+        isDark
+          ? "#171310"
+          : "#f5efe3",
 
-  const fadedInkColor =
-    isDark
-      ? "#d9c2a7"
-      : "#5c4737";
+      inkColor:
+        isDark
+          ? "#eadfcb"
+          : "#2f241d",
 
-  /* DARK WINE RED */
-  const headingColor =
-    isDark
-      ? "#8f433f"
-      : "#6a1f1b";
+      fadedInkColor:
+        isDark
+          ? "#d9c2a7"
+          : "#5c4737",
 
-  const borderColor =
-    isDark
-      ? "rgba(255,255,255,0.06)"
-      : "rgba(70,40,20,0.14)";
+      headingColor:
+        isDark
+          ? "#8f433f"
+          : "#6a1f1b",
+
+      borderColor:
+        isDark
+          ? "rgba(255,255,255,0.06)"
+          : "rgba(70,40,20,0.14)",
+
+    }),
+    [isDark]
+  );
+
+  const {
+    paperColor,
+    inkColor,
+    fadedInkColor,
+    headingColor,
+    borderColor,
+  } = colors;
+
+  /* =========================
+     INK OPTIONS
+  ========================= */
+
+  const paragraphInk =
+    useMemo(
+      () => ({
+
+        color:
+          inkColor,
+
+        maxBlur: 0.16,
+
+        bleedChance: 0.18,
+
+        maxShiftY: 0.45,
+
+        maxShiftX: 0.28,
+      }),
+      [inkColor]
+    );
+
+  const listInk =
+    useMemo(
+      () => ({
+
+        color:
+          inkColor,
+
+        maxBlur: 0.16,
+
+        bleedChance: 0.16,
+
+        maxShiftY: 0.7,
+
+        maxShiftX: 0.45,
+
+        maxRotation: 1.6,
+
+        minScale: 0.992,
+
+        maxScale: 1.012,
+
+        opacityMin: 0.78,
+
+        opacityMax: 1,
+
+        kerningVariance: 0.045,
+      }),
+      [inkColor]
+    );
+
+  const bulletInk =
+    useMemo(
+      () => ({
+
+        color:
+          isDark
+            ? "rgba(230,210,190,0.92)"
+            : "rgba(55,25,15,0.92)",
+
+        maxBlur: 0.55,
+
+        bleedChance: 0.62,
+
+        maxShiftY: 1.8,
+
+        maxShiftX: 1.4,
+
+        maxRotation: 8,
+
+        minScale: 0.82,
+
+        maxScale: 1.35,
+
+        opacityMin: 0.45,
+
+        opacityMax: 1,
+
+        kerningVariance: 0.12,
+      }),
+      [isDark]
+    );
 
   /* =========================
      LETTER PAPER
   ========================= */
 
-  const letterStyle = {
+  const letterStyle =
+    useMemo(
+      () => ({
 
-    position: "relative" as const,
+        position: "relative" as const,
 
-    overflow: "hidden" as const,
+        overflow: "hidden" as const,
 
-    maxWidth: 980,
+        maxWidth: 980,
 
-    margin: "0 auto",
+        margin: "0 auto",
 
-    padding:
-      "74px 78px 88px 78px",
+        padding:
+          "74px 78px 88px 78px",
 
-    borderRadius: 8,
+        borderRadius: 8,
 
-    backgroundColor: paperColor,
+        backgroundColor:
+          paperColor,
 
-    /* REAL PAPER IMAGE */
-    backgroundImage: `
-      url("/images/letter2.png")
-    `,
+        backgroundImage: `
+          url("/images/letter2.png")
+        `,
 
-    backgroundSize:
-      "330%",
+        backgroundSize:
+          "330%",
 
-    backgroundRepeat:
-      "no-repeat",
+        backgroundRepeat:
+          "no-repeat",
 
-    backgroundPosition:
-      "center",
+        backgroundPosition:
+          "center",
 
-    boxShadow: isDark
-      ? `
-        0 24px 80px rgba(0,0,0,0.5)
-      `
-      : `
-        0 20px 70px rgba(80,40,10,0.18)
-      `,
+        boxShadow: isDark
+          ? `
+            0 24px 80px rgba(0,0,0,0.5)
+          `
+          : `
+            0 20px 70px rgba(80,40,10,0.18)
+          `,
 
-    border:
-      `1px solid ${borderColor}`,
-  };
+        border:
+          `1px solid ${borderColor}`,
+
+        contain:
+          "layout paint style",
+      }),
+      [
+        paperColor,
+        borderColor,
+        isDark,
+      ]
+    );
 
   /* =========================
-     EXTRA DEPTH OVERLAY
+     OVERLAY
   ========================= */
 
-  const cinematicOverlayStyle = {
+  const cinematicOverlayStyle =
+    useMemo(
+      () => ({
 
-    position: "absolute" as const,
+        position: "absolute" as const,
 
-    inset: 0,
+        inset: 0,
 
-    pointerEvents: "none" as const,
+        pointerEvents:
+          "none" as const,
 
-    background: isDark
-      ? `
-        linear-gradient(
-          140deg,
-          rgba(0,0,0,0.16),
-          transparent 35%
-        )
-      `
-      : `
-        linear-gradient(
-          140deg,
-          rgba(255,255,255,0.10),
-          transparent 35%
-        )
-      `,
-  };
+        background: isDark
+          ? `
+            linear-gradient(
+              140deg,
+              rgba(0,0,0,0.16),
+              transparent 35%
+            )
+          `
+          : `
+            linear-gradient(
+              140deg,
+              rgba(255,255,255,0.10),
+              transparent 35%
+            )
+          `,
+      }),
+      [isDark]
+    );
 
   /* =========================
      WAX SEAL
   ========================= */
 
-  const sealStyle = {
+  const sealStyle =
+    useMemo(
+      () => ({
 
-    position: "absolute" as const,
+        position: "absolute" as const,
 
-    top: 28,
+        top: 28,
 
-    left: 38,
+        left: 38,
 
-    width: 62,
+        width: 62,
 
-    height: 62,
+        height: 62,
 
-    borderRadius: "50%",
+        borderRadius: "50%",
 
-    border:
-      `3px solid ${headingColor}`,
+        border:
+          `3px solid ${headingColor}`,
 
-    opacity: 0.14,
+        opacity: 0.14,
 
-    pointerEvents: "none" as const,
-  };
+        pointerEvents:
+          "none" as const,
+      }),
+      [headingColor]
+    );
+
+  /* =========================
+     HIGHLIGHT
+  ========================= */
+
+  const highlightStyle =
+    useMemo(
+      () => ({
+
+        background: isDark
+          ? "rgba(150,90,60,0.14)"
+          : "rgba(140,90,40,0.08)",
+
+        padding:
+          "0px 4px",
+
+        borderRadius: 4,
+      }),
+      [isDark]
+    );
 
   /* =========================
      HEADING RENDERER
@@ -287,10 +463,12 @@ export default function RemarkLetterPageRenderer({
           >
             {
               typeof children === "string"
-                ? renderInkText(
-                    children,
-                    seed,
-                    {
+
+                ? (
+                  <InkText
+                    text={children}
+                    seed={seed}
+                    options={{
                       color:
                         headingColor,
 
@@ -301,8 +479,10 @@ export default function RemarkLetterPageRenderer({
                       maxShiftY: 1.2,
 
                       maxShiftX: 0.6,
-                    }
-                  )
+                    }}
+                  />
+                )
+
                 : children
             }
           </span>
@@ -311,431 +491,368 @@ export default function RemarkLetterPageRenderer({
     };
 
   /* =========================
-     HIGHLIGHT
+     MARKDOWN COMPONENTS
   ========================= */
 
-  const highlightStyle = {
+  const components =
+    useMemo(
+      () => ({
 
-    background: isDark
-      ? "rgba(150,90,60,0.14)"
-      : "rgba(140,90,40,0.08)",
+        ...markdownComponents,
 
-    padding:
-      "0px 4px",
+        code: CodeBlock,
 
-    borderRadius: 4,
-  };
+        h1: renderHeading(1),
+        h2: renderHeading(2),
+        h3: renderHeading(3),
 
-  /* =========================
-     MARKDOWN
-  ========================= */
+        /* =========================
+           PARAGRAPH
+        ========================= */
 
-  const markdownProps = {
+        p: ({ children }: any) => (
 
-    remarkPlugins: [
-      remarkMath,
-      remarkGfm,
-    ],
-
-    rehypePlugins: [
-      rehypeKatex,
-      rehypeRaw,
-    ],
-
-    components: {
-
-      ...markdownComponents,
-
-      code: CodeBlock,
-
-      h1: renderHeading(1),
-      h2: renderHeading(2),
-      h3: renderHeading(3),
-
-      /* =========================
-         PARAGRAPH
-      ========================= */
-
-      p: ({ children }: any) => (
-
-        <p
-          className={
-            serifFont.className
-          }
-          style={{
-
-            fontFamily:
-              letterFont,
-
-            color:
-              inkColor,
-
-            fontSize: 30,
-
-            lineHeight: 1.72,
-
-            margin:
-              "18px 0",
-
-            letterSpacing:
-              "0.01em",
-
-            whiteSpace:
-              "pre-wrap",
-
-            textAlign:
-              "left",
-
-            fontWeight: 500,
-
-            textShadow:
-              "0 0 0.2px rgba(0,0,0,0.2)",
-          }}
-        >
-          {
-            typeof children === "string"
-              ? renderInkText(
-                  children,
-                  1400,
-                  {
-                    color:
-                      inkColor,
-
-                    maxBlur: 0.16,
-
-                    bleedChance: 0.18,
-
-                    maxShiftY: 0.45,
-
-                    maxShiftX: 0.28,
-                  }
-                )
-              : children
-          }
-        </p>
-      ),
-
-      /* =========================
-         BOLD CALLIGRAPHY
-      ========================= */
-
-      strong: ({ children }: any) => (
-
-        <strong
-          className={
-            boldCalligraphyFont.className
-          }
-          style={{
-            ...highlightStyle,
-
-            color:
-              headingColor,
-
-            fontWeight: 400,
-
-            fontSize: "1.35em",
-
-            lineHeight: 1,
-
-            letterSpacing:
-              "0.02em",
-
-            display:
-              "inline-block",
-
-            transform:
-              "rotate(-1deg)",
-
-            padding:
-              "0 4px",
-
-            textShadow:
-              isDark
-                ? "0 1px 1px rgba(0,0,0,0.4)"
-                : "0 1px 0 rgba(255,255,255,0.5)",
-          }}
-        >
-          {
-            typeof children === "string"
-              ? renderInkText(
-                  children,
-                  700,
-                  {
-                    color:
-                      headingColor,
-
-                    maxBlur: 0.34,
-
-                    bleedChance: 0.42,
-
-                    maxShiftY: 1.2,
-
-                    maxShiftX: 0.7,
-                  }
-                )
-              : children
-          }
-        </strong>
-      ),
-
-      /* =========================
-         EMPHASIS
-      ========================= */
-
-      em: ({ children }: any) => (
-
-        <em
-          style={{
-
-            color:
-              fadedInkColor,
-
-            fontStyle:
-              "italic",
-          }}
-        >
-          {
-            typeof children === "string"
-              ? renderInkText(
-                  children,
-                  2222,
-                  {
-                    color:
-                      fadedInkColor,
-
-                    maxBlur: 0.12,
-
-                    bleedChance: 0.14,
-                  }
-                )
-              : children
-          }
-        </em>
-      ),
-
-      /* =========================
-         LIST
-      ========================= */
-
-      li: ({ children, index }: any) => (
-
-        <li
-          style={{
-
-            listStyle: "none",
-
-            position: "relative",
-
-            fontFamily:
-              letterFont,
-
-            color:
-              inkColor,
-
-            fontSize: 28,
-
-            lineHeight: 1.7,
-
-            margin:
-              "10px 0",
-
-            paddingLeft: 34,
-          }}
-        >
-
-          {/* =========================
-             INK BULLET
-          ========================= */}
-
-          <span
+          <p
+            className={
+              serifFont.className
+            }
             style={{
 
-              position: "absolute",
+              fontFamily:
+                letterFont,
 
-              left: 0,
+              color:
+                inkColor,
 
-              top: "0.16em",
+              fontSize: 30,
 
-              lineHeight: 1,
+              lineHeight: 1.72,
 
-              fontSize: "0.95em",
+              margin:
+                "18px 0",
 
-              pointerEvents: "none",
+              letterSpacing:
+                "0.01em",
 
-              mixBlendMode:
-                "multiply",
+              whiteSpace:
+                "pre-wrap",
+
+              textAlign:
+                "left",
+
+              fontWeight: 500,
+
+              textShadow:
+                "0 0 0.2px rgba(0,0,0,0.2)",
             }}
           >
             {
-              renderInkText(
-                "•",
-                9000 + (index || 0),
-                {
-
-                  color:
-                    isDark
-                      ? "rgba(230,210,190,0.92)"
-                      : "rgba(55,25,15,0.92)",
-
-                  /* HEAVY BLEED */
-                  maxBlur: 0.55,
-
-                  bleedChance: 0.62,
-
-                  /* STRONG POSITION JITTER */
-                  maxShiftY: 1.8,
-
-                  maxShiftX: 1.4,
-
-                  /* RANDOM ANGLE */
-                  maxRotation: 8,
-
-                  /* UNEVEN SIZE */
-                  minScale: 0.82,
-
-                  maxScale: 1.35,
-
-                  /* UNEVEN INK DENSITY */
-                  opacityMin: 0.45,
-
-                  opacityMax: 1,
-
-                  /* RANDOM SPACING */
-                  kerningVariance: 0.12,
-                }
-              )
-            }
-          </span>
-
-          {/* =========================
-             LIST CONTENT
-          ========================= */}
-
-          <span>
-            {
               typeof children === "string"
 
-                ? renderInkText(
-                    children,
-                    3100 + (index || 0),
-                    {
-
-                      color:
-                        inkColor,
-
-                      maxBlur: 0.16,
-
-                      bleedChance: 0.16,
-
-                      maxShiftY: 0.7,
-
-                      maxShiftX: 0.45,
-
-                      maxRotation: 1.6,
-
-                      minScale: 0.992,
-
-                      maxScale: 1.012,
-
-                      opacityMin: 0.78,
-
-                      opacityMax: 1,
-
-                      kerningVariance: 0.045,
-                    }
-                  )
+                ? (
+                  <InkText
+                    text={children}
+                    seed={1400}
+                    options={paragraphInk}
+                  />
+                )
 
                 : children
             }
-          </span>
+          </p>
+        ),
 
-        </li>
-      ),
+        /* =========================
+           STRONG
+        ========================= */
 
-      ul: ({ children }: any) => (
-        <ul
-          style={{
-            paddingLeft: 0,
+        strong: ({ children }: any) => (
 
-            margin:
-              "18px 0",
-          }}
-        >
-          {children}
-        </ul>
-      ),
+          <strong
+            className={
+              boldCalligraphyFont.className
+            }
+            style={{
+              ...highlightStyle,
 
-      ol: ({ children }: any) => (
-        <ol
-          style={{
-            paddingLeft: 0,
+              color:
+                headingColor,
 
-            margin:
-              "18px 0",
-          }}
-        >
-          {children}
-        </ol>
-      ),
+              fontWeight: 400,
 
-      /* =========================
-         BLOCKQUOTE
-      ========================= */
+              fontSize: "1.35em",
 
-      blockquote: ({
-        children,
-      }: any) => (
+              lineHeight: 1,
 
-        <blockquote
-          style={{
+              letterSpacing:
+                "0.02em",
 
-            margin:
-              "28px 0",
+              display:
+                "inline-block",
 
-            padding:
-              "20px 28px",
+              transform:
+                "rotate(-1deg)",
 
-            borderLeft:
-              `3px solid ${headingColor}`,
+              padding:
+                "0 4px",
 
-            background:
-              isDark
-                ? "rgba(255,255,255,0.02)"
-                : "rgba(120,80,50,0.03)",
+              textShadow:
+                isDark
+                  ? "0 1px 1px rgba(0,0,0,0.4)"
+                  : "0 1px 0 rgba(255,255,255,0.5)",
+            }}
+          >
+            {
+              typeof children === "string"
 
-            borderRadius: 4,
+                ? (
+                  <InkText
+                    text={children}
+                    seed={700}
+                    options={{
+                      color:
+                        headingColor,
 
-            fontStyle:
-              "italic",
+                      maxBlur: 0.34,
 
-            backdropFilter:
-              "blur(1px)",
-          }}
-        >
-          {children}
-        </blockquote>
-      ),
+                      bleedChance: 0.42,
 
-      hr: () => (
-        <div
-          style={{
-            margin:
-              "46px 0",
+                      maxShiftY: 1.2,
 
-            borderTop:
-              `1px solid ${borderColor}`,
-          }}
-        />
-      ),
+                      maxShiftX: 0.7,
+                    }}
+                  />
+                )
 
-      table: TableRenderer,
-      thead: TableRenderer.Thead,
-      tbody: TableRenderer.Tbody,
-      tr: TableRenderer.Tr,
-      th: TableRenderer.Th,
-      td: TableRenderer.Td,
-    },
-  };
+                : children
+            }
+          </strong>
+        ),
+
+        /* =========================
+           EMPHASIS
+        ========================= */
+
+        em: ({ children }: any) => (
+
+          <em
+            style={{
+
+              color:
+                fadedInkColor,
+
+              fontStyle:
+                "italic",
+            }}
+          >
+            {
+              typeof children === "string"
+
+                ? (
+                  <InkText
+                    text={children}
+                    seed={2222}
+                    options={{
+                      color:
+                        fadedInkColor,
+
+                      maxBlur: 0.12,
+
+                      bleedChance: 0.14,
+                    }}
+                  />
+                )
+
+                : children
+            }
+          </em>
+        ),
+
+        /* =========================
+           LIST
+        ========================= */
+
+        li: ({ children, index }: any) => (
+
+          <li
+            style={{
+
+              listStyle: "none",
+
+              position: "relative",
+
+              fontFamily:
+                letterFont,
+
+              color:
+                inkColor,
+
+              fontSize: 28,
+
+              lineHeight: 1.7,
+
+              margin:
+                "10px 0",
+
+              paddingLeft: 34,
+            }}
+          >
+
+            {/* =========================
+               INK BULLET
+            ========================= */}
+
+            <span
+              style={{
+
+                position: "absolute",
+
+                left: 0,
+
+                top: "0.16em",
+
+                lineHeight: 1,
+
+                fontSize: "0.95em",
+
+                pointerEvents:
+                  "none",
+
+                mixBlendMode:
+                  "multiply",
+              }}
+            >
+              <InkText
+                text="•"
+                seed={
+                  9000 + (index || 0)
+                }
+                options={bulletInk}
+              />
+            </span>
+
+            {/* =========================
+               LIST CONTENT
+            ========================= */}
+
+            <span>
+              {
+                typeof children === "string"
+
+                  ? (
+                    <InkText
+                      text={children}
+                      seed={
+                        3100 + (index || 0)
+                      }
+                      options={listInk}
+                    />
+                  )
+
+                  : children
+              }
+            </span>
+
+          </li>
+        ),
+
+        ul: ({ children }: any) => (
+          <ul
+            style={{
+              paddingLeft: 0,
+
+              margin:
+                "18px 0",
+            }}
+          >
+            {children}
+          </ul>
+        ),
+
+        ol: ({ children }: any) => (
+          <ol
+            style={{
+              paddingLeft: 0,
+
+              margin:
+                "18px 0",
+            }}
+          >
+            {children}
+          </ol>
+        ),
+
+        /* =========================
+           BLOCKQUOTE
+        ========================= */
+
+        blockquote: ({
+          children,
+        }: any) => (
+
+          <blockquote
+            style={{
+
+              margin:
+                "28px 0",
+
+              padding:
+                "20px 28px",
+
+              borderLeft:
+                `3px solid ${headingColor}`,
+
+              background:
+                isDark
+                  ? "rgba(255,255,255,0.02)"
+                  : "rgba(120,80,50,0.03)",
+
+              borderRadius: 4,
+
+              fontStyle:
+                "italic",
+
+              backdropFilter:
+                "blur(1px)",
+            }}
+          >
+            {children}
+          </blockquote>
+        ),
+
+        hr: () => (
+          <div
+            style={{
+              margin:
+                "46px 0",
+
+              borderTop:
+                `1px solid ${borderColor}`,
+            }}
+          />
+        ),
+
+        table: TableRenderer,
+        thead: TableRenderer.Thead,
+        tbody: TableRenderer.Tbody,
+        tr: TableRenderer.Tr,
+        th: TableRenderer.Th,
+        td: TableRenderer.Td,
+      }),
+      [
+        markdownComponents,
+        CodeBlock,
+        inkColor,
+        fadedInkColor,
+        headingColor,
+        borderColor,
+        isDark,
+        highlightStyle,
+        paragraphInk,
+        listInk,
+        bulletInk,
+      ]
+    );
 
   return (
 
@@ -754,7 +871,17 @@ export default function RemarkLetterPageRenderer({
       <KaTeXPostProcessor />
 
       <ReactMarkdown
-        {...markdownProps}
+        remarkPlugins={
+          remarkPlugins
+        }
+
+        rehypePlugins={
+          rehypePlugins
+        }
+
+        components={
+          components
+        }
       >
         {children}
       </ReactMarkdown>
