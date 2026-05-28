@@ -4,6 +4,7 @@ import React from "react";
 
 import RemarkPageRenderer from "./remarkPageRenderer";
 import NotePageRenderer from "./NotePageRenderer";
+import RemarkLetterPageRenderer from "./RemarkLetterPageRenderer";
 
 /* =========================
    TYPES
@@ -69,6 +70,17 @@ const NOTE_STYLE_CATEGORIES = [
 ];
 
 /* =========================
+   LETTER STYLE CATEGORIES
+========================= */
+
+const LETTER_STYLE_CATEGORIES = [
+
+  // la langue française(French Language)
+
+  "french",
+];
+
+/* =========================
    HELPERS
 ========================= */
 
@@ -85,6 +97,19 @@ function shouldUseNoteRenderer(
   );
 }
 
+function shouldUseLetterRenderer(
+  category?: string
+) {
+
+  if (!category) {
+    return false;
+  }
+
+  return LETTER_STYLE_CATEGORIES.includes(
+    category.trim()
+  );
+}
+
 /* =========================
    MEMOIZED RENDERERS
 ========================= */
@@ -97,6 +122,11 @@ const MemoRemarkPageRenderer =
 const MemoNotePageRenderer =
   React.memo(
     NotePageRenderer
+  );
+
+const MemoRemarkLetterPageRenderer =
+  React.memo(
+    RemarkLetterPageRenderer
   );
 
 /* =========================
@@ -126,6 +156,15 @@ function MarkdownRendererCoordinatorComponent({
       [category]
     );
 
+  const useLetterRenderer =
+    React.useMemo(
+      () =>
+        shouldUseLetterRenderer(
+          category
+        ),
+      [category]
+    );
+
   // =========================
   // DEBUG
   // =========================
@@ -133,19 +172,46 @@ function MarkdownRendererCoordinatorComponent({
   console.log(
     "MARKDOWN COORDINATOR:",
     {
+
       category,
 
       useNoteRenderer,
 
+      useLetterRenderer,
+
       renderer:
-        useNoteRenderer
-          ? "NotePageRenderer"
-          : "RemarkPageRenderer",
+        useLetterRenderer
+          ? "RemarkLetterPageRenderer"
+          : useNoteRenderer
+            ? "NotePageRenderer"
+            : "RemarkPageRenderer",
     }
   );
 
   // =========================
-  // NOTE
+  // LETTER STYLE
+  // =========================
+
+  if (useLetterRenderer) {
+
+    return (
+      <MemoRemarkLetterPageRenderer
+        markdownComponents={
+          markdownComponents
+        }
+        sciFiMarkdownComponents={
+          sciFiMarkdownComponents
+        }
+        isDark={isDark}
+        CodeBlock={CodeBlock}
+      >
+        {children}
+      </MemoRemarkLetterPageRenderer>
+    );
+  }
+
+  // =========================
+  // NOTE STYLE
   // =========================
 
   if (useNoteRenderer) {
