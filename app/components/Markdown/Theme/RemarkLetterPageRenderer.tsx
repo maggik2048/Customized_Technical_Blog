@@ -15,6 +15,7 @@ import {
   Cormorant_Garamond,
   EB_Garamond,
   Italianno,
+  Monsieur_La_Doulaise,
 } from "next/font/google";
 
 import TableRenderer from "./TableRenderer";
@@ -43,11 +44,18 @@ const bodyFont = EB_Garamond({
   weight: ["400", "500", "600"],
 });
 
-/* SUBTEXT */
+/* BODY SUB STYLE */
 const serifFont = Cormorant_Garamond({
   subsets: ["latin"],
   weight: ["400", "500"],
 });
+
+/* BOLD CALLIGRAPHY */
+const boldCalligraphyFont =
+  Monsieur_La_Doulaise({
+    subsets: ["latin"],
+    weight: ["400"],
+  });
 
 /* =========================
    BASE FONT
@@ -89,7 +97,7 @@ export default function RemarkLetterPageRenderer({
       ? "#d9c2a7"
       : "#5c4737";
 
-  /* DEEP WINE RED */
+  /* DARK WINE RED */
   const headingColor =
     isDark
       ? "#8f433f"
@@ -101,7 +109,7 @@ export default function RemarkLetterPageRenderer({
       : "rgba(70,40,20,0.14)";
 
   /* =========================
-     OLD PAPER TEXTURE
+     LETTER PAPER
   ========================= */
 
   const letterStyle = {
@@ -121,6 +129,20 @@ export default function RemarkLetterPageRenderer({
 
     backgroundColor: paperColor,
 
+    /* REAL PAPER IMAGE */
+    backgroundImage: `
+      url("/images/letter.png")
+    `,
+
+    backgroundSize:
+      "330%",
+
+    backgroundRepeat:
+      "no-repeat",
+
+    backgroundPosition:
+      "center",
+
     boxShadow: isDark
       ? `
         0 24px 80px rgba(0,0,0,0.5)
@@ -131,61 +153,13 @@ export default function RemarkLetterPageRenderer({
 
     border:
       `1px solid ${borderColor}`,
-
-    /* PAPER FIBER TEXTURE */
-    backgroundImage: isDark
-      ? `
-
-        radial-gradient(
-          rgba(255,255,255,0.018) 1px,
-          transparent 1px
-        ),
-
-        radial-gradient(
-          rgba(255,255,255,0.012) 1px,
-          transparent 1px
-        ),
-
-        linear-gradient(
-          135deg,
-          rgba(255,255,255,0.01),
-          transparent 40%
-        )
-
-      `
-      : `
-
-        radial-gradient(
-          rgba(120,90,50,0.055) 1px,
-          transparent 1px
-        ),
-
-        radial-gradient(
-          rgba(120,90,50,0.03) 1px,
-          transparent 1px
-        ),
-
-        linear-gradient(
-          135deg,
-          rgba(255,255,255,0.38),
-          transparent 40%
-        )
-
-      `,
-
-    backgroundSize:
-      `
-        6px 6px,
-        12px 12px,
-        100% 100%
-      `,
   };
 
   /* =========================
-     SHADOW / FOLDS
+     EXTRA DEPTH OVERLAY
   ========================= */
 
-  const foldShadowStyle = {
+  const cinematicOverlayStyle = {
 
     position: "absolute" as const,
 
@@ -193,25 +167,25 @@ export default function RemarkLetterPageRenderer({
 
     pointerEvents: "none" as const,
 
-    background: `
-      linear-gradient(
-        115deg,
-        rgba(0,0,0,0.07) 0%,
-        rgba(0,0,0,0.02) 18%,
-        transparent 34%
-      ),
-
-      linear-gradient(
-        70deg,
-        transparent 0%,
-        rgba(0,0,0,0.05) 58%,
-        transparent 72%
-      )
-    `,
+    background: isDark
+      ? `
+        linear-gradient(
+          140deg,
+          rgba(0,0,0,0.16),
+          transparent 35%
+        )
+      `
+      : `
+        linear-gradient(
+          140deg,
+          rgba(255,255,255,0.10),
+          transparent 35%
+        )
+      `,
   };
 
   /* =========================
-     SEAL
+     WAX SEAL
   ========================= */
 
   const sealStyle = {
@@ -231,7 +205,7 @@ export default function RemarkLetterPageRenderer({
     border:
       `3px solid ${headingColor}`,
 
-    opacity: 0.18,
+    opacity: 0.14,
 
     pointerEvents: "none" as const,
   };
@@ -245,18 +219,19 @@ export default function RemarkLetterPageRenderer({
     ({ children }: any) => {
 
       const sizeMap: any = {
-        1: 72,
-        2: 58,
-        3: 42,
+        1: 74,
+        2: 62,
+        3: 46,
       };
 
       const marginMap: any = {
         1: 28,
-        2: 38,
-        3: 24,
+        2: 42,
+        3: 26,
       };
 
       return (
+
         <div
           style={{
             marginTop:
@@ -284,7 +259,7 @@ export default function RemarkLetterPageRenderer({
               lineHeight: 1,
 
               letterSpacing:
-                "0.02em",
+                "0.01em",
 
               textShadow:
                 isDark
@@ -297,7 +272,7 @@ export default function RemarkLetterPageRenderer({
               transform:
                 level === 1
                   ? "rotate(-1deg)"
-                  : "rotate(-0.6deg)",
+                  : "rotate(-0.5deg)",
             }}
           >
             {children}
@@ -313,11 +288,11 @@ export default function RemarkLetterPageRenderer({
   const highlightStyle = {
 
     background: isDark
-      ? "rgba(150,90,60,0.18)"
-      : "rgba(140,90,40,0.10)",
+      ? "rgba(150,90,60,0.14)"
+      : "rgba(140,90,40,0.08)",
 
     padding:
-      "1px 6px",
+      "0px 4px",
 
     borderRadius: 4,
   };
@@ -363,7 +338,7 @@ export default function RemarkLetterPageRenderer({
 
             fontSize: 30,
 
-            lineHeight: 1.7,
+            lineHeight: 1.72,
 
             margin:
               "18px 0",
@@ -378,21 +353,53 @@ export default function RemarkLetterPageRenderer({
               "left",
 
             fontWeight: 500,
+
+            textShadow:
+              "0 0 0.2px rgba(0,0,0,0.2)",
           }}
         >
           {children}
         </p>
       ),
 
+      /* =========================
+         BOLD CALLIGRAPHY
+      ========================= */
+
       strong: ({ children }: any) => (
+
         <strong
+          className={
+            boldCalligraphyFont.className
+          }
           style={{
             ...highlightStyle,
 
             color:
               headingColor,
 
-            fontWeight: 700,
+            fontWeight: 400,
+
+            fontSize: "1.35em",
+
+            lineHeight: 1,
+
+            letterSpacing:
+              "0.02em",
+
+            display:
+              "inline-block",
+
+            transform:
+              "rotate(-1deg)",
+
+            padding:
+              "0 4px",
+
+            textShadow:
+              isDark
+                ? "0 1px 1px rgba(0,0,0,0.4)"
+                : "0 1px 0 rgba(255,255,255,0.5)",
           }}
         >
           {children}
@@ -480,12 +487,15 @@ export default function RemarkLetterPageRenderer({
             background:
               isDark
                 ? "rgba(255,255,255,0.02)"
-                : "rgba(120,80,50,0.04)",
+                : "rgba(120,80,50,0.03)",
 
             borderRadius: 4,
 
             fontStyle:
               "italic",
+
+            backdropFilter:
+              "blur(1px)",
           }}
         >
           {children}
@@ -517,8 +527,12 @@ export default function RemarkLetterPageRenderer({
 
     <div style={letterStyle}>
 
-      {/* PAPER SHADOWS */}
-      <div style={foldShadowStyle} />
+      {/* CINEMATIC LIGHT OVERLAY */}
+      <div
+        style={
+          cinematicOverlayStyle
+        }
+      />
 
       {/* WAX SEAL */}
       <div style={sealStyle} />
