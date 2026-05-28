@@ -11,9 +11,10 @@ import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 
 import {
-  Great_Vibes,
+  Tangerine,
   Cormorant_Garamond,
-  Crimson_Text,
+  EB_Garamond,
+  Italianno,
 } from "next/font/google";
 
 import TableRenderer from "./TableRenderer";
@@ -21,22 +22,31 @@ import TableRenderer from "./TableRenderer";
 import KaTeXPostProcessor from "./KaTeXPostProcessor";
 
 /* =========================
-   LETTER FONTS
+   VINTAGE LETTER FONTS
 ========================= */
 
-const titleFont = Great_Vibes({
+/* MAIN TITLE */
+const titleFont = Tangerine({
+  subsets: ["latin"],
+  weight: ["700"],
+});
+
+/* SECTION HEADINGS */
+const luxuryHeadingFont = Italianno({
   subsets: ["latin"],
   weight: ["400"],
 });
 
-const headingFont = Cormorant_Garamond({
+/* BODY */
+const bodyFont = EB_Garamond({
   subsets: ["latin"],
-  weight: ["600"],
+  weight: ["400", "500", "600"],
 });
 
-const bodyFont = Crimson_Text({
+/* SUBTEXT */
+const serifFont = Cormorant_Garamond({
   subsets: ["latin"],
-  weight: ["400", "600"],
+  weight: ["400", "500"],
 });
 
 /* =========================
@@ -53,7 +63,7 @@ const letterFont = `
    COMPONENT
 ========================= */
 
-export default function LetterPageRenderer({
+export default function RemarkLetterPageRenderer({
   children,
   markdownComponents,
   isDark,
@@ -66,26 +76,32 @@ export default function LetterPageRenderer({
 
   const paperColor =
     isDark
-      ? "#1a1714"
-      : "#fdf8f1";
+      ? "#171310"
+      : "#f5efe3";
 
   const inkColor =
     isDark
-      ? "#f3e7d2"
-      : "#35271f";
+      ? "#eadfcb"
+      : "#2f241d";
 
-  const subInkColor =
+  const fadedInkColor =
     isDark
-      ? "#dbc7aa"
-      : "#5a4638";
+      ? "#d9c2a7"
+      : "#5c4737";
 
-  const accentColor =
+  /* DEEP WINE RED */
+  const headingColor =
     isDark
-      ? "#b98d5d"
-      : "#8c5d3b";
+      ? "#8f433f"
+      : "#6a1f1b";
+
+  const borderColor =
+    isDark
+      ? "rgba(255,255,255,0.06)"
+      : "rgba(70,40,20,0.14)";
 
   /* =========================
-     LETTER STYLE
+     OLD PAPER TEXTURE
   ========================= */
 
   const letterStyle = {
@@ -94,74 +110,134 @@ export default function LetterPageRenderer({
 
     overflow: "hidden" as const,
 
-    backgroundColor: paperColor,
-
-    borderRadius: 14,
-
-    padding:
-      "70px 72px",
-
-    maxWidth: 920,
+    maxWidth: 980,
 
     margin: "0 auto",
 
+    padding:
+      "74px 78px 88px 78px",
+
+    borderRadius: 8,
+
+    backgroundColor: paperColor,
+
     boxShadow: isDark
       ? `
-        0 18px 60px rgba(0,0,0,0.45)
+        0 24px 80px rgba(0,0,0,0.5)
       `
       : `
-        0 18px 55px rgba(80,50,20,0.12)
+        0 20px 70px rgba(80,40,10,0.18)
       `,
 
+    border:
+      `1px solid ${borderColor}`,
+
+    /* PAPER FIBER TEXTURE */
     backgroundImage: isDark
       ? `
+
         radial-gradient(
-          rgba(255,255,255,0.03) 1px,
+          rgba(255,255,255,0.018) 1px,
           transparent 1px
+        ),
+
+        radial-gradient(
+          rgba(255,255,255,0.012) 1px,
+          transparent 1px
+        ),
+
+        linear-gradient(
+          135deg,
+          rgba(255,255,255,0.01),
+          transparent 40%
         )
+
       `
       : `
+
         radial-gradient(
-          rgba(120,90,60,0.05) 1px,
+          rgba(120,90,50,0.055) 1px,
           transparent 1px
+        ),
+
+        radial-gradient(
+          rgba(120,90,50,0.03) 1px,
+          transparent 1px
+        ),
+
+        linear-gradient(
+          135deg,
+          rgba(255,255,255,0.38),
+          transparent 40%
         )
+
       `,
 
     backgroundSize:
-      "8px 8px",
+      `
+        6px 6px,
+        12px 12px,
+        100% 100%
+      `,
   };
 
   /* =========================
-     LETTER SEAL
+     SHADOW / FOLDS
+  ========================= */
+
+  const foldShadowStyle = {
+
+    position: "absolute" as const,
+
+    inset: 0,
+
+    pointerEvents: "none" as const,
+
+    background: `
+      linear-gradient(
+        115deg,
+        rgba(0,0,0,0.07) 0%,
+        rgba(0,0,0,0.02) 18%,
+        transparent 34%
+      ),
+
+      linear-gradient(
+        70deg,
+        transparent 0%,
+        rgba(0,0,0,0.05) 58%,
+        transparent 72%
+      )
+    `,
+  };
+
+  /* =========================
+     SEAL
   ========================= */
 
   const sealStyle = {
 
     position: "absolute" as const,
 
-    top: 32,
+    top: 28,
 
-    right: 42,
+    left: 38,
 
-    width: 90,
+    width: 62,
 
-    height: 90,
+    height: 62,
 
     borderRadius: "50%",
 
     border:
-      `2px solid ${accentColor}`,
+      `3px solid ${headingColor}`,
 
-    opacity: 0.12,
-
-    transform:
-      "rotate(-12deg)",
+    opacity: 0.18,
 
     pointerEvents: "none" as const,
   };
 
   /* =========================
-     HEADINGS
+     HEADING RENDERER
   ========================= */
 
   const renderHeading =
@@ -169,52 +245,59 @@ export default function LetterPageRenderer({
     ({ children }: any) => {
 
       const sizeMap: any = {
-        1: 62,
-        2: 34,
-        3: 26,
+        1: 72,
+        2: 58,
+        3: 42,
+      };
+
+      const marginMap: any = {
+        1: 28,
+        2: 38,
+        3: 24,
       };
 
       return (
         <div
           style={{
             marginTop:
-              level === 1
-                ? 20
-                : 28,
+              marginMap[level],
 
             marginBottom: 18,
-
-            textAlign:
-              level === 1
-                ? "center"
-                : "left",
           }}
         >
           <span
+
             className={
               level === 1
                 ? titleFont.className
-                : headingFont.className
+                : luxuryHeadingFont.className
             }
+
             style={{
 
               color:
-                level === 1
-                  ? accentColor
-                  : subInkColor,
+                headingColor,
 
               fontSize:
                 sizeMap[level],
 
-              lineHeight: 1.15,
+              lineHeight: 1,
 
               letterSpacing:
-                "0.03em",
+                "0.02em",
 
-              fontStyle:
+              textShadow:
+                isDark
+                  ? "0 1px 2px rgba(0,0,0,0.45)"
+                  : "0 1px 0 rgba(255,255,255,0.55)",
+
+              display:
+                "inline-block",
+
+              transform:
                 level === 1
-                  ? "normal"
-                  : "italic",
+                  ? "rotate(-1deg)"
+                  : "rotate(-0.6deg)",
             }}
           >
             {children}
@@ -230,10 +313,11 @@ export default function LetterPageRenderer({
   const highlightStyle = {
 
     background: isDark
-      ? "rgba(210,170,120,0.12)"
-      : "rgba(180,130,80,0.12)",
+      ? "rgba(150,90,60,0.18)"
+      : "rgba(140,90,40,0.10)",
 
-    padding: "2px 6px",
+    padding:
+      "1px 6px",
 
     borderRadius: 4,
   };
@@ -266,28 +350,34 @@ export default function LetterPageRenderer({
 
       p: ({ children }: any) => (
         <p
+          className={
+            serifFont.className
+          }
           style={{
 
             fontFamily:
               letterFont,
 
-            color: inkColor,
+            color:
+              inkColor,
 
-            fontSize: 22,
+            fontSize: 30,
 
-            lineHeight: 2,
+            lineHeight: 1.7,
 
             margin:
-              "16px 0",
-
-            textAlign:
-              "justify",
+              "18px 0",
 
             letterSpacing:
               "0.01em",
 
             whiteSpace:
               "pre-wrap",
+
+            textAlign:
+              "left",
+
+            fontWeight: 500,
           }}
         >
           {children}
@@ -300,7 +390,7 @@ export default function LetterPageRenderer({
             ...highlightStyle,
 
             color:
-              accentColor,
+              headingColor,
 
             fontWeight: 700,
           }}
@@ -312,8 +402,9 @@ export default function LetterPageRenderer({
       em: ({ children }: any) => (
         <em
           style={{
+
             color:
-              subInkColor,
+              fadedInkColor,
 
             fontStyle:
               "italic",
@@ -330,16 +421,15 @@ export default function LetterPageRenderer({
             fontFamily:
               letterFont,
 
-            color: inkColor,
+            color:
+              inkColor,
 
-            fontSize: 21,
+            fontSize: 28,
 
-            lineHeight: 1.9,
+            lineHeight: 1.7,
 
             margin:
-              "8px 0",
-
-            paddingLeft: 4,
+              "10px 0",
           }}
         >
           {children}
@@ -349,10 +439,10 @@ export default function LetterPageRenderer({
       ul: ({ children }: any) => (
         <ul
           style={{
-            paddingLeft: 28,
+            paddingLeft: 34,
 
             margin:
-              "14px 0",
+              "18px 0",
           }}
         >
           {children}
@@ -362,10 +452,10 @@ export default function LetterPageRenderer({
       ol: ({ children }: any) => (
         <ol
           style={{
-            paddingLeft: 28,
+            paddingLeft: 34,
 
             margin:
-              "14px 0",
+              "18px 0",
           }}
         >
           {children}
@@ -379,20 +469,20 @@ export default function LetterPageRenderer({
           style={{
 
             margin:
-              "26px 0",
+              "28px 0",
 
             padding:
-              "18px 24px",
+              "20px 28px",
 
             borderLeft:
-              `4px solid ${accentColor}`,
+              `3px solid ${headingColor}`,
 
             background:
               isDark
-                ? "rgba(255,255,255,0.03)"
-                : "rgba(120,80,40,0.04)",
+                ? "rgba(255,255,255,0.02)"
+                : "rgba(120,80,50,0.04)",
 
-            borderRadius: 8,
+            borderRadius: 4,
 
             fontStyle:
               "italic",
@@ -405,14 +495,11 @@ export default function LetterPageRenderer({
       hr: () => (
         <div
           style={{
-            margin: "42px 0",
+            margin:
+              "46px 0",
 
             borderTop:
-              `1px solid ${
-                isDark
-                  ? "rgba(255,255,255,0.08)"
-                  : "rgba(80,50,30,0.15)"
-              }`,
+              `1px solid ${borderColor}`,
           }}
         />
       ),
@@ -427,8 +514,13 @@ export default function LetterPageRenderer({
   };
 
   return (
+
     <div style={letterStyle}>
 
+      {/* PAPER SHADOWS */}
+      <div style={foldShadowStyle} />
+
+      {/* WAX SEAL */}
       <div style={sealStyle} />
 
       <KaTeXPostProcessor />
