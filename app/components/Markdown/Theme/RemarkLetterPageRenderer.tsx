@@ -15,8 +15,6 @@ import rehypeRaw from "rehype-raw";
 
 import {
   Tangerine,
-  Cormorant_Garamond,
-  EB_Garamond,
   Italianno,
   Monsieur_La_Doulaise,
 } from "next/font/google";
@@ -36,28 +34,21 @@ from "./letterInkText";
    VINTAGE LETTER FONTS
 ========================= */
 
-const titleFont = Tangerine({
-  subsets: ["latin"],
-  weight: ["700"],
-});
-
-const luxuryHeadingFont = Italianno({
+/* MAIN TITLE */
+const titleFont = Monsieur_La_Doulaise({
   subsets: ["latin"],
   weight: ["400"],
 });
 
-const bodyFont = EB_Garamond({
+/* SUBTITLE / ALL BODY FONT */
+const luxuryHeadingFont = Tangerine({
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["700"],
 });
 
-const serifFont = Cormorant_Garamond({
-  subsets: ["latin"],
-  weight: ["400", "500"],
-});
-
+/* STRONG / DECORATIVE */
 const boldCalligraphyFont =
-  Monsieur_La_Doulaise({
+  Italianno({
     subsets: ["latin"],
     weight: ["400"],
   });
@@ -67,7 +58,7 @@ const boldCalligraphyFont =
 ========================= */
 
 const letterFont = `
-  ${bodyFont.style.fontFamily},
+  ${luxuryHeadingFont.style.fontFamily},
   "Times New Roman",
   serif
 `;
@@ -402,9 +393,9 @@ export default function RemarkLetterPageRenderer({
     ({ children }: any) => {
 
       const sizeMap: any = {
-        1: 74,
-        2: 62,
-        3: 46,
+        1: 90,
+        2: 84,
+        3: 78,
       };
 
       const marginMap: any = {
@@ -513,9 +504,6 @@ export default function RemarkLetterPageRenderer({
         p: ({ children }: any) => (
 
           <p
-            className={
-              serifFont.className
-            }
             style={{
 
               fontFamily:
@@ -524,15 +512,15 @@ export default function RemarkLetterPageRenderer({
               color:
                 inkColor,
 
-              fontSize: 30,
+              fontSize: 36,
 
-              lineHeight: 1.72,
+              lineHeight: 1.6,
 
               margin:
                 "18px 0",
 
               letterSpacing:
-                "0.01em",
+                "0.02em",
 
               whiteSpace:
                 "pre-wrap",
@@ -540,7 +528,7 @@ export default function RemarkLetterPageRenderer({
               textAlign:
                 "left",
 
-              fontWeight: 500,
+              fontWeight: 700,
 
               textShadow:
                 "0 0 0.2px rgba(0,0,0,0.2)",
@@ -580,7 +568,7 @@ export default function RemarkLetterPageRenderer({
 
               fontWeight: 400,
 
-              fontSize: "1.35em",
+              fontSize: "1.5em",
 
               lineHeight: 1,
 
@@ -643,6 +631,9 @@ export default function RemarkLetterPageRenderer({
 
               fontStyle:
                 "italic",
+
+              fontFamily:
+                letterFont,
             }}
           >
             {
@@ -687,14 +678,16 @@ export default function RemarkLetterPageRenderer({
               color:
                 inkColor,
 
-              fontSize: 28,
+              fontSize: 34,
 
-              lineHeight: 1.7,
+              lineHeight: 1.6,
 
               margin:
                 "10px 0",
 
               paddingLeft: 34,
+
+              fontWeight: 700,
             }}
           >
 
@@ -814,6 +807,9 @@ export default function RemarkLetterPageRenderer({
 
               backdropFilter:
                 "blur(1px)",
+
+              fontFamily:
+                letterFont,
             }}
           >
             {children}
