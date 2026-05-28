@@ -20,11 +20,19 @@ type InkOptions = {
 
   maxShiftY?: number;
 
+  maxRotation?: number;
+
+  minScale?: number;
+
+  maxScale?: number;
+
   opacityMin?: number;
 
   opacityMax?: number;
 
   bleedChance?: number;
+
+  kerningVariance?: number;
 };
 
 export function renderInkText(
@@ -47,36 +55,107 @@ export function renderInkText(
 
     maxShiftY = 0.7,
 
+    maxRotation = 1.8,
+
+    minScale = 0.985,
+
+    maxScale = 1.025,
+
     opacityMin = 0.72,
 
     opacityMax = 1,
 
     bleedChance = 0.24,
+
+    kerningVariance = 0.06,
   } = options || {};
 
   return String(text)
     .split("")
     .map((char, i) => {
 
+      /* =========================
+         RANDOM BASE
+      ========================= */
+
       const r =
-        seededRandom(seed + i * 13);
+        seededRandom(
+          seed + i * 13
+        );
+
+      /* =========================
+         OPACITY
+      ========================= */
 
       const opacity =
         opacityMin +
         r *
-          (opacityMax - opacityMin);
+          (
+            opacityMax -
+            opacityMin
+          );
+
+      /* =========================
+         POSITION JITTER
+      ========================= */
 
       const shiftY =
-        (seededRandom(
-          seed + i * 7
-        ) - 0.5) *
+        (
+          seededRandom(
+            seed + i * 7
+          ) - 0.5
+        ) *
         maxShiftY;
 
       const shiftX =
-        (seededRandom(
-          seed + i * 5
-        ) - 0.5) *
+        (
+          seededRandom(
+            seed + i * 5
+          ) - 0.5
+        ) *
         maxShiftX;
+
+      /* =========================
+         ROTATION
+      ========================= */
+
+      const rotation =
+        (
+          seededRandom(
+            seed + i * 17
+          ) - 0.5
+        ) *
+        maxRotation;
+
+      /* =========================
+         SCALE VARIANCE
+      ========================= */
+
+      const scale =
+        minScale +
+        seededRandom(
+          seed + i * 23
+        ) *
+        (
+          maxScale -
+          minScale
+        );
+
+      /* =========================
+         KERNING
+      ========================= */
+
+      const kerningShift =
+        (
+          seededRandom(
+            seed + i * 31
+          ) - 0.5
+        ) *
+        kerningVariance;
+
+      /* =========================
+         BLEED
+      ========================= */
 
       const bleedStrength =
         seededRandom(
@@ -86,6 +165,37 @@ export function renderInkText(
       const strongBleed =
         bleedStrength >
         1 - bleedChance;
+
+      /* =========================
+         BLUR
+      ========================= */
+
+      const blurAmount =
+        strongBleed
+          ? (
+              0.08 +
+              r * maxBlur
+            )
+          : (
+              r * 0.04
+            );
+
+      /* =========================
+         SHADOW
+      ========================= */
+
+      const textShadow =
+        strongBleed
+
+          ? `
+            0 0 0.6px ${color},
+            0 0 1.4px ${color},
+            0 0 2.8px rgba(0,0,0,0.10)
+          `
+
+          : `
+            0 0 0.3px rgba(0,0,0,0.08)
+          `;
 
       return (
 
@@ -100,38 +210,45 @@ export function renderInkText(
 
             opacity,
 
-            transform:
-              `translate(${shiftX}px, ${shiftY}px)`,
+            marginRight:
+              `${kerningShift}em`,
 
-            textShadow:
-              strongBleed
-                ? `
-                  0 0 0.6px ${color},
-                  0 0 1.4px ${color},
-                  0 0 2.8px rgba(0,0,0,0.10)
-                `
-                : `
-                  0 0 0.3px rgba(0,0,0,0.08)
-                `,
+            transform:
+              `
+                translate(
+                  ${shiftX}px,
+                  ${shiftY}px
+                )
+
+                rotate(
+                  ${rotation}deg
+                )
+
+                scale(
+                  ${scale}
+                )
+              `,
+
+            transformOrigin:
+              "center bottom",
+
+            textShadow,
 
             filter:
-              strongBleed
-                ? `
-                  blur(${
-                    0.08 +
-                    r * maxBlur
-                  }px)
-                `
-                : `
-                  blur(${
-                    r * 0.04
-                  }px)
-                `,
+              `blur(${blurAmount}px)`,
+
+            willChange:
+              "transform, filter, opacity",
+
+            backfaceVisibility:
+              "hidden",
           }}
         >
-          {char === " "
-            ? "\u00A0"
-            : char}
+          {
+            char === " "
+              ? "\u00A0"
+              : char
+          }
         </span>
       );
     });
