@@ -241,4 +241,22 @@ export const PROJECT_TREE: ProjectItem[] = [
     description:
       "Authentication/Authorization.",
   },
+
+    {
+    name: "DocumentRenderer_NaturalEcrit",
+    slug: "doc_renderer_naturalecrit",
+
+    categories: ["frontend", "systems"],
+
+    tags: [
+      "chalcoal",
+      "naturalshader",
+      "letter",
+      "rendering",
+      "pen",
+    ],
+
+    description:
+      "naturalistic pen&paper rendering",
+  },
 ];
