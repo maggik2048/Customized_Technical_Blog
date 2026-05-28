@@ -67,6 +67,8 @@ export default function PDFPageHeader({
         height: headerHeight,
 
         overflow: "hidden",
+
+        zIndex: 0,
       }}
     >
       {/* =========================
@@ -91,6 +93,8 @@ export default function PDFPageHeader({
 
           transform:
             "scale(1.02)",
+
+          zIndex: 0,
         }}
       />
 
@@ -137,7 +141,7 @@ export default function PDFPageHeader({
           mixBlendMode:
             "screen",
 
-          zIndex: 1,
+          zIndex: 0,
         }}
       />
 
