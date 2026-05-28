@@ -517,10 +517,14 @@ export default function RemarkLetterPageRenderer({
          LIST
       ========================= */
 
-      li: ({ children }: any) => (
+      li: ({ children, index }: any) => (
 
         <li
           style={{
+
+            listStyle: "none",
+
+            position: "relative",
 
             fontFamily:
               letterFont,
@@ -534,31 +538,124 @@ export default function RemarkLetterPageRenderer({
 
             margin:
               "10px 0",
+
+            paddingLeft: 34,
           }}
         >
-          {
-            typeof children === "string"
-              ? renderInkText(
-                  children,
-                  3100,
-                  {
-                    color:
-                      inkColor,
 
-                    maxBlur: 0.16,
+          {/* =========================
+             INK BULLET
+          ========================= */}
 
-                    bleedChance: 0.16,
-                  }
-                )
-              : children
-          }
+          <span
+            style={{
+
+              position: "absolute",
+
+              left: 0,
+
+              top: "0.16em",
+
+              lineHeight: 1,
+
+              fontSize: "0.95em",
+
+              pointerEvents: "none",
+
+              mixBlendMode:
+                "multiply",
+            }}
+          >
+            {
+              renderInkText(
+                "•",
+                9000 + (index || 0),
+                {
+
+                  color:
+                    isDark
+                      ? "rgba(230,210,190,0.92)"
+                      : "rgba(55,25,15,0.92)",
+
+                  /* HEAVY BLEED */
+                  maxBlur: 0.55,
+
+                  bleedChance: 0.62,
+
+                  /* STRONG POSITION JITTER */
+                  maxShiftY: 1.8,
+
+                  maxShiftX: 1.4,
+
+                  /* RANDOM ANGLE */
+                  maxRotation: 8,
+
+                  /* UNEVEN SIZE */
+                  minScale: 0.82,
+
+                  maxScale: 1.35,
+
+                  /* UNEVEN INK DENSITY */
+                  opacityMin: 0.45,
+
+                  opacityMax: 1,
+
+                  /* RANDOM SPACING */
+                  kerningVariance: 0.12,
+                }
+              )
+            }
+          </span>
+
+          {/* =========================
+             LIST CONTENT
+          ========================= */}
+
+          <span>
+            {
+              typeof children === "string"
+
+                ? renderInkText(
+                    children,
+                    3100 + (index || 0),
+                    {
+
+                      color:
+                        inkColor,
+
+                      maxBlur: 0.16,
+
+                      bleedChance: 0.16,
+
+                      maxShiftY: 0.7,
+
+                      maxShiftX: 0.45,
+
+                      maxRotation: 1.6,
+
+                      minScale: 0.992,
+
+                      maxScale: 1.012,
+
+                      opacityMin: 0.78,
+
+                      opacityMax: 1,
+
+                      kerningVariance: 0.045,
+                    }
+                  )
+
+                : children
+            }
+          </span>
+
         </li>
       ),
 
       ul: ({ children }: any) => (
         <ul
           style={{
-            paddingLeft: 34,
+            paddingLeft: 0,
 
             margin:
               "18px 0",
@@ -571,7 +668,7 @@ export default function RemarkLetterPageRenderer({
       ol: ({ children }: any) => (
         <ol
           style={{
-            paddingLeft: 34,
+            paddingLeft: 0,
 
             margin:
               "18px 0",
@@ -665,4 +762,3 @@ export default function RemarkLetterPageRenderer({
     </div>
   );
 }
-
