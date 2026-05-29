@@ -29,9 +29,6 @@ function extractFirstImage(
 ): string | null {
   if (!markdown) return null;
 
-  //
-  // ![alt](url)
-  //
   const markdownMatch =
     markdown.match(
       /!\[.*?\]\((.*?)\)/
@@ -43,9 +40,6 @@ function extractFirstImage(
     return markdownMatch[1];
   }
 
-  //
-  // <img src="...">
-  //
   const htmlMatch =
     markdown.match(
       /<img[^>]+src=["']([^"']+)["']/i
@@ -65,7 +59,9 @@ function highlightText(
   query?: string,
   isSimple?: boolean
 ) {
-  if (!query?.trim()) return text;
+  if (!query?.trim()) {
+    return text;
+  }
 
   const escaped = query.replace(
     /[.*+?^${}()|[\]\\]/g,
@@ -149,9 +145,6 @@ function CategoryPostItem({
   const snippet =
     post.searchMeta?.snippet;
 
-  //
-  // SEARCH SCORE
-  //
   const score =
     typeof post.score ===
     "number"
@@ -162,9 +155,6 @@ function CategoryPostItem({
     !!currentQuery &&
     !!matchedIn;
 
-  //
-  // IMAGE
-  //
   const previewImage =
     extractFirstImage(
       post.content
@@ -173,9 +163,6 @@ function CategoryPostItem({
   const hasImage =
     !!previewImage;
 
-  //
-  // HEIGHT
-  //
   const boxHeight = hasImage
     ? expanded
       ? 158
@@ -189,88 +176,47 @@ function CategoryPostItem({
       key={post.id}
       href={`/post/${post.id}`}
     >
+      {/* OUTER WRAPPER */}
       <div
         style={{
           position: "relative",
 
-          height: boxHeight,
-
-          borderRadius: 14,
-
-          padding:
-            "10px 18px 10px 58px",
-
-          cursor: "pointer",
-
-          overflow: "hidden",
-
-          transition:
-            "all 0.32s ease",
-
-          background:
-            "transparent",
-
-          border: isSimple
-            ? "1px solid rgba(0,0,0,0.06)"
-            : "1px solid rgba(255,255,255,0.12)",
-
-          boxShadow: isSimple
-            ? `
-              inset 0 1px 0 rgba(255,255,255,0.75),
-              0 4px 18px rgba(0,0,0,0.04)
-            `
-            : `
-              inset 0 1px 0 rgba(255,255,255,0.08),
-              inset 0 0 0 1px rgba(255,255,255,0.03),
-              0 6px 20px rgba(0,0,0,0.12)
-            `,
-
-          backdropFilter:
-            !isSimple
-              ? "blur(1.5px)"
-              : "none",
-
-          WebkitBackdropFilter:
-            !isSimple
-              ? "blur(1.5px)"
-              : "none",
+          overflow: "visible",
         }}
-        onMouseEnter={(e) => {
-          setHovered(true);
+      >
+        {/* OUTSIDE BRACKETS */}
+        <CategoryPostBoxHoverRenderer
+          visible={hovered}
+          isSimple={isSimple}
+        />
 
-          e.currentTarget.style.transform =
-            "translateX(10px) scale(1.012)";
+        {/* REAL CARD */}
+        <div
+          style={{
+            position: "relative",
 
-          e.currentTarget.style.borderColor =
-            isSimple
-              ? "rgba(0,0,0,0.12)"
-              : "rgba(255,255,255,0.18)";
+            height: boxHeight,
 
-          e.currentTarget.style.boxShadow =
-            isSimple
-              ? `
-                inset 0 1px 0 rgba(255,255,255,0.85),
-                0 10px 24px rgba(0,0,0,0.08)
-              `
-              : `
-                inset 0 1px 0 rgba(255,255,255,0.10),
-                inset 0 0 0 1px rgba(255,255,255,0.04),
-                0 10px 26px rgba(0,0,0,0.18)
-              `;
-        }}
-        onMouseLeave={(e) => {
-          setHovered(false);
+            borderRadius: 14,
 
-          e.currentTarget.style.transform =
-            "translateX(0px) scale(1)";
+            padding:
+              "10px 18px 10px 58px",
 
-          e.currentTarget.style.borderColor =
-            isSimple
-              ? "rgba(0,0,0,0.06)"
-              : "rgba(255,255,255,0.12)";
+            cursor: "pointer",
 
-          e.currentTarget.style.boxShadow =
-            isSimple
+            overflow: "hidden",
+
+            transition:
+              "all 0.32s ease",
+
+            background:
+              "transparent",
+
+            border: isSimple
+              ? "1px solid rgba(0,0,0,0.06)"
+              : "1px solid rgba(255,255,255,0.12)",
+
+            boxShadow: isSimple
               ? `
                 inset 0 1px 0 rgba(255,255,255,0.75),
                 0 4px 18px rgba(0,0,0,0.04)
@@ -279,267 +225,250 @@ function CategoryPostItem({
                 inset 0 1px 0 rgba(255,255,255,0.08),
                 inset 0 0 0 1px rgba(255,255,255,0.03),
                 0 6px 20px rgba(0,0,0,0.12)
-              `;
-        }}
-      >
-        <CategoryPostBoxHoverRenderer
-          visible={hovered}
-          isSimple={isSimple}
-        />
+              `,
 
-        <CategoryPostBoxIndex
-          categoryIndex={
-            categoryIndex
-          }
-          globalIndex={
-            globalIndex
-          }
-          isSimple={isSimple}
-        />
+            backdropFilter:
+              !isSimple
+                ? "blur(1.5px)"
+                : "none",
 
-        {!isSimple && (
-          <>
-            <div
-              style={{
-                position:
-                  "absolute",
+            WebkitBackdropFilter:
+              !isSimple
+                ? "blur(1.5px)"
+                : "none",
+          }}
+          onMouseEnter={(e) => {
+            setHovered(true);
 
-                inset: 0,
+            e.currentTarget.style.transform =
+              "translateX(10px) scale(1.012)";
 
-                borderRadius: 14,
-
-                pointerEvents:
-                  "none",
-
-                background: `
-                  linear-gradient(
-                    135deg,
-                    rgba(255,255,255,0.025),
-                    transparent 40%,
-                    transparent 60%,
-                    rgba(255,255,255,0.02)
-                  )
-                `,
-              }}
-            />
-
-            <div
-              style={{
-                position:
-                  "absolute",
-
-                inset: 0,
-
-                borderRadius: 14,
-
-                pointerEvents:
-                  "none",
-
-                border:
-                  "1px solid rgba(255,255,255,0.03)",
-              }}
-            />
-          </>
-        )}
-
-        {!isSimple && (
-          <MetadataTagRenderer />
-        )}
-
-        {/* TITLE */}
-        <div
-          style={{
-            position: "relative",
-            zIndex: 5,
-
-            fontSize: 15,
-
-            color: isSimple
-              ? "rgba(20,20,20,0.92)"
-              : "rgba(255,255,255,0.94)",
-
-            letterSpacing:
-              "0.02em",
-
-            whiteSpace:
-              "nowrap",
-
-            overflow:
-              "hidden",
-
-            textOverflow:
-              "ellipsis",
-
-            textShadow:
+            e.currentTarget.style.borderColor =
               isSimple
-                ? "none"
-                : "0 1px 4px rgba(0,0,0,0.30)",
+                ? "rgba(0,0,0,0.12)"
+                : "rgba(255,255,255,0.18)";
 
-            fontWeight: 600,
+            e.currentTarget.style.boxShadow =
+              isSimple
+                ? `
+                  inset 0 1px 0 rgba(255,255,255,0.85),
+                  0 10px 24px rgba(0,0,0,0.08)
+                `
+                : `
+                  inset 0 1px 0 rgba(255,255,255,0.10),
+                  inset 0 0 0 1px rgba(255,255,255,0.04),
+                  0 10px 26px rgba(0,0,0,0.18)
+                `;
+          }}
+          onMouseLeave={(e) => {
+            setHovered(false);
+
+            e.currentTarget.style.transform =
+              "translateX(0px) scale(1)";
+
+            e.currentTarget.style.borderColor =
+              isSimple
+                ? "rgba(0,0,0,0.06)"
+                : "rgba(255,255,255,0.12)";
+
+            e.currentTarget.style.boxShadow =
+              isSimple
+                ? `
+                  inset 0 1px 0 rgba(255,255,255,0.75),
+                  0 4px 18px rgba(0,0,0,0.04)
+                `
+                : `
+                  inset 0 1px 0 rgba(255,255,255,0.08),
+                  inset 0 0 0 1px rgba(255,255,255,0.03),
+                  0 6px 20px rgba(0,0,0,0.12)
+                `;
           }}
         >
-          <PostTitleRenderer
-            text={post.title}
-            highlight={
-              currentQuery
+          <CategoryPostBoxIndex
+            categoryIndex={
+              categoryIndex
+            }
+            globalIndex={
+              globalIndex
             }
             isSimple={isSimple}
           />
-        </div>
 
-        {/* IMAGE */}
-        {hasImage && (
-          <div
-            style={{
-              position:
-                "relative",
+          {!isSimple && (
+            <>
+              <div
+                style={{
+                  position:
+                    "absolute",
 
-              zIndex: 5,
+                  inset: 0,
 
-              marginTop: 10,
+                  borderRadius: 14,
 
-              width: "100%",
+                  pointerEvents:
+                    "none",
 
-              height: 56,
+                  background: `
+                    linear-gradient(
+                      135deg,
+                      rgba(255,255,255,0.025),
+                      transparent 40%,
+                      transparent 60%,
+                      rgba(255,255,255,0.02)
+                    )
+                  `,
+                }}
+              />
 
-              borderRadius: 10,
+              <div
+                style={{
+                  position:
+                    "absolute",
 
-              overflow:
-                "hidden",
+                  inset: 0,
 
-              border: isSimple
-                ? "1px solid rgba(0,0,0,0.08)"
-                : "1px solid rgba(255,255,255,0.08)",
+                  borderRadius: 14,
 
-              background:
-                "rgba(0,0,0,0.04)",
-            }}
-          >
-            <img
-              src={previewImage}
-              alt={
-                post.title ??
-                "preview"
-              }
-              loading="lazy"
-              draggable={false}
-              style={{
-                width: "100%",
-                height: "100%",
+                  pointerEvents:
+                    "none",
 
-                objectFit:
-                  "cover",
+                  border:
+                    "1px solid rgba(255,255,255,0.03)",
+                }}
+              />
+            </>
+          )}
 
-                display:
-                  "block",
+          {!isSimple && (
+            <MetadataTagRenderer />
+          )}
 
-                opacity: 0.96,
-
-                transform:
-                  "scale(1.02)",
-              }}
-            />
-
-            <div
-              style={{
-                position:
-                  "absolute",
-
-                inset: 0,
-
-                background:
-                  "linear-gradient(to top, rgba(0,0,0,0.18), transparent)",
-
-                pointerEvents:
-                  "none",
-              }}
-            />
-          </div>
-        )}
-
-        {/* SEARCH */}
-        {expanded && (
+          {/* TITLE */}
           <div
             style={{
               position: "relative",
               zIndex: 5,
 
-              marginTop: 6,
-
-              fontSize: 11,
-              lineHeight: 1.45,
+              fontSize: 15,
 
               color: isSimple
-                ? "rgba(50,50,50,0.58)"
-                : "rgba(255,255,255,0.58)",
+                ? "rgba(20,20,20,0.92)"
+                : "rgba(255,255,255,0.94)",
+
+              letterSpacing:
+                "0.02em",
+
+              whiteSpace:
+                "nowrap",
 
               overflow:
                 "hidden",
 
               textOverflow:
                 "ellipsis",
+
+              textShadow:
+                isSimple
+                  ? "none"
+                  : "0 1px 4px rgba(0,0,0,0.30)",
+
+              fontWeight: 600,
             }}
           >
+            <PostTitleRenderer
+              text={post.title}
+              highlight={
+                currentQuery
+              }
+              isSimple={isSimple}
+            />
+          </div>
+
+          {/* IMAGE */}
+          {hasImage && (
             <div
               style={{
-                display:
-                  "flex",
+                position:
+                  "relative",
 
-                alignItems:
-                  "center",
+                zIndex: 5,
 
-                gap: 8,
+                marginTop: 10,
 
-                fontSize: 9,
+                width: "100%",
 
-                letterSpacing:
-                  "0.12em",
+                height: 56,
 
-                marginBottom: 2,
+                borderRadius: 10,
 
-                color: isSimple
-                  ? "rgba(40,40,40,0.35)"
-                  : "rgba(255,255,255,0.34)",
+                overflow:
+                  "hidden",
+
+                border: isSimple
+                  ? "1px solid rgba(0,0,0,0.08)"
+                  : "1px solid rgba(255,255,255,0.08)",
+
+                background:
+                  "rgba(0,0,0,0.04)",
               }}
             >
-              <span>
-                MATCHED IN{" "}
-                {matchedIn.toUpperCase()}
-              </span>
+              <img
+                src={previewImage}
+                alt={
+                  post.title ??
+                  "preview"
+                }
+                loading="lazy"
+                draggable={false}
+                style={{
+                  width: "100%",
+                  height: "100%",
 
-              {score && (
-                <span
-                  style={{
-                    padding:
-                      "1px 6px",
+                  objectFit:
+                    "cover",
 
-                    borderRadius: 999,
+                  display:
+                    "block",
 
-                    background:
-                      isSimple
-                        ? "rgba(0,0,0,0.05)"
-                        : "rgba(255,255,255,0.08)",
+                  opacity: 0.96,
 
-                    color:
-                      isSimple
-                        ? "rgba(20,20,20,0.62)"
-                        : "rgba(255,255,255,0.72)",
+                  transform:
+                    "scale(1.02)",
+                }}
+              />
 
-                    fontWeight: 700,
+              <div
+                style={{
+                  position:
+                    "absolute",
 
-                    letterSpacing:
-                      "0.04em",
-                  }}
-                >
-                  SCORE {score}
-                </span>
-              )}
+                  inset: 0,
+
+                  background:
+                    "linear-gradient(to top, rgba(0,0,0,0.18), transparent)",
+
+                  pointerEvents:
+                    "none",
+                }}
+              />
             </div>
+          )}
 
+          {/* SEARCH */}
+          {expanded && (
             <div
               style={{
-                whiteSpace:
-                  "nowrap",
+                position: "relative",
+                zIndex: 5,
+
+                marginTop: 6,
+
+                fontSize: 11,
+                lineHeight: 1.45,
+
+                color: isSimple
+                  ? "rgba(50,50,50,0.58)"
+                  : "rgba(255,255,255,0.58)",
 
                 overflow:
                   "hidden",
@@ -548,41 +477,110 @@ function CategoryPostItem({
                   "ellipsis",
               }}
             >
-              {highlightText(
-                snippet,
-                currentQuery,
-                isSimple
-              )}
+              <div
+                style={{
+                  display:
+                    "flex",
+
+                  alignItems:
+                    "center",
+
+                  gap: 8,
+
+                  fontSize: 9,
+
+                  letterSpacing:
+                    "0.12em",
+
+                  marginBottom: 2,
+
+                  color: isSimple
+                    ? "rgba(40,40,40,0.35)"
+                    : "rgba(255,255,255,0.34)",
+                }}
+              >
+                <span>
+                  MATCHED IN{" "}
+                  {matchedIn.toUpperCase()}
+                </span>
+
+                {score && (
+                  <span
+                    style={{
+                      padding:
+                        "1px 6px",
+
+                      borderRadius: 999,
+
+                      background:
+                        isSimple
+                          ? "rgba(0,0,0,0.05)"
+                          : "rgba(255,255,255,0.08)",
+
+                      color:
+                        isSimple
+                          ? "rgba(20,20,20,0.62)"
+                          : "rgba(255,255,255,0.72)",
+
+                      fontWeight: 700,
+
+                      letterSpacing:
+                        "0.04em",
+                    }}
+                  >
+                    SCORE {score}
+                  </span>
+                )}
+              </div>
+
+              <div
+                style={{
+                  whiteSpace:
+                    "nowrap",
+
+                  overflow:
+                    "hidden",
+
+                  textOverflow:
+                    "ellipsis",
+                }}
+              >
+                {highlightText(
+                  snippet,
+                  currentQuery,
+                  isSimple
+                )}
+              </div>
             </div>
+          )}
+
+          {/* DATE */}
+          <div
+            style={{
+              position: "relative",
+              zIndex: 5,
+
+              marginTop:
+                expanded
+                  ? 6
+                  : hasImage
+                  ? 8
+                  : 2,
+
+              fontSize: 10,
+
+              color: isSimple
+                ? "rgba(60,60,60,0.45)"
+                : "rgba(255,255,255,0.50)",
+
+              letterSpacing:
+                "0.08em",
+            }}
+          >
+            {new Date(
+              post.created_at
+            ).toLocaleDateString()}
           </div>
-        )}
-
-        {/* DATE */}
-        <div
-          style={{
-            position: "relative",
-            zIndex: 5,
-
-            marginTop:
-              expanded
-                ? 6
-                : hasImage
-                ? 8
-                : 2,
-
-            fontSize: 10,
-
-            color: isSimple
-              ? "rgba(60,60,60,0.45)"
-              : "rgba(255,255,255,0.50)",
-
-            letterSpacing:
-              "0.08em",
-          }}
-        >
-          {new Date(
-            post.created_at
-          ).toLocaleDateString()}
         </div>
       </div>
     </Link>
