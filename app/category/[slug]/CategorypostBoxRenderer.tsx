@@ -450,8 +450,18 @@ function CategoryPostItem({
                     ? "1px solid rgba(0,0,0,0.08)"
                     : "1px solid rgba(255,255,255,0.08)",
 
-                  background:
-                    "rgba(0,0,0,0.04)",
+                  background: isSimple
+                    ? "rgba(0,0,0,0.04)"
+                    : "rgba(255,255,255,0.03)",
+
+                  display: "flex",
+
+                  alignItems: "center",
+
+                  justifyContent:
+                    "center",
+
+                  padding: 6,
                 }}
               >
                 <img
@@ -467,7 +477,7 @@ function CategoryPostItem({
                     height: "100%",
 
                     objectFit:
-                      "cover",
+                      "contain",
 
                     display:
                       "block",
