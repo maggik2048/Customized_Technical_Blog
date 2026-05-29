@@ -1,8 +1,6 @@
 "use client";
 
-import {
-  useState,
-} from "react";
+import { useState } from "react";
 
 import Link from "next/link";
 
@@ -106,6 +104,38 @@ function highlightText(
 }
 
 //
+// CLEAN PREVIEW TEXT
+//
+function extractPreviewText(
+  content?: string
+) {
+  if (!content) {
+    return "";
+  }
+
+  return content
+    .replace(
+      /\!\[.*?\]\(.*?\)/g,
+      ""
+    )
+    .replace(
+      /<img[^>]*>/gi,
+      ""
+    )
+    .replace(
+      /[#>*`]/g,
+      ""
+    )
+    .replace(
+      /\[(.*?)\]\((.*?)\)/g,
+      "$1"
+    )
+    .replace(/\n+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+//
 // POST ITEM
 //
 function CategoryPostItem({
@@ -163,10 +193,14 @@ function CategoryPostItem({
   const hasImage =
     !!previewImage;
 
-  const boxHeight = hasImage
-    ? expanded
-      ? 158
-      : 126
+  const previewText =
+    snippet ||
+    extractPreviewText(
+      post.content
+    ).slice(0, 220);
+
+  const minHeight = hasImage
+    ? 162
     : expanded
     ? 92
     : 54;
@@ -176,31 +210,29 @@ function CategoryPostItem({
       key={post.id}
       href={`/post/${post.id}`}
     >
-      {/* OUTER WRAPPER */}
       <div
         style={{
           position: "relative",
-
           overflow: "visible",
         }}
       >
-        {/* OUTSIDE BRACKETS */}
         <CategoryPostBoxHoverRenderer
           visible={hovered}
           isSimple={isSimple}
         />
 
-        {/* REAL CARD */}
         <div
           style={{
             position: "relative",
 
-            height: boxHeight,
+            minHeight,
+
+            height: "auto",
 
             borderRadius: 14,
 
             padding:
-              "10px 18px 10px 58px",
+              "10px 18px 12px 58px",
 
             cursor: "pointer",
 
@@ -384,174 +416,211 @@ function CategoryPostItem({
             />
           </div>
 
-          {/* IMAGE */}
-          {hasImage && (
-            <div
-              style={{
-                position:
-                  "relative",
-
-                zIndex: 5,
-
-                marginTop: 10,
-
-                width: "100%",
-
-                height: 56,
-
-                borderRadius: 10,
-
-                overflow:
-                  "hidden",
-
-                border: isSimple
-                  ? "1px solid rgba(0,0,0,0.08)"
-                  : "1px solid rgba(255,255,255,0.08)",
-
-                background:
-                  "rgba(0,0,0,0.04)",
-              }}
-            >
-              <img
-                src={previewImage}
-                alt={
-                  post.title ??
-                  "preview"
-                }
-                loading="lazy"
-                draggable={false}
-                style={{
-                  width: "100%",
-                  height: "100%",
-
-                  objectFit:
-                    "cover",
-
-                  display:
-                    "block",
-
-                  opacity: 0.96,
-
-                  transform:
-                    "scale(1.02)",
-                }}
-              />
-
-              <div
-                style={{
-                  position:
-                    "absolute",
-
-                  inset: 0,
-
-                  background:
-                    "linear-gradient(to top, rgba(0,0,0,0.18), transparent)",
-
-                  pointerEvents:
-                    "none",
-                }}
-              />
-            </div>
-          )}
-
-          {/* SEARCH */}
-          {expanded && (
+          {/* MEDIA ROW */}
+          {hasImage ? (
             <div
               style={{
                 position: "relative",
                 zIndex: 5,
 
-                marginTop: 6,
+                marginTop: 10,
 
-                fontSize: 11,
-                lineHeight: 1.45,
+                display: "flex",
 
-                color: isSimple
-                  ? "rgba(50,50,50,0.58)"
-                  : "rgba(255,255,255,0.58)",
+                gap: 12,
 
-                overflow:
-                  "hidden",
-
-                textOverflow:
-                  "ellipsis",
+                alignItems:
+                  "flex-start",
               }}
             >
+              {/* THUMB */}
               <div
                 style={{
-                  display:
-                    "flex",
+                  width: 92,
+                  height: 92,
 
-                  alignItems:
-                    "center",
+                  flexShrink: 0,
 
-                  gap: 8,
-
-                  fontSize: 9,
-
-                  letterSpacing:
-                    "0.12em",
-
-                  marginBottom: 2,
-
-                  color: isSimple
-                    ? "rgba(40,40,40,0.35)"
-                    : "rgba(255,255,255,0.34)",
-                }}
-              >
-                <span>
-                  MATCHED IN{" "}
-                  {matchedIn.toUpperCase()}
-                </span>
-
-                {score && (
-                  <span
-                    style={{
-                      padding:
-                        "1px 6px",
-
-                      borderRadius: 999,
-
-                      background:
-                        isSimple
-                          ? "rgba(0,0,0,0.05)"
-                          : "rgba(255,255,255,0.08)",
-
-                      color:
-                        isSimple
-                          ? "rgba(20,20,20,0.62)"
-                          : "rgba(255,255,255,0.72)",
-
-                      fontWeight: 700,
-
-                      letterSpacing:
-                        "0.04em",
-                    }}
-                  >
-                    SCORE {score}
-                  </span>
-                )}
-              </div>
-
-              <div
-                style={{
-                  whiteSpace:
-                    "nowrap",
+                  borderRadius: 12,
 
                   overflow:
                     "hidden",
 
-                  textOverflow:
-                    "ellipsis",
+                  border: isSimple
+                    ? "1px solid rgba(0,0,0,0.08)"
+                    : "1px solid rgba(255,255,255,0.08)",
+
+                  background:
+                    "rgba(0,0,0,0.04)",
+                }}
+              >
+                <img
+                  src={previewImage}
+                  alt={
+                    post.title ??
+                    "preview"
+                  }
+                  loading="lazy"
+                  draggable={false}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+
+                    objectFit:
+                      "cover",
+
+                    display:
+                      "block",
+
+                    transition:
+                      "transform 0.35s ease",
+                  }}
+                />
+              </div>
+
+              {/* TEXT */}
+              <div
+                style={{
+                  flex: 1,
+
+                  minWidth: 0,
+
+                  display: "flex",
+
+                  flexDirection:
+                    "column",
+
+                  justifyContent:
+                    "space-between",
+                }}
+              >
+                {expanded && (
+                  <div
+                    style={{
+                      display:
+                        "flex",
+
+                      alignItems:
+                        "center",
+
+                      gap: 8,
+
+                      fontSize: 9,
+
+                      letterSpacing:
+                        "0.12em",
+
+                      marginBottom: 6,
+
+                      color: isSimple
+                        ? "rgba(40,40,40,0.35)"
+                        : "rgba(255,255,255,0.34)",
+                    }}
+                  >
+                    <span>
+                      MATCHED IN{" "}
+                      {matchedIn.toUpperCase()}
+                    </span>
+
+                    {score && (
+                      <span
+                        style={{
+                          padding:
+                            "1px 6px",
+
+                          borderRadius:
+                            999,
+
+                          background:
+                            isSimple
+                              ? "rgba(0,0,0,0.05)"
+                              : "rgba(255,255,255,0.08)",
+
+                          color:
+                            isSimple
+                              ? "rgba(20,20,20,0.62)"
+                              : "rgba(255,255,255,0.72)",
+
+                          fontWeight: 700,
+
+                          letterSpacing:
+                            "0.04em",
+                        }}
+                      >
+                        SCORE {score}
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                <div
+                  style={{
+                    fontSize: 11,
+
+                    lineHeight: 1.55,
+
+                    color: isSimple
+                      ? "rgba(50,50,50,0.60)"
+                      : "rgba(255,255,255,0.62)",
+
+                    overflow:
+                      "hidden",
+
+                    display:
+                      "-webkit-box",
+
+                    WebkitLineClamp: 5,
+
+                    WebkitBoxOrient:
+                      "vertical",
+                  }}
+                >
+                  {highlightText(
+                    previewText,
+                    currentQuery,
+                    isSimple
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            expanded && (
+              <div
+                style={{
+                  position:
+                    "relative",
+
+                  zIndex: 5,
+
+                  marginTop: 6,
+
+                  fontSize: 11,
+
+                  lineHeight: 1.45,
+
+                  color: isSimple
+                    ? "rgba(50,50,50,0.58)"
+                    : "rgba(255,255,255,0.58)",
+
+                  overflow:
+                    "hidden",
+
+                  display:
+                    "-webkit-box",
+
+                  WebkitLineClamp: 3,
+
+                  WebkitBoxOrient:
+                    "vertical",
                 }}
               >
                 {highlightText(
-                  snippet,
+                  previewText,
                   currentQuery,
                   isSimple
                 )}
               </div>
-            </div>
+            )
           )}
 
           {/* DATE */}
@@ -560,12 +629,7 @@ function CategoryPostItem({
               position: "relative",
               zIndex: 5,
 
-              marginTop:
-                expanded
-                  ? 6
-                  : hasImage
-                  ? 8
-                  : 2,
+              marginTop: 10,
 
               fontSize: 10,
 
