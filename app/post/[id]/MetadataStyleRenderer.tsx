@@ -74,6 +74,9 @@ export default function MetadataStyleRenderer({
     <div
       style={{
         width: "100%",
+
+        transform:
+          "translateY(18px)",
       }}
     >
       {/* =========================
@@ -83,7 +86,7 @@ export default function MetadataStyleRenderer({
       {!!projects.length && (
         <div
           style={{
-            marginBottom: 4,
+            marginBottom: -38,
           }}
         >
           <div
@@ -107,6 +110,9 @@ export default function MetadataStyleRenderer({
                     fontWeight: 800,
 
                     lineHeight: 1.05,
+
+                    transform:
+                      "translateY(24px)",
 
                     color: isDark
                       ? "rgba(255,255,255,0.82)"

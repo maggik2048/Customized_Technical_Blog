@@ -253,6 +253,9 @@ export default function PDFPageHeader({
         <div
           style={{
             color: "#fff",
+
+            transform:
+            "translateY(48px)",
           }}
         >
           <HeadertitleAdjustment
