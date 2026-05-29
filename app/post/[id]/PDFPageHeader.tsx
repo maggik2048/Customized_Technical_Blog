@@ -226,105 +226,25 @@ export default function PDFPageHeader({
 
           flexDirection:
             "column",
-
-          gap: 20,
         }}
       >
         {/* =========================
-            PROJECT + TAGS
+            PROJECT
+            ABOVE TITLE
         ========================= */}
 
-        <div
-          style={{
-            display: "flex",
+        <MetadataFetcher
+          data={{
+            project_slugs:
+              data?.project_slugs ||
+              [],
 
-            justifyContent:
-              "space-between",
+            category_slugs: [],
 
-            alignItems:
-              "flex-end",
-
-            gap: 24,
+            tag_slugs: [],
           }}
-        >
-          {/* =========================
-              LEFT
-              PROJECT ONLY
-          ========================= */}
-
-          <div
-            style={{
-              minWidth: 0,
-
-              flex: 1,
-            }}
-          >
-            <MetadataFetcher
-              data={{
-                project_slugs:
-                  data?.project_slugs ||
-                  [],
-
-                /*
-                  intentionally removed
-                */
-
-                category_slugs:
-                  [],
-
-                /*
-                  tags moved right
-                */
-
-                tag_slugs: [],
-              }}
-              isDark={isDark}
-            />
-          </div>
-
-          {/* =========================
-              RIGHT
-              TAGS ONLY
-          ========================= */}
-
-          <div
-            style={{
-              display: "flex",
-
-              justifyContent:
-                "flex-end",
-
-              maxWidth: 420,
-            }}
-          >
-            <MetadataFetcher
-              data={{
-                /*
-                  project handled left
-                */
-
-                project_slugs:
-                  [],
-
-                /*
-                  category removed
-                */
-
-                category_slugs:
-                  [],
-
-                /*
-                  tags
-                */
-
-                tag_slugs:
-                  data?.tag_slugs ||
-                  [],
-              }}
-              isDark={isDark}
-            />
-          </div>
-        </div>
+          isDark={isDark}
+        />
 
         {/* =========================
             TITLE
@@ -350,6 +270,24 @@ export default function PDFPageHeader({
             )}
           </HeadertitleAdjustment>
         </div>
+
+        {/* =========================
+            TAGS
+            BELOW TITLE
+        ========================= */}
+
+        <MetadataFetcher
+          data={{
+            project_slugs: [],
+
+            category_slugs: [],
+
+            tag_slugs:
+              data?.tag_slugs ||
+              [],
+          }}
+          isDark={isDark}
+        />
       </div>
     </div>
   );

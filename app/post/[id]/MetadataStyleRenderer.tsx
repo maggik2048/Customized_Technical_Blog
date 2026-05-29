@@ -15,6 +15,43 @@ type Props = {
   isDark: boolean;
 };
 
+function TagPill({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      style={{
+        padding: "6px 12px",
+
+        borderRadius: 999,
+
+        background:
+          "rgba(0,0,0,0.42)",
+
+        border:
+          "1px solid rgba(255,255,255,0.10)",
+
+        backdropFilter:
+          "blur(10px)",
+
+        fontSize: 12,
+
+        fontWeight: 700,
+
+        color: "#ffffff",
+
+        letterSpacing: 0.2,
+
+        whiteSpace: "nowrap",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
 export default function MetadataStyleRenderer({
   projects = [],
   categories = [],
@@ -36,8 +73,7 @@ export default function MetadataStyleRenderer({
   return (
     <div
       style={{
-        marginTop: 26,
-        marginBottom: 40,
+        width: "100%",
       }}
     >
       {/* =========================
@@ -47,27 +83,15 @@ export default function MetadataStyleRenderer({
       {!!projects.length && (
         <div
           style={{
-            marginBottom: 18,
+            marginBottom: 4,
           }}
         >
           <div
             style={{
-              fontSize: 12,
-              opacity: 0.6,
-              fontWeight: 700,
-              letterSpacing: 1.4,
-              marginBottom: 10,
-              textTransform:
-                "uppercase",
-            }}
-          >
-            Project
-          </div>
-
-          <div
-            style={{
               display: "flex",
+
               flexWrap: "wrap",
+
               gap: 12,
             }}
           >
@@ -79,11 +103,14 @@ export default function MetadataStyleRenderer({
                   }
                   style={{
                     fontSize: 24,
+
                     fontWeight: 800,
-                    lineHeight: 1.1,
-                    color: isDark
-                      ? "#ffffff"
-                      : "#111111",
+
+                    lineHeight: 1.05,
+
+                    color:
+                      "rgba(255,255,255,0.72)",
+
                     letterSpacing:
                       -0.4,
                   }}
@@ -111,10 +138,15 @@ export default function MetadataStyleRenderer({
           <div
             style={{
               fontSize: 11,
+
               opacity: 0.55,
+
               fontWeight: 700,
+
               letterSpacing: 1.3,
+
               marginBottom: 8,
+
               textTransform:
                 "uppercase",
             }}
@@ -125,7 +157,9 @@ export default function MetadataStyleRenderer({
           <div
             style={{
               display: "flex",
+
               flexWrap: "wrap",
+
               gap: 8,
             }}
           >
@@ -137,8 +171,11 @@ export default function MetadataStyleRenderer({
                   }
                   style={{
                     fontSize: 14,
+
                     fontWeight: 600,
+
                     opacity: 0.88,
+
                     color: isDark
                       ? "#d9d9d9"
                       : "#222",
@@ -159,42 +196,36 @@ export default function MetadataStyleRenderer({
       ========================= */}
 
       {!!tags.length && (
-        <div>
-          <div
-            style={{
-              fontSize: 11,
-              opacity: 0.55,
-              fontWeight: 700,
-              letterSpacing: 1.3,
-              marginBottom: 10,
-              textTransform:
-                "uppercase",
-            }}
-          >
-            Tags
-          </div>
+        <div
+          style={{
+            marginTop: 18,
 
+            display: "flex",
+
+            justifyContent:
+              "flex-end",
+          }}
+        >
           <div
             style={{
               display: "flex",
+
               flexWrap: "wrap",
-              gap: 12,
+
+              justifyContent:
+                "flex-end",
+
+              gap: 10,
+
+              maxWidth: 520,
             }}
           >
             {tags.map((tag) => (
-              <div
+              <TagPill
                 key={tag.slug}
-                style={{
-                  fontSize: 14,
-                  fontWeight: 600,
-                  color: isDark
-                    ? "#cfcfcf"
-                    : "#333",
-                  opacity: 0.9,
-                }}
               >
                 #{tag.name}
-              </div>
+              </TagPill>
             ))}
           </div>
         </div>
