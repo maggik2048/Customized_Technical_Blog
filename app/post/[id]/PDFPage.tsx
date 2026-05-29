@@ -127,11 +127,57 @@ export default function PDFPage({
       [isDark]
     );
 
+  /**
+   * =========================
+   * IMAGE RIGHT MARGIN FIX ONLY
+   * =========================
+   *
+   * 기존 markdown 기능 절대 안건드림
+   * 이미지 overflow만 수정
+   */
+
   const mdComponents =
-    React.useMemo(
-      () => markdownComponents,
-      []
-    );
+    React.useMemo(() => {
+      return {
+        ...markdownComponents,
+
+        img: ({
+          style,
+          ...props
+        }: any) => (
+          <img
+            {...props}
+            style={{
+              /**
+               * 핵심:
+               * 부모 width 넘지 못하게
+               */
+
+              maxWidth:
+                "calc(100% - 24px)",
+
+              /**
+               * 기존 비율 유지
+               */
+
+              height: "auto",
+
+              /**
+               * 오른쪽 숨쉴공간
+               */
+
+              marginRight: 24,
+
+              /**
+               * 기존 스타일 유지
+               */
+
+              ...style,
+            }}
+          />
+        ),
+      };
+    }, []);
 
   const CodeBlock =
     React.useMemo(
