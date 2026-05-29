@@ -25,7 +25,7 @@ function TagPill({
       style={{
         padding: "6px 12px",
 
-        borderRadius: 999,
+        borderRadius: 10,
 
         background:
           "rgba(0,0,0,0.42)",
@@ -108,8 +108,9 @@ export default function MetadataStyleRenderer({
 
                     lineHeight: 1.05,
 
-                    color:
-                      "rgba(255,255,255,0.72)",
+                    color: isDark
+                      ? "rgba(255,255,255,0.82)"
+                      : "rgba(81, 81, 81, 0.72)",
 
                     letterSpacing:
                       -0.4,
