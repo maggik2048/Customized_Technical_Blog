@@ -436,7 +436,7 @@ function CategoryPostItem({
               {/* THUMB */}
               <div
                 style={{
-                  width: 92,
+                  width: 192,
                   height: 92,
 
                   flexShrink: 0,
