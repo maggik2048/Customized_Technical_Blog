@@ -26,9 +26,10 @@ import ScrollWithKeyboardArrow from "./ScrollWithKeyboardArrow";
 import { useParsedPDFContent } from "./useParsedPDFContent";
 
 /* =========================
-    HIGHLIGHT ENGINE
+    HIGHLIGHT ENGINE (SVG MODE)
 ========================= */
 import { TextSelectionEngine } from "@/app/components/Markdown/Theme/TextSelectionEngine";
+import HighlightLayer from "@/app/components/Markdown/Theme/HighlightLayer";
 
 type Props = {
   data: any;
@@ -56,17 +57,6 @@ export default function PDFPage({
   const textColor = isDark ? "#eee" : "#111";
 
   const HEADER_HEIGHT = 560;
-
-  console.log("[PDF PAGE RECEIVED]", {
-    title: data?.title,
-    globalIndex,
-    localIndex,
-    localTotal,
-    category: data?.category,
-    category_slugs: data?.category_slugs,
-    project_slugs: data?.project_slugs,
-    tag_slugs: data?.tag_slugs,
-  });
 
   const pageStyle = React.useMemo(
     () => ({
@@ -131,11 +121,13 @@ export default function PDFPage({
 
   /**
    * =========================
-   * HIGHLIGHT ENGINE (FIXED)
+   * HIGHLIGHT STATE (SVG SYSTEM)
    * =========================
    */
+  const [highlights, setHighlights] = React.useState<any[]>([]);
+
   const highlightEngine = React.useMemo(
-    () => new TextSelectionEngine(),
+    () => new TextSelectionEngine({ onChange: setHighlights }),
     []
   );
 
@@ -143,7 +135,7 @@ export default function PDFPage({
 
   React.useEffect(() => {
     highlightEngine.setContainer(contentRef.current);
-  }, [highlightEngine]);
+  }, []);
 
   /**
    * =========================
@@ -154,7 +146,7 @@ export default function PDFPage({
     requestAnimationFrame(() => {
       highlightEngine.applyHighlight();
     });
-  }, [highlightEngine]);
+  }, []);
 
   return (
     <motion.div style={{ color: textColor }}>
@@ -186,21 +178,26 @@ export default function PDFPage({
               }}
             />
 
-            {/* MARKDOWN AREA */}
+            {/* 🔥 IMPORTANT: relative container */}
             <div
               ref={contentRef}
-              style={{ marginTop: -2 }}
+              style={{
+                marginTop: -2,
+                position: "relative",
+              }}
               onMouseUp={handleMouseUp}
             >
+              {/* SVG OVERLAY LAYER */}
+              <HighlightLayer
+                highlights={highlights}
+                containerRef={contentRef}
+              />
+
               <NotepageLines>
                 {parsedParts.map((item) => {
                   if (item.kind === "viz") {
                     const Component = item.Component;
-                    return (
-                      <div key={item.key}>
-                        <Component />
-                      </div>
-                    );
+                    return <Component key={item.key} />;
                   }
 
                   if (item.kind === "diff") {
