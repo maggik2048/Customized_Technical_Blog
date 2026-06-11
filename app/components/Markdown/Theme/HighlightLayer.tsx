@@ -74,8 +74,12 @@ export default function HighlightLayer({
            * document 기준 좌표로 통일
            * =========================
            */
-          const x = r.left + scroll.x;
-          const y = r.top + scroll.y;
+
+          const OFFSET_X = -340;
+          const OFFSET_Y = -142;
+
+          const x = r.left + scroll.x + OFFSET_X;
+          const y = r.top + scroll.y + OFFSET_Y;
 
           const w = r.width;
           const hgt = r.height;
