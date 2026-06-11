@@ -26,21 +26,16 @@ import ScrollWithKeyboardArrow from "./ScrollWithKeyboardArrow";
 import { useParsedPDFContent } from "./useParsedPDFContent";
 
 /* =========================
-    ADDED ONLY (HIGHLIGHT ENGINE)
+    HIGHLIGHT ENGINE
 ========================= */
 import { TextSelectionEngine } from "@/app/components/Markdown/Theme/TextSelectionEngine";
 
 type Props = {
   data: any;
-
   isActive?: boolean;
-
   isStandalone?: boolean;
-
   globalIndex?: number;
-
   localIndex?: number;
-
   localTotal?: number;
 };
 
@@ -49,340 +44,192 @@ const MemoMarkdownRendererCoordinator =
 
 export default function PDFPage({
   data,
-
   isActive = true,
-
   globalIndex,
-
   localIndex,
-
   localTotal,
 }: Props) {
   const { mode } = useDarkMode();
-
   const isDark = mode === "dark";
 
-  const headerImage =
-    getHeaderImage(data);
-
-  const textColor = isDark
-    ? "#eee"
-    : "#111";
+  const headerImage = getHeaderImage(data);
+  const textColor = isDark ? "#eee" : "#111";
 
   const HEADER_HEIGHT = 560;
 
-  /*
-    debug
-  */
+  console.log("[PDF PAGE RECEIVED]", {
+    title: data?.title,
+    globalIndex,
+    localIndex,
+    localTotal,
+    category: data?.category,
+    category_slugs: data?.category_slugs,
+    project_slugs: data?.project_slugs,
+    tag_slugs: data?.tag_slugs,
+  });
 
-  console.log(
-    "[PDF PAGE RECEIVED]",
-    {
-      title: data?.title,
-
-      globalIndex,
-
-      localIndex,
-
-      localTotal,
-
-      category:
-        data?.category,
-
-      category_slugs:
-        data?.category_slugs,
-
-      project_slugs:
-        data?.project_slugs,
-
-      tag_slugs:
-        data?.tag_slugs,
-    }
+  const pageStyle = React.useMemo(
+    () => ({
+      width: 860,
+      margin: "40px auto",
+      position: "relative" as const,
+      background: isDark
+        ? "rgba(60,60,60,0.6)"
+        : "rgba(255,255,255,0.72)",
+      paddingLeft: 64,
+      paddingRight: 64,
+      borderRadius: 12,
+      overflow: "hidden" as const,
+      boxShadow: isDark
+        ? "0 8px 30px rgba(0,0,0,0.6)"
+        : "0 8px 30px rgba(0,0,0,0.15)",
+    }),
+    [isDark]
   );
-
-  const pageStyle =
-    React.useMemo(
-      () => ({
-        width: 860,
-
-        margin: "40px auto",
-
-        position:
-          "relative" as const,
-
-        background: isDark
-          ? "rgba(60,60,60,0.6)"
-          : "rgba(255,255,255,0.72)",
-
-        paddingLeft: 64,
-
-        paddingRight: 64,
-
-        borderRadius: 12,
-
-        overflow:
-          "hidden" as const,
-
-        boxShadow: isDark
-          ? "0 8px 30px rgba(0,0,0,0.6)"
-          : "0 8px 30px rgba(0,0,0,0.15)",
-      }),
-      [isDark]
-    );
 
   /**
    * =========================
-   * IMAGE RIGHT MARGIN FIX ONLY
+   * MARKDOWN COMPONENTS
    * =========================
    */
-
-  const mdComponents =
-    React.useMemo(() => {
-      return {
-        ...markdownComponents,
-
-        img: ({
-          style,
-          ...props
-        }: any) => (
-          <img
-            {...props}
-            style={{
-              maxWidth:
-                "calc(100% - 24px)",
-
-              height: "auto",
-
-              marginRight: 24,
-
-              ...style,
-            }}
-          />
-        ),
-      };
-    }, []);
-
-  const CodeBlock =
-    React.useMemo(
-      () =>
-        CodeBlockThemeCoordinator,
-      []
-    );
-
-  const getVizComponent =
-    React.useCallback(
-      (key: string) =>
-        visualizationRegistry[key],
-      []
-    );
-
-  // =========================
-  // PARSED CONTENT
-  // =========================
-
-  const parsedParts =
-    useParsedPDFContent(
-      data.content,
-      getVizComponent
-    );
-
-  /* =========================
-     🔥 HIGHLIGHT ENGINE (ADDED ONLY)
-  ========================= */
-  const highlightEngine =
-    React.useMemo(
-      () => new TextSelectionEngine(),
-      []
-    );
-
-  const contentRef =
-    React.useRef<HTMLDivElement>(null);
-
-  React.useEffect(() => {
-    highlightEngine.setContainer(
-      contentRef.current
-    );
+  const mdComponents = React.useMemo(() => {
+    return {
+      ...markdownComponents,
+      img: ({ style, ...props }: any) => (
+        <img
+          {...props}
+          style={{
+            maxWidth: "calc(100% - 24px)",
+            height: "auto",
+            marginRight: 24,
+            ...style,
+          }}
+        />
+      ),
+    };
   }, []);
 
-  return (
-    <motion.div
-      style={{
-        color: textColor,
-      }}
-    >
-      {/* KEYBOARD SCROLL */}
+  const CodeBlock = React.useMemo(
+    () => CodeBlockThemeCoordinator,
+    []
+  );
 
+  const getVizComponent = React.useCallback(
+    (key: string) => visualizationRegistry[key],
+    []
+  );
+
+  /**
+   * =========================
+   * PARSED CONTENT
+   * =========================
+   */
+  const parsedParts = useParsedPDFContent(
+    data.content,
+    getVizComponent
+  );
+
+  /**
+   * =========================
+   * HIGHLIGHT ENGINE (FIXED)
+   * =========================
+   */
+  const highlightEngine = React.useMemo(
+    () => new TextSelectionEngine(),
+    []
+  );
+
+  const contentRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    highlightEngine.setContainer(contentRef.current);
+  }, [highlightEngine]);
+
+  /**
+   * =========================
+   * SAFE HIGHLIGHT HANDLER
+   * =========================
+   */
+  const handleMouseUp = React.useCallback(() => {
+    requestAnimationFrame(() => {
+      highlightEngine.applyHighlight();
+    });
+  }, [highlightEngine]);
+
+  return (
+    <motion.div style={{ color: textColor }}>
       <ScrollWithKeyboardArrow />
 
       <div>
         <div style={pageStyle}>
-          {/* =========================
-              HEADER
-          ========================= */}
-
+          {/* HEADER */}
           <PDFPageHeader
             data={data}
             isDark={isDark}
-            headerImage={
-              headerImage
-            }
-            globalIndex={
-              globalIndex
-            }
-            localIndex={
-              localIndex
-            }
-            localTotal={
-              localTotal
-            }
-            headerHeight={
-              HEADER_HEIGHT
-            }
+            headerImage={headerImage}
+            globalIndex={globalIndex}
+            localIndex={localIndex}
+            localTotal={localTotal}
+            headerHeight={HEADER_HEIGHT}
           />
 
-          {/* =========================
-              CONTENT
-          ========================= */}
-
-          <div
-            style={{
-              paddingTop:
-                HEADER_HEIGHT - 36,
-            }}
-          >
-            {/* =========================
-                POSTAL METADATA ONLY
-            ========================= */}
-
-            <MetadataPostalCode
-              data={data}
-              isDark={isDark}
-            />
-
-            {/* =========================
-                CONTENT FLOAT SPACER
-            ========================= */}
+          {/* CONTENT */}
+          <div style={{ paddingTop: HEADER_HEIGHT - 36 }}>
+            <MetadataPostalCode data={data} isDark={isDark} />
 
             <div
               style={{
                 float: "left",
-
                 width: 165,
-
                 height: 110,
-
-                pointerEvents:
-                  "none",
+                pointerEvents: "none",
               }}
             />
 
-            {/* =========================
-                MARKDOWN CONTENT
-            ========================= */}
-
+            {/* MARKDOWN AREA */}
             <div
               ref={contentRef}
-              style={{
-                marginTop: -2,
-              }}
-              onMouseUp={() =>
-                highlightEngine.applyHighlight()
-              }
+              style={{ marginTop: -2 }}
+              onMouseUp={handleMouseUp}
             >
               <NotepageLines>
-                {parsedParts.map(
-                  (item) => {
-                    /**
-                     * =========================
-                     * VISUALIZATION BLOCK
-                     * =========================
-                     */
-
-                    if (
-                      item.kind ===
-                      "viz"
-                    ) {
-                      const Component =
-                        item.Component;
-
-                      return (
-                        <div
-                          key={
-                            item.key
-                          }
-                        >
-                          <Component />
-                        </div>
-                      );
-                    }
-
-                    /**
-                     * =========================
-                     * DIFF BLOCK
-                     * =========================
-                     */
-
-                    if (
-                      item.kind ===
-                      "diff"
-                    ) {
-                      return (
-                        <DiffVisualizer
-                          key={
-                            item.key
-                          }
-                          raw={
-                            item.content
-                          }
-                        />
-                      );
-                    }
-
-                    /**
-                     * =========================
-                     * MARKDOWN BLOCK
-                     * =========================
-                     */
-
+                {parsedParts.map((item) => {
+                  if (item.kind === "viz") {
+                    const Component = item.Component;
                     return (
-                      <MemoMarkdownRendererCoordinator
-                        key={
-                          item.key
-                        }
-                        category={
-                          data?.category
-                        }
-                        markdownComponents={
-                          mdComponents
-                        }
-                        isDark={
-                          isDark
-                        }
-                        CodeBlock={
-                          CodeBlock
-                        }
-                      >
-                        {item.content}
-                      </MemoMarkdownRendererCoordinator>
+                      <div key={item.key}>
+                        <Component />
+                      </div>
                     );
                   }
-                )}
+
+                  if (item.kind === "diff") {
+                    return (
+                      <DiffVisualizer
+                        key={item.key}
+                        raw={item.content}
+                      />
+                    );
+                  }
+
+                  return (
+                    <MemoMarkdownRendererCoordinator
+                      key={item.key}
+                      category={data?.category}
+                      markdownComponents={mdComponents}
+                      isDark={isDark}
+                      CodeBlock={CodeBlock}
+                    >
+                      {item.content}
+                    </MemoMarkdownRendererCoordinator>
+                  );
+                })}
               </NotepageLines>
             </div>
 
-            <div
-              style={{
-                clear: "both",
-              }}
-            />
+            <div style={{ clear: "both" }} />
 
-            {/* =========================
-                GO TO TOP
-            ========================= */}
-
-            <GotoTheTop
-              isDark={isDark}
-            />
+            <GotoTheTop isDark={isDark} />
           </div>
         </div>
       </div>
