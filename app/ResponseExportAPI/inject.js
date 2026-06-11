@@ -68,6 +68,10 @@ function htmlToMarkdown(html) {
     if (node.nodeType === Node.TEXT_NODE) {
       const text = node.textContent || "";
 
+      if (!text.trim()) {
+        return;
+      }
+
       out += text;
 
       return;
@@ -112,6 +116,13 @@ function htmlToMarkdown(html) {
        */
 
       case "P":
+        if (
+          el.parentElement?.tagName === "LI"
+        ) {
+          el.childNodes.forEach(walk);
+          return;
+        }
+
         out += "\n";
 
         el.childNodes.forEach(walk);
@@ -194,7 +205,12 @@ function htmlToMarkdown(html) {
 
       case "STRONG":
       case "B":
-        out += `**${el.textContent}**`;
+        out += "**";
+
+        el.childNodes.forEach(walk);
+
+        out += "**";
+
         return;
 
       /**
@@ -203,7 +219,12 @@ function htmlToMarkdown(html) {
 
       case "EM":
       case "I":
-        out += `*${el.textContent}*`;
+        out += "*";
+
+        el.childNodes.forEach(walk);
+
+        out += "*";
+
         return;
 
       /**
@@ -249,6 +270,19 @@ function htmlToMarkdown(html) {
        */
 
       case "LI":
+
+        console.log(
+          "LI HTML:",
+          el.outerHTML
+        );
+
+        console.log(
+          "LI CHILDREN:",
+          Array.from(el.children).map(
+            (c) => c.tagName
+          )
+        );        
+
         out += "- ";
 
         el.childNodes.forEach(walk);
