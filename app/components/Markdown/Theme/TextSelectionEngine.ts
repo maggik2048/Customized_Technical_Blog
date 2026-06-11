@@ -1,88 +1,94 @@
+export type HighlightRect = {
+  top: number;
+  left: number;
+  width: number;
+  height: number;
+};
+
+export type Highlight = {
+  id: string;
+  rects: HighlightRect[];
+};
+
 type HighlightOptions = {
-  className?: string;
-  container?: HTMLElement | null;
+  onChange?: (highlights: Highlight[]) => void;
 };
 
 export class TextSelectionEngine {
-  private container: HTMLElement | null;
-  private className: string;
+  private container: HTMLElement | null = null;
+  private highlights: Highlight[] = [];
+  private onChange?: (h: Highlight[]) => void;
 
   constructor(options?: HighlightOptions) {
-    this.container = options?.container ?? null;
-    this.className = options?.className ?? "brush-highlight";
+    this.onChange = options?.onChange;
   }
 
   setContainer(el: HTMLElement | null) {
     this.container = el;
   }
 
+  /**
+   * =========================
+   * 핵심: DOM 수정 없음
+   * selection → rect 변환만 수행
+   * =========================
+   */
   applyHighlight() {
     const selection = window.getSelection();
 
     if (!selection || selection.isCollapsed) return;
+    if (!this.container) return;
     if (selection.rangeCount === 0) return;
 
     const range = selection.getRangeAt(0);
 
-    // 1) container 밖 차단
-    if (
-      this.container &&
-      !this.container.contains(range.commonAncestorContainer)
-    ) {
-      return;
-    }
+    // 1. container 밖 차단
+    if (!this.container.contains(range.commonAncestorContainer)) return;
 
     const text = selection.toString();
-    if (!text || text.length < 2) return;
+    if (!text || text.trim().length < 2) return;
 
-    // 2) cross-node selection 차단 (핵심 안정화)
-    if (range.startContainer !== range.endContainer) return;
+    // 2. rect 기반 추출 (핵심)
+    const rects = Array.from(range.getClientRects())
+      .filter((r) => r.width > 0 && r.height > 0)
+      .map((r) => ({
+        top: r.top,
+        left: r.left,
+        width: r.width,
+        height: r.height,
+      }));
 
-    // 3) 이미 highlight 내부면 방지
-    const ancestor =
-      range.commonAncestorContainer.nodeType === 3
-        ? range.commonAncestorContainer.parentElement
-        : (range.commonAncestorContainer as HTMLElement);
+    if (rects.length === 0) return;
 
-    if (ancestor?.closest?.(`.${this.className}`)) return;
+    // 3. highlight 생성
+    const newHighlight: Highlight = {
+      id: crypto.randomUUID(),
+      rects,
+    };
 
-    try {
-      // 🔥 핵심 변경: extractContents 제거
-      range.deleteContents();
+    this.highlights.push(newHighlight);
 
-      const span = document.createElement("span");
-      span.className = this.className;
-      span.textContent = text;
+    this.onChange?.([...this.highlights]);
 
-      range.insertNode(span);
-
-      // selection reset
-      selection.removeAllRanges();
-    } catch (e) {
-      console.warn("[TextSelectionEngine] highlight failed:", e);
-    }
+    selection.removeAllRanges();
   }
 
-  bindAutoHighlight() {
-    setTimeout(() => {
-      this.applyHighlight();
-    }, 0);
-  }
-
+  /**
+   * =========================
+   * 전체 삭제
+   * =========================
+   */
   clearAllHighlights() {
-    if (!this.container) return;
+    this.highlights = [];
+    this.onChange?.([]);
+  }
 
-    const highlights = this.container.querySelectorAll(`.${this.className}`);
-
-    highlights.forEach((el) => {
-      const parent = el.parentNode;
-      if (!parent) return;
-
-      while (el.firstChild) {
-        parent.insertBefore(el.firstChild, el);
-      }
-
-      parent.removeChild(el);
-    });
+  /**
+   * =========================
+   * getter (optional)
+   * =========================
+   */
+  getHighlights() {
+    return this.highlights;
   }
 }

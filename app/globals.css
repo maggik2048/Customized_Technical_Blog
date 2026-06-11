@@ -314,13 +314,16 @@ code {
 .brush-highlight {
   background: linear-gradient(
     120deg,
-    rgba(255, 240, 120, 0.35),
-    rgba(255, 210, 80, 0.55)
+    rgba(255, 235, 59, 0.35),
+    rgba(255, 193, 7, 0.55)
   );
 
-  border-radius: 3px;
-
   padding: 0 2px;
+  border-radius: 6px;
+
+  /* 핵심 */
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 
   position: relative;
 }
@@ -328,17 +331,15 @@ code {
 /* 브러시 질감 레이어 (가짜 잉크 느낌) */
 .brush-highlight::after {
   content: "";
-
   position: absolute;
-  inset: 0;
+  left: 0;
+  right: 0;
+  top: 2px;
+  bottom: 2px;
 
-  background: url("/brush-texture.png");
-  background-size: cover;
-  background-repeat: repeat-x;
+  background: rgba(255, 235, 59, 0.15);
 
-  opacity: 0.18;
-
-  mix-blend-mode: multiply;
-
+  transform: rotate(-0.3deg);
+  filter: blur(0.3px);
   pointer-events: none;
 }
