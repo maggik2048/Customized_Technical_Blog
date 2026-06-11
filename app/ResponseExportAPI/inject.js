@@ -399,6 +399,14 @@ function htmlToMarkdown(html) {
        */
 
       case "CODE":
+
+        console.log(
+          "CODE PARENT:",
+          el.parentElement?.tagName
+        );    
+        
+        
+
         out += `\`${el.textContent}\``;
         return;
 

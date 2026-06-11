@@ -551,6 +551,15 @@ function createMarkdownComponents(
 
       children,
     }: any) {
+
+      console.log(
+        "CODE PROPS:",
+        {
+          inline,
+          className,
+          children,
+        }
+      );      
       const text = Array.isArray(
         children
       )
@@ -561,14 +570,15 @@ function createMarkdownComponents(
        * inline code
        */
 
-      if (inline) {
+      const isInline =
+        inline || !text.includes("\n");
+
+      if (isInline) {
         return (
           <EditableCode
             text={text}
             inline
-            onBlur={
-              syncPreviewToMarkdown
-            }
+            onBlur={syncPreviewToMarkdown}
           />
         );
       }
