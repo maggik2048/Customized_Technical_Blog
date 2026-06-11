@@ -23,22 +23,22 @@ export default function HighlightLayer({
   highlights,
   containerRef,
 }: Props) {
-  const [containerRect, setContainerRect] =
-    React.useState<DOMRect | null>(null);
+  const [scroll, setScroll] = React.useState({
+    x: 0,
+    y: 0,
+  });
 
   /**
    * =========================
-   * container rect tracking
-   * (scroll / resize 대응)
+   * scroll tracking (핵심)
    * =========================
    */
   React.useEffect(() => {
-    if (!containerRef.current) return;
-
     const update = () => {
-      setContainerRect(
-        containerRef.current!.getBoundingClientRect()
-      );
+      setScroll({
+        x: window.scrollX,
+        y: window.scrollY,
+      });
     };
 
     update();
@@ -50,9 +50,9 @@ export default function HighlightLayer({
       window.removeEventListener("scroll", update, true);
       window.removeEventListener("resize", update);
     };
-  }, [containerRef]);
+  }, []);
 
-  if (!containerRect) return null;
+  if (!containerRef.current) return null;
 
   return (
     <svg
@@ -68,16 +68,21 @@ export default function HighlightLayer({
     >
       {highlights.flatMap((h) =>
         h.rects.map((r, i) => {
-          const x = r.left - containerRect.left;
-          const y = r.top - containerRect.top;
+          /**
+           * =========================
+           * 핵심 FIX:
+           * document 기준 좌표로 통일
+           * =========================
+           */
+          const x = r.left + scroll.x;
+          const y = r.top + scroll.y;
 
           const w = r.width;
           const hgt = r.height;
 
           /**
            * =========================
-           * brush-like ink shape
-           * (살짝 휘어진 형광펜)
+           * brush-style highlight path
            * =========================
            */
           const path = `
