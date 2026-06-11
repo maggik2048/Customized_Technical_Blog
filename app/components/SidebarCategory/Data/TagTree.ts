@@ -214,4 +214,10 @@ export const TAG_TREE: TagItem[] = [
     slug: "ide",
     group: "devtools",
   },
+
+  {
+    name: "Content Design",
+    slug: "contentdesign",
+    group: "idea",
+  },
 ];

@@ -48,6 +48,7 @@ export const CATEGORY_TREE: Omit<Item, "href" | "count">[] = [
     slug: "cs_revisited",
     children: [
       { name: "Network", slug: "network" },
+      { name: "Distributed System", slug: "distributed" },
       { name: "Artificial intelligence", slug: "ai" },
       { name: "SQL&Database", slug: "sqldb" },
       { name: "Compiler & Programming Language", slug: "compiler" },
@@ -67,6 +68,7 @@ export const CATEGORY_TREE: Omit<Item, "href" | "count">[] = [
       { name: "Digital Twin & Unreal Engine Project", slug: "digitalTwin" },
       { name: "Mathematics for Games", slug: "gameMath" },
       { name: "(Git&IDE)developer-toolings", slug: "developer-tooling" },
+      { name: "GameDesign & UX & philosophy", slug: "UX" },
     ],
   },
 

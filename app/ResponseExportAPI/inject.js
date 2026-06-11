@@ -81,15 +81,30 @@ function htmlToMarkdown(html) {
        */
 
       case "H1":
-        out += `\n# ${el.textContent?.trim()}\n\n`;
+        out += "\n# ";
+
+        el.childNodes.forEach(walk);
+
+        out += "\n\n";
+
         return;
 
       case "H2":
-        out += `\n## ${el.textContent?.trim()}\n\n`;
+        out += "\n## ";
+
+        el.childNodes.forEach(walk);
+
+        out += "\n\n";
+
         return;
 
       case "H3":
-        out += `\n### ${el.textContent?.trim()}\n\n`;
+        out += "\n### ";
+
+        el.childNodes.forEach(walk);
+
+        out += "\n\n";
+
         return;
 
       /**
@@ -97,7 +112,12 @@ function htmlToMarkdown(html) {
        */
 
       case "P":
-        out += `\n${el.textContent?.trim()}\n\n`;
+        out += "\n";
+
+        el.childNodes.forEach(walk);
+
+        out += "\n\n";
+
         return;
 
       /**
@@ -163,6 +183,11 @@ function htmlToMarkdown(html) {
         out += "\n";
         return;
 
+
+      case "HR":
+        out += "\n---\n\n";
+        return;  
+
       /**
        * STRONG
        */
@@ -188,7 +213,11 @@ function htmlToMarkdown(html) {
       case "UL":
         Array.from(el.children).forEach(
           (li) => {
-            out += `- ${li.textContent?.trim()}\n`;
+            out += "- ";
+
+            li.childNodes.forEach(walk);
+
+            out += "\n";
           }
         );
 
@@ -203,7 +232,11 @@ function htmlToMarkdown(html) {
       case "OL":
         Array.from(el.children).forEach(
           (li, idx) => {
-            out += `${idx + 1}. ${li.textContent?.trim()}\n`;
+            out += `${idx + 1}. `;
+
+            li.childNodes.forEach(walk);
+
+            out += "\n";
           }
         );
 
@@ -216,7 +249,12 @@ function htmlToMarkdown(html) {
        */
 
       case "LI":
-        out += `- ${el.textContent?.trim()}\n`;
+        out += "- ";
+
+        el.childNodes.forEach(walk);
+
+        out += "\n";
+
         return;
 
       /**
