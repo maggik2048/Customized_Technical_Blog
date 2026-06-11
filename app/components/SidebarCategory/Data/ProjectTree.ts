@@ -59,6 +59,24 @@ export const PROJECT_TREE: ProjectItem[] = [
       "Learning experience system with gamification mechanics and progress tracking.",
   },
 
+      {
+    name: "DOM-range-highlighter",
+    slug: "highlighter",
+
+    categories: ["frontend", "systems"],
+
+    tags: [
+      "color",
+      "highlight",
+      "DOM",
+      "note",
+    ],
+
+    description:
+      "realistic, natural highlighter pen implementation -upscend from CSS styling.",
+  },
+
+
   {
     name: "AI API Exporter",
     slug: "ai_api_exporter",
