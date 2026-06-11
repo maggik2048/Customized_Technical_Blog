@@ -25,6 +25,11 @@ import ScrollWithKeyboardArrow from "./ScrollWithKeyboardArrow";
 
 import { useParsedPDFContent } from "./useParsedPDFContent";
 
+/* =========================
+    ADDED ONLY (HIGHLIGHT ENGINE)
+========================= */
+import { TextSelectionEngine } from "@/app/components/Markdown/Theme/TextSelectionEngine";
+
 type Props = {
   data: any;
 
@@ -40,9 +45,7 @@ type Props = {
 };
 
 const MemoMarkdownRendererCoordinator =
-  React.memo(
-    MarkdownRendererCoordinator
-  );
+  React.memo(MarkdownRendererCoordinator);
 
 export default function PDFPage({
   data,
@@ -131,9 +134,6 @@ export default function PDFPage({
    * =========================
    * IMAGE RIGHT MARGIN FIX ONLY
    * =========================
-   *
-   * 기존 markdown 기능 절대 안건드림
-   * 이미지 overflow만 수정
    */
 
   const mdComponents =
@@ -148,29 +148,12 @@ export default function PDFPage({
           <img
             {...props}
             style={{
-              /**
-               * 핵심:
-               * 부모 width 넘지 못하게
-               */
-
               maxWidth:
                 "calc(100% - 24px)",
 
-              /**
-               * 기존 비율 유지
-               */
-
               height: "auto",
 
-              /**
-               * 오른쪽 숨쉴공간
-               */
-
               marginRight: 24,
-
-              /**
-               * 기존 스타일 유지
-               */
 
               ...style,
             }}
@@ -202,6 +185,24 @@ export default function PDFPage({
       data.content,
       getVizComponent
     );
+
+  /* =========================
+     🔥 HIGHLIGHT ENGINE (ADDED ONLY)
+  ========================= */
+  const highlightEngine =
+    React.useMemo(
+      () => new TextSelectionEngine(),
+      []
+    );
+
+  const contentRef =
+    React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    highlightEngine.setContainer(
+      contentRef.current
+    );
+  }, []);
 
   return (
     <motion.div
@@ -280,9 +281,13 @@ export default function PDFPage({
             ========================= */}
 
             <div
+              ref={contentRef}
               style={{
                 marginTop: -2,
               }}
+              onMouseUp={() =>
+                highlightEngine.applyHighlight()
+              }
             >
               <NotepageLines>
                 {parsedParts.map(
@@ -357,9 +362,7 @@ export default function PDFPage({
                           CodeBlock
                         }
                       >
-                        {
-                          item.content
-                        }
+                        {item.content}
                       </MemoMarkdownRendererCoordinator>
                     );
                   }

@@ -303,3 +303,42 @@ code {
 /* =========================
    SIDEBAR END
 ========================= */
+
+
+
+
+ /* =========================
+   TEXT HIGHLIGHT (BRUSH STYLE)
+========================= */
+
+.brush-highlight {
+  background: linear-gradient(
+    120deg,
+    rgba(255, 240, 120, 0.35),
+    rgba(255, 210, 80, 0.55)
+  );
+
+  border-radius: 3px;
+
+  padding: 0 2px;
+
+  position: relative;
+}
+
+/* 브러시 질감 레이어 (가짜 잉크 느낌) */
+.brush-highlight::after {
+  content: "";
+
+  position: absolute;
+  inset: 0;
+
+  background: url("/brush-texture.png");
+  background-size: cover;
+  background-repeat: repeat-x;
+
+  opacity: 0.18;
+
+  mix-blend-mode: multiply;
+
+  pointer-events: none;
+}
