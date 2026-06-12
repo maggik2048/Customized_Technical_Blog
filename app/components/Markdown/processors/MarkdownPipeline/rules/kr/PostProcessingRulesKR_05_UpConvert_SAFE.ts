@@ -1,16 +1,26 @@
-import { Rule } from "../Rule";
-
 export class KR05SafeProcessor {
+  //  절대 건드리지 말아야 하는 표면형 동사
+  private static readonly KEEP_SURFACE_FORMS = new Set([
+    "보인다",
+    "판단된다",
+    "여겨진다",
+    "간주된다",
+    "해석된다",
+    "존재한다",
+    "발생한다"
+  ]);
+
   static apply(text: string): string {
     if (!text) return "";
 
     let out = text;
 
     // =========================
-    // 1. fixed suffix replacements (SAFE)
+    // 1. honorific suffix → plain form (SAFE)
     // =========================
     out = this.replaceSuffix(out, "합니다", "한다");
     out = this.replaceSuffix(out, "됩니다", "된다");
+    out = this.replaceSuffix(out, "입니다", "이다");
     out = this.replaceSuffix(out, "있습니다", "있다");
     out = this.replaceSuffix(out, "없습니다", "없다");
 
@@ -28,19 +38,7 @@ export class KR05SafeProcessor {
     out = this.replaceSuffix(out, "권장합니다", "권장한다");
 
     // =========================
-    // 2. "-입니다" safe word boundary
-    // =========================
-    out = this.replaceIsSuffix(out, "것입니다", "것이다");
-    out = this.replaceIsSuffix(out, "내용입니다", "내용이다");
-    out = this.replaceIsSuffix(out, "결과입니다", "결과이다");
-    out = this.replaceIsSuffix(out, "구조입니다", "구조이다");
-    out = this.replaceIsSuffix(out, "설계입니다", "설계이다");
-
-    // generic -입니다 (safe boundary scan)
-    out = this.replaceGenericIs(out);
-
-    // =========================
-    // 3. 진행형 (safe phrase scan)
+    // 2. special phrases
     // =========================
     out = this.replacePhrase(out, "하는 것입니다", "하는 것이다");
     out = this.replacePhrase(out, "되는 것입니다", "되는 것이다");
@@ -48,7 +46,7 @@ export class KR05SafeProcessor {
     out = this.replaceSuffix(out, "상태입니다", "상태이다");
 
     // =========================
-    // 4. 하시는 → 하는
+    // 3. 하시는 → 하는
     // =========================
     out = this.replacePhrase(out, "하시는", "하는");
     out = this.replacePhrase(out, "보시는", "보는");
@@ -59,7 +57,7 @@ export class KR05SafeProcessor {
   }
 
   // =========================
-  // SAFE HELPERS (NO REGEX BACKTRACK)
+  // SAFE CORE HELPERS
   // =========================
 
   private static replaceSuffix(text: string, target: string, replace: string): string {
@@ -72,53 +70,14 @@ export class KR05SafeProcessor {
     return text.split(target).join(replace);
   }
 
-  private static replaceIsSuffix(text: string, target: string, replace: string): string {
-    let result = "";
-    let i = 0;
-
-    while (i < text.length) {
-      if (text.startsWith(target, i)) {
-        result += replace;
-        i += target.length;
-      } else {
-        result += text[i];
-        i++;
-      }
+  // =========================
+  // OPTIONAL: 보호 레이어 (외부에서 호출 가능)
+  // =========================
+  static protectSurfaceForms(text: string): string {
+    for (const form of this.KEEP_SURFACE_FORMS) {
+      // 이미 올바른 형태 유지 (no-op placeholder)
+      text = text.replace(new RegExp(form, "g"), form);
     }
-
-    return result;
-  }
-
-  private static replaceGenericIs(text: string): string {
-    // ONLY safe boundary "-입니다"
-    let result = "";
-    let i = 0;
-
-    const suffix = "입니다";
-
-    while (i < text.length) {
-      if (text.startsWith(suffix, i)) {
-        // ensure word boundary safety
-        const prev = text[i - 1];
-        const next = text[i + suffix.length];
-
-        const isSafe =
-          !prev || /\s|[.,!?]/.test(prev) ||
-          !next || /\s|[.,!?]/.test(next);
-
-        if (isSafe) {
-          result += "이다";
-          i += suffix.length;
-        } else {
-          result += suffix;
-          i += suffix.length;
-        }
-      } else {
-        result += text[i];
-        i++;
-      }
-    }
-
-    return result;
+    return text;
   }
 }
