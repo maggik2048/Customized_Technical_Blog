@@ -203,6 +203,12 @@ export const TAG_TREE: TagItem[] = [
     group: "overview",
   },
 
+     {
+    name: "CommitMessage",
+    slug: "commit",
+    group: "commit",
+  },
+
   {
     name: "Optimization",
     slug: "optimization",
