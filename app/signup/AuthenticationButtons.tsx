@@ -56,10 +56,10 @@ export default function AuthenticationButtons() {
       "translateY(-2px)";
 
     e.currentTarget.style.border =
-      "1px solid rgba(255,215,0,0.95)";
+      "1px solid rgba(255, 249, 216, 0.95)";
 
     e.currentTarget.style.boxShadow = `
-      inset 0 4px 0 rgba(255,215,0,1),
+      inset 0 4px 0 rgb(255, 246, 195),
       inset 0 22px 32px rgba(0,0,0,0.13),
       inset 0 -1px 0 rgba(255,215,0,0.35)
     `;
@@ -75,7 +75,7 @@ export default function AuthenticationButtons() {
       "1px solid rgba(184,134,11,0.65)";
 
     e.currentTarget.style.boxShadow = `
-      inset 0 3px 0 rgba(255,215,0,0.95),
+      inset 0 3px 0 rgba(255, 247, 204, 0.95),
       inset 0 18px 28px rgba(0,0,0,0.10),
       inset 0 -1px 0 rgba(184,134,11,0.25)
     `;
