@@ -43,8 +43,20 @@ export default function HomePage() {
 
         <SocialIcons />
 
-        {/* GRAPHICS PROJECT BUTTONS */}
+        {/* PROJECT LAUNCHER */}
         <ProjectBoxRenderer />
+
+        {/* WRITE POST BUTTON */}
+        <div
+          style={{
+            position: "absolute",
+            top: 24,
+            right: 24,
+            zIndex: 10000,
+          }}
+        >
+          <WritePostButton />
+        </div>
 
         <div
           style={{
@@ -62,7 +74,7 @@ export default function HomePage() {
           </h1>
         </div>
 
-        {/* AUTH BUTTONS BELOW TITLE */}
+        {/* AUTH BUTTONS */}
         <div
           style={{
             width: "100%",
@@ -84,14 +96,13 @@ export default function HomePage() {
             gap: "2rem",
           }}
         >
+          {/* LEFT COLUMN */}
           <div style={{ flex: 2 }}>
             {selected && (
               <>
                 <button
                   onClick={() =>
-                    setSelectedCategory(
-                      null
-                    )
+                    setSelectedCategory(null)
                   }
                   style={{
                     marginBottom: 16,
@@ -121,36 +132,31 @@ export default function HomePage() {
                 </div>
               </>
             )}
-
-            {!selected && (
-              <div
-                style={{
-                  marginTop: 16,
-                }}
-              >
-                <ClickableImageBox
-                  imageSrc="/images/exploreCateg2.png"
-                  width={540}
-                  onClick={() =>
-                    router.push(
-                      "/category/graphics_pipeline"
-                    )
-                  }
-                />
-              </div>
-            )}
-
-            <div
-              style={{
-                marginTop: 32,
-                textAlign: "center",
-              }}
-            >
-              <WritePostButton />
-            </div>
           </div>
 
-          <div style={{ flex: 1 }}>
+          {/* RIGHT COLUMN */}
+          <div
+            style={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              gap: "28px",
+            }}
+          >
+            {/* EXPLORE CATEGORIES */}
+            {!selected && (
+              <ClickableImageBox
+                imageSrc="/images/exploreCateg2.png"
+                width={420}
+                onClick={() =>
+                  router.push(
+                    "/category/graphics_pipeline"
+                  )
+                }
+              />
+            )}
+
+            {/* RECENT POSTS */}
             <LatestPosts />
           </div>
         </div>
