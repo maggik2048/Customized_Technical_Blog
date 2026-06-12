@@ -294,4 +294,26 @@ export const PROJECT_TREE: ProjectItem[] = [
     description:
       "sophistication of categorypostbox rendering.유지보수,고도화",
   },
+
+
+    {
+    name: "Jpg to AVIF Optimization pipeline ",
+    slug: "jpgtoavif",
+
+    categories: ["optimization", "database"],
+
+    tags: [
+      "avif",
+      "imagethumbnail",
+      "fetch",
+      "rendering",
+      "post",
+      "jpg",
+      "image",
+      "upload",
+    ],
+
+    description:
+      "Jpg to AVIF Optimization pipeline => database usage optimization",
+  },
 ];
