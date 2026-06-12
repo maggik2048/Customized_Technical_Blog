@@ -20,7 +20,7 @@ export const PostProcessingRulesKR_04_Pronouns: readonly Rule[] = [
 
   {
     pattern:
-      /(^|\s)(?:니가|네가|너의|너는|너에게|너한테|너를|너|네|니)(?=\s|$)/gu,
+      /(^|\s)(?:너가|니가|네가|너의|너는|너에게|너한테|너를|너|네|니)(?=\s|$)/gu,
     replacement: "$1"
   },
 
