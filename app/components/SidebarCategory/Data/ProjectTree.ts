@@ -316,4 +316,22 @@ export const PROJECT_TREE: ProjectItem[] = [
     description:
       "Jpg to AVIF Optimization pipeline => database usage optimization",
   },
+
+      {
+    name: "MainHomepage Visual Development ",
+    slug: "homepagevisdev",
+
+    categories: ["frontend", "graphics"],
+
+    tags: [
+      "rendering",
+      "aesthetic",
+      "entrance",
+      "background",
+      "web",
+    ],
+
+    description:
+      "MainHomepage Visual Development",
+  },
 ];
