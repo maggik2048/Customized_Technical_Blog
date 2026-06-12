@@ -42,8 +42,6 @@ export default function HomePage() {
 
         <SocialIcons />
 
-        <AuthenticationButtons />
-
         {/* Pencil Effect Button */}
         <button
           onClick={() => {
@@ -141,11 +139,24 @@ export default function HomePage() {
           </h1>
         </div>
 
+        {/* AUTH BUTTONS BELOW TITLE */}
+        <div
+          style={{
+            width: "100%",
+            display: "flex",
+            justifyContent: "center",
+            marginTop: "80px",
+            marginBottom: "20px",
+          }}
+        >
+          <AuthenticationButtons />
+        </div>
+
         <div
           style={{
             display: "flex",
             maxWidth: "1024px",
-            margin: "300px auto 0 auto",
+            margin: "100px auto 0 auto",
             padding: "0 1rem",
             gap: "2rem",
           }}

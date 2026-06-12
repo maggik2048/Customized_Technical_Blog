@@ -6,9 +6,9 @@ export default function AuthenticationButtons() {
   const router = useRouter();
 
   const baseButtonStyle: React.CSSProperties = {
-    minWidth: "220px",
+    minWidth: "240px",
 
-    padding: "18px 34px",
+    padding: "20px 36px",
 
     borderRadius: "18px",
 
@@ -27,135 +27,100 @@ export default function AuthenticationButtons() {
 
     transition: "all 0.28s ease",
 
-    backdropFilter: "blur(10px)",
-
     boxSizing: "border-box",
+
+    color: "#ffffff",
+
+    background:
+      "rgba(165,170,185,0.08)",
+
+    backdropFilter:
+      "invert(1) brightness(0.90)",
+
+    WebkitBackdropFilter:
+      "invert(1) brightness(0.90)",
+
+    border:
+      "1px solid rgba(255,255,255,0.16)",
+
+    boxShadow: `
+      0 14px 40px rgba(0,0,0,0.18),
+      inset 0 1px 0 rgba(255,255,255,0.10)
+    `,
+
+    textShadow:
+      "0 2px 4px rgba(0,0,0,0.70)",
+  };
+
+  const handleMouseEnter = (
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    e.currentTarget.style.transform =
+      "translateY(-4px) scale(1.02)";
+
+    e.currentTarget.style.backdropFilter =
+      "invert(1) brightness(0.98)";
+
+    (e.currentTarget.style as any)
+      .webkitBackdropFilter =
+      "invert(1) brightness(0.98)";
+
+    e.currentTarget.style.boxShadow =
+      "0 24px 60px rgba(0,0,0,0.24)";
+  };
+
+  const handleMouseLeave = (
+    e: React.MouseEvent<HTMLButtonElement>
+  ) => {
+    e.currentTarget.style.transform =
+      "translateY(0px) scale(1)";
+
+    e.currentTarget.style.backdropFilter =
+      "invert(1) brightness(0.90)";
+
+    (e.currentTarget.style as any)
+      .webkitBackdropFilter =
+      "invert(1) brightness(0.90)";
+
+    e.currentTarget.style.boxShadow =
+      "0 14px 40px rgba(0,0,0,0.18)";
   };
 
   return (
     <div
       style={{
         display: "flex",
+
+        flexDirection: "column",
+
+        alignItems: "center",
+
         gap: "18px",
-        marginTop: "22px",
-        marginLeft: "4px",
-        flexWrap: "wrap",
       }}
     >
-      {/* ENTER SITE */}
       <button
         onClick={() => router.push("/enter")}
-        style={{
-          ...baseButtonStyle,
-
-          background:
-            "linear-gradient(180deg,#0f0f10 0%,#050505 100%)",
-
-          color: "#f7f7f7",
-
-          border:
-            "1px solid rgba(255,255,255,0.18)",
-
-          boxShadow: `
-            0 20px 50px rgba(0,0,0,0.30),
-            inset 0 1px 0 rgba(255,255,255,0.12)
-          `,
-        }}
-        onMouseOver={(e) => {
-          e.currentTarget.style.transform =
-            "translateY(-4px) scale(1.015)";
-
-          e.currentTarget.style.boxShadow = `
-            0 28px 70px rgba(0,0,0,0.38),
-            inset 0 1px 0 rgba(255,255,255,0.18)
-          `;
-        }}
-        onMouseOut={(e) => {
-          e.currentTarget.style.transform =
-            "translateY(0px) scale(1)";
-
-          e.currentTarget.style.boxShadow = `
-            0 20px 50px rgba(0,0,0,0.30),
-            inset 0 1px 0 rgba(255,255,255,0.12)
-          `;
-        }}
+        style={baseButtonStyle}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
         Enter Site
       </button>
 
-      {/* ADMIN LOGIN */}
       <button
         onClick={() => router.push("/login")}
-        style={{
-          ...baseButtonStyle,
-
-          background:
-            "rgba(15,15,15,0.88)",
-
-          color: "#ffffff",
-
-          border:
-            "1px solid rgba(255,255,255,0.10)",
-
-          boxShadow: `
-            0 20px 50px rgba(0,0,0,0.25)
-          `,
-        }}
-        onMouseOver={(e) => {
-          e.currentTarget.style.transform =
-            "translateY(-4px) scale(1.015)";
-
-          e.currentTarget.style.background =
-            "rgba(5,5,5,0.95)";
-        }}
-        onMouseOut={(e) => {
-          e.currentTarget.style.transform =
-            "translateY(0px) scale(1)";
-
-          e.currentTarget.style.background =
-            "rgba(15,15,15,0.88)";
-        }}
+        style={baseButtonStyle}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
         Admin Login
       </button>
 
-      {/* ADMIN SIGN UP */}
       <button
         onClick={() => router.push("/signup")}
-        style={{
-          ...baseButtonStyle,
-
-          background:
-            "linear-gradient(180deg,#faf8f3 0%,#ece7dd 100%)",
-
-          color: "#111",
-
-          border:
-            "1px solid rgba(0,0,0,0.10)",
-
-          boxShadow: `
-            0 20px 50px rgba(0,0,0,0.12),
-            inset 0 1px 0 rgba(255,255,255,0.9)
-          `,
-        }}
-        onMouseOver={(e) => {
-          e.currentTarget.style.transform =
-            "translateY(-4px) scale(1.015)";
-
-          e.currentTarget.style.boxShadow = `
-            0 26px 60px rgba(0,0,0,0.18),
-            inset 0 1px 0 rgba(255,255,255,1)
-          `;
-        }}
-        onMouseOut={(e) => {
-          e.currentTarget.style.transform =
-            "translateY(0px) scale(1)";
-
-          e.currentTarget.style.boxShadow = `
-            0 20px 50px rgba(0,0,0,0.12),
-            inset 0 1px 0 rgba(255,255,255,0.9)
-          `;
-        }}
+        style={baseButtonStyle}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
       >
         Admin Sign Up
       </button>
