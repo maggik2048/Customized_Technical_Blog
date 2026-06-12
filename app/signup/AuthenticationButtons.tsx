@@ -6,19 +6,19 @@ export default function AuthenticationButtons() {
   const router = useRouter();
 
   const baseButtonStyle: React.CSSProperties = {
-    minWidth: "240px",
+    minWidth: "180px",
 
-    padding: "20px 36px",
+    padding: "14px 22px",
 
-    borderRadius: "18px",
+    borderRadius: "14px",
 
     cursor: "pointer",
 
-    fontSize: "15px",
+    fontSize: "13px",
 
     fontWeight: 800,
 
-    letterSpacing: "2.5px",
+    letterSpacing: "1.8px",
 
     textTransform: "uppercase",
 
@@ -61,8 +61,9 @@ export default function AuthenticationButtons() {
     e.currentTarget.style.backdropFilter =
       "invert(1) brightness(0.98)";
 
-    (e.currentTarget.style as any)
-      .webkitBackdropFilter =
+    (
+      e.currentTarget.style as any
+    ).webkitBackdropFilter =
       "invert(1) brightness(0.98)";
 
     e.currentTarget.style.boxShadow =
@@ -78,8 +79,9 @@ export default function AuthenticationButtons() {
     e.currentTarget.style.backdropFilter =
       "invert(1) brightness(0.90)";
 
-    (e.currentTarget.style as any)
-      .webkitBackdropFilter =
+    (
+      e.currentTarget.style as any
+    ).webkitBackdropFilter =
       "invert(1) brightness(0.90)";
 
     e.currentTarget.style.boxShadow =
@@ -91,11 +93,11 @@ export default function AuthenticationButtons() {
       style={{
         display: "flex",
 
-        flexDirection: "column",
+        flexDirection: "row",
 
         alignItems: "center",
 
-        gap: "18px",
+        gap: "12px",
       }}
     >
       <button

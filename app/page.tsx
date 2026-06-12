@@ -46,16 +46,23 @@ export default function HomePage() {
         {/* PROJECT LAUNCHER */}
         <ProjectBoxRenderer />
 
-        {/* WRITE POST BUTTON */}
+        {/* TOP RIGHT CONTROLS */}
         <div
           style={{
             position: "absolute",
             top: 24,
             right: 24,
             zIndex: 10000,
+
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-end",
+            gap: 16,
           }}
         >
           <WritePostButton />
+
+          <AuthenticationButtons />
         </div>
 
         <div
@@ -72,19 +79,6 @@ export default function HomePage() {
               Technical aRchive
             </span>
           </h1>
-        </div>
-
-        {/* AUTH BUTTONS */}
-        <div
-          style={{
-            width: "100%",
-            display: "flex",
-            justifyContent: "center",
-            marginTop: "100px",
-            marginBottom: "20px",
-          }}
-        >
-          <AuthenticationButtons />
         </div>
 
         <div
@@ -143,7 +137,6 @@ export default function HomePage() {
               gap: "28px",
             }}
           >
-            {/* EXPLORE CATEGORIES */}
             {!selected && (
               <ClickableImageBox
                 imageSrc="/images/exploreCateg2.png"
@@ -156,7 +149,6 @@ export default function HomePage() {
               />
             )}
 
-            {/* RECENT POSTS */}
             <LatestPosts />
           </div>
         </div>
