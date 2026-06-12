@@ -1,20 +1,17 @@
 import { supabase } from "@/lib/supabase";
-import { resizeImage } from "./resizeImage";
+import { resizeAndCompressToAvif } from "./resizeAndCompressToAvif";
 
-export async function uploadImage(
-  file: File
-) {
-  const resized = await resizeImage(
-    file,
-    1000
-  );
+export async function uploadImage(file: File) {
+  const avifBlob = await resizeAndCompressToAvif(file, 0.35);
 
-  const fileName = `${crypto.randomUUID()}.jpg`;
+  const fileName = `posts/${crypto.randomUUID()}.avif`;
 
   const { error } = await supabase.storage
     .from("imagebucket")
-    .upload(fileName, resized, {
-      contentType: "image/jpeg",
+    .upload(fileName, avifBlob, {
+      contentType: "image/avif",
+      cacheControl: "31536000",
+      upsert: false,
     });
 
   if (error) {
