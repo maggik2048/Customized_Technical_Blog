@@ -20,6 +20,7 @@ import { uploadImage } from "../../imagehandle/uploadImage";
 
 import { DocumentPostProcessor } from "./DocumentPostProcessor";
 
+import { uploadQueue } from "../../imagehandle/uploadQueue";
 /**
  * =========================================
  * TYPES
@@ -552,17 +553,17 @@ export default function MarkdownManager({
                       "[IMAGE] uploading..."
                     );
 
-                    const url =
-                      await uploadImage(
-                        file
-                      );
+                    uploadQueue.add(async () => {
+                      const url =
+                        await uploadImage(file);
 
-                    if (url) {
-                      insertText(
-                        view,
-                        `\n![](${url})\n`
-                      );
-                    }
+                      if (url) {
+                        insertText(
+                          view,
+                          `\n![](${url})\n`
+                        );
+                      }
+                    });
 
                     return;
                   }
@@ -623,17 +624,17 @@ export default function MarkdownManager({
                       "[IMAGE] uploading base64..."
                     );
 
-                    const url =
-                      await uploadImage(
-                        file
-                      );
+                    uploadQueue.add(async () => {
+                      const url =
+                        await uploadImage(file);
 
-                    if (url) {
-                      insertText(
-                        view,
-                        `\n![](${url})\n`
-                      );
-                    }
+                      if (url) {
+                        insertText(
+                          view,
+                          `\n![](${url})\n`
+                        );
+                      }
+                    });
 
                     return;
                   }
