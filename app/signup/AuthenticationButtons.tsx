@@ -6,86 +6,79 @@ export default function AuthenticationButtons() {
   const router = useRouter();
 
   const baseButtonStyle: React.CSSProperties = {
-    minWidth: "180px",
+    minWidth: "220px",
 
-    padding: "14px 22px",
+    padding: "18px 28px",
 
-    borderRadius: "14px",
+    borderRadius: "4px",
 
     cursor: "pointer",
 
-    fontSize: "13px",
+    fontSize: "16px",
 
     fontWeight: 800,
 
-    letterSpacing: "1.8px",
+    letterSpacing: "2.8px",
 
     textTransform: "uppercase",
 
     fontFamily:
-      '"Playfair Display", "Cormorant Garamond", "Times New Roman", serif',
+      '"Cormorant Garamond", "Playfair Display", "Times New Roman", serif',
 
-    transition: "all 0.28s ease",
+    transition: "all 0.25s ease",
 
     boxSizing: "border-box",
 
-    color: "#ffffff",
+    background: "rgba(255,255,255,0.03)",
 
-    background:
-      "rgba(165,170,185,0.08)",
+    color: "#111111",
 
-    backdropFilter:
-      "invert(1) brightness(0.90)",
-
-    WebkitBackdropFilter:
-      "invert(1) brightness(0.90)",
-
-    border:
-      "1px solid rgba(255,255,255,0.16)",
+    border: "1px solid rgba(184,134,11,0.65)",
 
     boxShadow: `
-      0 14px 40px rgba(0,0,0,0.18),
-      inset 0 1px 0 rgba(255,255,255,0.10)
+      inset 0 3px 0 rgba(255, 252, 232, 0.95),
+      inset 0 18px 28px rgba(0,0,0,0.10),
+      inset 0 -1px 0 rgba(184,134,11,0.25)
     `,
 
     textShadow:
-      "0 2px 4px rgba(0,0,0,0.70)",
+      "0 1px 0 rgba(255,255,255,0.45)",
+
+    backdropFilter: "blur(1px)",
+
+    WebkitBackdropFilter: "blur(1px)",
   };
 
   const handleMouseEnter = (
     e: React.MouseEvent<HTMLButtonElement>
   ) => {
     e.currentTarget.style.transform =
-      "translateY(-4px) scale(1.02)";
+      "translateY(-2px)";
 
-    e.currentTarget.style.backdropFilter =
-      "invert(1) brightness(0.98)";
+    e.currentTarget.style.border =
+      "1px solid rgba(255,215,0,0.95)";
 
-    (
-      e.currentTarget.style as any
-    ).webkitBackdropFilter =
-      "invert(1) brightness(0.98)";
-
-    e.currentTarget.style.boxShadow =
-      "0 24px 60px rgba(0,0,0,0.24)";
+    e.currentTarget.style.boxShadow = `
+      inset 0 4px 0 rgba(255,215,0,1),
+      inset 0 22px 32px rgba(0,0,0,0.13),
+      inset 0 -1px 0 rgba(255,215,0,0.35)
+    `;
   };
 
   const handleMouseLeave = (
     e: React.MouseEvent<HTMLButtonElement>
   ) => {
     e.currentTarget.style.transform =
-      "translateY(0px) scale(1)";
+      "translateY(0px)";
 
-    e.currentTarget.style.backdropFilter =
-      "invert(1) brightness(0.90)";
+    e.currentTarget.style.border =
+      "1px solid rgba(184,134,11,0.65)";
 
-    (
-      e.currentTarget.style as any
-    ).webkitBackdropFilter =
-      "invert(1) brightness(0.90)";
-
-    e.currentTarget.style.boxShadow =
-      "0 14px 40px rgba(0,0,0,0.18)";
+    e.currentTarget.style.boxShadow = `
+      inset 0 3px 0 rgba(255,215,0,0.95),
+      inset 0 18px 28px rgba(0,0,0,0.10),
+      inset 0 -1px 0 rgba(184,134,11,0.25)
+    `;
   };
 
   return (
@@ -97,7 +90,7 @@ export default function AuthenticationButtons() {
 
         alignItems: "center",
 
-        gap: "12px",
+        gap: "14px",
       }}
     >
       <button
