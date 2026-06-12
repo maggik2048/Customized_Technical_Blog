@@ -4,6 +4,7 @@ import { PostProcessingRulesKR_01_Sentences } from "./rules/kr/PostProcessingRul
 import { PostProcessingRulesKR_02_Phrases } from "./rules/kr/PostProcessingRulesKR_02_Phrases";
 import { PostProcessingRulesKR_03_Recommendations } from "./rules/kr/PostProcessingRulesKR_03_Recommendations";
 import { PostProcessingRulesKR_04_Pronouns } from "./rules/kr/PostProcessingRulesKR_04_Pronouns";
+import { KR05SafeProcessor } from "./rules/kr/PostProcessingRulesKR_05_UpConvert_SAFE";
 
 import { PostProcessingRulesEN_01_Sentences } from "./rules/en/PostProcessingRulesEN_01_Sentences";
 import { PostProcessingRulesEN_02_Phrases } from "./rules/en/PostProcessingRulesEN_02_Phrases";
@@ -17,16 +18,28 @@ import { PostProcessingRulesFR_04_Pronouns } from "./rules/fr/PostProcessingRule
 
 export class DocumentPostProcessor {
   private static readonly RULES: readonly Rule[] = [
+    // =========================
+    // KR PIPELINE (1~4 only)
+    // =========================
     ...PostProcessingRulesKR_01_Sentences,
     ...PostProcessingRulesKR_02_Phrases,
     ...PostProcessingRulesKR_03_Recommendations,
     ...PostProcessingRulesKR_04_Pronouns,
 
+    // KR_05 is NOT rule-based anymore → SAFE processor
+    // (applied separately below)
+
+    // =========================
+    // EN PIPELINE
+    // =========================
     ...PostProcessingRulesEN_01_Sentences,
     ...PostProcessingRulesEN_02_Phrases,
     ...PostProcessingRulesEN_03_Recommendations,
     ...PostProcessingRulesEN_04_Pronouns,
 
+    // =========================
+    // FR PIPELINE
+    // =========================
     ...PostProcessingRulesFR_01_Sentences,
     ...PostProcessingRulesFR_02_Phrases,
     ...PostProcessingRulesFR_03_Recommendations,
@@ -40,15 +53,18 @@ export class DocumentPostProcessor {
 
     let out = input;
 
+    // 1. emoji cleanup
     out = this.removeEmojis(out);
 
+    // 2. rule-based pipelines (KR1~4 + EN + FR)
     for (const rule of this.RULES) {
-      out = out.replace(
-        rule.pattern,
-        rule.replacement
-      );
+      out = out.replace(rule.pattern, rule.replacement);
     }
 
+    // 3. KR_05 SAFE POSTPROCESS (NO REGEX ENGINE)
+    out = KR05SafeProcessor.apply(out);
+
+    // 4. final normalization
     out = this.normalizeSentenceEnding(out);
     out = this.normalizeBoxNumbers(out);
     out = this.normalize(out);
@@ -57,18 +73,14 @@ export class DocumentPostProcessor {
     return out;
   }
 
-  private static removeEmojis(
-    text: string
-  ): string {
+  private static removeEmojis(text: string): string {
     return text.replace(
       /[\p{Emoji_Presentation}\p{Extended_Pictographic}\uFE0F\u200D]/gu,
       ""
     );
   }
 
-  private static normalizeSentenceEnding(
-    text: string
-  ): string {
+  private static normalizeSentenceEnding(text: string): string {
     return text.replace(
       /([가-힣]+?)야(?=(?:\.\.\.|[.?!]|$))/g,
       (_, word: string) =>
@@ -78,9 +90,7 @@ export class DocumentPostProcessor {
     );
   }
 
-  private static normalizeBoxNumbers(
-    text: string
-  ): string {
+  private static normalizeBoxNumbers(text: string): string {
     return text
       .replace(/0⃣/g, "0. ")
       .replace(/1⃣/g, "1. ")
@@ -94,9 +104,7 @@ export class DocumentPostProcessor {
       .replace(/9⃣/g, "9. ");
   }
 
-  private static normalize(
-    text: string
-  ): string {
+  private static normalize(text: string): string {
     return text
       .replace(/\r/g, "")
       .replace(/[ \t]{2,}/g, " ")
@@ -104,12 +112,7 @@ export class DocumentPostProcessor {
       .trim();
   }
 
-  private static trimSpaces(
-    text: string
-  ): string {
-    return text.replace(
-      /[ \t]+$/gm,
-      ""
-    );
+  private static trimSpaces(text: string): string {
+    return text.replace(/[ \t]+$/gm, "");
   }
 }
