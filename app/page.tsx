@@ -46,23 +46,35 @@ export default function HomePage() {
         {/* PROJECT LAUNCHER */}
         <ProjectBoxRenderer />
 
-        {/* TOP RIGHT CONTROLS */}
+        {/* TOP RIGHT AUTH / WRITE */}
         <div
           style={{
             position: "absolute",
-            top: 24,
+
+            top: 120,
             right: 24,
+
             zIndex: 10000,
 
             display: "flex",
             flexDirection: "column",
+
             alignItems: "flex-end",
-            gap: 16,
+
+            gap: 12,
           }}
         >
-          <WritePostButton />
-
           <AuthenticationButtons />
+
+          <div
+            style={{
+              width: "100%",
+              display: "flex",
+              justifyContent: "flex-end",
+            }}
+          >
+            <WritePostButton />
+          </div>
         </div>
 
         <div
@@ -74,7 +86,6 @@ export default function HomePage() {
           <h1 className="hero-title">
             Art of codE
             <br />
-
             <span className="hero-subtitle">
               Technical aRchive
             </span>
