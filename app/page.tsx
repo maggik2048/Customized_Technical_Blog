@@ -10,28 +10,22 @@ import LatestPosts from "./components/LatestPosts";
 import ClickableImageBox from "./components/ClickableImageBox";
 import WritePostButton from "./admin/write/WritePostButton";
 
+import AuthenticationButtons from "./signup/AuthenticationButtons";
+
 import { CATEGORY_TREE } from "./components/SidebarCategory/Data/CategoryTree";
 
 export default function HomePage() {
-
   const router = useRouter();
 
-  const [
-    selectedCategory,
-    setSelectedCategory,
-  ] = useState<string | null>(null);
+  const [selectedCategory, setSelectedCategory] =
+    useState<string | null>(null);
 
-  const selected =
-    CATEGORY_TREE.find(
-      (cat) =>
-        cat.slug ===
-        selectedCategory
-    );
+  const selected = CATEGORY_TREE.find(
+    (cat) => cat.slug === selectedCategory
+  );
 
   return (
-
     <div>
-
       <div
         style={{
           position: "relative",
@@ -44,82 +38,15 @@ export default function HomePage() {
           paddingLeft: "80px",
         }}
       >
-
         <TopHeaderText />
 
         <SocialIcons />
 
-        {/* ACCESS / AUTH BUTTONS */}
-        <div
-          style={{
-            display: "flex",
-            gap: "12px",
-            marginTop: "16px",
-            marginLeft: "4px",
-            flexWrap: "wrap",
-          }}
-        >
-
-          {/* PUBLIC SITE ACCESS */}
-          <button
-            onClick={() =>
-              router.push("/enter")
-            }
-            style={{
-              padding: "10px 18px",
-              borderRadius: 8,
-              border: "none",
-              cursor: "pointer",
-              background: "#2c5cff",
-              color: "#fff",
-              fontWeight: 600,
-            }}
-          >
-            Enter Site
-          </button>
-
-          {/* ADMIN LOGIN */}
-          <button
-            onClick={() =>
-              router.push("/login")
-            }
-            style={{
-              padding: "10px 18px",
-              borderRadius: 8,
-              border: "none",
-              cursor: "pointer",
-              background: "#111",
-              color: "#fff",
-              fontWeight: 600,
-            }}
-          >
-            Admin Login
-          </button>
-
-          {/* ADMIN SIGNUP */}
-          <button
-            onClick={() =>
-              router.push("/signup")
-            }
-            style={{
-              padding: "10px 18px",
-              borderRadius: 8,
-              border: "1px solid #999",
-              cursor: "pointer",
-              background: "#fff",
-              color: "#111",
-              fontWeight: 600,
-            }}
-          >
-            Admin Sign Up
-          </button>
-
-        </div>
+        <AuthenticationButtons />
 
         {/* Pencil Effect Button */}
         <button
           onClick={() => {
-
             console.log(
               "PENCIL BUTTON CLICKED"
             );
@@ -147,7 +74,6 @@ export default function HomePage() {
         {/* HDRI Renderer Button */}
         <button
           onClick={() => {
-
             console.log(
               "HDRI BUTTON CLICKED"
             );
@@ -175,7 +101,6 @@ export default function HomePage() {
         {/* World Stream Renderer Button */}
         <button
           onClick={() => {
-
             console.log(
               "WORLD STREAM BUTTON CLICKED"
             );
@@ -206,7 +131,6 @@ export default function HomePage() {
             marginBottom: "1.5rem",
           }}
         >
-
           <h1 className="hero-title">
             Art of codE
             <br />
@@ -215,7 +139,6 @@ export default function HomePage() {
               Technical aRchive
             </span>
           </h1>
-
         </div>
 
         <div
@@ -227,13 +150,9 @@ export default function HomePage() {
             gap: "2rem",
           }}
         >
-
           <div style={{ flex: 2 }}>
-
             {selected && (
-
               <>
-
                 <button
                   onClick={() =>
                     setSelectedCategory(
@@ -253,37 +172,28 @@ export default function HomePage() {
                 </button>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-1">
-
                   {selected.children?.map(
                     (item) => (
-
                       <CategoryCard
                         key={item.name}
                         item={{
                           ...item,
-                          href:
-                            `/category/${item.slug}`,
+                          href: `/category/${item.slug}`,
                           count: 1,
                         }}
                       />
-
                     )
                   )}
-
                 </div>
-
               </>
-
             )}
 
             {!selected && (
-
               <div
                 style={{
                   marginTop: 16,
                 }}
               >
-
                 <ClickableImageBox
                   imageSrc="/images/exploreCateg2.png"
                   width={540}
@@ -293,9 +203,7 @@ export default function HomePage() {
                     )
                   }
                 />
-
               </div>
-
             )}
 
             <div
@@ -304,23 +212,15 @@ export default function HomePage() {
                 textAlign: "center",
               }}
             >
-
               <WritePostButton />
-
             </div>
-
           </div>
 
           <div style={{ flex: 1 }}>
-
             <LatestPosts />
-
           </div>
-
         </div>
-
       </div>
-
     </div>
   );
 }
