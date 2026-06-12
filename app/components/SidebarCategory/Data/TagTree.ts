@@ -197,6 +197,12 @@ export const TAG_TREE: TagItem[] = [
     group: "system",
   },
 
+    {
+    name: "TrajectoryOverview",
+    slug: "trajectoryoverview",
+    group: "overview",
+  },
+
   {
     name: "Optimization",
     slug: "optimization",
