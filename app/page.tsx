@@ -8,8 +8,9 @@ import TopHeaderText from "./components/TopHeaderText";
 import SocialIcons from "./components/SocialIcons";
 import LatestPosts from "./components/LatestPosts";
 import ClickableImageBox from "./components/ClickableImageBox";
-import WritePostButton from "./admin/write/WritePostButton";
+import ProjectBoxRenderer from "./components/ProjectBoxRenderer";
 
+import WritePostButton from "./admin/write/WritePostButton";
 import AuthenticationButtons from "./signup/AuthenticationButtons";
 
 import { CATEGORY_TREE } from "./components/SidebarCategory/Data/CategoryTree";
@@ -42,86 +43,8 @@ export default function HomePage() {
 
         <SocialIcons />
 
-        {/* Pencil Effect Button */}
-        <button
-          onClick={() => {
-            console.log(
-              "PENCIL BUTTON CLICKED"
-            );
-
-            router.push(
-              "/Graphics/PencilEffect"
-            );
-          }}
-          style={{
-            position: "absolute",
-            top: 20,
-            right: 20,
-            zIndex: 9999,
-            padding: "10px 16px",
-            borderRadius: 8,
-            border: "none",
-            cursor: "pointer",
-            background: "#222",
-            color: "#fff",
-          }}
-        >
-          Pencil Background
-        </button>
-
-        {/* HDRI Renderer Button */}
-        <button
-          onClick={() => {
-            console.log(
-              "HDRI BUTTON CLICKED"
-            );
-
-            router.push(
-              "/Graphics/MaterialSystem"
-            );
-          }}
-          style={{
-            position: "absolute",
-            top: 70,
-            right: 20,
-            zIndex: 9999,
-            padding: "10px 16px",
-            borderRadius: 8,
-            border: "none",
-            cursor: "pointer",
-            background: "#444",
-            color: "#fff",
-          }}
-        >
-          HDRI Renderer
-        </button>
-
-        {/* World Stream Renderer Button */}
-        <button
-          onClick={() => {
-            console.log(
-              "WORLD STREAM BUTTON CLICKED"
-            );
-
-            router.push(
-              "/Graphics/WorldStreamingSystem"
-            );
-          }}
-          style={{
-            position: "absolute",
-            top: 120,
-            right: 20,
-            zIndex: 9999,
-            padding: "10px 16px",
-            borderRadius: 8,
-            border: "none",
-            cursor: "pointer",
-            background: "#2c5cff",
-            color: "#fff",
-          }}
-        >
-          WorldStreamRenderer
-        </button>
+        {/* GRAPHICS PROJECT BUTTONS */}
+        <ProjectBoxRenderer />
 
         <div
           style={{
