@@ -2,55 +2,50 @@ import { Rule } from "../Rule";
 
 export const PostProcessingRulesFR_03_Recommendations: readonly Rule[] = [
   {
-    pattern: /\bfortement recommandé\b/giu,
-    replacement: "fortement envisagé"
+    pattern: /\brecommandation(s)?\b/giu,
+    replacement: ""
   },
-  {
-    pattern: /\bfortement recommandée\b/giu,
-    replacement: "fortement envisagée"
-  },
-
-  {
-    pattern: /\brecommandations\b/giu,
-    replacement: "considérations"
-  },
-  {
-    pattern: /\brecommandation\b/giu,
-    replacement: "considération"
-  },
-
   {
     pattern: /\brecommandé\b/giu,
-    replacement: "envisagé"
+    replacement: ""
   },
   {
     pattern: /\brecommandée\b/giu,
-    replacement: "envisagée"
+    replacement: ""
   },
   {
     pattern: /\brecommandés\b/giu,
-    replacement: "envisagés"
+    replacement: ""
   },
   {
     pattern: /\brecommandées\b/giu,
-    replacement: "envisagées"
+    replacement: ""
   },
 
   {
     pattern: /\brecommande\b/giu,
-    replacement: "envisage"
+    replacement: ""
   },
   {
     pattern: /\brecommandent\b/giu,
-    replacement: "envisagent"
+    replacement: ""
   },
 
   {
+    pattern: /\bsuggestion(s)?\b/giu,
+    replacement: ""
+  },
+  {
     pattern: /\bsuggère\b/giu,
-    replacement: "envisage"
+    replacement: ""
   },
   {
     pattern: /\bsuggèrent\b/giu,
-    replacement: "envisagent"
+    replacement: ""
+  },
+
+  {
+    pattern: /\bfortement recommandé\b/giu,
+    replacement: ""
   }
 ];

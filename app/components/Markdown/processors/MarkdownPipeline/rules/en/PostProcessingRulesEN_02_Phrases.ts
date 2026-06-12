@@ -18,16 +18,16 @@ export const PostProcessingRulesEN_02_Phrases: readonly Rule[] = [
     replacement: "this solution"
   },
   {
+    pattern: /\byour system\b/giu,
+    replacement: "this system"
+  },
+  {
     pattern: /\byour architecture\b/giu,
     replacement: "this architecture"
   },
   {
     pattern: /\byour design\b/giu,
     replacement: "this design"
-  },
-  {
-    pattern: /\byour system\b/giu,
-    replacement: "this system"
   },
   {
     pattern: /\byour application\b/giu,
@@ -42,19 +42,7 @@ export const PostProcessingRulesEN_02_Phrases: readonly Rule[] = [
     replacement: "this logic"
   },
   {
-    pattern: /\byour idea\b/giu,
-    replacement: "this idea"
-  },
-  {
-    pattern: /\byour approach\b/giu,
-    replacement: "this approach"
-  },
-  {
-    pattern: /\byour strategy\b/giu,
-    replacement: "this strategy"
-  },
-  {
-    pattern: /\byour api\b/giu,
+    pattern: /\byour API\b/giu,
     replacement: "this API"
   },
   {
@@ -62,16 +50,20 @@ export const PostProcessingRulesEN_02_Phrases: readonly Rule[] = [
     replacement: "this service"
   },
   {
-    pattern: /\byour class\b/giu,
-    replacement: "this class"
+    pattern: /\byour component\b/giu,
+    replacement: "this component"
   },
   {
     pattern: /\byour function\b/giu,
     replacement: "this function"
   },
   {
-    pattern: /\byour component\b/giu,
-    replacement: "this component"
+    pattern: /\byour class\b/giu,
+    replacement: "this class"
+  },
+  {
+    pattern: /\byour module\b/giu,
+    replacement: "this module"
   },
   {
     pattern: /\byour configuration\b/giu,

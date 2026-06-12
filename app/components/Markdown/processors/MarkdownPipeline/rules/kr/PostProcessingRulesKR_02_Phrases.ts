@@ -22,10 +22,6 @@ export const PostProcessingRulesKR_02_Phrases: readonly Rule[] = [
     pattern: /네 프로젝트/g,
     replacement: "이 프로젝트"
   },
-  {
-    pattern: /니 프로젝트/g,
-    replacement: "이 프로젝트"
-  },
 
   {
     pattern: /너의 구현/g,
@@ -33,10 +29,6 @@ export const PostProcessingRulesKR_02_Phrases: readonly Rule[] = [
   },
   {
     pattern: /네 구현/g,
-    replacement: "이 구현"
-  },
-  {
-    pattern: /니 구현/g,
     replacement: "이 구현"
   },
 
@@ -47,15 +39,6 @@ export const PostProcessingRulesKR_02_Phrases: readonly Rule[] = [
   {
     pattern: /네 설계/g,
     replacement: "이 설계"
-  },
-
-  {
-    pattern: /너의 아키텍처/g,
-    replacement: "이 아키텍처"
-  },
-  {
-    pattern: /네 아키텍처/g,
-    replacement: "이 아키텍처"
   },
 
   {
@@ -92,14 +75,5 @@ export const PostProcessingRulesKR_02_Phrases: readonly Rule[] = [
   {
     pattern: /네 로직/g,
     replacement: "이 로직"
-  },
-
-  {
-    pattern: /너의 아이디어/g,
-    replacement: "이 아이디어"
-  },
-  {
-    pattern: /네 아이디어/g,
-    replacement: "이 아이디어"
   }
 ];

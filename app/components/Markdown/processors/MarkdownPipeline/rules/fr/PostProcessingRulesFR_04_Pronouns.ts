@@ -2,38 +2,42 @@ import { Rule } from "../Rule";
 
 export const PostProcessingRulesFR_04_Pronouns: readonly Rule[] = [
   {
-    pattern: /\btu peux\b/giu,
-    replacement: "il est possible de"
+    pattern: /\bje\b/giu,
+    replacement: ""
   },
   {
-    pattern: /\btu dois\b/giu,
-    replacement: "il est nécessaire de"
+    pattern: /\bnous\b/giu,
+    replacement: ""
   },
   {
-    pattern: /\btu devrais\b/giu,
-    replacement: "il serait préférable de"
+    pattern: /\btu\b/giu,
+    replacement: ""
+  },
+  {
+    pattern: /\btoi\b/giu,
+    replacement: ""
   },
 
   {
     pattern: /\bmon\b/giu,
-    replacement: "ce"
+    replacement: ""
   },
   {
     pattern: /\bma\b/giu,
-    replacement: "cette"
+    replacement: ""
   },
   {
     pattern: /\bmes\b/giu,
-    replacement: "ces"
+    replacement: ""
   },
 
   {
     pattern: /\bnotre\b/giu,
-    replacement: "ce"
+    replacement: ""
   },
   {
     pattern: /\bnos\b/giu,
-    replacement: "ces"
+    replacement: ""
   },
 
   {
@@ -59,25 +63,20 @@ export const PostProcessingRulesFR_04_Pronouns: readonly Rule[] = [
   },
 
   {
-    pattern: /\bje\b/giu,
+    pattern: /\bje pense\b/giu,
     replacement: ""
   },
   {
-    pattern: /\bnous\b/giu,
-    replacement: ""
-  },
-
-  {
-    pattern: /\btu\b/giu,
-    replacement: ""
-  },
-  {
-    pattern: /\btoi\b/giu,
+    pattern: /\bnous pensons\b/giu,
     replacement: ""
   },
 
   {
-    pattern: /\bmoi\b/giu,
+    pattern: /\bje crois\b/giu,
+    replacement: ""
+  },
+  {
+    pattern: /\bnous croyons\b/giu,
     replacement: ""
   }
 ];

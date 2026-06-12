@@ -2,56 +2,49 @@ import { Rule } from "../Rule";
 
 export const PostProcessingRulesEN_03_Recommendations: readonly Rule[] = [
   {
-    pattern: /\bhighly recommended\b/giu,
-    replacement: "strongly considered"
+    pattern: /\brecommendation(s)?\b/giu,
+    replacement: ""
   },
-
-  {
-    pattern: /\brecommendations\b/giu,
-    replacement: "considerations"
-  },
-  {
-    pattern: /\brecommendation\b/giu,
-    replacement: "consideration"
-  },
-
   {
     pattern: /\brecommended\b/giu,
-    replacement: "being considered"
+    replacement: ""
   },
-
   {
     pattern: /\brecommending\b/giu,
-    replacement: "considering"
+    replacement: ""
   },
-
   {
     pattern: /\brecommends\b/giu,
-    replacement: "considers"
+    replacement: ""
   },
-
   {
     pattern: /\brecommend\b/giu,
-    replacement: "consider"
+    replacement: ""
   },
 
+  {
+    pattern: /\bsuggestion(s)?\b/giu,
+    replacement: ""
+  },
   {
     pattern: /\bsuggested\b/giu,
-    replacement: "considered"
+    replacement: ""
   },
-
   {
     pattern: /\bsuggesting\b/giu,
-    replacement: "considering"
+    replacement: ""
   },
-
   {
     pattern: /\bsuggests\b/giu,
-    replacement: "considers"
+    replacement: ""
+  },
+  {
+    pattern: /\bsuggest\b/giu,
+    replacement: ""
   },
 
   {
-    pattern: /\bsuggest\b/giu,
-    replacement: "consider"
+    pattern: /\bhighly recommended\b/giu,
+    replacement: ""
   }
 ];

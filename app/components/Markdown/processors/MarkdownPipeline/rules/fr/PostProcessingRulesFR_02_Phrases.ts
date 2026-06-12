@@ -19,23 +19,6 @@ export const PostProcessingRulesFR_02_Phrases: readonly Rule[] = [
   },
 
   {
-    pattern: /\bton algorithme\b/giu,
-    replacement: "cet algorithme"
-  },
-  {
-    pattern: /\bton service\b/giu,
-    replacement: "ce service"
-  },
-  {
-    pattern: /\bton modèle\b/giu,
-    replacement: "ce modèle"
-  },
-  {
-    pattern: /\bton modele\b/giu,
-    replacement: "ce modèle"
-  },
-
-  {
     pattern: /\bta solution\b/giu,
     replacement: "cette solution"
   },
@@ -57,19 +40,6 @@ export const PostProcessingRulesFR_02_Phrases: readonly Rule[] = [
   },
 
   {
-    pattern: /\bton architecture\b/giu,
-    replacement: "cette architecture"
-  },
-  {
-    pattern: /\bton implémentation\b/giu,
-    replacement: "cette implémentation"
-  },
-  {
-    pattern: /\bton implementation\b/giu,
-    replacement: "cette implémentation"
-  },
-
-  {
     pattern: /\btes idées\b/giu,
     replacement: "ces idées"
   },
@@ -88,5 +58,31 @@ export const PostProcessingRulesFR_02_Phrases: readonly Rule[] = [
   {
     pattern: /\btes parametres\b/giu,
     replacement: "ces paramètres"
+  },
+
+  {
+    pattern: /\bton architecture\b/giu,
+    replacement: "cette architecture"
+  },
+  {
+    pattern: /\bton implémentation\b/giu,
+    replacement: "cette implémentation"
+  },
+  {
+    pattern: /\bton implementation\b/giu,
+    replacement: "cette implémentation"
+  },
+
+  {
+    pattern: /\bton algorithme\b/giu,
+    replacement: "cet algorithme"
+  },
+  {
+    pattern: /\bton modèle\b/giu,
+    replacement: "ce modèle"
+  },
+  {
+    pattern: /\bton modele\b/giu,
+    replacement: "ce modèle"
   }
 ];
