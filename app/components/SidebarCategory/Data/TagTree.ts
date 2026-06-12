@@ -220,4 +220,16 @@ export const TAG_TREE: TagItem[] = [
     slug: "contentdesign",
     group: "idea",
   },
+
+  {
+    name: "CS Concept revisited",
+    slug: "csconcept",
+    group: "concept",
+  },
+
+    {
+    name: "french vocabulary",
+    slug: "frvocab",
+    group: "vocabulary",
+  },
 ];
