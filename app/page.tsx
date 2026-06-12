@@ -46,35 +46,16 @@ export default function HomePage() {
         {/* PROJECT LAUNCHER */}
         <ProjectBoxRenderer />
 
-        {/* TOP RIGHT AUTH / WRITE */}
+        {/* TOP RIGHT AUTH */}
         <div
           style={{
             position: "absolute",
-
             top: 120,
             right: 24,
-
             zIndex: 10000,
-
-            display: "flex",
-            flexDirection: "column",
-
-            alignItems: "flex-end",
-
-            gap: 12,
           }}
         >
           <AuthenticationButtons />
-
-          <div
-            style={{
-              width: "100%",
-              display: "flex",
-              justifyContent: "flex-end",
-            }}
-          >
-            <WritePostButton />
-          </div>
         </div>
 
         <div
@@ -122,18 +103,16 @@ export default function HomePage() {
                 </button>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-1">
-                  {selected.children?.map(
-                    (item) => (
-                      <CategoryCard
-                        key={item.name}
-                        item={{
-                          ...item,
-                          href: `/category/${item.slug}`,
-                          count: 1,
-                        }}
-                      />
-                    )
-                  )}
+                  {selected.children?.map((item) => (
+                    <CategoryCard
+                      key={item.name}
+                      item={{
+                        ...item,
+                        href: `/category/${item.slug}`,
+                        count: 1,
+                      }}
+                    />
+                  ))}
                 </div>
               </>
             )}
@@ -149,15 +128,26 @@ export default function HomePage() {
             }}
           >
             {!selected && (
-              <ClickableImageBox
-                imageSrc="/images/exploreCateg2.png"
-                width={420}
-                onClick={() =>
-                  router.push(
-                    "/category/graphics_pipeline"
-                  )
-                }
-              />
+              <>
+                <ClickableImageBox
+                  imageSrc="/images/exploreCateg2.png"
+                  width={420}
+                  onClick={() =>
+                    router.push(
+                      "/category/graphics_pipeline"
+                    )
+                  }
+                />
+
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                  }}
+                >
+                  <WritePostButton />
+                </div>
+              </>
             )}
 
             <LatestPosts />
