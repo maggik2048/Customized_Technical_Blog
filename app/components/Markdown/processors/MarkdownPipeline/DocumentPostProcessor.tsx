@@ -1,9 +1,38 @@
-import { PostProcessingRulesKR } from "./rules/PostProcessingRulesKR";
-import { PostProcessingRulesEN } from "./rules/PostProcessingRulesEN";
-import { PostProcessingRulesFR } from "./rules/PostProcessingRulesFR";
 import { Rule } from "./rules/Rule";
 
+import { PostProcessingRulesKR_01_Sentences } from "./rules/kr/PostProcessingRulesKR_01_Sentences";
+import { PostProcessingRulesKR_02_Phrases } from "./rules/kr/PostProcessingRulesKR_02_Phrases";
+import { PostProcessingRulesKR_03_Recommendations } from "./rules/kr/PostProcessingRulesKR_03_Recommendations";
+import { PostProcessingRulesKR_04_Pronouns } from "./rules/kr/PostProcessingRulesKR_04_Pronouns";
+
+import { PostProcessingRulesEN_01_Sentences } from "./rules/en/PostProcessingRulesEN_01_Sentences";
+import { PostProcessingRulesEN_02_Phrases } from "./rules/en/PostProcessingRulesEN_02_Phrases";
+import { PostProcessingRulesEN_03_Recommendations } from "./rules/en/PostProcessingRulesEN_03_Recommendations";
+import { PostProcessingRulesEN_04_Pronouns } from "./rules/en/PostProcessingRulesEN_04_Pronouns";
+
+import { PostProcessingRulesFR_01_Sentences } from "./rules/fr/PostProcessingRulesFR_01_Sentences";
+import { PostProcessingRulesFR_02_Phrases } from "./rules/fr/PostProcessingRulesFR_02_Phrases";
+import { PostProcessingRulesFR_03_Recommendations } from "./rules/fr/PostProcessingRulesFR_03_Recommendations";
+import { PostProcessingRulesFR_04_Pronouns } from "./rules/fr/PostProcessingRulesFR_04_Pronouns";
+
 export class DocumentPostProcessor {
+  private static readonly RULES: readonly Rule[] = [
+    ...PostProcessingRulesKR_01_Sentences,
+    ...PostProcessingRulesKR_02_Phrases,
+    ...PostProcessingRulesKR_03_Recommendations,
+    ...PostProcessingRulesKR_04_Pronouns,
+
+    ...PostProcessingRulesEN_01_Sentences,
+    ...PostProcessingRulesEN_02_Phrases,
+    ...PostProcessingRulesEN_03_Recommendations,
+    ...PostProcessingRulesEN_04_Pronouns,
+
+    ...PostProcessingRulesFR_01_Sentences,
+    ...PostProcessingRulesFR_02_Phrases,
+    ...PostProcessingRulesFR_03_Recommendations,
+    ...PostProcessingRulesFR_04_Pronouns
+  ];
+
   static process(input: string): string {
     if (!input) {
       return "";
@@ -13,41 +42,17 @@ export class DocumentPostProcessor {
 
     out = this.removeEmojis(out);
 
-    out = this.applyRules(
-      out,
-      PostProcessingRulesKR
-    );
-
-    out = this.applyRules(
-      out,
-      PostProcessingRulesEN
-    );
-
-    out = this.applyRules(
-      out,
-      PostProcessingRulesFR
-    );
-
-    out = this.normalizeSentenceEnding(out);
-    out = this.normalizeBoxNumbers(out);
-    out = this.normalize(out);
-    out = this.trimSpaces(out);
-
-    return out;
-  }
-
-  private static applyRules(
-    text: string,
-    rules: readonly Rule[]
-  ): string {
-    let out = text;
-
-    for (const rule of rules) {
+    for (const rule of this.RULES) {
       out = out.replace(
         rule.pattern,
         rule.replacement
       );
     }
+
+    out = this.normalizeSentenceEnding(out);
+    out = this.normalizeBoxNumbers(out);
+    out = this.normalize(out);
+    out = this.trimSpaces(out);
 
     return out;
   }
@@ -66,13 +71,10 @@ export class DocumentPostProcessor {
   ): string {
     return text.replace(
       /([가-힣]+?)야(?=(?:\.\.\.|[.?!]|$))/g,
-      (_, word: string) => {
-        if (word.endsWith("이")) {
-          return `${word}다`;
-        }
-
-        return `${word}이다`;
-      }
+      (_, word: string) =>
+        word.endsWith("이")
+          ? `${word}다`
+          : `${word}이다`
     );
   }
 
