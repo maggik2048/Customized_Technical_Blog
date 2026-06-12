@@ -145,7 +145,7 @@ export default function HomePage() {
             width: "100%",
             display: "flex",
             justifyContent: "center",
-            marginTop: "80px",
+            marginTop: "100px",
             marginBottom: "20px",
           }}
         >
@@ -156,7 +156,7 @@ export default function HomePage() {
           style={{
             display: "flex",
             maxWidth: "1024px",
-            margin: "100px auto 0 auto",
+            margin: "80px auto 0 auto",
             padding: "0 1rem",
             gap: "2rem",
           }}
