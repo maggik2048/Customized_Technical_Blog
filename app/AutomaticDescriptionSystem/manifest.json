@@ -1,0 +1,52 @@
+{
+  "manifest_version": 3,
+
+  "name": "AutomaticDescriptionSystem",
+
+  "version": "1.0",
+
+  "permissions": [
+    "tabs"
+  ],
+
+  "host_permissions": [
+    "http://localhost:3000/*",
+    "https://*/*"
+  ],
+
+  "background": {
+    "service_worker": "background.js"
+  },
+
+  "content_scripts": [
+
+    {
+      "matches": [
+        "http://localhost:3000/*"
+      ],
+
+      "js": [
+        "source-content.js"
+      ]
+    },
+
+    {
+      "matches": [
+        "https://*/*"
+      ],
+
+      "js": [
+
+        "config/destinations.js",
+
+        "destinations/destination-Google-IA.js",
+
+        "destinations/destination-Claude.js",
+
+        "destinationManager.js"
+
+      ]
+    }
+
+  ]
+}

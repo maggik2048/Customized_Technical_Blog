@@ -162,6 +162,17 @@ export default function MarkdownManager({
         },
       });
 
+      window.postMessage(
+        {
+          type:
+            "SEND_CONTENT_TO_DESTINATION",
+
+          payload:
+            processed
+        },
+        "*"
+      );      
+      
       console.log(
         "EDITOR CONTENT REPLACED"
       );
