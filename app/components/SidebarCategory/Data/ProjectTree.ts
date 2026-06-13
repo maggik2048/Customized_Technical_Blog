@@ -334,4 +334,33 @@ export const PROJECT_TREE: ProjectItem[] = [
     description:
       "MainHomepage Visual Development",
   },
+
+  {
+  name: "Sync GithubCommit to TechnicalBlogPost",
+
+  slug: "syncgitblog",
+
+  categories: [
+    "developer-tools",
+    "knowledge-management",
+  ],
+
+  tags: [
+    "nextjs",
+    "github",
+    "git",
+    "debugging",
+    "commit-history",
+    "technical-blog",
+    "mdx",
+    "automation",
+    "developer-experience",
+    "documentation",
+    "webhooks",
+    "github-actions",
+  ],
+
+  description:
+    "A GitHubDesktop&homepage-integrated system  that links technical blog posts directly to commit history, diffs, and development workflows TO Corresponding BlogPost(and other way around too) creating a searchable knowledge base for debugging and project evolution.",
+}
 ];
