@@ -205,60 +205,42 @@ export default function PostForm({
   */
 
   useEffect(() => {
-    if (
-      typeof chrome ===
-      "undefined"
-    )
-      return;
-
-    if (!chrome.storage?.local)
-      return;
+    if (typeof chrome === "undefined") return;
+    if (!chrome.storage?.local) return;
 
     chrome.storage.local.get(
-      [
-        "latest_post",
-        "suggested_titles",
-      ],
+      ["latestContent", "latestSuggestedTitles"],
       (result) => {
-        if (
-          result.latest_post
-        ) {
-          setContent(
-            result.latest_post
-          );
+        if (result.latestContent) {
+          setContent(result.latestContent);
         }
 
-        const {
-          title,
-          suggestions,
-        } = getSuggestedTitles(
-          result.suggested_titles
+        const { title, suggestions } = getSuggestedTitles(
+          result.latestSuggestedTitles
         );
 
         if (title) {
           setTitle(title);
         }
 
-        setSuggestedTitles(
-          suggestions
-        );
+        setSuggestedTitles(suggestions);
       }
     );
   }, []);
 
-  /*
-    multi select helper
-  */
+    /*
+      multi select helper
+    */
 
-  const getSelectedValues = (
-    e: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    return Array.from(
-      e.target.selectedOptions
-    ).map(
-      (option) => option.value
-    );
-  };
+    const getSelectedValues = (
+      e: React.ChangeEvent<HTMLSelectElement>
+    ) => {
+      return Array.from(
+        e.target.selectedOptions
+      ).map(
+        (option) => option.value
+      );
+    };
 
   /*
     submit
