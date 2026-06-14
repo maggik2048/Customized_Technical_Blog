@@ -10,6 +10,8 @@ import MarkdownImageManager from "@/app/components/Markdown/processors/MarkdownP
 
 import { getRecentAccessMetadata } from "./GetRecentAccess";
 
+import { getSuggestedTitles } from "./GetSuggestedTitles";
+
 type MetadataItem = {
   name: string;
   slug: string;
@@ -79,9 +81,13 @@ export default function PostForm({
   const [title, setTitle] =
     useState("");
 
+  const [
+    suggestedTitles,
+    setSuggestedTitles,
+  ] = useState<string[]>([]);
+
   const [content, setContent] =
     useState("");
-
   /*
     metadata load
   */
@@ -209,15 +215,32 @@ export default function PostForm({
       return;
 
     chrome.storage.local.get(
-      ["latest_post"],
+      [
+        "latest_post",
+        "suggested_titles",
+      ],
       (result) => {
         if (
-          !result.latest_post
-        )
-          return;
-
-        setContent(
           result.latest_post
+        ) {
+          setContent(
+            result.latest_post
+          );
+        }
+
+        const {
+          title,
+          suggestions,
+        } = getSuggestedTitles(
+          result.suggested_titles
+        );
+
+        if (title) {
+          setTitle(title);
+        }
+
+        setSuggestedTitles(
+          suggestions
         );
       }
     );
@@ -519,12 +542,18 @@ export default function PostForm({
 
       <div
         style={{
-          marginBottom: 16,
+          marginBottom: 24,
         }}
       >
-        <label>Title</label>
-
-        <br />
+        <label
+          style={{
+            display: "block",
+            marginBottom: 8,
+            fontWeight: 700,
+          }}
+        >
+          Title
+        </label>
 
         <input
           value={title}
@@ -535,20 +564,71 @@ export default function PostForm({
           }
           style={{
             width: "100%",
-
             padding: 8,
-
             borderRadius: 8,
-
             border:
               "1px solid #444",
-
             background:
               "#111",
-
             color: "#fff",
           }}
         />
+
+        {suggestedTitles.length >
+          0 && (
+          <div
+            style={{
+              marginTop: 12,
+            }}
+          >
+            <div
+              style={{
+                fontSize: 12,
+                opacity: 0.7,
+                marginBottom: 8,
+              }}
+            >
+              Suggested Titles
+            </div>
+
+            {suggestedTitles.map(
+              (
+                suggestedTitle,
+                index
+              ) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() =>
+                    setTitle(
+                      suggestedTitle
+                    )
+                  }
+                  style={{
+                    display:
+                      "block",
+                    width: "100%",
+                    textAlign:
+                      "left",
+                    padding: 10,
+                    marginBottom: 8,
+                    borderRadius: 8,
+                    border:
+                      "1px solid #333",
+                    background:
+                      "#1a1a1a",
+                    color:
+                      "#ddd",
+                    cursor:
+                      "pointer",
+                  }}
+                >
+                  {suggestedTitle}
+                </button>
+              )
+            )}
+          </div>
+        )}
       </div>
 
       {/* Markdown */}
