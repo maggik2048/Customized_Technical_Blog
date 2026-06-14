@@ -376,6 +376,8 @@ function boot() {
           mutations.length
         );
 
+        adapter.lastMutationTime = Date.now();
+
         adapter.tryCapture(
           (payload) => {
             if (!payload) {
