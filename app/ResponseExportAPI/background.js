@@ -1,112 +1,120 @@
 console.log("Background Service Worker Loaded");
 
 /* =========================================
-   STATE (강화된 중복 방지)
+   STATE (중복 방지 레이어)
 ========================================= */
 
-// 기존 처리 락
+//  전역 실행 락
 let isProcessing = false;
 
-// 🔥 추가: 시간 기반 락 (레이스 방지 핵심)
+//  시간 기반 방지
 let lastOpenTime = 0;
 
-// 🔥 추가: 메시지 단위 중복 방지
-let lastMessageHash = "";
+//  message id 기반 중복 방지 (핵심)
+const processedIds = new Set();
+
+//  tab 기반 방지 (중요)
+const tabLastRun = new Map();
+
+/* =========================================
+   CLEANUP (메모리 누수 방지)
+========================================= */
+
+// 오래된 id 제거 (10초마다)
+setInterval(() => {
+  processedIds.clear();
+}, 10000);
 
 /* =========================================
    MESSAGE LISTENER
 ========================================= */
 
-chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((msg, sender) => {
   (async () => {
     try {
-      console.log("=================================");
-      console.log("BACKGROUND MESSAGE RECEIVED");
-      console.log("=================================");
-      console.log(msg);
-
-      if (msg.type !== "FINAL_MESSAGE") {
-        console.log("NOT FINAL_MESSAGE");
-        return;
-      }
+      if (msg.type !== "FINAL_MESSAGE") return;
 
       const html = msg.payload?.html;
+      const id = msg.payload?.id || (html ? html.length + "_" + html.slice(0, 50) : null);
 
-      if (!html || typeof html !== "string") {
-        console.log("INVALID HTML PAYLOAD");
-        return;
-      }
+      if (!html || typeof html !== "string") return;
+      if (!id) return;
 
-      /* =========================================
-         🔥 1. 메시지 해시 기반 중복 방지
-      ========================================= */
-
-      const msgHash = html.length + "_" + html.slice(0, 80);
-
-      if (msgHash === lastMessageHash) {
-        console.log("[SKIP] duplicate message content");
-        return;
-      }
-
-      lastMessageHash = msgHash;
-
-      /* =========================================
-         🔥 2. 시간 기반 중복 방지 (핵심)
-      ========================================= */
-
+      const tabId = sender.tab?.id;
       const now = Date.now();
 
-      if (now - lastOpenTime < 3000) {
-        console.log("[SKIP] too fast duplicate trigger");
+      console.log("[BG] message received", { id, tabId });
+
+      /* =========================================
+         1. GLOBAL DUP CHECK (ID)
+      ========================================= */
+      if (processedIds.has(id)) {
+        console.log("[SKIP] duplicate id");
         return;
       }
 
       /* =========================================
-         🔥 3. 실행 락
+         2. TAB DUP CHECK
       ========================================= */
+      if (tabId !== undefined) {
+        const last = tabLastRun.get(tabId) || 0;
+        if (now - last < 3000) {
+          console.log("[SKIP] tab cooldown");
+          return;
+        }
+      }
 
-      if (isProcessing) {
-        console.log("SKIPPED: already processing");
+      /* =========================================
+         3. GLOBAL TIME WINDOW
+      ========================================= */
+      if (now - lastOpenTime < 2000) {
+        console.log("[SKIP] global cooldown");
         return;
       }
 
-      isProcessing = true;
-      lastOpenTime = now;
+      /* =========================================
+         4. EXECUTION LOCK
+      ========================================= */
+      if (isProcessing) {
+        console.log("[SKIP] already processing");
+        return;
+      }
 
-      console.log("HTML LENGTH:", html.length);
+      //  LOCK SET
+      isProcessing = true;
+      processedIds.add(id);
+      lastOpenTime = now;
+      if (tabId !== undefined) tabLastRun.set(tabId, now);
 
       /* =========================================
          STORAGE SAVE
       ========================================= */
-
       await chrome.storage.local.set({
         latestFinalHTML: html,
         latestSavedAt: now,
       });
 
-      console.log("HTML SAVED TO chrome.storage.local");
+      console.log("[BG] saved");
 
       /* =========================================
-         OPEN FRONTEND
+         OPEN ONLY ONCE
       ========================================= */
-
       chrome.tabs.create({
         url: "http://localhost:3000/admin/write",
       });
 
-      console.log("WRITE PAGE OPENED");
+      console.log("[BG] write form opened");
 
       /* =========================================
-         RELEASE LOCK (조금 늦게 해제)
+         RELEASE LOCK
       ========================================= */
-
       setTimeout(() => {
         isProcessing = false;
-        console.log("[UNLOCKED]");
-      }, 2000);
+        console.log("[BG] unlocked");
+      }, 1500);
 
     } catch (err) {
-      console.error("BACKGROUND ERROR:", err);
+      console.error("[BG ERROR]", err);
       isProcessing = false;
     }
   })();
