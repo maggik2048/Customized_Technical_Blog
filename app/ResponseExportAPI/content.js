@@ -1,23 +1,49 @@
-console.log("EXTENSION LOADED");
+console.log("ResponseExportAPI Loaded");
 
 /* =========================================
    STATE
 ========================================= */
 
-let lastMessageCount = 0;
-
-let lastFinalText = "";
-
+let lastResponseHash = "";
 let debounceTimer = null;
 
 /* =========================================
-   GET ASSISTANT MESSAGES
+   CHATGPT EXPORTER (IMPORT 대신 포함)
 ========================================= */
 
-function getAssistantMessages() {
-  return document.querySelectorAll(
+function getLatestResponseHTML() {
+  const messages = document.querySelectorAll(
     '[data-message-author-role="assistant"]'
   );
+
+  if (!messages.length) return null;
+
+  return messages[messages.length - 1].innerHTML;
+}
+
+function isResponseFinished() {
+  const stopButton = document.querySelector(
+    '[aria-label*="Stop"]'
+  );
+
+  return !stopButton;
+}
+
+/* =========================================
+   SEND FINAL RESPONSE
+========================================= */
+
+function sendFinalResponse(html) {
+  chrome.runtime.sendMessage({
+    type: "FINAL_MESSAGE",
+    payload: {
+      html,
+      source: location.hostname,
+      timestamp: Date.now(),
+    },
+  });
+
+  console.log("FINAL_MESSAGE SENT");
 }
 
 /* =========================================
@@ -25,151 +51,34 @@ function getAssistantMessages() {
 ========================================= */
 
 const observer = new MutationObserver(() => {
-  const messages =
-    getAssistantMessages();
-
-  if (!messages.length) {
-    return;
-  }
-
-  /**
-   * 현재 마지막 assistant
-   */
-
-  const lastMsg =
-    messages[messages.length - 1];
-
-  /**
-   * 실제 텍스트
-   */
-
-  const text =
-    lastMsg.textContent?.trim() ||
-    "";
-
-  /**
-   * html
-   */
-
-  const html =
-    lastMsg.innerHTML?.trim() ||
-    "";
-
-  if (!html || !text) {
-    return;
-  }
-
-  /**
-   * =====================================
-   * 새 assistant message 추가 감지
-   * =====================================
-   */
-
-  const messageCount =
-    messages.length;
-
-  const isNewMessage =
-    messageCount >
-    lastMessageCount;
-
-  /**
-   * 새 응답 아니면 무시
-   */
-
-  if (!isNewMessage) {
-    return;
-  }
-
-  /**
-   * streaming debounce
-   */
-
   clearTimeout(debounceTimer);
 
   debounceTimer = setTimeout(() => {
-    /**
-     * 최종 text
-     */
-
-    const finalText =
-      lastMsg.textContent?.trim() ||
-      "";
-
-    /**
-     * 중복 방지
-     */
-
-    if (
-      finalText ===
-      lastFinalText
-    ) {
-      console.log(
-        "SAME RESPONSE SKIPPED"
-      );
-
-      return;
-    }
-
-    /**
-     * save state
-     */
-
-    lastFinalText =
-      finalText;
-
-    lastMessageCount =
-      messageCount;
-
-    console.log(
-      "================================="
-    );
-
-    console.log(
-      "FINAL ASSISTANT HTML"
-    );
-
-    console.log(
-      "================================="
-    );
-
-    console.log(html);
-
-    /**
-     * send
-     */
-
     try {
-      chrome.runtime.sendMessage({
-        type: "FINAL_MESSAGE",
+      if (!isResponseFinished()) return;
 
-        payload: {
-          html,
-        },
-      });
+      const html = getLatestResponseHTML();
+      if (!html) return;
 
-      console.log(
-        "MESSAGE SENT TO BACKGROUND"
-      );
+      const hash = html.length + "_" + html.slice(0, 100);
+
+      if (hash === lastResponseHash) return;
+
+      lastResponseHash = hash;
+
+      console.log("FINAL RESPONSE DETECTED");
+
+      sendFinalResponse(html);
     } catch (err) {
-      console.error(
-        "SEND MESSAGE ERROR:"
-      );
-
       console.error(err);
     }
-  }, 1500);
+  }, 1000);
 });
-
-/* =========================================
-   START OBSERVER
-========================================= */
 
 observer.observe(document.body, {
   childList: true,
-
   subtree: true,
-
   characterData: true,
 });
 
-console.log("OBSERVER STARTED");
+console.log("Observer Started");

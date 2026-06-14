@@ -1,14 +1,9 @@
 {
   "manifest_version": 3,
-
   "name": "AI Export Extension",
   "version": "1.0",
 
-  "permissions": [
-    "activeTab",
-    "storage",
-    "tabs"
-  ],
+  "permissions": ["activeTab", "storage", "tabs"],
 
   "host_permissions": [
     "https://chatgpt.com/*",
@@ -29,11 +24,8 @@
       "js": ["content.js"],
       "run_at": "document_idle"
     },
-
     {
-      "matches": [
-        "http://localhost:3000/*"
-      ],
+      "matches": ["http://localhost:3000/*"],
       "js": ["inject.js"],
       "run_at": "document_idle"
     }

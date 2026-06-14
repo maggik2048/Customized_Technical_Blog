@@ -1,43 +1,73 @@
-chrome.runtime.onMessage.addListener(
-  async (msg) => {
-    console.log("=================================");
-    console.log("BACKGROUND MESSAGE RECEIVED");
-    console.log("=================================");
+console.log("Background Service Worker Loaded");
 
-    console.log(msg);
+/* =========================================
+   STATE (중복 실행 방지)
+========================================= */
 
-    if (msg.type !== "FINAL_MESSAGE") {
-      console.log("NOT FINAL_MESSAGE");
-      return;
-    }
+let isProcessing = false;
 
-    const html = msg.payload?.html;
+/* =========================================
+   MESSAGE LISTENER
+========================================= */
 
-    if (!html) {
-      console.log("NO HTML PAYLOAD");
-      return;
-    }
-
-    console.log("HTML LENGTH:");
-    console.log(html.length);
-
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  (async () => {
     try {
+      console.log("=================================");
+      console.log("BACKGROUND MESSAGE RECEIVED");
+      console.log("=================================");
+      console.log(msg);
+
+      if (msg.type !== "FINAL_MESSAGE") {
+        console.log("NOT FINAL_MESSAGE");
+        return;
+      }
+
+      if (isProcessing) {
+        console.log("SKIPPED: already processing");
+        return;
+      }
+
+      isProcessing = true;
+
+      const html = msg.payload?.html;
+
+      if (!html || typeof html !== "string") {
+        console.log("INVALID HTML PAYLOAD");
+        isProcessing = false;
+        return;
+      }
+
+      console.log("HTML LENGTH:", html.length);
+
+      /* =========================================
+         STORAGE SAVE
+      ========================================= */
+
       await chrome.storage.local.set({
         latestFinalHTML: html,
+        latestSavedAt: Date.now(),
       });
 
-      console.log(
-        "HTML SAVED TO chrome.storage.local"
-      );
+      console.log("HTML SAVED TO chrome.storage.local");
+
+      /* =========================================
+         OPEN FRONTEND
+      ========================================= */
 
       chrome.tabs.create({
         url: "http://localhost:3000/admin/write",
       });
 
       console.log("WRITE PAGE OPENED");
+
+      isProcessing = false;
     } catch (err) {
-      console.error("BACKGROUND ERROR:");
-      console.error(err);
+      console.error("BACKGROUND ERROR:", err);
+      isProcessing = false;
     }
-  }
-);
+  })();
+
+  // MV3 중요: async 처리 유지
+  return true;
+});
