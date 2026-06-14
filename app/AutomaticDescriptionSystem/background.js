@@ -25,6 +25,24 @@ chrome.runtime.onMessage.addListener(
       return;
     }
 
+    const settings =
+      await chrome.storage.local.get(
+        "customMessage"
+      );
+
+    const customMessage =
+      settings.customMessage || "";
+
+    const finalContent =
+      customMessage.trim()
+        ? `${message.content}
+
+
+
+
+${customMessage}`
+        : message.content;
+
     const tabs =
       await chrome.tabs.query({});
 
@@ -54,7 +72,7 @@ chrome.runtime.onMessage.addListener(
               "SetContentToDestination",
 
             content:
-              message.content
+              finalContent
           }
         );
 
