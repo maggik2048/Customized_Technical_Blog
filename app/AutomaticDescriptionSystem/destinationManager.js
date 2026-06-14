@@ -23,7 +23,7 @@
     new DestinationClass();
 
   chrome.runtime.onMessage.addListener(
-    (message) => {
+    async (message) => {
 
       if (
         message.action !==
@@ -32,9 +32,23 @@
         return;
       }
 
-      destination.setContent(
-        message.content
+      const success =
+        destination.setContent(
+          message.content
+        );
+
+      if (!success)
+        return;
+
+      await new Promise(
+        resolve =>
+          setTimeout(
+            resolve,
+            1000
+          )
       );
+
+      destination.submit();
 
     }
   );
