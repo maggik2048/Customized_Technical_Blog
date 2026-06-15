@@ -22,6 +22,9 @@ import {
   Monsieur_La_Doulaise,
 } from "next/font/google";
 
+// Local imports
+import RemarkLetterPageBackgroundRenderer from "./RemarkLetterPagebackgroundRenderer";
+
 // Lazy load heavy components
 const TableRenderer = lazy(() => import("./TableRenderer"));
 const KaTeXPostProcessor = lazy(() => import("./KaTeXPostProcessor"));
@@ -38,7 +41,7 @@ const titleFont = Monsieur_La_Doulaise({
   weight: ["400"],
   display: "swap",
   preload: true,
-  adjustFontFallback: false, // Reduce CSS size
+  adjustFontFallback: false,
 });
 
 const luxuryHeadingFont = Tangerine({
@@ -240,42 +243,14 @@ export default function RemarkLetterPageRenderer({
 
   /* =========================
      STYLES (Memoized with useMemo)
+     NOTE: Background-related styles (letter, cinematicOverlay, seal) 
+     are now handled by RemarkLetterPageBackgroundRenderer
   ========================= */
-  const styles = useMemo(() => ({
-    letter: {
-      position: "relative" as const,
-      overflow: "hidden" as const,
-      maxWidth: 980,
-      margin: "0 auto",
-      padding: "74px 78px 88px 78px",
-      borderRadius: 8,
-      backgroundColor: colors.paperColor,
-      backgroundImage: `url("/images/letter2.png")`,
-      backgroundSize: "330%",
-      backgroundRepeat: "no-repeat",
-      backgroundPosition: "center",
-      boxShadow: colors.shadowColor,
-      border: `1px solid ${colors.borderColor}`,
-      contain: "layout paint style" as const,
-    },
-    cinematicOverlay: {
-      position: "absolute" as const,
-      inset: 0,
-      pointerEvents: "none" as const,
-      background: colors.gradientOverlay,
-    },
-    seal: {
-      position: "absolute" as const,
-      top: 28,
-      left: 38,
-      width: 62,
-      height: 62,
-      borderRadius: "50%",
-      border: `3px solid ${colors.headingColor}`,
-      opacity: 0.14,
-      pointerEvents: "none" as const,
-    },
-  }), [colors]);
+  const highlightStyle = useMemo(() => ({
+    background: colors.highlightBg,
+    borderRadius: 4,
+    padding: "2px 4px",
+  }), [colors.highlightBg]);
 
   /* =========================
      OPTIMIZED RENDERERS
@@ -332,7 +307,7 @@ export default function RemarkLetterPageRenderer({
 
   // Merge styles for StrongRenderer
   const strongStyle = useMemo(() => ({
-    ...styles.highlight,
+    ...highlightStyle,
     color: colors.headingColor,
     fontWeight: 400,
     fontSize: "1.5em",
@@ -342,7 +317,7 @@ export default function RemarkLetterPageRenderer({
     transform: "rotate(-1deg)",
     padding: "0 4px",
     textShadow: colors.strongTextShadow,
-  }), [colors.headingColor, colors.strongTextShadow, styles.highlight]);
+  }), [colors.headingColor, colors.strongTextShadow, highlightStyle]);
 
   const StrongRenderer = useMemo(() => memo(function StrongRenderer({ children }: any) {
     return (
@@ -476,9 +451,10 @@ export default function RemarkLetterPageRenderer({
   ]);
 
   return (
-    <div style={styles.letter}>
-      <div style={styles.cinematicOverlay} />
-      <div style={styles.seal} />
+    <RemarkLetterPageBackgroundRenderer
+      isDark={isDark}
+      headingColor={colors.headingColor}
+    >
       <Suspense fallback={null}>
         <KaTeXPostProcessor />
       </Suspense>
@@ -491,7 +467,7 @@ export default function RemarkLetterPageRenderer({
           {children}
         </ReactMarkdown>
       </Suspense>
-    </div>
+    </RemarkLetterPageBackgroundRenderer>
   );
 }
 
