@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import PaperStack from "./PaperStack";
-import PDFPage from "@/app/components/PDFPage";
+import PDFPage from "@/app/post/[id]/PDFPage";
 
 export default function InfinitePosts({ initialPosts }: any) {
   const [posts, setPosts] = useState(initialPosts);
