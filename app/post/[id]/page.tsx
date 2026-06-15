@@ -61,6 +61,8 @@ export default function PostPage() {
             title,
             content,
             created_at,
+            
+            commit_url,
 
             category,
             category_slugs,

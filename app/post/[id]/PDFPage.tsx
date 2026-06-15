@@ -62,6 +62,9 @@ export default function PDFPage({
     globalIndex,
     localIndex,
     localTotal,
+
+    commit_url: data?.commit_url,
+
     category: data?.category,
     category_slugs: data?.category_slugs,
     project_slugs: data?.project_slugs,
@@ -177,6 +180,85 @@ export default function PDFPage({
           <div style={{ paddingTop: HEADER_HEIGHT - 36 }}>
             <MetadataPostalCode data={data} isDark={isDark} />
 
+            <div
+              style={{
+                marginTop: 20,
+                marginBottom: 24,
+
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+
+                padding: "14px 18px",
+
+                borderRadius: 12,
+
+                background: isDark
+                  ? "rgba(255,140,0,0.08)"
+                  : "rgba(255,140,0,0.08)",
+
+                border:
+                  "1px solid rgba(255,140,0,0.3)",
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  if (data?.commit_url) {
+                    window.open(
+                      data.commit_url,
+                      "_blank"
+                    );
+                  }
+                }}
+                style={{
+                  padding: "10px 18px",
+
+                  border: "none",
+
+                  borderRadius: 8,
+
+                  cursor: data?.commit_url
+                    ? "pointer"
+                    : "default",
+
+                  fontWeight: 700,
+
+                  background: "#f97316",
+
+                  color: "#fff",
+                }}
+              >
+                Go To Corresponding
+                GitHub Commit Page
+              </button>
+
+              {data?.commit_url ? (
+                <a
+                  href={data.commit_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    color: "#3b82f6",
+                    textDecoration:
+                      "underline",
+
+                    wordBreak:
+                      "break-all",
+                  }}
+                >
+                  {data.commit_url}
+                </a>
+              ) : (
+                <span
+                  style={{
+                    color: "#888",
+                  }}
+                >
+                  No commit linked yet
+                </span>
+              )}
+            </div>
             <div
               style={{
                 float: "left",

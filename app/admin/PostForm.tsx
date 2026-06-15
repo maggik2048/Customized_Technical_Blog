@@ -82,6 +82,12 @@ export default function PostForm({
   const [content, setContent] =
     useState("");
 
+
+  const [
+    commitPending,
+    setCommitPending,
+  ] = useState(false);  
+
   /*
     metadata load
   */
@@ -189,6 +195,12 @@ export default function PostForm({
         setTagSlugs(
           data.tag_slugs || []
         );
+
+        setCommitPending(
+          data.commit_pending ??
+            false
+        );        
+
       };
 
     fetchPost();
@@ -254,10 +266,14 @@ export default function PostForm({
       return;
     }
 
+
     const payload = {
       title,
 
       content,
+
+      commit_pending:
+        commitPending,
 
       /*
         legacy fallback
@@ -557,6 +573,49 @@ export default function PostForm({
         content={content}
         setContent={setContent}
       />
+
+      {/* Commit Ready */}
+
+      <div
+        style={{
+          marginTop: 24,
+          marginBottom: 24,
+        }}
+      >
+        <button
+          type="button"
+          onClick={() =>
+            setCommitPending(
+              (prev) => !prev
+            )
+          }
+          style={{
+            padding:
+              "10px 16px",
+
+            border: "none",
+
+            borderRadius: 8,
+
+            cursor: "pointer",
+
+            fontWeight: 700,
+
+            background:
+              commitPending
+                ? "#f97316"
+                : "#333",
+
+            color: "#fff",
+          }}
+        >
+          {commitPending
+            ? "🟠 Commit Ready"
+            : "⚫ Commit Ready"}
+        </button>
+      </div>
+
+
 
       {/* Submit */}
 
