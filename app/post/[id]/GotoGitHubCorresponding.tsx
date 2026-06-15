@@ -23,15 +23,15 @@ export default function GotoGitHubCorresponding({
 
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 14px;
 
           height: 34px;
 
-          padding: 0 48px 0 18px;
+          padding: 0 12px 0 18px;
 
           border: none;
 
-          border-radius: 7px 0 0 7px;
+          border-radius: 8px 0 0 8px;
 
           cursor: pointer;
 
@@ -39,11 +39,11 @@ export default function GotoGitHubCorresponding({
 
           color: #fff;
 
+          white-space: nowrap;
+
           transition:
             transform 0.18s ease,
             filter 0.18s ease;
-
-          white-space: nowrap;
         }
 
         .githubButton:hover {
@@ -54,54 +54,7 @@ export default function GotoGitHubCorresponding({
             translateY(-1px);
         }
 
-        .githubButton::after {
-          content: "";
-
-          position: absolute;
-
-          top: 0;
-          right: -34px;
-
-          width: 38px;
-          height: 100%;
-
-          background: #974e4e;
-
-          clip-path: polygon(
-            0 0,
-            100% 50%,
-            0 100%,
-            18% 50%
-          );
-        }
-
-        .githubButton::before {
-          content: "";
-
-          position: absolute;
-
-          top: 0;
-          right: -17px;
-
-          width: 26px;
-          height: 100%;
-
-          background: #974e4e;
-
-          clip-path: polygon(
-            0 0,
-            100% 50%,
-            0 100%,
-            18% 50%
-          );
-
-          z-index: 2;
-        }
-
         .goToText {
-          position: relative;
-          z-index: 3;
-
           font-family:
             "Cormorant Garamond",
             serif;
@@ -116,23 +69,37 @@ export default function GotoGitHubCorresponding({
         }
 
         .commitText {
-          position: relative;
-          z-index: 3;
-
           font-family:
             "Michroma",
             "JetBrains Mono",
             monospace;
 
-          font-size: 10px;
+          font-size: 9px;
 
           font-weight: 400;
 
-          letter-spacing: 0.12em;
-
           text-transform: uppercase;
 
+          letter-spacing: 0.14em;
+
           line-height: 1;
+        }
+
+        .arrowSvg {
+          width: 96px;
+
+          height: 34px;
+
+          margin-right: -40px;
+
+          flex-shrink: 0;
+
+          overflow: visible;
+        }
+
+        .arrowWrap {
+          display: flex;
+          align-items: center;
         }
       `}</style>
 
@@ -178,6 +145,60 @@ export default function GotoGitHubCorresponding({
 
           <span className="commitText">
             Corresponding GitHub Commit
+          </span>
+
+          <span className="arrowWrap">
+            <svg
+              className="arrowSvg"
+              viewBox="0 0 120 40"
+              aria-hidden="true"
+            >
+              {/* 위쪽 날개 */}
+              <polygon
+                points="
+                  40,2
+                  62,2
+                  82,18
+                  64,13
+                "
+                fill="#ffffff"
+                opacity="0.92"
+              />
+
+              {/* 아래쪽 날개 */}
+              <polygon
+                points="
+                  40,38
+                  62,38
+                  82,22
+                  64,27
+                "
+                fill="#ffffff"
+                opacity="0.92"
+              />
+
+              {/* 작은 화살촉 */}
+              <polygon
+                points="
+                  54,4
+                  74,20
+                  54,36
+                  66,20
+                "
+                fill="#ffffff"
+              />
+
+              {/* 큰 화살촉 */}
+              <polygon
+                points="
+                  72,0
+                  120,20
+                  72,40
+                  88,20
+                "
+                fill="#ffffff"
+              />
+            </svg>
           </span>
         </button>
 
