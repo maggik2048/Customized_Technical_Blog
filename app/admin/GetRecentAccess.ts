@@ -1,10 +1,10 @@
 import { supabase } from "@/lib/supabase";
 
-import { CATEGORY_TREE } from "@/app/components/SidebarCategory/Data/CategoryTree";
+import { CATEGORY_TREE } from "@/app/-Data/CategoryTree";
 
-import { PROJECT_TREE } from "@/app/components/SidebarCategory/Data/ProjectTree";
+import { PROJECT_TREE } from "@/app/-Data/ProjectTree";
 
-import { TAG_TREE } from "@/app/components/SidebarCategory/Data/TagTree";
+import { TAG_TREE } from "@/app/-Data/TagTree";
 
 type MetadataResult<T> = {
   items: T[];

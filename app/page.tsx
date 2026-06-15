@@ -13,7 +13,7 @@ import ProjectBoxRenderer from "./components/ProjectBoxRenderer";
 import WritePostButton from "./admin/write/WritePostButton";
 import AuthenticationButtons from "./signup/AuthenticationButtons";
 
-import { CATEGORY_TREE } from "./components/SidebarCategory/Data/CategoryTree";
+import { CATEGORY_TREE } from "./-Data/CategoryTree";
 
 export default function HomePage() {
   const router = useRouter();

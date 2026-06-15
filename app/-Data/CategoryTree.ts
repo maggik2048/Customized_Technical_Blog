@@ -1,4 +1,4 @@
-import { Item } from "../../types";
+import { Item } from "../components/types";
 
 export const CATEGORY_TREE: Omit<Item, "href" | "count">[] = [
   {
@@ -7,7 +7,6 @@ export const CATEGORY_TREE: Omit<Item, "href" | "count">[] = [
     children: [
       { name: "SemanticSearch", slug: "semantic_search" },
       { name: "GamificationOfLearning", slug: "gamification_of_learning" },
-      { name: "dom-range-highligher", slug: "highligher" },
       { name: "AI API Exporter", slug: "ai_api_exporter" },
       { name: "NPRShaderProgramming:Chalcoal", slug: "npr_shader_programming_chalcoal" },
       { name: "GISbasedWorldStreaming", slug: "gis_based_world_streaming" },

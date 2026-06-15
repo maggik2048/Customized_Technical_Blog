@@ -1,6 +1,6 @@
 // sidebarData.ts
 import { supabase } from "../../../lib/supabase"; // 기존 경로 그대로
-import { CATEGORY_TREE } from "./Data/CategoryTree";
+import { CATEGORY_TREE } from "../../-Data/CategoryTree";
 import { Item } from "./types";
 
 export async function getMenu(): Promise<Item[]> {

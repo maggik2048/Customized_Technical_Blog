@@ -2,11 +2,11 @@
 
 import React from "react";
 
-import { PROJECT_TREE } from "@/app/components/SidebarCategory/Data/ProjectTree";
+import { PROJECT_TREE } from "@/app/-Data/ProjectTree";
 
-import { TAG_TREE } from "@/app/components/SidebarCategory/Data/TagTree";
+import { TAG_TREE } from "@/app/-Data/TagTree";
 
-import { CATEGORY_TREE } from "@/app/components/SidebarCategory/Data/CategoryTree";
+import { CATEGORY_TREE } from "@/app/-Data/CategoryTree";
 
 import MetadataStyleRenderer from "./MetadataStyleRenderer";
 
