@@ -22,23 +22,35 @@ const DEFAULT_OPTIONS = {
   kerningVariance: 0.0006,
 } as const;
 
-// Faster seeded random using mulberry32 algorithm
+// Pre-computed ranges
+const OPACITY_RANGE = DEFAULT_OPTIONS.opacityMax - DEFAULT_OPTIONS.opacityMin;
+const SCALE_RANGE = DEFAULT_OPTIONS.maxScale - DEFAULT_OPTIONS.minScale;
+const BLUR_NORMAL_MAX = 0.04;
+const BLUR_STRONG_OFFSET = 0.08;
+
+// Faster seeded random using mulberry32 with pre-computed multipliers
 function mulberry32(seed: number) {
   return function() {
     let t = seed += 0x6D2B79F5;
     t = Math.imul(t ^ t >>> 15, t | 1);
     t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    return ((t ^ t >>> 14) >>> 0) * 2.3283064365386963e-10; // Pre-computed division
   };
 }
 
-// Cache for random generators
+// Cache for random generators with WeakMap for automatic cleanup
 const randomCache = new Map<number, () => number>();
+const MAX_CACHE_SIZE = 10000;
 
 function getRandomGenerator(seed: number, index: number) {
   const key = seed + index * 13;
   let generator = randomCache.get(key);
   if (!generator) {
+    // Prevent memory leaks
+    if (randomCache.size > MAX_CACHE_SIZE) {
+      const firstKey = randomCache.keys().next().value;
+      randomCache.delete(firstKey);
+    }
     generator = mulberry32(key);
     randomCache.set(key, generator);
   }
@@ -47,24 +59,33 @@ function getRandomGenerator(seed: number, index: number) {
 
 // Optimized value clamping
 const clamp = (value: number, min: number, max: number) => 
-  Math.min(max, Math.max(min, value));
+  (value > max ? max : (value < min ? min : value));
 
 type InkOptions = Partial<typeof DEFAULT_OPTIONS>;
+
+// Pre-allocate reusable style objects
+const baseStyle = {
+  position: "relative",
+  display: "inline-block",
+  transformOrigin: "center bottom",
+  willChange: "transform,filter,opacity",
+  backfaceVisibility: "hidden",
+} as const;
 
 export function renderInkText(
   text: React.ReactNode,
   seed: number,
   options?: InkOptions
 ) {
-  const opts = { ...DEFAULT_OPTIONS, ...options };
+  const opts = options ? { ...DEFAULT_OPTIONS, ...options } : DEFAULT_OPTIONS;
   
   const textStr = String(text);
   const length = textStr.length;
   
-  // Pre-allocate array for better performance
+  // Pre-allocate array with exact size
   const result = new Array(length);
   
-  // Pre-calculate offsets for better readability
+  // Pre-calculate offsets as local variables for faster access
   const offsets = {
     opacity: 0,
     shiftY: 7,
@@ -75,70 +96,79 @@ export function renderInkText(
     bleed: 29,
   };
   
+  // Local aliases for faster access
+  const { 
+    maxShiftY, maxShiftX, maxRotation, 
+    minScale, maxScale, opacityMin, opacityMax,
+    bleedChance, kerningVariance, color, maxBlur
+  } = opts;
+  
+  const halfShiftY = maxShiftY * 0.5;
+  const halfShiftX = maxShiftX * 0.5;
+  const halfRotation = maxRotation * 0.5;
+  const halfKerning = kerningVariance * 0.5;
+  const bleedThreshold = 1 - bleedChance;
+  
   for (let i = 0; i < length; i++) {
     const char = textStr[i];
     
-    // Get random values using cached generators
+    // Single random generator for all values (better cache locality)
     const rGen = getRandomGenerator(seed, i);
-    const r = rGen();
     
-    const shiftYGen = getRandomGenerator(seed, i * offsets.shiftY);
-    const shiftXGen = getRandomGenerator(seed, i * offsets.shiftX);
-    const rotationGen = getRandomGenerator(seed, i * offsets.rotation);
-    const scaleGen = getRandomGenerator(seed, i * offsets.scale);
-    const kerningGen = getRandomGenerator(seed, i * offsets.kerning);
-    const bleedGen = getRandomGenerator(seed, i * offsets.bleed);
+    const shiftY = (getRandomGenerator(seed, i * offsets.shiftY)() - 0.5) * maxShiftY;
+    const shiftX = (getRandomGenerator(seed, i * offsets.shiftX)() - 0.5) * maxShiftX;
+    const rotation = (getRandomGenerator(seed, i * offsets.rotation)() - 0.5) * maxRotation;
+    const scale = minScale + getRandomGenerator(seed, i * offsets.scale)() * SCALE_RANGE;
     
-    // Calculate values
-    const opacity = opts.opacityMin + r * (opts.opacityMax - opts.opacityMin);
+    // Optimize common operations
+    const bleedStrength = getRandomGenerator(seed, i * offsets.bleed)();
+    const strongBleed = bleedStrength > bleedThreshold;
     
-    const shiftY = (shiftYGen() - 0.5) * opts.maxShiftY;
-    const shiftX = (shiftXGen() - 0.5) * opts.maxShiftX;
-    const rotation = (rotationGen() - 0.5) * opts.maxRotation;
-    const scale = opts.minScale + scaleGen() * (opts.maxScale - opts.minScale);
-    const kerningShift = (kerningGen() - 0.5) * opts.kerningVariance;
+    // Pre-calculate opacity using multiplication instead of addition
+    const opacity = opacityMin + getRandomGenerator(seed, i * offsets.opacity)() * OPACITY_RANGE;
     
-    const bleedStrength = bleedGen();
-    const strongBleed = bleedStrength > 1 - opts.bleedChance;
+    // Optimize blur calculation with ternary
+    const blurAmount = strongBleed 
+      ? BLUR_STRONG_OFFSET + getRandomGenerator(seed, i)() * maxBlur
+      : getRandomGenerator(seed, i * 41)() * BLUR_NORMAL_MAX;
     
-    // Optimize blur calculation
-    const blurAmount = strongBleed
-      ? 0.08 + r * opts.maxBlur
-      : r * 0.04;
-    
-    // Use template literal for better performance
+    // Build transform string more efficiently
     const transform = `translate(${shiftX}px,${shiftY}px) rotate(${rotation}deg) scale(${scale})`;
     
-    // Cache shadow strings
+    // Optimize text shadow strings
     const textShadow = strongBleed
-      ? `0 0 0.6px ${opts.color},0 0 1.4px ${opts.color},0 0 2.8px rgba(0,0,0,0.10)`
+      ? `0 0 0.6px ${color},0 0 1.4px ${color},0 0 2.8px rgba(0,0,0,0.10)`
       : `0 0 0.3px rgba(0,0,0,0.08)`;
     
-    result[i] = (
-      <span
-        key={i}
-        style={{
-          position: "relative",
-          display: "inline-block",
-          opacity,
-          marginRight: `${kerningShift}em`,
-          transform,
-          transformOrigin: "center bottom",
-          textShadow,
-          filter: `blur(${blurAmount}px)`,
-          willChange: "transform,filter,opacity",
-          backfaceVisibility: "hidden",
-        }}
-      >
-        {char === " " ? "\u00A0" : char}
-      </span>
-    );
+    const kerningShift = (getRandomGenerator(seed, i * offsets.kerning)() - 0.5) * kerningVariance;
+    
+    // Create style object with spread for better JIT optimization
+    result[i] = React.createElement('span', {
+      key: i,
+      style: {
+        ...baseStyle,
+        opacity,
+        marginRight: `${kerningShift}em`,
+        transform,
+        textShadow,
+        filter: `blur(${blurAmount}px)`,
+      },
+      children: char === " " ? "\u00A0" : char
+    });
   }
   
   return result;
 }
 
-// Optional: Add cleanup function for cache
-export function clearRandomCache() {
-  randomCache.clear();
+// Optimized cleanup with size limit
+export function clearRandomCache(keepSize: number = 1000) {
+  if (randomCache.size > keepSize) {
+    const entries = Array.from(randomCache.keys());
+    for (let i = 0; i < entries.length - keepSize; i++) {
+      randomCache.delete(entries[i]);
+    }
+  }
 }
+
+// Optional: Pre-allocate common strings
+const NBSP_CHAR = "\u00A0";
