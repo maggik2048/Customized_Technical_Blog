@@ -150,6 +150,28 @@ export default function PDFPage({
     highlightEngine.setContainer(contentRef.current);
   }, [highlightEngine]);
 
+
+  const markdownWrapperStyle = React.useMemo(
+    () => ({
+      marginTop: -2,
+
+      fontSize: "20px",
+      fontWeight: 650,
+      lineHeight: 1.9,
+
+      color: textColor,
+
+      fontFamily:
+        '"Inter","Pretendard Variable","Pretendard","Noto Sans KR",sans-serif',
+
+      WebkitFontSmoothing: "antialiased" as const,
+      MozOsxFontSmoothing: "grayscale" as const,
+      textRendering: "optimizeLegibility" as const,
+    }),
+    [textColor]
+  );  
+
+
   /**
    * =========================
    * SAFE HIGHLIGHT HANDLER
@@ -185,7 +207,7 @@ export default function PDFPage({
             <GotoGitHubCorresponding
               commitUrl={data?.commit_url}
             />            
-            
+
             <div
               style={{
                 float: "left",
@@ -198,7 +220,7 @@ export default function PDFPage({
             {/* MARKDOWN AREA */}
             <div
               ref={contentRef}
-              style={{ marginTop: -2 }}
+              style={markdownWrapperStyle}
               onMouseUp={handleMouseUp}
             >
               <NotepageLines>

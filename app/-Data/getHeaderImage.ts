@@ -92,7 +92,11 @@ const categoryHeaderMap: Record<string, string> = {
   unreal: "/images/headers/unrealengine.jpg",
   digitalTwin: "/images/headers/digitalTwin2.png",
   gameMath: "/images/headers/gameMath.jpg",
+  gitDiff_visualizer: "/images/headers/git45.png",
 
+
+
+  
   // ===== fallback =====
   default: "/images/headers/default.jpg",
 };

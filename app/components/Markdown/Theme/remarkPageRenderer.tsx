@@ -8,7 +8,13 @@ import remarkGfm from "remark-gfm";
 import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 
-import { Cormorant_SC } from "next/font/google";
+import {
+  Cormorant,
+  Cormorant_SC,
+  Noto_Serif_KR,
+  Libre_Baskerville,
+} from "next/font/google";
+
 import TableRenderer from "./TableRenderer";
 import KaTeXPostProcessor from "./KaTeXPostProcessor";
 
@@ -36,13 +42,24 @@ const fontBody = Cormorant_SC({
   weight: ["500"],
 });
 
+
+
+
+const bodyFont = Libre_Baskerville({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+});
+
+
+
 /* =========================
     BASE FONT (영문 가독성 + fallback)
 ========================= */
 
 const baseFontFamily =
-  `${fontBody.style.fontFamily}, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif`;
-
+  `${bodyFont.style.fontFamily},
+   "ZenSerifKR",
+   serif`;
 /* =========================
     COMPONENT
 ========================= */
@@ -194,11 +211,20 @@ export default function RemarkPageRenderer({
         <p
           style={{
             fontFamily: baseFontFamily,
-            lineHeight: 1.42,
-            margin: "3px 0",
-            color: "#5a3f1a",
+
+            fontSize: 20,
+
+            lineHeight: 1.75,
+
+            letterSpacing: "0.015em",
+
+            margin: "6px 0",
+
+            color: "#4a3110",
+
             textShadow,
-            fontWeight: 500,
+
+            fontWeight: 600,
           }}
         >
           {children}
@@ -209,10 +235,16 @@ export default function RemarkPageRenderer({
         <li
           style={{
             display: "flex",
-            margin: "3px 0",
+
+            margin: "6px 0",
+
             fontFamily: baseFontFamily,
-            lineHeight: 1.4,
-            fontWeight: 500,
+
+            lineHeight: 1.75,
+
+            fontWeight: 600,
+
+            fontSize: 19,
           }}
         >
           <span style={starMarker}>✦</span>
@@ -221,7 +253,7 @@ export default function RemarkPageRenderer({
             style={{
               color: "#b48f46",
               textShadow,
-              fontWeight: 500,
+              fontWeight: 600,
             }}
           >
             {children}
