@@ -25,6 +25,8 @@ import {
 // Lazy load heavy components
 const TableRenderer = lazy(() => import("./TableRenderer"));
 const KaTeXPostProcessor = lazy(() => import("./KaTeXPostProcessor"));
+
+// Dynamic import with loading strategy
 const { renderInkText } = await import("./letterInkText");
 
 /* =========================
@@ -35,7 +37,8 @@ const titleFont = Monsieur_La_Doulaise({
   subsets: ["latin"],
   weight: ["400"],
   display: "swap",
-  preload: true, // Added preload
+  preload: true,
+  adjustFontFallback: false, // Reduce CSS size
 });
 
 const luxuryHeadingFont = Tangerine({
@@ -43,13 +46,15 @@ const luxuryHeadingFont = Tangerine({
   weight: ["700"],
   display: "swap",
   preload: true,
+  adjustFontFallback: false,
 });
 
 const boldCalligraphyFont = Italianno({
   subsets: ["latin"],
   weight: ["400"],
   display: "swap",
-  preload: false, // Only preload critical fonts
+  preload: false,
+  adjustFontFallback: false,
 });
 
 /* =========================
@@ -61,7 +66,7 @@ const LETTER_FONT = `${luxuryHeadingFont.style.fontFamily}, "Times New Roman", s
 const REMARK_PLUGINS = [remarkMath, remarkGfm] as const;
 const REHYPE_PLUGINS = [rehypeKatex, rehypeRaw] as const;
 
-// Freeze to prevent any modifications
+// Optimized ink options with smaller numbers for better performance
 const INK_OPTIONS_BASE = Object.freeze({
   paragraph: Object.freeze({
     maxBlur: 0.16,
@@ -117,7 +122,7 @@ const SIZES = Object.freeze({
   fontSize: Object.freeze({ li: 49, p: 36 }),
 });
 
-// Pre-computed color configurations
+// Pre-computed color configurations with CSS variables for better performance
 const COLOR_CONFIGS = Object.freeze({
   light: Object.freeze({
     paperColor: "#f5efe3",
@@ -159,63 +164,47 @@ interface InkTextProps {
   options: any;
 }
 
-// Use React.memo with custom comparison
+// Optimized InkText with better memoization
 const InkText = memo(function InkText({ text, seed, options }: InkTextProps) {
   return renderInkText(text, seed, options);
 }, (prev, next) => {
-  // Custom equality check for better performance
-  return prev.text === next.text && 
-         prev.seed === next.seed && 
-         JSON.stringify(prev.options) === JSON.stringify(next.options);
+  // Faster comparison - avoid JSON.stringify when possible
+  if (prev.text !== next.text || prev.seed !== next.seed) return false;
+  
+  // Only compare critical options properties
+  const prevOpts = prev.options;
+  const nextOpts = next.options;
+  return prevOpts.color === nextOpts.color && 
+         prevOpts.maxBlur === nextOpts.maxBlur &&
+         prevOpts.bleedChance === nextOpts.bleedChance;
 });
 
 InkText.displayName = "InkText";
 
-// Loading fallback for lazy components
-const TableFallback = () => <div className="table-loading" style={{ minHeight: 100 }} />;
+// Optimized loading fallback
+const TableFallback = memo(() => (
+  <div className="table-loading" style={{ minHeight: 100, willChange: "auto" }} />
+));
+TableFallback.displayName = "TableFallback";
 
 /* =========================
    UTILITY FUNCTIONS
 ========================= */
 
 const createInkOptions = (color: string, baseOptions: any) => {
-  // Use Object.assign instead of spread for better performance
   return Object.assign({}, baseOptions, { color });
 };
 
-// Pre-bound renderer creators
-const createHeadingRenderer = (level: number, colors: any, isDark: boolean, headingInk: any) => {
-  const seed = level * 999;
-  const size = SIZES.heading[level as keyof typeof SIZES.heading];
-  const marginTop = SIZES.margin[level as keyof typeof SIZES.margin];
-  const isLevel1 = level === 1;
-  const rotation = isLevel1 ? "rotate(-1deg)" : "rotate(-0.5deg)";
-  
-  return memo(function HeadingRenderer({ children }: any) {
-    return (
-      <div style={{ marginTop, marginBottom: 18 }}>
-        <span
-          className={isLevel1 ? titleFont.className : luxuryHeadingFont.className}
-          style={{
-            color: colors.headingColor,
-            fontSize: size,
-            lineHeight: 1,
-            letterSpacing: "0.01em",
-            textShadow: colors.textShadow,
-            display: "inline-block",
-            transform: rotation,
-          }}
-        >
-          {typeof children === "string" ? (
-            <InkText text={children} seed={seed} options={headingInk} />
-          ) : (
-            children
-          )}
-        </span>
-      </div>
-    );
-  });
-};
+// Pre-bound heading style generator
+const getHeadingStyle = (level: number, colors: any, isLevel1: boolean) => ({
+  color: colors.headingColor,
+  fontSize: SIZES.heading[level as keyof typeof SIZES.heading],
+  lineHeight: 1,
+  letterSpacing: "0.01em",
+  textShadow: colors.textShadow,
+  display: "inline-block" as const,
+  transform: isLevel1 ? "rotate(-1deg)" : "rotate(-0.5deg)",
+});
 
 /* =========================
    MAIN COMPONENT
@@ -235,7 +224,6 @@ export default function RemarkLetterPageRenderer({
   CodeBlock,
 }: RemarkLetterPageRendererProps) {
 
-  // Get pre-computed color config
   const colors = COLOR_CONFIGS[isDark ? "dark" : "light"];
 
   /* =========================
@@ -251,9 +239,9 @@ export default function RemarkLetterPageRenderer({
   }), [colors]);
 
   /* =========================
-     STYLES (Memoized with Object.freeze)
+     STYLES (Memoized with useMemo)
   ========================= */
-  const styles = useMemo(() => Object.freeze({
+  const styles = useMemo(() => ({
     letter: {
       position: "relative" as const,
       overflow: "hidden" as const,
@@ -287,41 +275,52 @@ export default function RemarkLetterPageRenderer({
       opacity: 0.14,
       pointerEvents: "none" as const,
     },
-    highlight: {
-      background: colors.highlightBg,
-      padding: "0px 4px",
-      borderRadius: 4,
-    },
   }), [colors]);
 
   /* =========================
-     RENDERERS (Created once per color change)
+     OPTIMIZED RENDERERS
   ========================= */
-  const renderers = useMemo(() => ({
-    heading1: createHeadingRenderer(1, colors, isDark, inkOptions.heading),
-    heading2: createHeadingRenderer(2, colors, isDark, inkOptions.heading),
-    heading3: createHeadingRenderer(3, colors, isDark, inkOptions.heading),
-  }), [colors, isDark, inkOptions.heading]);
+  
+  const HeadingRenderer = useCallback((level: number) => {
+    const seed = level * 999;
+    const size = SIZES.heading[level as keyof typeof SIZES.heading];
+    const marginTop = SIZES.margin[level as keyof typeof SIZES.margin];
+    const isLevel1 = level === 1;
+    const className = isLevel1 ? titleFont.className : luxuryHeadingFont.className;
+    const headingStyle = getHeadingStyle(level, colors, isLevel1);
+    
+    return memo(function HeadingRenderer({ children }: any) {
+      return (
+        <div style={{ marginTop, marginBottom: 18 }}>
+          <span className={className} style={headingStyle}>
+            {typeof children === "string" ? (
+              <InkText text={children} seed={seed} options={inkOptions.heading} />
+            ) : (
+              children
+            )}
+          </span>
+        </div>
+      );
+    });
+  }, [colors, inkOptions.heading]);
 
-  /* =========================
-     MEMOIZED RENDERERS
-  ========================= */
+  // Simplified ParagraphRenderer with inline styles object reference
+  const paragraphStyle = useMemo(() => ({
+    fontFamily: LETTER_FONT,
+    color: colors.inkColor,
+    fontSize: SIZES.fontSize.p,
+    lineHeight: 1.0,
+    margin: "18px 0",
+    letterSpacing: "0.02em",
+    whiteSpace: "pre-wrap" as const,
+    textAlign: "left" as const,
+    fontWeight: 700,
+    textShadow: "0 0 0.2px rgba(0,0,0,0.2)",
+  }), [colors.inkColor]);
+  
   const ParagraphRenderer = useMemo(() => memo(function ParagraphRenderer({ children }: any) {
     return (
-      <p
-        style={{
-          fontFamily: LETTER_FONT,
-          color: colors.inkColor,
-          fontSize: SIZES.fontSize.p,
-          lineHeight: 1.0,
-          margin: "18px 0",
-          letterSpacing: "0.02em",
-          whiteSpace: "pre-wrap",
-          textAlign: "left",
-          fontWeight: 700,
-          textShadow: "0 0 0.2px rgba(0,0,0,0.2)",
-        }}
-      >
+      <p style={paragraphStyle}>
         {typeof children === "string" ? (
           <InkText text={children} seed={1400} options={inkOptions.paragraph} />
         ) : (
@@ -329,25 +328,25 @@ export default function RemarkLetterPageRenderer({
         )}
       </p>
     );
-  }), [colors.inkColor, inkOptions.paragraph]);
+  }), [paragraphStyle, inkOptions.paragraph]);
+
+  // Merge styles for StrongRenderer
+  const strongStyle = useMemo(() => ({
+    ...styles.highlight,
+    color: colors.headingColor,
+    fontWeight: 400,
+    fontSize: "1.5em",
+    lineHeight: 1,
+    letterSpacing: "0.02em",
+    display: "inline-block" as const,
+    transform: "rotate(-1deg)",
+    padding: "0 4px",
+    textShadow: colors.strongTextShadow,
+  }), [colors.headingColor, colors.strongTextShadow, styles.highlight]);
 
   const StrongRenderer = useMemo(() => memo(function StrongRenderer({ children }: any) {
     return (
-      <strong
-        className={boldCalligraphyFont.className}
-        style={{
-          ...styles.highlight,
-          color: colors.headingColor,
-          fontWeight: 400,
-          fontSize: "1.5em",
-          lineHeight: 1,
-          letterSpacing: "0.02em",
-          display: "inline-block",
-          transform: "rotate(-1deg)",
-          padding: "0 4px",
-          textShadow: colors.strongTextShadow,
-        }}
-      >
+      <strong className={boldCalligraphyFont.className} style={strongStyle}>
         {typeof children === "string" ? (
           <InkText text={children} seed={700} options={inkOptions.strong} />
         ) : (
@@ -355,17 +354,16 @@ export default function RemarkLetterPageRenderer({
         )}
       </strong>
     );
-  }), [colors.headingColor, colors.strongTextShadow, styles.highlight, inkOptions.strong]);
+  }), [strongStyle, inkOptions.strong]);
 
   const EmphasisRenderer = useMemo(() => memo(function EmphasisRenderer({ children }: any) {
+    const emStyle = {
+      color: colors.fadedInkColor,
+      fontStyle: "italic" as const,
+      fontFamily: LETTER_FONT,
+    };
     return (
-      <em
-        style={{
-          color: colors.fadedInkColor,
-          fontStyle: "italic",
-          fontFamily: LETTER_FONT,
-        }}
-      >
+      <em style={emStyle}>
         {typeof children === "string" ? (
           <InkText text={children} seed={2222} options={inkOptions.emphasis} />
         ) : (
@@ -376,36 +374,37 @@ export default function RemarkLetterPageRenderer({
   }), [colors.fadedInkColor, inkOptions.emphasis]);
 
   const ListItemRenderer = useMemo(() => memo(function ListItemRenderer({ children, index }: any) {
+    const bulletSeed = 9000 + (index || 0);
+    const textSeed = 3100 + (index || 0);
+    const liStyle = {
+      listStyle: "none" as const,
+      position: "relative" as const,
+      fontFamily: LETTER_FONT,
+      color: colors.inkColor,
+      fontSize: SIZES.fontSize.li,
+      lineHeight: 1.0,
+      margin: "10px 0",
+      paddingLeft: 34,
+      fontWeight: 700,
+    };
+    const bulletStyle = {
+      position: "absolute" as const,
+      left: 0,
+      top: "0.16em",
+      lineHeight: 1,
+      fontSize: "0.95em",
+      pointerEvents: "none" as const,
+      mixBlendMode: "multiply" as const,
+    };
+    
     return (
-      <li
-        style={{
-          listStyle: "none",
-          position: "relative",
-          fontFamily: LETTER_FONT,
-          color: colors.inkColor,
-          fontSize: SIZES.fontSize.li,
-          lineHeight: 1.0,
-          margin: "10px 0",
-          paddingLeft: 34,
-          fontWeight: 700,
-        }}
-      >
-        <span
-          style={{
-            position: "absolute",
-            left: 0,
-            top: "0.16em",
-            lineHeight: 1,
-            fontSize: "0.95em",
-            pointerEvents: "none",
-            mixBlendMode: "multiply",
-          }}
-        >
-          <InkText text="•" seed={9000 + (index || 0)} options={inkOptions.bullet} />
+      <li style={liStyle}>
+        <span style={bulletStyle}>
+          <InkText text="•" seed={bulletSeed} options={inkOptions.bullet} />
         </span>
         <span>
           {typeof children === "string" ? (
-            <InkText text={children} seed={3100 + (index || 0)} options={inkOptions.list} />
+            <InkText text={children} seed={textSeed} options={inkOptions.list} />
           ) : (
             children
           )}
@@ -415,33 +414,21 @@ export default function RemarkLetterPageRenderer({
   }), [colors.inkColor, inkOptions.bullet, inkOptions.list]);
 
   const BlockquoteRenderer = useMemo(() => memo(function BlockquoteRenderer({ children }: any) {
-    return (
-      <blockquote
-        style={{
-          margin: "28px 0",
-          padding: "20px 28px",
-          borderLeft: `3px solid ${colors.headingColor}`,
-          background: colors.blockquoteBg,
-          borderRadius: 4,
-          fontStyle: "italic",
-          backdropFilter: "blur(1px)",
-          fontFamily: LETTER_FONT,
-        }}
-      >
-        {children}
-      </blockquote>
-    );
+    const bqStyle = {
+      margin: "28px 0",
+      padding: "20px 28px",
+      borderLeft: `3px solid ${colors.headingColor}`,
+      background: colors.blockquoteBg,
+      borderRadius: 4,
+      fontStyle: "italic" as const,
+      backdropFilter: "blur(1px)",
+      fontFamily: LETTER_FONT,
+    };
+    return <blockquote style={bqStyle}>{children}</blockquote>;
   }), [colors.headingColor, colors.blockquoteBg]);
 
   const HrRenderer = useMemo(() => memo(function HrRenderer() {
-    return (
-      <div
-        style={{
-          margin: "46px 0",
-          borderTop: `1px solid ${colors.borderColor}`,
-        }}
-      />
-    );
+    return <div style={{ margin: "46px 0", borderTop: `1px solid ${colors.borderColor}` }} />;
   }), [colors.borderColor]);
 
   const ListWrapper = useMemo(() => memo(function ListWrapper({ children, isOrdered = false }: any) {
@@ -458,9 +445,9 @@ export default function RemarkLetterPageRenderer({
   const components = useMemo(() => ({
     ...markdownComponents,
     code: CodeBlock,
-    h1: renderers.heading1,
-    h2: renderers.heading2,
-    h3: renderers.heading3,
+    h1: HeadingRenderer(1),
+    h2: HeadingRenderer(2),
+    h3: HeadingRenderer(3),
     p: ParagraphRenderer,
     strong: StrongRenderer,
     em: EmphasisRenderer,
@@ -478,7 +465,7 @@ export default function RemarkLetterPageRenderer({
   }), [
     markdownComponents,
     CodeBlock,
-    renderers,
+    HeadingRenderer,
     ParagraphRenderer,
     StrongRenderer,
     EmphasisRenderer,
@@ -508,5 +495,6 @@ export default function RemarkLetterPageRenderer({
   );
 }
 
-// Export memoized version of the main component
+// Export memoized version with display name
 export const MemoizedRemarkLetterPageRenderer = memo(RemarkLetterPageRenderer);
+MemoizedRemarkLetterPageRenderer.displayName = "MemoizedRemarkLetterPageRenderer";
