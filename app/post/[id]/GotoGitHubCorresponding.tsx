@@ -12,6 +12,8 @@ export default function GotoGitHubCorresponding({
   return (
     <>
       <style jsx>{`
+        @import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600&family=Michroma&display=swap");
+
         .githubButton {
           position: relative;
 
@@ -19,47 +21,48 @@ export default function GotoGitHubCorresponding({
 
           transform: translateX(-180px);
 
-          padding: 10px 42px 10px 18px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+
+          height: 34px;
+
+          padding: 0 48px 0 18px;
 
           border: none;
 
-          border-radius: 8px 0 0 8px;
+          border-radius: 7px 0 0 7px;
 
           cursor: pointer;
-
-          font-weight: 700;
-
-          font-size: 14px;
-
-          letter-spacing: 0.02em;
-
-          font-family:
-            "JetBrains Mono",
-            "IBM Plex Mono",
-            "Cascadia Code",
-            monospace;
 
           background: #974e4e;
 
           color: #fff;
 
-          transition: all 0.2s ease;
+          transition:
+            transform 0.18s ease,
+            filter 0.18s ease;
+
+          white-space: nowrap;
         }
 
         .githubButton:hover {
           filter: brightness(1.08);
+
+          transform:
+            translateX(-180px)
+            translateY(-1px);
         }
 
-        /* 큰 화살촉 */
         .githubButton::after {
           content: "";
 
           position: absolute;
 
           top: 0;
-          right: -28px;
+          right: -34px;
 
-          width: 34px;
+          width: 38px;
           height: 100%;
 
           background: #974e4e;
@@ -68,20 +71,19 @@ export default function GotoGitHubCorresponding({
             0 0,
             100% 50%,
             0 100%,
-            20% 50%
+            18% 50%
           );
         }
 
-        /* 작은 화살촉 */
         .githubButton::before {
           content: "";
 
           position: absolute;
 
           top: 0;
-          right: -12px;
+          right: -17px;
 
-          width: 24px;
+          width: 26px;
           height: 100%;
 
           background: #974e4e;
@@ -90,10 +92,47 @@ export default function GotoGitHubCorresponding({
             0 0,
             100% 50%,
             0 100%,
-            20% 50%
+            18% 50%
           );
 
           z-index: 2;
+        }
+
+        .goToText {
+          position: relative;
+          z-index: 3;
+
+          font-family:
+            "Cormorant Garamond",
+            serif;
+
+          font-style: italic;
+
+          font-size: 17px;
+
+          font-weight: 600;
+
+          line-height: 1;
+        }
+
+        .commitText {
+          position: relative;
+          z-index: 3;
+
+          font-family:
+            "Michroma",
+            "JetBrains Mono",
+            monospace;
+
+          font-size: 10px;
+
+          font-weight: 400;
+
+          letter-spacing: 0.12em;
+
+          text-transform: uppercase;
+
+          line-height: 1;
         }
       `}</style>
 
@@ -133,8 +172,13 @@ export default function GotoGitHubCorresponding({
               : "default",
           }}
         >
-          Go To Corresponding
-          GitHub Commit Page
+          <span className="goToText">
+            Go To
+          </span>
+
+          <span className="commitText">
+            Corresponding GitHub Commit
+          </span>
         </button>
 
         {commitUrl ? (
@@ -145,7 +189,6 @@ export default function GotoGitHubCorresponding({
             style={{
               color: "#3b82f6",
               textDecoration: "underline",
-
               wordBreak: "break-all",
             }}
           >
