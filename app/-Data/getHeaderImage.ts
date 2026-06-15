@@ -82,6 +82,8 @@ const categoryHeaderMap: Record<string, string> = {
   systems: "/images/headers/systems.jpg",
   dsa: "/images/headers/algorithm23.jpg",
   cpp: "/images/headers/cpp345.jpg",
+  java: "/images/headers/java.jpg",
+  python: "/images/headers/python1.jpg",
   oop: "/images/headers/oop7.jpg",
   se: "/images/headers/se5.png",
   security: "/images/headers/security2.jpg",

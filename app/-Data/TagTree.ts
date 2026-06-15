@@ -244,4 +244,10 @@ export const TAG_TREE: TagItem[] = [
     slug: "frvocab",
     group: "vocabulary",
   },
+
+    {
+    name: "programming language",
+    slug: "programminglanguage",
+    group: "concept",
+  },
 ];

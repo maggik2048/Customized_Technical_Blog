@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 
 import { markdownComponents } from "@/lib/markdownComponents";
 import { useDarkMode } from "@/app/context/DarkModeContext";
-import { getHeaderImage } from "@/lib/getHeaderImage";
+import { getHeaderImage } from "@/app/-Data/getHeaderImage";
 import { visualizationRegistry } from "@/lib/visualizationRegistry";
 
 import NotepageLines from "@/app/components/Markdown/Theme/NotepageLines";

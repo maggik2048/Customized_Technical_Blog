@@ -59,6 +59,8 @@ export const CATEGORY_TREE: Omit<Item, "href" | "count">[] = [
       { name: "Systems Programming", slug: "systems" },
       { name: "DataStructure & Algorithm", slug: "dsa" },
       { name: "C++", slug: "cpp" },
+      { name: "java&javascript", slug: "java" },
+      { name: "Python", slug: "python" },
       { name: "ObjectOrientedProgramming(OOP) & Design Pattern", slug: "oop" },
       { name: "Software Engineering", slug: "se" },
       { name: "Security", slug: "security" },
