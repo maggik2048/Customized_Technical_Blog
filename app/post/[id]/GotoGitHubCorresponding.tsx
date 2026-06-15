@@ -25,7 +25,7 @@ export default function GotoGitHubCorresponding({
           align-items: center;
           gap: 14px;
 
-          height: 34px;
+          height: 26px;
 
           padding: 0 12px 0 18px;
 
