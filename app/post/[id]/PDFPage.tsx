@@ -26,6 +26,7 @@ import GotoTheTop from "./GotoTheTop";
 import ScrollWithKeyboardArrow from "./ScrollWithKeyboardArrow";
 
 import { useParsedPDFContent } from "./useParsedPDFContent";
+import DocContentBackgroundManager from "./DocContentBackgroundManager";
 
 /* =========================
     HIGHLIGHT ENGINE
@@ -231,22 +232,14 @@ export default function PDFPage({
               }}
             />
 
-            {/* 🔴 빨간색 영역 - 간단한 방식으로 수정 */}
-            <div
-              style={{
-                backgroundColor: "red",
-                marginLeft: -64,
-                marginRight: -64,
-                paddingLeft: 64,
-                paddingRight: 64,
-                paddingTop: 20,
-                paddingBottom: 20,
-                position: "relative",
-                left: 0,
-                right: 0,
-              }}
+            {/* MARKDOWN CONTENT WITH BACKGROUND MANAGER */}
+            <DocContentBackgroundManager
+              parentPaddingLeft={64}
+              parentPaddingRight={64}
+              backgroundColor="red"
+              paddingTop={20}
+              paddingBottom={20}
             >
-              {/* MARKDOWN AREA */}
               <div
                 ref={contentRef}
                 style={markdownWrapperStyle}
@@ -286,8 +279,7 @@ export default function PDFPage({
                   })}
                 </NotepageLines>
               </div>
-            </div>
-            {/* 🔴 빨간색 영역 끝 */}
+            </DocContentBackgroundManager>
 
             <div style={{ clear: "both" }} />
 

@@ -4,50 +4,60 @@ import React from "react";
 
 interface DocContentBackgroundManagerProps {
   children: React.ReactNode;
-  isDark?: boolean;
+  /** 부모 컨테이너의 왼쪽 패딩 값 (px) */
+  parentPaddingLeft?: number;
+  /** 부모 컨테이너의 오른쪽 패딩 값 (px) */
+  parentPaddingRight?: number;
+  /** 배경색 (기본값: red) */
   backgroundColor?: string;
+  /** 상단 패딩 (px) */
   paddingTop?: number;
+  /** 하단 패딩 (px) */
   paddingBottom?: number;
-  marginOffset?: number;
-  allowOverflow?: boolean; // 🔑 추가: overflow 허용 여부
 }
 
 /**
  * DocContentBackgroundManager
  * 
- * 문서 콘텐츠 영역의 배경을 관리하는 컴포넌트
- * - pageStyle의 padding을 뚫고 나가서 전체 너비를 채움
- * - 세로로 자연스럽게 확장됨
+ * 부모 컨테이너의 패딩을 상쇄하면서 전체 너비로 확장되는 배경 레이어를 제공하는 컴포넌트
+ * 
+ * @description
+ * [문제 상황]
+ * - 부모 컨테이너에 paddingLeft/Right가 적용된 상태에서 특정 영역만 전체 너비 배경을 적용해야 함
+ * - 초기 접근: transform + left: 50% 방식으로 중앙 정렬 시도 → 내부 콘텐츠 위치 계산 컨텍스트 깨짐
+ * 
+ * [최종 해결책]
+ * - CSS Transform 완전 배제, 순수 margin 기반 레이아웃
+ * - marginLeft/Right 음수값으로 부모 패딩 상쇄
+ * - width 속성 미지정 (브라우저 자동 계산에 위임)
+ * - left: 0, right: 0 명시적 지정으로 위치 컨텍스트 명확화
+ * 
+ * [기술적 인사이트]
+ * 1. CSS Transform은 새로운 stacking context와 containing block을 생성하여 내부 요소의 position 참조 기준을 변경함
+ * 2. margin 음수값은 부모의 padding을 안전하게 상쇄하면서 내부 요소의 레이아웃 컨텍스트는 유지함
+ * 3. 명시적 width 지정보다 브라우저의 자동 레이아웃 계산에 맡기는 것이 복합 컴포넌트에서 더 안정적
  */
 export default function DocContentBackgroundManager({
   children,
-  isDark = false,
+  parentPaddingLeft = 64,
+  parentPaddingRight = 64,
   backgroundColor = "red",
   paddingTop = 20,
   paddingBottom = 20,
-  marginOffset = 64,
-  allowOverflow = true, // 기본값 true (letter 박스 변환 허용)
 }: DocContentBackgroundManagerProps) {
-
   return (
     <div
       style={{
-        backgroundColor: backgroundColor,
-        marginLeft: -marginOffset,
-        marginRight: -marginOffset,
-        paddingLeft: marginOffset,
-        paddingRight: marginOffset,
-        paddingTop: paddingTop,
-        paddingBottom: paddingBottom,
-        width: `calc(100% + ${marginOffset * 2}px)`,
+        backgroundColor,
+        marginLeft: -parentPaddingLeft,
+        marginRight: -parentPaddingRight,
+        paddingLeft: parentPaddingLeft,
+        paddingRight: parentPaddingRight,
+        paddingTop,
+        paddingBottom,
         position: "relative",
-        left: "50%",
-        transform: "translateX(-50%)",
-        overflow: allowOverflow ? "visible" : "hidden", // 🔑 핵심
-        // 다크모드에 따른 추가 스타일
-        ...(isDark && {
-          boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.05)",
-        }),
+        left: 0,
+        right: 0,
       }}
     >
       {children}
