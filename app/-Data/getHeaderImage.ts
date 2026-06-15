@@ -1,6 +1,6 @@
-import { Item } from "../types";
+// getHeaderImage.ts
 
-export const CATEGORY_TREE: Omit<Item, "href" | "count">[] = [
+export const CATEGORY_TREE = [
   {
     name: "University Physics Revisited",
     slug: "physics_revisited",
@@ -94,9 +94,6 @@ const categoryHeaderMap: Record<string, string> = {
   gameMath: "/images/headers/gameMath.jpg",
   gitDiff_visualizer: "/images/headers/git45.png",
 
-
-
-  
   // ===== fallback =====
   default: "/images/headers/default.jpg",
 };
