@@ -197,7 +197,7 @@ export default function GotoGitHubCorresponding({
                   54,36
                   66,20
                 "
-                fill="#241616"
+                fill="#060608"
               />
 
               {/* 큰 화살촉 */}
