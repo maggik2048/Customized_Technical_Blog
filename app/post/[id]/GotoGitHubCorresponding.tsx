@@ -41,9 +41,13 @@ export default function GotoGitHubCorresponding({
 
           white-space: nowrap;
 
+          box-shadow:
+            0 2px 8px rgba(0, 0, 0, 0.16);
+
           transition:
             transform 0.18s ease,
-            filter 0.18s ease;
+            filter 0.18s ease,
+            box-shadow 0.18s ease;
         }
 
         .githubButton:hover {
@@ -52,6 +56,9 @@ export default function GotoGitHubCorresponding({
           transform:
             translateX(-180px)
             translateY(-1px);
+
+          box-shadow:
+            0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
         .goToText {
@@ -95,6 +102,11 @@ export default function GotoGitHubCorresponding({
           flex-shrink: 0;
 
           overflow: visible;
+
+          filter:
+            drop-shadow(
+              0 2px 8px rgba(0, 0, 0, 0.16)
+            );
         }
 
         .arrowWrap {
