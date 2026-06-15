@@ -150,26 +150,18 @@ export default function PDFPage({
     highlightEngine.setContainer(contentRef.current);
   }, [highlightEngine]);
 
-
   const markdownWrapperStyle = React.useMemo(
     () => ({
       marginTop: -2,
 
-      fontSize: "20px",
-      fontWeight: 650,
-      lineHeight: 1.9,
-
       color: textColor,
-
-      fontFamily:
-        '"Inter","Pretendard Variable","Pretendard","Noto Sans KR",sans-serif',
 
       WebkitFontSmoothing: "antialiased" as const,
       MozOsxFontSmoothing: "grayscale" as const,
       textRendering: "optimizeLegibility" as const,
     }),
     [textColor]
-  );  
+  );
 
 
   /**
