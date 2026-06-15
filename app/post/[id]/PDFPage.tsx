@@ -232,11 +232,15 @@ export default function PDFPage({
               }}
             />
 
-            {/* MARKDOWN CONTENT WITH BACKGROUND MANAGER */}
+            {/* MARKDOWN CONTENT WITH BACKGROUND MANAGER - USING wood.jpg */}
             <DocContentBackgroundManager
               parentPaddingLeft={64}
               parentPaddingRight={64}
-              backgroundColor="red"
+              backgroundImage="/images/dossierBg/wood.jpg"
+              backgroundSize="cover"
+              backgroundPosition="center center"
+              backgroundRepeat="no-repeat"
+              backgroundBlendMode="overlay"
               paddingTop={20}
               paddingBottom={20}
             >

@@ -8,8 +8,18 @@ interface DocContentBackgroundManagerProps {
   parentPaddingLeft?: number;
   /** 부모 컨테이너의 오른쪽 패딩 값 (px) */
   parentPaddingRight?: number;
-  /** 배경색 (기본값: red) */
+  /** 배경색 (기본값: transparent) */
   backgroundColor?: string;
+  /** 배경 이미지 URL */
+  backgroundImage?: string;
+  /** 배경 이미지 크기 */
+  backgroundSize?: string;
+  /** 배경 이미지 위치 */
+  backgroundPosition?: string;
+  /** 배경 이미지 반복 */
+  backgroundRepeat?: string;
+  /** 배경 블렌드 모드 */
+  backgroundBlendMode?: string;
   /** 상단 패딩 (px) */
   paddingTop?: number;
   /** 하단 패딩 (px) */
@@ -41,26 +51,39 @@ export default function DocContentBackgroundManager({
   children,
   parentPaddingLeft = 64,
   parentPaddingRight = 64,
-  backgroundColor = "red",
+  backgroundColor = "transparent",
+  backgroundImage,
+  backgroundSize = "cover",
+  backgroundPosition = "center center",
+  backgroundRepeat = "no-repeat",
+  backgroundBlendMode,
   paddingTop = 20,
   paddingBottom = 20,
 }: DocContentBackgroundManagerProps) {
-  return (
-    <div
-      style={{
-        backgroundColor,
-        marginLeft: -parentPaddingLeft,
-        marginRight: -parentPaddingRight,
-        paddingLeft: parentPaddingLeft,
-        paddingRight: parentPaddingRight,
-        paddingTop,
-        paddingBottom,
-        position: "relative",
-        left: 0,
-        right: 0,
-      }}
-    >
-      {children}
-    </div>
-  );
+  const style: React.CSSProperties = {
+    marginLeft: -parentPaddingLeft,
+    marginRight: -parentPaddingRight,
+    paddingLeft: parentPaddingLeft,
+    paddingRight: parentPaddingRight,
+    paddingTop,
+    paddingBottom,
+    position: "relative",
+    left: 0,
+    right: 0,
+  };
+
+  // 배경 설정
+  if (backgroundImage) {
+    style.backgroundImage = `url("${backgroundImage}")`;
+    style.backgroundSize = backgroundSize;
+    style.backgroundPosition = backgroundPosition;
+    style.backgroundRepeat = backgroundRepeat;
+    if (backgroundBlendMode) {
+      style.backgroundBlendMode = backgroundBlendMode;
+    }
+  } else if (backgroundColor) {
+    style.backgroundColor = backgroundColor;
+  }
+
+  return <div style={style}>{children}</div>;
 }
