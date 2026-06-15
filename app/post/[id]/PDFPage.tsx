@@ -81,10 +81,15 @@ export default function PDFPage({
       background: isDark
         ? "rgba(60,60,60,0.6)"
         : "rgba(255,255,255,0.72)",
+      backgroundImage: `url("/images/dossierBg/wood.png")`,
+      backgroundSize: "cover",
+      backgroundRepeat: "no-repeat",
+      backgroundPosition: "center center",
+      backgroundBlendMode: "overlay",
       paddingLeft: 64,
       paddingRight: 64,
       borderRadius: 12,
-      overflow: "hidden" as const,
+      overflow: "visible" as const,
       boxShadow: isDark
         ? "0 8px 30px rgba(0,0,0,0.6)"
         : "0 8px 30px rgba(0,0,0,0.15)",
@@ -153,16 +158,13 @@ export default function PDFPage({
   const markdownWrapperStyle = React.useMemo(
     () => ({
       marginTop: -2,
-
       color: textColor,
-
       WebkitFontSmoothing: "antialiased" as const,
       MozOsxFontSmoothing: "grayscale" as const,
       textRendering: "optimizeLegibility" as const,
     }),
     [textColor]
   );
-
 
   /**
    * =========================
@@ -181,6 +183,22 @@ export default function PDFPage({
 
       <div>
         <div style={pageStyle}>
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: isDark
+                ? "rgba(60,60,60,0.3)"
+                : "rgba(255,255,255,0.2)",
+              borderRadius: 12,
+              pointerEvents: "none",
+              zIndex: 0,
+            }}
+          />
+
           {/* HEADER */}
           <PDFPageHeader
             data={data}
@@ -193,12 +211,16 @@ export default function PDFPage({
           />
 
           {/* CONTENT */}
-          <div style={{ paddingTop: HEADER_HEIGHT - 36 }}>
+          <div
+            style={{
+              paddingTop: HEADER_HEIGHT - 36,
+              position: "relative",
+              zIndex: 1,
+            }}
+          >
             <MetadataPostalCode data={data} isDark={isDark} />
 
-            <GotoGitHubCorresponding
-              commitUrl={data?.commit_url}
-            />            
+            <GotoGitHubCorresponding commitUrl={data?.commit_url} />
 
             <div
               style={{
@@ -209,46 +231,63 @@ export default function PDFPage({
               }}
             />
 
-            {/* MARKDOWN AREA */}
+            {/* 🔴 빨간색 영역 - 간단한 방식으로 수정 */}
             <div
-              ref={contentRef}
-              style={markdownWrapperStyle}
-              onMouseUp={handleMouseUp}
+              style={{
+                backgroundColor: "red",
+                marginLeft: -64,
+                marginRight: -64,
+                paddingLeft: 64,
+                paddingRight: 64,
+                paddingTop: 20,
+                paddingBottom: 20,
+                position: "relative",
+                left: 0,
+                right: 0,
+              }}
             >
-              <NotepageLines>
-                {parsedParts.map((item) => {
-                  if (item.kind === "viz") {
-                    const Component = item.Component;
-                    return (
-                      <div key={item.key}>
-                        <Component />
-                      </div>
-                    );
-                  }
+              {/* MARKDOWN AREA */}
+              <div
+                ref={contentRef}
+                style={markdownWrapperStyle}
+                onMouseUp={handleMouseUp}
+              >
+                <NotepageLines>
+                  {parsedParts.map((item) => {
+                    if (item.kind === "viz") {
+                      const Component = item.Component;
+                      return (
+                        <div key={item.key}>
+                          <Component />
+                        </div>
+                      );
+                    }
 
-                  if (item.kind === "diff") {
+                    if (item.kind === "diff") {
+                      return (
+                        <DiffVisualizer
+                          key={item.key}
+                          raw={item.content}
+                        />
+                      );
+                    }
+
                     return (
-                      <DiffVisualizer
+                      <MemoMarkdownRendererCoordinator
                         key={item.key}
-                        raw={item.content}
-                      />
+                        category={data?.category}
+                        markdownComponents={mdComponents}
+                        isDark={isDark}
+                        CodeBlock={CodeBlock}
+                      >
+                        {item.content}
+                      </MemoMarkdownRendererCoordinator>
                     );
-                  }
-
-                  return (
-                    <MemoMarkdownRendererCoordinator
-                      key={item.key}
-                      category={data?.category}
-                      markdownComponents={mdComponents}
-                      isDark={isDark}
-                      CodeBlock={CodeBlock}
-                    >
-                      {item.content}
-                    </MemoMarkdownRendererCoordinator>
-                  );
-                })}
-              </NotepageLines>
+                  })}
+                </NotepageLines>
+              </div>
             </div>
+            {/* 🔴 빨간색 영역 끝 */}
 
             <div style={{ clear: "both" }} />
 
