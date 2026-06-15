@@ -42,25 +42,26 @@ export const getLetterBackgroundStyles = (
   return {
     letter: {
       position: "relative" as const,
-      overflow: "hidden" as const,
+      overflow: "visible" as const, // hidden -> visible 변경 (잘림 방지)
       maxWidth: 980,
       margin: "0 auto",
       padding: "74px 78px 88px 78px",
       borderRadius: 8,
       backgroundColor: config.paperColor,
       backgroundImage: `url("${BACKGROUND_TEXTURE}")`,
-      backgroundSize: "330%",
+      backgroundSize: "cover", // 330% -> cover 변경 (전체 커버)
       backgroundRepeat: "no-repeat",
-      backgroundPosition: "center",
+      backgroundPosition: "center center", // center -> center center (명확하게)
       boxShadow: config.shadowColor,
       border: `1px solid ${config.borderColor}`,
-      contain: "layout paint style" as const,
+      // contain 속성 제거 (크기 제한 해제)
     },
     cinematicOverlay: {
       position: "absolute" as const,
       inset: 0,
       pointerEvents: "none" as const,
       background: config.gradientOverlay,
+      borderRadius: 8, // letter와 동일한 border-radius 적용
     },
     seal: {
       position: "absolute" as const,
@@ -72,6 +73,7 @@ export const getLetterBackgroundStyles = (
       border: `3px solid ${headingColor}`,
       opacity: 0.14,
       pointerEvents: "none" as const,
+      zIndex: 1, // z-index 추가
     },
   };
 };
