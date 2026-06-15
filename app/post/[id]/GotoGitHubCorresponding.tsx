@@ -185,7 +185,7 @@ export default function GotoGitHubCorresponding({
                   54,36
                   66,20
                 "
-                fill="#ffffff"
+                fill="#241616"
               />
 
               {/* 큰 화살촉 */}
@@ -196,7 +196,7 @@ export default function GotoGitHubCorresponding({
                   72,40
                   88,20
                 "
-                fill="#ffffff"
+                fill="#f0e9e9"
               />
             </svg>
           </span>
