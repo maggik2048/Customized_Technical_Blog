@@ -212,6 +212,8 @@ export default function PDFPage({
                   }
                 }}
                 style={{
+                  marginLeft: "auto",
+                  transform: "translateX(-180px)",
                   padding: "10px 18px",
 
                   border: "none",
@@ -224,7 +226,7 @@ export default function PDFPage({
 
                   fontWeight: 700,
 
-                  background: "#f97316",
+                  background: "#974e4e",
 
                   color: "#fff",
                 }}
