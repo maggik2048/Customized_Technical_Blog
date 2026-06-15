@@ -225,7 +225,7 @@ export default function CodeBlock_white({
         overflow: "hidden",
 
         background:
-          "rgba(255,255,255,0.82)",
+          "rgba(255,255,255,0.96)",
 
         backdropFilter: "blur(14px)",
 
@@ -233,12 +233,12 @@ export default function CodeBlock_white({
           "blur(14px)",
 
         border:
-          "1px solid rgba(0,0,0,0.06)",
+          "1px solid rgba(0,0,0,0.12)",
 
         boxShadow:
-          "0 10px 28px rgba(0,0,0,0.08)",
+          "0 12px 28px rgba(0,0,0,0.08)",
 
-        margin: "18px 0",
+        margin: "22px 0",
       }}
     >
       {/* COPY BUTTON */}
@@ -314,6 +314,26 @@ export default function CodeBlock_white({
       <SyntaxHighlighter
         language={language || "text"}
         PreTag="div"
+
+        showLineNumbers
+        showInlineLineNumbers
+
+        wrapLongLines
+
+        lineNumberStyle={{
+          minWidth: 42,
+
+          paddingRight: 16,
+
+          color: "rgba(0,0,0,0.35)",
+
+          borderRight:
+            "1px solid rgba(0,0,0,0.06)",
+
+          marginRight: 16,
+
+          userSelect: "none",
+        }}
         style={{
           ...oneLight,
 
@@ -347,14 +367,14 @@ export default function CodeBlock_white({
 
           background: "transparent",
 
-          fontSize: 14,
+          fontSize: 16,
 
-          lineHeight: 1.72,
+          lineHeight: 1.8,
 
-          opacity: 0.96,
+          opacity: 0.99,
 
           fontFamily:
-            "ui-monospace, SFMono-Regular, Menlo, monospace",
+            "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
         }}
         codeTagProps={{
           style: {
