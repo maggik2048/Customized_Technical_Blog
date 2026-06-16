@@ -10,7 +10,7 @@ import { motion } from "framer-motion";
 import InteractivePostCard from "./InteractivePostCard";
 
 const springTransition = {
-  type: "spring",
+  type: "spring" as const,
   stiffness: 120,
   damping: 18,
 };
