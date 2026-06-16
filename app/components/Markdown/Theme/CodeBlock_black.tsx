@@ -1,9 +1,33 @@
 "use client";
 
-import React, { useState } from "react";
+import React, {
+  useEffect,
+  useRef,
+  useState,
+} from "react";
+
 import { motion } from "framer-motion";
+
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism";
+
+import type { Components } from "react-markdown";
+
+import DiffVisualizer from "@/app/components/Markdown/processors/MarkdownPipeline/DiffVisualizer";
+
+/* =========================
+   TYPES
+========================= */
+
+type CodeProps =
+  Components["code"] extends React.ComponentType<infer P>
+    ? P
+    : any;
+
+/* =========================
+   ICONS
+========================= */
 
 const CopyIcon = () => (
   <svg
@@ -16,7 +40,15 @@ const CopyIcon = () => (
     strokeLinecap="round"
     strokeLinejoin="round"
   >
-    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+    <rect
+      x="9"
+      y="9"
+      width="13"
+      height="13"
+      rx="2"
+      ry="2"
+    />
+
     <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
   </svg>
 );
@@ -36,43 +68,120 @@ const CheckIcon = () => (
   </svg>
 );
 
-export default function CodeBlockWithCopy({
+/* =========================
+   COMPONENT
+========================= */
+
+export default function CodeBlock_black({
   inline,
   className,
   children,
-}: any) {
-  const [copied, setCopied] = useState(false);
-  const [hovered, setHovered] = useState(false);
+  ...props
+}: CodeProps) {
+  const [copied, setCopied] =
+    useState(false);
 
-  // ✅ 핵심 수정 (children 안정화)
-  const text = Array.isArray(children)
-    ? children.join("")
-    : String(children);
+  const [hovered, setHovered] =
+    useState(false);
 
-  const match = /language-(\w+)/.exec(className || "");
+  const timerRef =
+    useRef<NodeJS.Timeout | null>(null);
+
+  const text = String(children).replace(
+    /\n$/,
+    ""
+  );
+
+  const match = /language-(.+)/.exec(
+    className || ""
+  );
+
+  const language =
+    match?.[1]?.toLowerCase() || "";
+
+  /* =========================
+     INLINE DETECTION
+  ========================= */
+
+  const isInline =
+    inline ||
+    (!className &&
+      text.length < 80 &&
+      !text.includes("\n"));
+
+  /* =========================
+     DIFF DETECTION
+  ========================= */
+
+  const isDiff =
+    language === "diff" ||
+    language === "patch";
+
+  /* =========================
+     CLEANUP
+  ========================= */
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, []);
+
+  /* =========================
+     COPY
+  ========================= */
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(text);
+    try {
+      await navigator.clipboard.writeText(
+        text
+      );
 
-    setCopied(true);
-    setTimeout(() => {
-      setCopied(false);
-    }, 1400);
+      setCopied(true);
+
+      timerRef.current = setTimeout(() => {
+        setCopied(false);
+      }, 1400);
+    } catch (err) {
+      console.error("Copy failed:", err);
+    }
   };
 
-  // INLINE CODE
-  if (inline || (text.length < 80 && !text.includes("\n"))) {
+  /* =========================
+     INLINE CODE
+  ========================= */
+
+  if (isInline) {
     return (
       <code
+        {...props}
+        className={className}
         style={{
-          background: "rgba(255,255,255,0.06)",
-          color: "rgba(255,255,255,0.88)",
+          background:
+            "rgba(255,255,255,0.08)",
+
+          color: "rgba(255,255,255,0.92)",
+
           padding: "2px 6px",
+
           borderRadius: 6,
+
           fontSize: "0.95em",
-          border: "1px solid rgba(255,255,255,0.05)",
+
+          border:
+            "1px solid rgba(255,255,255,0.08)",
+
           backdropFilter: "blur(8px)",
-          fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+
+          WebkitBackdropFilter:
+            "blur(8px)",
+
+          fontFamily:
+            "ui-monospace, SFMono-Regular, Menlo, monospace",
+
+          wordBreak: "break-word",
         }}
       >
         {children}
@@ -80,89 +189,201 @@ export default function CodeBlockWithCopy({
     );
   }
 
+  /* =========================
+     DIFF VISUALIZER
+  ========================= */
+
+  if (isDiff) {
+    return (
+      <div
+        style={{
+          margin: "18px 0",
+        }}
+      >
+        <DiffVisualizer raw={text} />
+      </div>
+    );
+  }
+
+  /* =========================
+     BLOCK CODE
+  ========================= */
+
   return (
     <motion.div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      onMouseEnter={() =>
+        setHovered(true)
+      }
+      onMouseLeave={() =>
+        setHovered(false)
+      }
       style={{
         position: "relative",
+
         borderRadius: 14,
+
         overflow: "hidden",
-        background: "rgba(40,44,52,0.78)",
+
+        background:
+          "rgba(30,34,42,0.96)",
+
         backdropFilter: "blur(14px)",
-        WebkitBackdropFilter: "blur(14px)",
-        border: "1px solid rgba(255,255,255,0.07)",
-        boxShadow: "0 10px 28px rgba(0,0,0,0.22)",
+
+        WebkitBackdropFilter:
+          "blur(14px)",
+
+        border:
+          "1px solid rgba(255,255,255,0.08)",
+
+        boxShadow:
+          "0 12px 28px rgba(0,0,0,0.35)",
+
+        margin: "22px 0",
       }}
     >
       {/* COPY BUTTON */}
+
       <motion.button
         onClick={handleCopy}
         initial={false}
         animate={{
-          opacity: hovered || copied ? 1 : 0.45,
-          y: hovered || copied ? 0 : -2,
+          opacity:
+            hovered || copied ? 1 : 0.5,
+
+          y:
+            hovered || copied ? 0 : -2,
+
           scale: copied ? 1.02 : 1,
         }}
-        transition={{ duration: 0.16 }}
+        transition={{
+          duration: 0.16,
+        }}
         style={{
           position: "absolute",
+
           top: 12,
           right: 12,
+
           width: 34,
           height: 34,
+
           display: "flex",
+
           alignItems: "center",
+
           justifyContent: "center",
+
           border: "none",
+
           borderRadius: 9,
+
           background: copied
             ? "rgba(255,255,255,0.08)"
             : hovered
-            ? "rgba(255,255,255,0.14)"
-            : "rgba(255,255,255,0.05)",
+            ? "rgba(255,255,255,0.12)"
+            : "rgba(255,255,255,0.04)",
+
           color: copied
             ? "rgba(255,255,255,0.72)"
             : hovered
-            ? "#f5f5f5"
-            : "rgba(255,255,255,0.42)",
+            ? "rgba(255,255,255,0.92)"
+            : "rgba(255,255,255,0.45)",
+
           backdropFilter: "blur(10px)",
-          WebkitBackdropFilter: "blur(10px)",
+
+          WebkitBackdropFilter:
+            "blur(10px)",
+
           cursor: "pointer",
+
           zIndex: 20,
-          transition: "background 0.18s ease, color 0.18s ease",
+
+          transition:
+            "background 0.18s ease, color 0.18s ease",
         }}
       >
-        {copied ? <CheckIcon /> : <CopyIcon />}
+        {copied ? (
+          <CheckIcon />
+        ) : (
+          <CopyIcon />
+        )}
       </motion.button>
 
-      {/* CODE BLOCK */}
+      {/* SYNTAX */}
+
       <SyntaxHighlighter
-        language={match?.[1] || "text"}
+        language={language || "text"}
         PreTag="div"
+
+        showLineNumbers
+        showInlineLineNumbers
+
+        wrapLongLines
+
+        lineNumberStyle={{
+          minWidth: 42,
+
+          paddingRight: 16,
+
+          color: "rgba(255,255,255,0.35)",
+
+          borderRight:
+            "1px solid rgba(255,255,255,0.06)",
+
+          marginRight: 16,
+
+          userSelect: "none",
+        }}
         style={{
           ...oneDark,
+
           'pre[class*="language-"]': {
-            ...oneDark['pre[class*="language-"]'],
+            ...oneDark[
+              'pre[class*="language-"]'
+            ],
+
             background: "transparent",
+
+            margin: 0,
           },
+
           'code[class*="language-"]': {
-            ...oneDark['code[class*="language-"]'],
+            ...oneDark[
+              'code[class*="language-"]'
+            ],
+
             background: "transparent",
-            color: "rgba(255,255,255,0.92)",
+
+            color:
+              "rgba(255,255,255,0.92)",
+
+            textShadow: "none",
           },
         }}
         customStyle={{
           margin: 0,
+
           padding: "22px",
+
           background: "transparent",
-          fontSize: 14,
-          lineHeight: 1.72,
-          opacity: 0.96,
-          fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+
+          fontSize: 16,
+
+          lineHeight: 1.8,
+
+          opacity: 0.99,
+
+          fontFamily:
+            "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+        }}
+        codeTagProps={{
+          style: {
+            fontFamily:
+              "ui-monospace, SFMono-Regular, Menlo, monospace",
+          },
         }}
       >
-        {text.replace(/\n$/, "")}
+        {text}
       </SyntaxHighlighter>
     </motion.div>
   );
