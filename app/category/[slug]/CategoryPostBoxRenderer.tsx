@@ -409,10 +409,7 @@ function CategoryPostItem({
           >
             <PostTitleRenderer
               text={post.title}
-              highlight={
-                currentQuery
-              }
-              isSimple={isSimple}
+              highlight={currentQuery}
             />
           </div>
 
