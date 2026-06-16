@@ -31,7 +31,7 @@ import TableRenderer from "./TableRenderer";
 const KaTeXPostProcessor = lazy(() => import("./KaTeXPostProcessor"));
 
 // Dynamic import with loading strategy
-const { renderInkText } = await import("./letterInkText");
+const { renderInkText, renderMixedInkText } = await import("./letterInkText");
 
 /* =========================
    STATIC CONSTANTS
@@ -48,12 +48,18 @@ interface InkTextProps {
   text: string;
   seed: number;
   options: any;
+  segments?: Array<{ text: string; isRed?: boolean; color?: string }>; // For mixed content
 }
 
-const InkText = memo(function InkText({ text, seed, options }: InkTextProps) {
+const InkText = memo(function InkText({ text, seed, options, segments }: InkTextProps) {
+  // If segments are provided, use renderMixedInkText
+  if (segments && segments.length > 0) {
+    return renderMixedInkText(segments, seed, options);
+  }
   return renderInkText(text, seed, options);
 }, (prev, next) => {
   if (prev.text !== next.text || prev.seed !== next.seed) return false;
+  if (prev.segments !== next.segments) return false;
   const prevOpts = prev.options;
   const nextOpts = next.options;
   return prevOpts.color === nextOpts.color && 
@@ -102,6 +108,83 @@ export default function RemarkLetterPageRenderer({
   } = useLetterStyles(isDark);
 
   /* =========================
+     HELPER: Extract text content from children
+  ========================= */
+  
+  const extractTextContent = useCallback((node: any): string => {
+    if (typeof node === 'string') return node;
+    if (Array.isArray(node)) return node.map(extractTextContent).join('');
+    if (node?.props?.children) return extractTextContent(node.props.children);
+    return '';
+  }, []);
+
+  const processMixedContent = useCallback((children: any, seed: number, options: any): React.ReactNode => {
+    // If it's just a string, render with ink effect
+    if (typeof children === 'string') {
+      return <InkText text={children} seed={seed} options={options} />;
+    }
+    
+    // If it's an array, process each element
+    if (Array.isArray(children)) {
+      const segments: Array<{ text: string; isRed?: boolean; color?: string }> = [];
+      let currentSegment = '';
+      let isRedSegment = false;
+      
+      const flushSegment = () => {
+        if (currentSegment) {
+          segments.push({ 
+            text: currentSegment, 
+            isRed: isRedSegment,
+            color: isRedSegment ? colors.headingColor : undefined 
+          });
+          currentSegment = '';
+        }
+      };
+      
+      for (const child of children) {
+        if (typeof child === 'string') {
+          currentSegment += child;
+        } else if (child?.type === 'strong' || child?.type === 'em') {
+          flushSegment();
+          isRedSegment = true;
+          const textContent = extractTextContent(child);
+          currentSegment += textContent;
+          flushSegment();
+          isRedSegment = false;
+        } else if (child?.type === 'span') {
+          // Handle span with custom styles
+          flushSegment();
+          const isRed = child.props?.style?.color === colors.headingColor || 
+                       child.props?.className?.includes('red');
+          const textContent = extractTextContent(child);
+          if (textContent) {
+            segments.push({ 
+              text: textContent, 
+              isRed: isRed,
+              color: isRed ? colors.headingColor : undefined 
+            });
+          }
+        } else if (React.isValidElement(child)) {
+          // For other elements, extract text content
+          const textContent = extractTextContent(child);
+          if (textContent) {
+            currentSegment += textContent;
+          }
+        }
+      }
+      
+      flushSegment();
+      
+      if (segments.length > 0) {
+        return <InkText text="" seed={seed} options={options} segments={segments} />;
+      }
+    }
+    
+    // Fallback: render as-is
+    return children;
+  }, [colors.headingColor, extractTextContent]);
+
+  /* =========================
      OPTIMIZED RENDERERS
   ========================= */
   
@@ -113,59 +196,50 @@ export default function RemarkLetterPageRenderer({
     const headingStyle = getHeadingStyleForLevel(level, isLevel1);
     
     return memo(function HeadingRenderer({ children }: any) {
+      const processedChildren = processMixedContent(children, seed, inkOptions.heading);
       return (
         <div style={{ marginTop, marginBottom: 18 }}>
           <span className={className} style={headingStyle}>
-            {typeof children === "string" ? (
-              <InkText text={children} seed={seed} options={inkOptions.heading} />
-            ) : (
-              children
-            )}
+            {processedChildren}
           </span>
         </div>
       );
     });
-  }, [getHeadingStyleForLevel, inkOptions.heading]);
+  }, [getHeadingStyleForLevel, inkOptions.heading, processMixedContent]);
 
   const ParagraphRenderer = useMemo(() => memo(function ParagraphRenderer({ children }: any) {
+    const processedChildren = processMixedContent(children, 1400, inkOptions.paragraph);
     return (
       <p style={paragraphStyle}>
-        {typeof children === "string" ? (
-          <InkText text={children} seed={1400} options={inkOptions.paragraph} />
-        ) : (
-          children
-        )}
+        {processedChildren}
       </p>
     );
-  }), [paragraphStyle, inkOptions.paragraph]);
+  }), [paragraphStyle, inkOptions.paragraph, processMixedContent]);
 
   const StrongRenderer = useMemo(() => memo(function StrongRenderer({ children }: any) {
+    // Strong text should NOT be rendered separately - it's handled by processMixedContent
+    // This is a fallback for standalone strong elements
+    const processedChildren = processMixedContent(children, 700, inkOptions.strong);
     return (
       <strong className={boldCalligraphyFont.className} style={strongStyle}>
-        {typeof children === "string" ? (
-          <InkText text={children} seed={700} options={inkOptions.strong} />
-        ) : (
-          children
-        )}
+        {processedChildren}
       </strong>
     );
-  }), [strongStyle, inkOptions.strong]);
+  }), [strongStyle, inkOptions.strong, processMixedContent]);
 
   const EmphasisRenderer = useMemo(() => memo(function EmphasisRenderer({ children }: any) {
+    const processedChildren = processMixedContent(children, 2222, inkOptions.emphasis);
     return (
       <em style={emphasisStyle}>
-        {typeof children === "string" ? (
-          <InkText text={children} seed={2222} options={inkOptions.emphasis} />
-        ) : (
-          children
-        )}
+        {processedChildren}
       </em>
     );
-  }), [emphasisStyle, inkOptions.emphasis]);
+  }), [emphasisStyle, inkOptions.emphasis, processMixedContent]);
 
   const ListItemRenderer = useMemo(() => memo(function ListItemRenderer({ children, index }: any) {
     const bulletSeed = 9000 + (index || 0);
     const textSeed = 3100 + (index || 0);
+    const processedChildren = processMixedContent(children, textSeed, inkOptions.list);
     
     return (
       <li style={listItemStyle}>
@@ -173,15 +247,11 @@ export default function RemarkLetterPageRenderer({
           <InkText text="•" seed={bulletSeed} options={inkOptions.bullet} />
         </span>
         <span>
-          {typeof children === "string" ? (
-            <InkText text={children} seed={textSeed} options={inkOptions.list} />
-          ) : (
-            children
-          )}
+          {processedChildren}
         </span>
       </li>
     );
-  }), [listItemStyle, bulletStyle, inkOptions.bullet, inkOptions.list]);
+  }), [listItemStyle, bulletStyle, inkOptions.bullet, inkOptions.list, processMixedContent]);
 
   const BlockquoteRenderer = useMemo(() => memo(function BlockquoteRenderer({ children }: any) {
     return <blockquote style={blockquoteStyle}>{children}</blockquote>;

@@ -1,3 +1,4 @@
+// Enhanced renderInkText that handles mixed content properly
 "use client";
 
 import React from "react";
@@ -20,7 +21,6 @@ const DEFAULT_OPTIONS = {
   opacityMax: 0.9,
   bleedChance: 0.24,
   kerningVariance: 0.0006,
-  // New: Shadow options for ink smearing effect
   shadowIntensity: 0.35,
   shadowBlur: 3,
   shadowOffset: 1,
@@ -42,7 +42,7 @@ function mulberry32(seed: number) {
   };
 }
 
-// Cache for random generators with WeakMap for automatic cleanup
+// Cache for random generators
 const randomCache = new Map<number, () => number>();
 const MAX_CACHE_SIZE = 10000;
 
@@ -62,9 +62,6 @@ function getRandomGenerator(seed: number, index: number) {
   return generator;
 }
 
-const clamp = (value: number, min: number, max: number) => 
-  (value > max ? max : (value < min ? min : value));
-
 type InkOptions = Partial<typeof DEFAULT_OPTIONS>;
 
 // Pre-allocate reusable style objects
@@ -76,7 +73,7 @@ const baseStyle = {
   backfaceVisibility: "hidden",
 } as const;
 
-// Shadow styles from RemarkPageRenderer - applied to each character
+// Shadow function
 const getInkShadow = (intensity: number = 0.35, blur: number = 3, offset: number = 1) => {
   const alpha = intensity;
   const alphaLight = intensity * 0.7;
@@ -87,10 +84,13 @@ const getInkShadow = (intensity: number = 0.35, blur: number = 3, offset: number
   `;
 };
 
+// Enhanced render function that preserves ink effect for mixed content
 export function renderInkText(
   text: React.ReactNode,
   seed: number,
-  options?: InkOptions
+  options?: InkOptions,
+  // New: Custom renderer for specific parts (like red text)
+  customRenderer?: (char: string, index: number, totalLength: number) => React.ReactNode
 ) {
   const opts = options ? { ...DEFAULT_OPTIONS, ...options } : DEFAULT_OPTIONS;
   
@@ -116,20 +116,42 @@ export function renderInkText(
     shadowIntensity, shadowBlur, shadowOffset
   } = opts;
   
-  const halfShiftY = maxShiftY * 0.5;
-  const halfShiftX = maxShiftX * 0.5;
-  const halfRotation = maxRotation * 0.5;
-  const halfKerning = kerningVariance * 0.5;
   const bleedThreshold = 1 - bleedChance;
   
-  // Pre-compute shadow for this render
   const textShadow = getInkShadow(shadowIntensity, shadowBlur, shadowOffset);
   
   for (let i = 0; i < length; i++) {
     const char = textStr[i];
     
-    const rGen = getRandomGenerator(seed, i);
+    // If custom renderer is provided and returns something, use it
+    if (customRenderer) {
+      const customElement = customRenderer(char, i, length);
+      if (customElement) {
+        // Wrap custom element with ink effect but preserve its styles
+        const shiftY = (getRandomGenerator(seed, i * offsets.shiftY)() - 0.5) * maxShiftY;
+        const shiftX = (getRandomGenerator(seed, i * offsets.shiftX)() - 0.5) * maxShiftX;
+        const rotation = (getRandomGenerator(seed, i * offsets.rotation)() - 0.5) * maxRotation;
+        const scale = minScale + getRandomGenerator(seed, i * offsets.scale)() * SCALE_RANGE;
+        const opacity = opacityMin + getRandomGenerator(seed, i * offsets.opacity)() * OPACITY_RANGE;
+        
+        const transform = `translate(${shiftX}px,${shiftY}px) rotate(${rotation}deg) scale(${scale})`;
+        
+        result[i] = React.cloneElement(customElement, {
+          key: i,
+          style: {
+            ...customElement.props.style,
+            display: "inline-block",
+            transform,
+            opacity,
+            textShadow: customElement.props.style?.textShadow || textShadow,
+            filter: `blur(${0.01}px)`, // Minimal blur to keep the effect
+          }
+        });
+        continue;
+      }
+    }
     
+    // Default rendering for normal characters
     const shiftY = (getRandomGenerator(seed, i * offsets.shiftY)() - 0.5) * maxShiftY;
     const shiftX = (getRandomGenerator(seed, i * offsets.shiftX)() - 0.5) * maxShiftX;
     const rotation = (getRandomGenerator(seed, i * offsets.rotation)() - 0.5) * maxRotation;
@@ -146,7 +168,6 @@ export function renderInkText(
     
     const transform = `translate(${shiftX}px,${shiftY}px) rotate(${rotation}deg) scale(${scale})`;
     
-    // Enhanced shadow with ink smearing effect - applied to each character
     const charShadow = strongBleed
       ? `${textShadow}, 0 0 0.6px ${color},0 0 1.4px ${color}`
       : textShadow;
@@ -160,13 +181,47 @@ export function renderInkText(
         opacity,
         marginRight: `${kerningShift}em`,
         transform,
-        textShadow: charShadow, // Applied shadow here!
+        textShadow: charShadow,
         filter: `blur(${blurAmount}px)`,
-        // Add color to ensure it inherits correctly
         color: opts.color,
       },
       children: char === " " ? "\u00A0" : char
     });
+  }
+  
+  return result;
+}
+
+// Special helper for mixed content with red text
+export function renderMixedInkText(
+  segments: Array<{ text: string; isRed?: boolean; color?: string }>,
+  seed: number,
+  options?: InkOptions
+) {
+  // Combine all text for proper seeding
+  const fullText = segments.map(s => s.text).join('');
+  const opts = options ? { ...DEFAULT_OPTIONS, ...options } : DEFAULT_OPTIONS;
+  
+  const result = [];
+  let globalIndex = 0;
+  
+  for (const segment of segments) {
+    const segmentText = segment.text;
+    const isRed = segment.isRed || false;
+    const segmentColor = isRed ? "#6a1f1b" : (segment.color || opts.color);
+    
+    // Render segment with ink effect
+    const segmentNodes = renderInkText(
+      segmentText,
+      seed + globalIndex, // Offset seed for each segment
+      {
+        ...opts,
+        color: segmentColor,
+      }
+    );
+    
+    result.push(...segmentNodes);
+    globalIndex += segmentText.length;
   }
   
   return result;
