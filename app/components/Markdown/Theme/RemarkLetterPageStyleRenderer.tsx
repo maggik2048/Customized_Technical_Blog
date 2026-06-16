@@ -34,11 +34,11 @@ export const boldCalligraphyFont = Italianno({
 // Font constants
 export const LETTER_FONT = `${luxuryHeadingFont.style.fontFamily}, "Times New Roman", serif`;
 
-// Size configuration - FIXED: list items now match paragraph size
+// Size configuration
 export const SIZES = Object.freeze({
   heading: Object.freeze({ 1: 90, 2: 84, 3: 78 }),
   margin: Object.freeze({ 1: 28, 2: 42, 3: 26 }),
-  fontSize: Object.freeze({ li: 36, p: 36 }), // Fixed: li now matches p size
+  fontSize: Object.freeze({ li: 36, p: 36 }),
 });
 
 // Ink effect options
@@ -155,8 +155,8 @@ export const getParagraphStyle = (colors: any) => ({
   textShadow: "0 0 0.2px rgba(0,0,0,0.2)",
 });
 
-export const getStrongStyle = (colors: any, highlightStyle: any) => ({
-  ...highlightStyle,
+// FIXED: Removed highlightStyle from strong to eliminate red box effect
+export const getStrongStyle = (colors: any) => ({
   color: colors.headingColor,
   fontWeight: 400,
   fontSize: "1.5em",
@@ -166,6 +166,7 @@ export const getStrongStyle = (colors: any, highlightStyle: any) => ({
   transform: "rotate(-1deg)",
   padding: "0 4px",
   textShadow: colors.strongTextShadow,
+  // Removed: background, borderRadius from highlightStyle
 });
 
 export const getEmphasisStyle = (colors: any) => ({
@@ -179,7 +180,7 @@ export const getListItemStyle = (colors: any) => ({
   position: "relative" as const,
   fontFamily: LETTER_FONT,
   color: colors.inkColor,
-  fontSize: SIZES.fontSize.li, // Now uses the fixed 36px size
+  fontSize: SIZES.fontSize.li,
   lineHeight: 1.0,
   margin: "10px 0",
   paddingLeft: 34,
@@ -217,6 +218,7 @@ export const getListWrapperStyle = () => ({
   margin: "18px 0",
 });
 
+// Keep highlightStyle for potential future use, but no longer used in strong
 export const getHighlightStyle = (colors: any) => ({
   background: colors.highlightBg,
   borderRadius: 4,
@@ -226,7 +228,6 @@ export const getHighlightStyle = (colors: any) => ({
 // Hook for all style-related logic
 export function useLetterStyles(isDark: boolean) {
   const colors = COLOR_CONFIGS[isDark ? "dark" : "light"];
-  const highlightStyle = useMemo(() => getHighlightStyle(colors), [colors]);
   
   const inkOptions = useMemo(() => ({
     paragraph: createInkOptions(colors.inkColor, INK_OPTIONS_BASE.paragraph),
@@ -238,7 +239,7 @@ export function useLetterStyles(isDark: boolean) {
   }), [colors]);
 
   const paragraphStyle = useMemo(() => getParagraphStyle(colors), [colors]);
-  const strongStyle = useMemo(() => getStrongStyle(colors, highlightStyle), [colors, highlightStyle]);
+  const strongStyle = useMemo(() => getStrongStyle(colors), [colors]); // Removed highlightStyle dependency
   const emphasisStyle = useMemo(() => getEmphasisStyle(colors), [colors]);
   const listItemStyle = useMemo(() => getListItemStyle(colors), [colors]);
   const bulletStyle = useMemo(() => getBulletStyle(), []);
@@ -260,7 +261,6 @@ export function useLetterStyles(isDark: boolean) {
     blockquoteStyle,
     hrStyle,
     listWrapperStyle,
-    highlightStyle,
     getHeadingStyleForLevel,
   };
 }
