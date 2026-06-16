@@ -49,7 +49,10 @@ function getRandomGenerator(seed: number, index: number) {
     // Prevent memory leaks
     if (randomCache.size > MAX_CACHE_SIZE) {
       const firstKey = randomCache.keys().next().value;
-      randomCache.delete(firstKey);
+      // Check if firstKey exists before deleting
+      if (firstKey !== undefined) {
+        randomCache.delete(firstKey);
+      }
     }
     generator = mulberry32(key);
     randomCache.set(key, generator);
