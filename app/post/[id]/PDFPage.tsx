@@ -74,6 +74,7 @@ export default function PDFPage({
     tag_slugs: data?.tag_slugs,
   });
 
+  //  REMOVED background from pageStyle - now only container styling
   const pageStyle = React.useMemo(
     () => ({
       width: 860,
@@ -82,11 +83,7 @@ export default function PDFPage({
       background: isDark
         ? "rgba(60,60,60,0.6)"
         : "rgba(255,255,255,0.72)",
-      backgroundImage: `url("/images/dossierBg/woodmarble2.jpg")`,
-      backgroundSize: "100% auto",  //  cover 대신 100% auto로 변경 (가로에 맞춰 세로는 비율유지)
-      backgroundRepeat: "no-repeat",
-      backgroundPosition: "center top",  //  top으로 변경해서 이미지 상단부터 표시
-      backgroundBlendMode: "overlay",
+      // ❌ REMOVED: backgroundImage, backgroundSize, etc.
       paddingLeft: 64,
       paddingRight: 64,
       borderRadius: 12,
@@ -237,10 +234,10 @@ export default function PDFPage({
               parentPaddingLeft={64}
               parentPaddingRight={64}
               backgroundImage="/images/dossierBg/woodmarble2.jpg"
-              objectFit="none"  
-              backgroundSize="100% auto"  // 여기도 동일하게 수정
-              backgroundPosition="center top"
-              backgroundRepeat="repeat"
+              objectFit="cover"  //  Changed to cover for full width coverage
+              backgroundSize="100% 100%"  //  Stretch to fully cover width and height
+              backgroundPosition="center center"
+              backgroundRepeat="no-repeat"  //  Changed to no-repeat for clean coverage
               backgroundBlendMode="overlay"
               paddingTop={20}
               paddingBottom={20}
