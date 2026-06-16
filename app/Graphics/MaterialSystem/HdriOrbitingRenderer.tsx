@@ -14,11 +14,23 @@ import { Scene } from './scene/Scene';
 
 import { RenderSystem } from './systems/RenderSystem';
 
-export default function HdriOrbitingRenderer() {
+//  추가: Props 타입 정의
+type HdriOrbitingRendererProps = {
+  shouldDoMapping?: boolean;
+  selectedModelId?: string | null;
+};
+
+export default function HdriOrbitingRenderer({ 
+  shouldDoMapping, 
+  selectedModelId 
+}: HdriOrbitingRendererProps = {}) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!containerRef.current) return;
+
+    //  추가: props 변경 시 로깅 (디버깅용)
+    console.log('HdriOrbitingRenderer props:', { shouldDoMapping, selectedModelId });
 
     //
     // Scene (Three.js)
@@ -113,6 +125,30 @@ export default function HdriOrbitingRenderer() {
     scene.add(light);
 
     //
+    //  추가: shouldDoMapping이 true일 때 특정 동작 수행 (예: 와이어프레임 토글)
+    // 필요에 따라 수정 가능
+    if (shouldDoMapping) {
+      console.log('Mapping mode enabled');
+      // 예: sphere 머티리얼을 와이어프레임으로 변경
+      if (sphere.material instanceof THREE.MeshStandardMaterial) {
+        sphere.material.wireframe = true;
+      }
+    } else {
+      if (sphere.material instanceof THREE.MeshStandardMaterial) {
+        sphere.material.wireframe = false;
+      }
+    }
+
+    //
+    //  추가: selectedModelId가 변경될 때 해당 모델 로드 로직
+    // 필요에 따라 구현
+    if (selectedModelId) {
+      console.log('Selected model changed:', selectedModelId);
+      // 여기에 모델 로드 로직 추가 가능
+      // 예: loadModel(selectedModelId);
+    }
+
+    //
     // Animate
     //
     let animationId: number;
@@ -159,7 +195,7 @@ export default function HdriOrbitingRenderer() {
         containerRef.current.removeChild(renderer.domElement);
       }
     };
-  }, []);
+  }, [shouldDoMapping, selectedModelId]); //  추가: props가 변경될 때 effect 재실행
 
   return (
     <div
