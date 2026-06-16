@@ -82,7 +82,6 @@ export default function PostForm({
   const [content, setContent] =
     useState("");
 
-
   const [
     commitPending,
     setCommitPending,
@@ -207,30 +206,26 @@ export default function PostForm({
   }, [mode, postId]);
 
   /*
-    chrome extension import
+    chrome extension import - only in browser environment
   */
 
   useEffect(() => {
-    if (
-      typeof chrome ===
-      "undefined"
-    )
-      return;
+    // Check if we're in a browser environment
+    if (typeof window === "undefined") return;
+    
+    // Check if chrome API exists on window
+    const chromeAPI = (window as any).chrome;
+    
+    if (!chromeAPI) return;
+    
+    if (!chromeAPI.storage?.local) return;
 
-    if (!chrome.storage?.local)
-      return;
-
-    chrome.storage.local.get(
+    chromeAPI.storage.local.get(
       ["latest_post"],
-      (result) => {
-        if (
-          !result.latest_post
-        )
-          return;
+      (result: any) => {
+        if (!result.latest_post) return;
 
-        setContent(
-          result.latest_post
-        );
+        setContent(result.latest_post);
       }
     );
   }, []);
@@ -265,7 +260,6 @@ export default function PostForm({
 
       return;
     }
-
 
     const payload = {
       title,
@@ -614,8 +608,6 @@ export default function PostForm({
             : "⚫ Commit Ready"}
         </button>
       </div>
-
-
 
       {/* Submit */}
 
