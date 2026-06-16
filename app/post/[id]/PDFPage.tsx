@@ -82,10 +82,10 @@ export default function PDFPage({
       background: isDark
         ? "rgba(60,60,60,0.6)"
         : "rgba(255,255,255,0.72)",
-      backgroundImage: `url("/images/dossierBg/wood.png")`,
-      backgroundSize: "cover",
+      backgroundImage: `url("/images/dossierBg/wood2.png")`,
+      backgroundSize: "100% auto",  //  cover 대신 100% auto로 변경 (가로에 맞춰 세로는 비율유지)
       backgroundRepeat: "no-repeat",
-      backgroundPosition: "center center",
+      backgroundPosition: "center top",  //  top으로 변경해서 이미지 상단부터 표시
       backgroundBlendMode: "overlay",
       paddingLeft: 64,
       paddingRight: 64,
@@ -232,13 +232,14 @@ export default function PDFPage({
               }}
             />
 
-            {/* MARKDOWN CONTENT WITH BACKGROUND MANAGER - USING wood.jpg */}
+            {/* MARKDOWN CONTENT WITH BACKGROUND MANAGER */}
             <DocContentBackgroundManager
               parentPaddingLeft={64}
               parentPaddingRight={64}
-              backgroundImage="/images/dossierBg/wood.jpg"
-              backgroundSize="cover"
-              backgroundPosition="center center"
+              backgroundImage="/images/dossierBg/wood2.png"
+              objectFit="none"  
+              backgroundSize="100% auto"  // 여기도 동일하게 수정
+              backgroundPosition="center top"
               backgroundRepeat="no-repeat"
               backgroundBlendMode="overlay"
               paddingTop={20}
