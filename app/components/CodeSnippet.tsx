@@ -1,7 +1,7 @@
 // app/components/CodeSnippet.tsx
 "use client";
 
-import { useDarkMode } from "../context/DarkModeContext.tsx";
+import { useDarkMode } from "../context/DarkModeContext"; // Removed .tsx
 
 export default function CodeSnippet({ code }: { code: string }) {
   const { mode } = useDarkMode();
