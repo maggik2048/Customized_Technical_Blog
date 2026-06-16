@@ -20,6 +20,10 @@ const DEFAULT_OPTIONS = {
   opacityMax: 0.9,
   bleedChance: 0.24,
   kerningVariance: 0.0006,
+  // New: Shadow options for ink smearing effect
+  shadowIntensity: 0.35,
+  shadowBlur: 3,
+  shadowOffset: 1,
 } as const;
 
 // Pre-computed ranges
@@ -34,7 +38,7 @@ function mulberry32(seed: number) {
     let t = seed += 0x6D2B79F5;
     t = Math.imul(t ^ t >>> 15, t | 1);
     t ^= t + Math.imul(t ^ t >>> 7, t | 61);
-    return ((t ^ t >>> 14) >>> 0) * 2.3283064365386963e-10; // Pre-computed division
+    return ((t ^ t >>> 14) >>> 0) * 2.3283064365386963e-10;
   };
 }
 
@@ -46,10 +50,8 @@ function getRandomGenerator(seed: number, index: number) {
   const key = seed + index * 13;
   let generator = randomCache.get(key);
   if (!generator) {
-    // Prevent memory leaks
     if (randomCache.size > MAX_CACHE_SIZE) {
       const firstKey = randomCache.keys().next().value;
-      // Check if firstKey exists before deleting
       if (firstKey !== undefined) {
         randomCache.delete(firstKey);
       }
@@ -60,7 +62,6 @@ function getRandomGenerator(seed: number, index: number) {
   return generator;
 }
 
-// Optimized value clamping
 const clamp = (value: number, min: number, max: number) => 
   (value > max ? max : (value < min ? min : value));
 
@@ -75,6 +76,17 @@ const baseStyle = {
   backfaceVisibility: "hidden",
 } as const;
 
+// Shadow styles from RemarkPageRenderer - applied to each character
+const getInkShadow = (intensity: number = 0.35, blur: number = 3, offset: number = 1) => {
+  const alpha = intensity;
+  const alphaLight = intensity * 0.7;
+  return `
+    0 ${offset}px 0 rgba(255,255,255,0.55),
+    0 ${offset}px ${blur}px rgba(0,0,0,${alpha}),
+    0 ${offset}px ${blur * 0.67}px rgba(0,0,0,${alphaLight})
+  `;
+};
+
 export function renderInkText(
   text: React.ReactNode,
   seed: number,
@@ -85,10 +97,8 @@ export function renderInkText(
   const textStr = String(text);
   const length = textStr.length;
   
-  // Pre-allocate array with exact size
   const result = new Array(length);
   
-  // Pre-calculate offsets as local variables for faster access
   const offsets = {
     opacity: 0,
     shiftY: 7,
@@ -99,11 +109,11 @@ export function renderInkText(
     bleed: 29,
   };
   
-  // Local aliases for faster access
   const { 
     maxShiftY, maxShiftX, maxRotation, 
     minScale, maxScale, opacityMin, opacityMax,
-    bleedChance, kerningVariance, color, maxBlur
+    bleedChance, kerningVariance, color, maxBlur,
+    shadowIntensity, shadowBlur, shadowOffset
   } = opts;
   
   const halfShiftY = maxShiftY * 0.5;
@@ -112,10 +122,12 @@ export function renderInkText(
   const halfKerning = kerningVariance * 0.5;
   const bleedThreshold = 1 - bleedChance;
   
+  // Pre-compute shadow for this render
+  const textShadow = getInkShadow(shadowIntensity, shadowBlur, shadowOffset);
+  
   for (let i = 0; i < length; i++) {
     const char = textStr[i];
     
-    // Single random generator for all values (better cache locality)
     const rGen = getRandomGenerator(seed, i);
     
     const shiftY = (getRandomGenerator(seed, i * offsets.shiftY)() - 0.5) * maxShiftY;
@@ -123,29 +135,24 @@ export function renderInkText(
     const rotation = (getRandomGenerator(seed, i * offsets.rotation)() - 0.5) * maxRotation;
     const scale = minScale + getRandomGenerator(seed, i * offsets.scale)() * SCALE_RANGE;
     
-    // Optimize common operations
     const bleedStrength = getRandomGenerator(seed, i * offsets.bleed)();
     const strongBleed = bleedStrength > bleedThreshold;
     
-    // Pre-calculate opacity using multiplication instead of addition
     const opacity = opacityMin + getRandomGenerator(seed, i * offsets.opacity)() * OPACITY_RANGE;
     
-    // Optimize blur calculation with ternary
     const blurAmount = strongBleed 
       ? BLUR_STRONG_OFFSET + getRandomGenerator(seed, i)() * maxBlur
       : getRandomGenerator(seed, i * 41)() * BLUR_NORMAL_MAX;
     
-    // Build transform string more efficiently
     const transform = `translate(${shiftX}px,${shiftY}px) rotate(${rotation}deg) scale(${scale})`;
     
-    // Optimize text shadow strings
-    const textShadow = strongBleed
-      ? `0 0 0.6px ${color},0 0 1.4px ${color},0 0 2.8px rgba(0,0,0,0.10)`
-      : `0 0 0.3px rgba(0,0,0,0.08)`;
+    // Enhanced shadow with ink smearing effect - applied to each character
+    const charShadow = strongBleed
+      ? `${textShadow}, 0 0 0.6px ${color},0 0 1.4px ${color}`
+      : textShadow;
     
     const kerningShift = (getRandomGenerator(seed, i * offsets.kerning)() - 0.5) * kerningVariance;
     
-    // Create style object with spread for better JIT optimization
     result[i] = React.createElement('span', {
       key: i,
       style: {
@@ -153,8 +160,10 @@ export function renderInkText(
         opacity,
         marginRight: `${kerningShift}em`,
         transform,
-        textShadow,
+        textShadow: charShadow, // Applied shadow here!
         filter: `blur(${blurAmount}px)`,
+        // Add color to ensure it inherits correctly
+        color: opts.color,
       },
       children: char === " " ? "\u00A0" : char
     });
@@ -163,7 +172,6 @@ export function renderInkText(
   return result;
 }
 
-// Optimized cleanup with size limit
 export function clearRandomCache(keepSize: number = 1000) {
   if (randomCache.size > keepSize) {
     const entries = Array.from(randomCache.keys());
@@ -173,5 +181,4 @@ export function clearRandomCache(keepSize: number = 1000) {
   }
 }
 
-// Optional: Pre-allocate common strings
 const NBSP_CHAR = "\u00A0";
