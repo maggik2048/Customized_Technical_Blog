@@ -1,9 +1,9 @@
 // DifferentFont_insideParenthesis.tsx
 import React from "react";
-import { Metamorphous } from "next/font/google";
+import { Jacquard_24 } from "next/font/google"; // Changed from Metamorphous
 
-// Initialize Metamorphous font with Next.js font loader
-const metamorphous = Metamorphous({
+// Initialize Jacquard 24 font with Next.js font loader
+const jacquard = Jacquard_24({
   subsets: ["latin"],
   weight: ["400"],
   display: "swap",
@@ -22,34 +22,31 @@ export function DifferentFont_insideParenthesis({
   style = {} 
 }: DifferentFont_insideParenthesisProps) {
   // Match text inside (...) or =...=
-  // Handles: (text) or = text = (with optional spaces)
   const regex = /\(([^)]+)\)|=\s*([^=]+?)\s*=/g;
   const parts: React.ReactNode[] = [];
   let lastIndex = 0;
   let match;
 
   while ((match = regex.exec(children)) !== null) {
-    // Add text before the match
     if (match.index > lastIndex) {
       parts.push(children.slice(lastIndex, match.index));
     }
 
-    // The captured text is either in group 1 (parentheses) or group 2 (equals)
     const captured = match[1] || match[2];
     if (captured) {
       parts.push(
         <span
           key={match.index}
-          className={`${metamorphous.className} ${className}`}
+          className={`${jacquard.className} ${className}`} // Changed from metamorphous
           style={{
-            fontFamily: "'Metamorphous', 'Times New Roman', serif",
-            fontSize: "0.46em", // 1.15 / 2.5 = 0.46 (2.5 times smaller)
+            fontFamily: "'Jacquard 24', 'Times New Roman', serif", // Changed font family
+            fontSize: "0.46em",
             color: "#4a2c1a",
             letterSpacing: "0.03em",
             display: "inline-block",
             textShadow: "0 1px 2px rgba(0,0,0,0.15)",
             transform: "scale(1.02)",
-            opacity: 0.7, // 70% opacity
+            opacity: 0.7,
             ...style,
           }}
         >
@@ -61,7 +58,6 @@ export function DifferentFont_insideParenthesis({
     lastIndex = regex.lastIndex;
   }
 
-  // Add remaining text
   if (lastIndex < children.length) {
     parts.push(children.slice(lastIndex));
   }
