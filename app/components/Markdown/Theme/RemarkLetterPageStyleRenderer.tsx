@@ -1,5 +1,5 @@
 // RemarkLetterPageStyleRenderer.tsx
-import React, { useMemo, useCallback, memo } from "react"; // useCallback 추가
+import React, { useMemo, useCallback, memo } from "react";
 import {
   Tangerine,
   Italianno,
@@ -34,11 +34,11 @@ export const boldCalligraphyFont = Italianno({
 // Font constants
 export const LETTER_FONT = `${luxuryHeadingFont.style.fontFamily}, "Times New Roman", serif`;
 
-// Size configuration
+// Size configuration - FIXED: list items now match paragraph size
 export const SIZES = Object.freeze({
   heading: Object.freeze({ 1: 90, 2: 84, 3: 78 }),
   margin: Object.freeze({ 1: 28, 2: 42, 3: 26 }),
-  fontSize: Object.freeze({ li: 49, p: 36 }),
+  fontSize: Object.freeze({ li: 36, p: 36 }), // Fixed: li now matches p size
 });
 
 // Ink effect options
@@ -179,7 +179,7 @@ export const getListItemStyle = (colors: any) => ({
   position: "relative" as const,
   fontFamily: LETTER_FONT,
   color: colors.inkColor,
-  fontSize: SIZES.fontSize.li,
+  fontSize: SIZES.fontSize.li, // Now uses the fixed 36px size
   lineHeight: 1.0,
   margin: "10px 0",
   paddingLeft: 34,
