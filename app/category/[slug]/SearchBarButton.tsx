@@ -2,13 +2,11 @@
 
 import React, { useEffect, useState } from "react";
 import MorphingTextAnimation from "../../MathematicVisualizer/morphingTextAnimation";
-import CalculatorGraphingInterface from "../../MathematicVisualizer/CalculatorGraphingInterface";
+import CalculatorGraphTheme from "../../MathematicVisualizer/CalculatorGraphTheme";
 
 type Props = {
   onSearch?: (value: string) => void;
   onFilterClick?: () => void;
-
-  // 추가
   initialValue?: string;
 };
 
@@ -20,14 +18,9 @@ export default function SearchBarButton({
   const [value, setValue] = useState(initialValue);
   const [isActive, setIsActive] = useState(false);
   const [showCalculator, setShowCalculator] = useState(false);
-
-  // SEARCH STATE
   const [isSearching, setIsSearching] = useState(false);
-
-  // DUPLICATE QUERY PREVENTION
   const [lastSearched, setLastSearched] = useState(initialValue);
 
-  // URL QUERY → INPUT SYNC
   useEffect(() => {
     setValue(initialValue);
     setLastSearched(initialValue);
@@ -35,84 +28,47 @@ export default function SearchBarButton({
 
   const handleSearch = async () => {
     const trimmed = value.trim();
-
-    // EMPTY → RESET SEARCH
     if (!trimmed) {
       setLastSearched("");
       await onSearch?.("");
       return;
     }
-
-    // SAME QUERY BLOCK
     if (trimmed === lastSearched) return;
-
     try {
       setIsSearching(true);
       setLastSearched(trimmed);
-
-      // 부모(CategoryRenderer 등)로 검색어 전달
       await onSearch?.(trimmed);
     } finally {
       setIsSearching(false);
     }
   };
 
-  // DEBOUNCE SEARCH
   useEffect(() => {
-    // INPUT CLEARED
     if (!value.trim()) {
       onSearch?.("");
       setLastSearched("");
       return;
     }
-
     const timer = setTimeout(() => {
       handleSearch();
     }, 400);
-
     return () => clearTimeout(timer);
   }, [value]);
 
   const Magnifier = ({ size = 18 }: { size?: number }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
       <circle cx="11" cy="11" r="7" stroke="white" strokeWidth="1.6" />
-      <line
-        x1="16.5"
-        y1="16.5"
-        x2="21"
-        y2="21"
-        stroke="white"
-        strokeWidth="1.6"
-        strokeLinecap="round"
-      />
+      <line x1="16.5" y1="16.5" x2="21" y2="21" stroke="white" strokeWidth="1.6" strokeLinecap="round" />
     </svg>
   );
 
   const CalculatorIcon = ({ size = 18 }: { size?: number }) => (
     <svg width={size} height={size} viewBox="0 0 24 24" fill="none">
-      <rect
-        x="4"
-        y="2"
-        width="16"
-        height="20"
-        rx="3"
-        stroke="rgba(0,0,0,0.75)"
-        strokeWidth="1.4"
-      />
-
-      <rect
-        x="7"
-        y="5"
-        width="10"
-        height="3"
-        rx="1"
-        fill="rgba(0,0,0,0.6)"
-      />
-
+      <rect x="4" y="2" width="16" height="20" rx="3" stroke="rgba(0,0,0,0.75)" strokeWidth="1.4" />
+      <rect x="7" y="5" width="10" height="3" rx="1" fill="rgba(0,0,0,0.6)" />
       <circle cx="8" cy="12" r="1" fill="rgba(0,0,0,0.7)" />
       <circle cx="12" cy="12" r="1" fill="rgba(0,0,0,0.7)" />
       <circle cx="16" cy="12" r="1" fill="rgba(0,0,0,0.7)" />
-
       <circle cx="8" cy="16" r="1" fill="rgba(0,0,0,0.7)" />
       <circle cx="12" cy="16" r="1" fill="rgba(0,0,0,0.7)" />
       <circle cx="16" cy="16" r="1" fill="rgba(0,0,0,0.7)" />
@@ -129,8 +85,7 @@ export default function SearchBarButton({
           width: "100%",
           maxWidth: 560,
           padding: "6px 14px",
-          background:
-            "linear-gradient(to bottom, rgba(255,255,255,0.12), rgba(255,255,255,0.42))",
+          background: "linear-gradient(to bottom, rgba(255,255,255,0.12), rgba(255,255,255,0.42))",
           backdropFilter: "blur(10px)",
           WebkitBackdropFilter: "blur(10px)",
           border: "1px solid rgba(0, 0, 0, 0.05)",
@@ -156,13 +111,9 @@ export default function SearchBarButton({
           onClick={handleSearch}
         >
           <MorphingTextAnimation active={isActive} size={60} />
-
           <span
             style={{
-              filter: `
-                drop-shadow(2px 3px 0px rgba(0,0,0,0.65))
-                drop-shadow(0px 1px 6px rgba(0,0,0,0.55))
-              `,
+              filter: `drop-shadow(2px 3px 0px rgba(0,0,0,0.65)) drop-shadow(0px 1px 6px rgba(0,0,0,0.55))`,
             }}
           >
             <Magnifier size={18} />
@@ -190,8 +141,7 @@ export default function SearchBarButton({
             outline: "none",
             background: "transparent",
             fontSize: 14,
-            fontFamily:
-              "ui-serif, Georgia, 'Times New Roman', Times, serif",
+            fontFamily: "ui-serif, Georgia, 'Times New Roman', Times, serif",
             color: "#1a1a1a",
           }}
         />
@@ -208,7 +158,7 @@ export default function SearchBarButton({
             transform: "translateY(-50%)",
           }}
         >
-          {/* CALCULATOR */}
+          {/* CALCULATOR - Temporarily using CalculatorGraphTheme */}
           <button
             onClick={() => setShowCalculator(true)}
             style={{
@@ -245,8 +195,7 @@ export default function SearchBarButton({
               fontSize: 12,
               cursor: isSearching ? "wait" : "pointer",
               opacity: isSearching ? 0.7 : 1,
-              fontFamily:
-                "ui-serif, Georgia, 'Times New Roman', Times, serif",
+              fontFamily: "ui-serif, Georgia, 'Times New Roman', Times, serif",
             }}
           >
             <Magnifier size={14} />
@@ -264,8 +213,7 @@ export default function SearchBarButton({
             transform: "translateY(-50%)",
             fontSize: 12,
             letterSpacing: "0.18em",
-            fontFamily:
-              "ui-serif, Georgia, 'Times New Roman', Times, serif",
+            fontFamily: "ui-serif, Georgia, 'Times New Roman', Times, serif",
             color: "rgba(255,255,255,0.55)",
             cursor: "pointer",
             userSelect: "none",
@@ -275,7 +223,7 @@ export default function SearchBarButton({
         </span>
       </div>
 
-      {/* LOWER OVERLAY ONLY */}
+      {/* CALCULATOR MODAL */}
       {showCalculator && (
         <div
           onClick={() => setShowCalculator(false)}
@@ -283,15 +231,12 @@ export default function SearchBarButton({
             position: "fixed",
             inset: 0,
             zIndex: 999999,
-
             display: "flex",
             alignItems: "flex-end",
             justifyContent: "center",
-
             pointerEvents: "auto",
           }}
         >
-          {/* LOWER DIM REGION */}
           <div
             style={{
               position: "absolute",
@@ -299,24 +244,12 @@ export default function SearchBarButton({
               right: 0,
               bottom: 0,
               height: "58vh",
-
-              background: `
-                linear-gradient(
-                  to top,
-                  rgba(0,0,0,0.55),
-                  rgba(0,0,0,0.28),
-                  rgba(0,0,0,0.0)
-                )
-              `,
-
+              background: `linear-gradient(to top, rgba(0,0,0,0.55), rgba(0,0,0,0.28), rgba(0,0,0,0.0))`,
               backdropFilter: "blur(8px)",
               WebkitBackdropFilter: "blur(8px)",
-
               pointerEvents: "none",
             }}
           />
-
-          {/* CALCULATOR */}
           <div
             onClick={(e) => e.stopPropagation()}
             style={{
@@ -325,13 +258,20 @@ export default function SearchBarButton({
               display: "flex",
               justifyContent: "center",
               paddingBottom: -10,
-
               animation: "slideUpCalc 0.24s ease",
             }}
           >
-            <CalculatorGraphingInterface
+            <CalculatorGraphTheme 
               onClose={() => setShowCalculator(false)}
-            />
+              title="CALCULATOR"
+            >
+              <div style={{ padding: 40, textAlign: "center", color: "#f8ead2" }}>
+                <h2>Calculator Coming Soon</h2>
+                <p style={{ marginTop: 20, opacity: 0.7 }}>
+                  그래프 계산기 인터페이스가 준비 중입니다.
+                </p>
+              </div>
+            </CalculatorGraphTheme>
           </div>
         </div>
       )}
