@@ -747,9 +747,7 @@ export default function CategoryPostBoxRenderer({
   return (
     <CategoryInsideLayout
       onSearch={onSearch}
-      currentQuery={
-        currentQuery
-      }
+      initialSearchValue={currentQuery}
       left={normalPosts.map(
         (post, index) => (
           <CategoryPostItem
