@@ -10,6 +10,10 @@ type Props = {
 export default function GotoGitHubCorresponding({
   commitUrl,
 }: Props) {
+  // Sample commit data - you can pass these as props later
+  const commitTitle = "fix: deploy fix: Improve InkOptions type system - support dynamic color assignment (for now just use this proxy name)";
+  const commitSHA = "a7f3e8b9c1d4f2e6a8b3c5d7e9f1a4b6c8d2e0f4";
+
   return (
     <>
       <style jsx>{`
@@ -134,9 +138,9 @@ export default function GotoGitHubCorresponding({
 
           display: flex;
           flex-direction: column;
-          gap: 12px;
+          gap: 8px; /* Reduced from 12px to 8px */
 
-          padding: 20px 18px;
+          padding: 18px 18px 16px 18px; /* Adjusted padding */
 
           border-radius: 12px;
 
@@ -145,7 +149,7 @@ export default function GotoGitHubCorresponding({
           border: 1px solid rgba(255,140,0,0.3);
 
           position: relative;
-          min-height: 280px;
+          min-height: 260px;
         }
 
         .topRow {
@@ -155,42 +159,92 @@ export default function GotoGitHubCorresponding({
           width: 100%;
         }
 
+        /* New: Commit Info Row */
+        .commitInfoRow {
+          display: flex;
+          flex-direction: column;
+          gap: 4px;
+          padding: 6px 0 4px 0;
+          border-top: 1px solid rgba(255, 140, 0, 0.15);
+          border-bottom: 1px solid rgba(255, 140, 0, 0.15);
+          margin: 0; /* No extra margin */
+        }
+
+        .commitTitle {
+          font-family: "Cormorant Garamond", serif;
+          font-style: italic;
+          font-size: 15px;
+          font-weight: 600;
+          color: #2d2d2d;
+          letter-spacing: 0.02em;
+          line-height: 1.3;
+          padding: 2px 4px;
+        }
+
+        .commitSHAWrapper {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 2px 4px;
+        }
+
+        .shaLabel {
+          font-family: "Michroma", "JetBrains Mono", monospace;
+          font-size: 8px;
+          font-weight: 400;
+          color: #888;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+        }
+
+        .shaValue {
+          font-family: "JetBrains Mono", monospace;
+          font-size: 11px;
+          font-weight: 500;
+          color: #3a3a3a;
+          background: rgba(0, 0, 0, 0.05);
+          padding: 2px 8px;
+          border-radius: 4px;
+          letter-spacing: 0.04em;
+        }
+
         .bottomSection {
           display: flex;
           justify-content: space-between;
           align-items: flex-end;
-          margin-top: 20px;
+          margin-top: 6px; /* Reduced from 20px to 6px */
           flex: 1;
         }
 
         .relatedPosts {
           display: flex;
           flex-direction: column;
-          gap: 6px;
+          gap: 3px; /* Reduced from 6px to 3px for tighter spacing */
         }
 
         .relatedPostsTitle {
           font-family: "Cormorant Garamond", serif;
           font-style: italic;
-          font-size: 16px;
+          font-size: 15px; /* Slightly smaller */
           font-weight: 600;
           color: #333;
-          margin-bottom: 4px;
+          margin-bottom: 2px; /* Reduced from 4px */
           letter-spacing: 0.02em;
         }
 
         .postItem {
           display: flex;
           align-items: center;
-          gap: 8px;
+          gap: 6px; /* Reduced from 8px */
           font-family: "Michroma", "JetBrains Mono", monospace;
-          font-size: 11px;
-          color: #555;
-          letter-spacing: 0.04em;
+          font-size: 13px; /* Increased from 11px to 13px */
+          color: #444; /* Slightly darker for better readability */
+          letter-spacing: 0.03em; /* Slightly reduced */
           transition: all 0.15s ease;
           cursor: pointer;
-          padding: 2px 8px;
+          padding: 1px 6px; /* Reduced vertical padding */
           border-radius: 4px;
+          line-height: 1.4; /* Added for better spacing */
         }
 
         .postItem:hover {
@@ -202,23 +256,25 @@ export default function GotoGitHubCorresponding({
         .postNumber {
           font-weight: 700;
           color: #f05032;
-          min-width: 24px;
-          font-size: 12px;
+          min-width: 28px; /* Slightly wider for bigger text */
+          font-size: 14px; /* Increased from 12px */
         }
 
         .postDivider {
           color: #ccc;
           font-weight: 300;
+          font-size: 16px; /* Increased for better visibility */
         }
 
         .postText {
           font-weight: 400;
+          font-size: 13px; /* Explicit size */
         }
 
         .imageWrapper {
           position: relative;
           width: 500px;
-          max-width: 50%;
+          max-width: 45%; /* Slightly reduced */
           height: auto;
           opacity: 0.6;
           pointer-events: none;
@@ -236,10 +292,12 @@ export default function GotoGitHubCorresponding({
           color: #3b82f6;
           text-decoration: underline;
           word-break: break-all;
+          font-size: 13px;
         }
 
         .noCommitText {
           color: #888;
+          font-size: 13px;
         }
       `}</style>
 
@@ -367,6 +425,17 @@ export default function GotoGitHubCorresponding({
               No commit linked yet
             </span>
           )}
+        </div>
+
+        {/* NEW: Commit Title and SHA Row */}
+        <div className="commitInfoRow">
+          <div className="commitTitle">
+            {commitTitle}
+          </div>
+          <div className="commitSHAWrapper">
+            <span className="shaLabel">SHA:</span>
+            <span className="shaValue">{commitSHA}</span>
+          </div>
         </div>
 
         {/* Bottom Section: Related Posts (Left) + Image (Right) */}
