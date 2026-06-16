@@ -1,4 +1,3 @@
-```tsx
 "use client";
 
 import React, {
@@ -128,4 +127,3 @@ export default function NaturalPaperOutline({
     </div>
   );
 }
-```
