@@ -41,7 +41,7 @@ export const SIZES = Object.freeze({
   fontSize: Object.freeze({ li: 36, p: 36 }),
 });
 
-// Ink effect options
+// Ink effect options - ENHANCED with more smearing
 export const INK_OPTIONS_BASE = Object.freeze({
   paragraph: Object.freeze({
     maxBlur: 0.16,
@@ -91,7 +91,7 @@ export const INK_OPTIONS_BASE = Object.freeze({
   }),
 });
 
-// Color configurations
+// Color configurations - STRONGER, TIGHTER SHADOWS
 export const COLOR_CONFIGS = Object.freeze({
   light: Object.freeze({
     paperColor: "#f5efe3",
@@ -101,8 +101,27 @@ export const COLOR_CONFIGS = Object.freeze({
     borderColor: "rgba(70,40,20,0.14)",
     bulletColor: "rgba(55,25,15,0.92)",
     shadowColor: "0 20px 70px rgba(80,40,10,0.18)",
-    textShadow: "0 1px 0 rgba(255,255,255,0.55)",
-    strongTextShadow: "0 1px 0 rgba(255,255,255,0.5)",
+    // Tighter, stronger shadows - less blur, more opacity
+    textShadow: `
+      0 1px 0 rgba(255,255,255,0.55),
+      0 1px 3px rgba(0,0,0,0.35),
+      0 1px 2px rgba(0,0,0,0.25)
+    `,
+    headingTextShadow: `
+      0 2px 0 rgba(255,255,255,0.65),
+      0 2px 6px rgba(0,0,0,0.40),
+      0 1px 3px rgba(0,0,0,0.25)
+    `,
+    strongTextShadow: `
+      0 1px 0 rgba(255,255,255,0.50),
+      0 1px 4px rgba(0,0,0,0.38),
+      0 1px 2px rgba(0,0,0,0.22)
+    `,
+    listTextShadow: `
+      0 1px 0 rgba(255,255,255,0.55),
+      0 1px 3px rgba(0,0,0,0.30),
+      0 1px 2px rgba(0,0,0,0.18)
+    `,
     gradientOverlay: "linear-gradient(140deg, rgba(255,255,255,0.10), transparent 35%)",
     blockquoteBg: "rgba(120,80,50,0.03)",
     highlightBg: "rgba(140,90,40,0.08)",
@@ -115,8 +134,27 @@ export const COLOR_CONFIGS = Object.freeze({
     borderColor: "rgba(255,255,255,0.06)",
     bulletColor: "rgba(230,210,190,0.92)",
     shadowColor: "0 24px 80px rgba(0,0,0,0.5)",
-    textShadow: "0 1px 2px rgba(0,0,0,0.45)",
-    strongTextShadow: "0 1px 1px rgba(0,0,0,0.4)",
+    // Tighter, stronger shadows for dark mode
+    textShadow: `
+      0 1px 0 rgba(255,255,255,0.15),
+      0 1px 4px rgba(0,0,0,0.55),
+      0 1px 2px rgba(0,0,0,0.35)
+    `,
+    headingTextShadow: `
+      0 2px 0 rgba(255,255,255,0.20),
+      0 2px 8px rgba(0,0,0,0.60),
+      0 1px 3px rgba(0,0,0,0.40)
+    `,
+    strongTextShadow: `
+      0 1px 0 rgba(255,255,255,0.15),
+      0 1px 5px rgba(0,0,0,0.55),
+      0 1px 3px rgba(0,0,0,0.35)
+    `,
+    listTextShadow: `
+      0 1px 0 rgba(255,255,255,0.15),
+      0 1px 4px rgba(0,0,0,0.50),
+      0 1px 2px rgba(0,0,0,0.30)
+    `,
     gradientOverlay: "linear-gradient(140deg, rgba(0,0,0,0.16), transparent 35%)",
     blockquoteBg: "rgba(255,255,255,0.02)",
     highlightBg: "rgba(150,90,60,0.14)",
@@ -137,7 +175,7 @@ export const getHeadingStyle = (
   fontSize: SIZES.heading[level as keyof typeof SIZES.heading],
   lineHeight: 1,
   letterSpacing: "0.01em",
-  textShadow: colors.textShadow,
+  textShadow: colors.headingTextShadow,
   display: "inline-block" as const,
   transform: isLevel1 ? "rotate(-1deg)" : "rotate(-0.5deg)",
 });
@@ -152,10 +190,9 @@ export const getParagraphStyle = (colors: any) => ({
   whiteSpace: "pre-wrap" as const,
   textAlign: "left" as const,
   fontWeight: 700,
-  textShadow: "0 0 0.2px rgba(0,0,0,0.2)",
+  textShadow: colors.textShadow,
 });
 
-// FIXED: Removed highlightStyle from strong to eliminate red box effect
 export const getStrongStyle = (colors: any) => ({
   color: colors.headingColor,
   fontWeight: 400,
@@ -166,13 +203,13 @@ export const getStrongStyle = (colors: any) => ({
   transform: "rotate(-1deg)",
   padding: "0 4px",
   textShadow: colors.strongTextShadow,
-  // Removed: background, borderRadius from highlightStyle
 });
 
 export const getEmphasisStyle = (colors: any) => ({
   color: colors.fadedInkColor,
   fontStyle: "italic" as const,
   fontFamily: LETTER_FONT,
+  textShadow: colors.textShadow,
 });
 
 export const getListItemStyle = (colors: any) => ({
@@ -185,6 +222,7 @@ export const getListItemStyle = (colors: any) => ({
   margin: "10px 0",
   paddingLeft: 34,
   fontWeight: 700,
+  textShadow: colors.listTextShadow,
 });
 
 export const getBulletStyle = () => ({
@@ -206,6 +244,7 @@ export const getBlockquoteStyle = (colors: any) => ({
   fontStyle: "italic" as const,
   backdropFilter: "blur(1px)",
   fontFamily: LETTER_FONT,
+  textShadow: colors.textShadow,
 });
 
 export const getHrStyle = (colors: any) => ({
@@ -218,11 +257,11 @@ export const getListWrapperStyle = () => ({
   margin: "18px 0",
 });
 
-// Keep highlightStyle for potential future use, but no longer used in strong
 export const getHighlightStyle = (colors: any) => ({
   background: colors.highlightBg,
   borderRadius: 4,
   padding: "2px 4px",
+  textShadow: colors.textShadow,
 });
 
 // Hook for all style-related logic
@@ -239,7 +278,7 @@ export function useLetterStyles(isDark: boolean) {
   }), [colors]);
 
   const paragraphStyle = useMemo(() => getParagraphStyle(colors), [colors]);
-  const strongStyle = useMemo(() => getStrongStyle(colors), [colors]); // Removed highlightStyle dependency
+  const strongStyle = useMemo(() => getStrongStyle(colors), [colors]);
   const emphasisStyle = useMemo(() => getEmphasisStyle(colors), [colors]);
   const listItemStyle = useMemo(() => getListItemStyle(colors), [colors]);
   const bulletStyle = useMemo(() => getBulletStyle(), []);
