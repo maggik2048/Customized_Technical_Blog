@@ -21,7 +21,6 @@ export const initialWorld: WorldFeature[] = [
       ],
     },
   },
-
   {
     id: "node_001",
     type: "Feature",
