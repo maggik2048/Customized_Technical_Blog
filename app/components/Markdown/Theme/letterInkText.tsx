@@ -84,12 +84,18 @@ const getInkShadow = (intensity: number = 0.35, blur: number = 3, offset: number
   `;
 };
 
+// 타입 가드 함수 - React 엘리먼트인지 확인하고 props 타입 좁히기
+function isReactElementWithProps<T = any>(
+  node: React.ReactNode
+): node is React.ReactElement<T> {
+  return React.isValidElement(node);
+}
+
 // Enhanced render function that preserves ink effect for mixed content
 export function renderInkText(
   text: React.ReactNode,
   seed: number,
   options?: InkOptions,
-  // New: Custom renderer for specific parts (like red text)
   customRenderer?: (char: string, index: number, totalLength: number) => React.ReactNode
 ) {
   const opts = options ? { ...DEFAULT_OPTIONS, ...options } : DEFAULT_OPTIONS;
@@ -126,8 +132,9 @@ export function renderInkText(
     // If custom renderer is provided and returns something, use it
     if (customRenderer) {
       const customElement = customRenderer(char, i, length);
-      // Check if it's a valid React element before cloning
-      if (customElement && React.isValidElement(customElement)) {
+      
+      // FIX: 타입 가드로 props 타입 좁히기
+      if (isReactElementWithProps<{ style?: React.CSSProperties }>(customElement)) {
         // Wrap custom element with ink effect but preserve its styles
         const shiftY = (getRandomGenerator(seed, i * offsets.shiftY)() - 0.5) * maxShiftY;
         const shiftX = (getRandomGenerator(seed, i * offsets.shiftX)() - 0.5) * maxShiftX;
@@ -137,18 +144,20 @@ export function renderInkText(
         
         const transform = `translate(${shiftX}px,${shiftY}px) rotate(${rotation}deg) scale(${scale})`;
         
-        // FIX: Use type assertion to resolve style property type issue
+        // FIX: customElement.props.style에 안전하게 접근
+        const existingStyle = customElement.props.style || {};
+        
         result[i] = React.cloneElement(customElement, {
           key: i,
           style: {
-            ...customElement.props.style,
+            ...existingStyle,
             display: "inline-block",
             transform,
             opacity,
-            textShadow: customElement.props.style?.textShadow || textShadow,
+            textShadow: existingStyle.textShadow || textShadow,
             filter: `blur(${0.01}px)`,
           }
-        } as React.Attributes & React.HTMLAttributes<HTMLElement>);
+        });
         continue;
       }
     }
