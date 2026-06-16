@@ -5,6 +5,13 @@ export type TextureSet = {
   ao?: File;
   displacement?: File;
   metallic?: File;
+  opacity?: File;      //ADD
+  emissive?: File;
+  specular?: File;
+  glossiness?: File;
+  sss?: File;
+  fuzz?: File;
+  arm?: File;
 };
 
 const isSameFile = (a?: File, b?: File) => {
