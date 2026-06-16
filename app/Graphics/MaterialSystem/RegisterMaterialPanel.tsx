@@ -20,7 +20,7 @@ type ExtendedTextureSet = TextureSet & {
   preview?: File;
 };
 
-// ✅ 추가: Props 타입 정의
+//  추가: Props 타입 정의
 type RegisterMaterialPanelProps = {
   onRegistered?: (materialId: string) => void;
 };
