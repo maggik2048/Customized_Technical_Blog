@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import MorphingTextAnimation from "../../MathematicVisualizer/morphingTextAnimation";
-import CalculatorGraphTheme from "../../MathematicVisualizer/CalculatorGraphTheme";
+import MorphingTextAnimation from "@/app/MathematicVisualizer/morphingTextAnimation";
+import CalculatorGraphTheme from "@/app/MathematicVisualizer/CalculatorGraphTheme";
 
 type Props = {
   onSearch?: (value: string) => void;
