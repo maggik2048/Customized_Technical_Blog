@@ -1,3 +1,4 @@
+// RemarkLetterPageRenderer.tsx
 "use client";
 
 import React, {
@@ -32,6 +33,9 @@ const KaTeXPostProcessor = lazy(() => import("./KaTeXPostProcessor"));
 
 // Dynamic import with loading strategy
 const { renderInkText, renderMixedInkText } = await import("./letterInkText");
+
+// Import the new component
+import { DifferentFont_insideParenthesis } from "./DifferentFont_insideParenthesis";
 
 /* =========================
    STATIC CONSTANTS
@@ -117,9 +121,24 @@ export default function RemarkLetterPageRenderer({
     return '';
   }, []);
 
+  // NEW: Process text with DifferentFont_insideParenthesis
+  const processWithDifferentFont = useCallback((text: string): React.ReactNode => {
+    if (typeof text !== 'string') return text;
+    // Only apply if the text contains parentheses or equals signs
+    if (!text.includes('(') && !text.includes('=')) return text;
+    return <DifferentFont_insideParenthesis>{text}</DifferentFont_insideParenthesis>;
+  }, []);
+
   const processMixedContent = useCallback((children: any, seed: number, options: any): React.ReactNode => {
     // If it's just a string, render with ink effect
     if (typeof children === 'string') {
+      // First apply DifferentFont_insideParenthesis to handle (...) and =...=
+      const processedWithFont = processWithDifferentFont(children);
+      // If it returned a React element (meaning it found matches), use it
+      if (React.isValidElement(processedWithFont)) {
+        return processedWithFont;
+      }
+      // Otherwise, render with ink effect
       return <InkText text={children} seed={seed} options={options} />;
     }
     
@@ -144,7 +163,6 @@ export default function RemarkLetterPageRenderer({
         if (typeof child === 'string') {
           currentSegment += child;
         } else if (child?.type === 'strong' || child?.type === 'em' || child?.type === 'b' || child?.type === 'i') {
-          // This is a strong/em element - mark as red
           flushSegment();
           isRedSegment = true;
           const textContent = extractTextContent(child);
@@ -152,7 +170,6 @@ export default function RemarkLetterPageRenderer({
           flushSegment();
           isRedSegment = false;
         } else if (child?.type === 'span') {
-          // Handle span with custom styles
           flushSegment();
           const isRed = child.props?.style?.color === colors.headingColor || 
                        child.props?.className?.includes('red') ||
@@ -166,7 +183,6 @@ export default function RemarkLetterPageRenderer({
             });
           }
         } else if (React.isValidElement(child)) {
-          // For other elements, extract text content
           const textContent = extractTextContent(child);
           if (textContent) {
             currentSegment += textContent;
@@ -177,13 +193,24 @@ export default function RemarkLetterPageRenderer({
       flushSegment();
       
       if (segments.length > 0) {
-        return <InkText text="" seed={seed} options={options} segments={segments} />;
+        // Check if any segment contains parentheses or equals signs
+        // If so, we need to apply DifferentFont_insideParenthesis to those segments
+        const processedSegments = segments.map(segment => {
+          if (segment.text.includes('(') || segment.text.includes('=')) {
+            // We need to handle this differently - the font should apply to the 
+            // final rendered output, so we'll process it after rendering
+            return segment;
+          }
+          return segment;
+        });
+        
+        return <InkText text="" seed={seed} options={options} segments={processedSegments} />;
       }
     }
     
     // Fallback: render as-is
     return children;
-  }, [colors.headingColor, extractTextContent]);
+  }, [colors.headingColor, extractTextContent, processWithDifferentFont]);
 
   /* =========================
      OPTIMIZED RENDERERS
@@ -197,7 +224,11 @@ export default function RemarkLetterPageRenderer({
     const headingStyle = getHeadingStyleForLevel(level, isLevel1);
     
     return memo(function HeadingRenderer({ children }: any) {
-      const processedChildren = processMixedContent(children, seed, inkOptions.heading);
+      // For headings, apply DifferentFont_insideParenthesis directly
+      let processedChildren = children;
+      if (typeof children === 'string') {
+        processedChildren = <DifferentFont_insideParenthesis>{children}</DifferentFont_insideParenthesis>;
+      }
       return (
         <div style={{ marginTop, marginBottom: 18 }}>
           <span className={className} style={headingStyle}>
@@ -206,10 +237,18 @@ export default function RemarkLetterPageRenderer({
         </div>
       );
     });
-  }, [getHeadingStyleForLevel, inkOptions.heading, processMixedContent]);
+  }, [getHeadingStyleForLevel]);
 
   const ParagraphRenderer = useMemo(() => memo(function ParagraphRenderer({ children }: any) {
-    const processedChildren = processMixedContent(children, 1400, inkOptions.paragraph);
+    // Process content with ink effect
+    let processedChildren = processMixedContent(children, 1400, inkOptions.paragraph);
+    
+    // If it's a string and not already processed by DifferentFont_insideParenthesis
+    if (typeof children === 'string' && (children.includes('(') || children.includes('='))) {
+      // Apply DifferentFont_insideParenthesis
+      processedChildren = <DifferentFont_insideParenthesis>{children}</DifferentFont_insideParenthesis>;
+    }
+    
     return (
       <p style={paragraphStyle}>
         {processedChildren}
@@ -217,13 +256,16 @@ export default function RemarkLetterPageRenderer({
     );
   }), [paragraphStyle, inkOptions.paragraph, processMixedContent]);
 
-  // REMOVED: StrongRenderer - now handled by processMixedContent
-  // REMOVED: EmphasisRenderer - now handled by processMixedContent
-
   const ListItemRenderer = useMemo(() => memo(function ListItemRenderer({ children, index }: any) {
     const bulletSeed = 9000 + (index || 0);
     const textSeed = 3100 + (index || 0);
-    const processedChildren = processMixedContent(children, textSeed, inkOptions.list);
+    
+    let processedChildren = processMixedContent(children, textSeed, inkOptions.list);
+    
+    // Apply DifferentFont_insideParenthesis to string content
+    if (typeof children === 'string' && (children.includes('(') || children.includes('='))) {
+      processedChildren = <DifferentFont_insideParenthesis>{children}</DifferentFont_insideParenthesis>;
+    }
     
     return (
       <li style={listItemStyle}>
@@ -238,9 +280,12 @@ export default function RemarkLetterPageRenderer({
   }), [listItemStyle, bulletStyle, inkOptions.bullet, inkOptions.list, processMixedContent]);
 
   const BlockquoteRenderer = useMemo(() => memo(function BlockquoteRenderer({ children }: any) {
-    const processedChildren = processMixedContent(children, 5000, inkOptions.paragraph);
+    let processedChildren = children;
+    if (typeof children === 'string' && (children.includes('(') || children.includes('='))) {
+      processedChildren = <DifferentFont_insideParenthesis>{children}</DifferentFont_insideParenthesis>;
+    }
     return <blockquote style={blockquoteStyle}>{processedChildren}</blockquote>;
-  }), [blockquoteStyle, inkOptions.paragraph, processMixedContent]);
+  }), [blockquoteStyle]);
 
   const HrRenderer = useMemo(() => memo(function HrRenderer() {
     return <div style={hrStyle} />;
@@ -264,9 +309,6 @@ export default function RemarkLetterPageRenderer({
     h2: HeadingRenderer(2),
     h3: HeadingRenderer(3),
     p: ParagraphRenderer,
-    // Remove strong and em renderers - let processMixedContent handle them
-    // strong: StrongRenderer,  // REMOVED
-    // em: EmphasisRenderer,    // REMOVED
     li: ListItemRenderer,
     ul: (props: any) => <ListWrapper {...props} isOrdered={false} />,
     ol: (props: any) => <ListWrapper {...props} isOrdered={true} />,
