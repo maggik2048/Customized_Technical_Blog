@@ -24,8 +24,10 @@ import {
   useLetterStyles,
 } from "./RemarkLetterPageStyleRenderer";
 
-// Lazy load heavy components
-const TableRenderer = lazy(() => import("./TableRenderer"));
+// Import TableRenderer directly instead of lazy loading
+import TableRenderer from "./TableRenderer";
+
+// Lazy load other heavy components
 const KaTeXPostProcessor = lazy(() => import("./KaTeXPostProcessor"));
 
 // Dynamic import with loading strategy
@@ -65,46 +67,6 @@ const TableFallback = memo(() => (
   <div className="table-loading" style={{ minHeight: 100, willChange: "auto" }} />
 ));
 TableFallback.displayName = "TableFallback";
-
-/* =========================
-   TABLE SUB-COMPONENTS
-   These wrap the lazy-loaded TableRenderer components
-========================= */
-
-const TableThead = memo((props: any) => (
-  <Suspense fallback={null}>
-    <TableRenderer.Thead {...props} />
-  </Suspense>
-));
-TableThead.displayName = "TableThead";
-
-const TableTbody = memo((props: any) => (
-  <Suspense fallback={null}>
-    <TableRenderer.Tbody {...props} />
-  </Suspense>
-));
-TableTbody.displayName = "TableTbody";
-
-const TableTr = memo((props: any) => (
-  <Suspense fallback={null}>
-    <TableRenderer.Tr {...props} />
-  </Suspense>
-));
-TableTr.displayName = "TableTr";
-
-const TableTh = memo((props: any) => (
-  <Suspense fallback={null}>
-    <TableRenderer.Th {...props} />
-  </Suspense>
-));
-TableTh.displayName = "TableTh";
-
-const TableTd = memo((props: any) => (
-  <Suspense fallback={null}>
-    <TableRenderer.Td {...props} />
-  </Suspense>
-));
-TableTd.displayName = "TableTd";
 
 /* =========================
    MAIN COMPONENT
@@ -254,16 +216,12 @@ export default function RemarkLetterPageRenderer({
     ol: (props: any) => <ListWrapper {...props} isOrdered={true} />,
     blockquote: BlockquoteRenderer,
     hr: HrRenderer,
-    table: (props: any) => (
-      <Suspense fallback={<TableFallback />}>
-        <TableRenderer {...props} />
-      </Suspense>
-    ),
-    thead: TableThead,
-    tbody: TableTbody,
-    tr: TableTr,
-    th: TableTh,
-    td: TableTd,
+    table: TableRenderer,
+    thead: TableRenderer.Thead,
+    tbody: TableRenderer.Tbody,
+    tr: TableRenderer.Tr,
+    th: TableRenderer.Th,
+    td: TableRenderer.Td,
   }), [
     markdownComponents,
     CodeBlock,
@@ -285,15 +243,13 @@ export default function RemarkLetterPageRenderer({
       <Suspense fallback={null}>
         <KaTeXPostProcessor />
       </Suspense>
-      <Suspense fallback={<TableFallback />}>
-        <ReactMarkdown
-          remarkPlugins={REMARK_PLUGINS as any}
-          rehypePlugins={REHYPE_PLUGINS as any}
-          components={components}
-        >
-          {children}
-        </ReactMarkdown>
-      </Suspense>
+      <ReactMarkdown
+        remarkPlugins={REMARK_PLUGINS as any}
+        rehypePlugins={REHYPE_PLUGINS as any}
+        components={components}
+      >
+        {children}
+      </ReactMarkdown>
     </RemarkLetterPageBackgroundRenderer>
   );
 }
