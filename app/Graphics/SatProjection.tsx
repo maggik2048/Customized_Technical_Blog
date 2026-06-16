@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import MathVisualizer from "../MathematicVisualizer/MathVisualizer";
-
 interface Vector2 {
   x: number;
   y: number;
@@ -193,7 +192,7 @@ export default function SatProjection() {
         </div>
 
         <p className="mb-2">
-          IsCollide?: {overlap ? "YES, there is Collision" : "No,Seperated"}
+          IsCollide?: {overlap ? "YES, there is Collision" : "No, Seperated"}
         </p>
 
         {/* SVG */}
@@ -226,7 +225,7 @@ export default function SatProjection() {
             />
           ))}
 
-          {/* PROJECTION LINES (RESTORED) */}
+          {/* PROJECTION LINES */}
           <line
             x1={A1.x}
             y1={A1.y}

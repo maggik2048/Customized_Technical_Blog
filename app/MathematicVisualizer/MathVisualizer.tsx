@@ -2,18 +2,34 @@ import React, { useEffect, useState } from "react";
 import { BlockMath } from "react-katex";
 import "katex/dist/katex.min.css";
 
-export default function MathVisualizer({ data }) {
+// Add these interfaces
+interface Projection {
+  min: number;
+  max: number;
+}
+
+interface MathVisualizerProps {
+  data: {
+    projA: Projection;
+    projB: Projection;
+    overlap: boolean;
+    axisIndex: number;
+    axis: { x: number; y: number };
+  };
+}
+
+// Fix the function signature by adding the type
+export default function MathVisualizer({ data }: MathVisualizerProps) {
   const { projA, projB, overlap, axisIndex } = data;
 
   const [t, setT] = useState(0);
 
-  // 간단한 fade / morph 애니메이션 step
   useEffect(() => {
     setT(0);
-    let frame;
-    let start;
+    let frame: number;
+    let start: number;
 
-    function animate(time) {
+    function animate(time: number) {
       if (!start) start = time;
       const progress = Math.min((time - start) / 300, 1);
       setT(progress);
@@ -27,8 +43,7 @@ export default function MathVisualizer({ data }) {
     return () => cancelAnimationFrame(frame);
   }, [data]);
 
-  // interpolation 느낌 (텍스트 애니메이션용)
-  const format = (v) => v.toFixed(2);
+  const format = (v: number) => v.toFixed(2);
 
   return (
     <div style={{ width: 400, padding: 16 }}>
