@@ -126,7 +126,8 @@ export function renderInkText(
     // If custom renderer is provided and returns something, use it
     if (customRenderer) {
       const customElement = customRenderer(char, i, length);
-      if (customElement) {
+      // Check if it's a valid React element before cloning
+      if (customElement && React.isValidElement(customElement)) {
         // Wrap custom element with ink effect but preserve its styles
         const shiftY = (getRandomGenerator(seed, i * offsets.shiftY)() - 0.5) * maxShiftY;
         const shiftX = (getRandomGenerator(seed, i * offsets.shiftX)() - 0.5) * maxShiftX;
