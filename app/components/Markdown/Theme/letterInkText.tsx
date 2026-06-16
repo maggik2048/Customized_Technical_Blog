@@ -9,6 +9,7 @@ const CHAR_CODES = {
   NBSP: 160,
 } as const;
 
+// FIX: DEFAULT_OPTIONS의 타입을 확장 가능하도록 수정
 const DEFAULT_OPTIONS = {
   color: "rgba(40,20,10,0.9)",
   maxBlur: 0.182,
@@ -25,6 +26,24 @@ const DEFAULT_OPTIONS = {
   shadowBlur: 3,
   shadowOffset: 1,
 } as const;
+
+// FIX: InkOptions 타입을 유연하게 수정 - color를 string으로 허용
+export type InkOptions = Partial<{
+  color: string;
+  maxBlur: number;
+  maxShiftX: number;
+  maxShiftY: number;
+  maxRotation: number;
+  minScale: number;
+  maxScale: number;
+  opacityMin: number;
+  opacityMax: number;
+  bleedChance: number;
+  kerningVariance: number;
+  shadowIntensity: number;
+  shadowBlur: number;
+  shadowOffset: number;
+}>;
 
 // Pre-computed ranges
 const OPACITY_RANGE = DEFAULT_OPTIONS.opacityMax - DEFAULT_OPTIONS.opacityMin;
@@ -62,8 +81,6 @@ function getRandomGenerator(seed: number, index: number) {
   return generator;
 }
 
-type InkOptions = Partial<typeof DEFAULT_OPTIONS>;
-
 // Pre-allocate reusable style objects
 const baseStyle = {
   position: "relative",
@@ -98,7 +115,11 @@ export function renderInkText(
   options?: InkOptions,
   customRenderer?: (char: string, index: number, totalLength: number) => React.ReactNode
 ) {
-  const opts = options ? { ...DEFAULT_OPTIONS, ...options } : DEFAULT_OPTIONS;
+  // FIX: 기본값과 옵션을 안전하게 병합
+  const opts = {
+    ...DEFAULT_OPTIONS,
+    ...options,
+  };
   
   const textStr = String(text);
   const length = textStr.length;
@@ -211,7 +232,10 @@ export function renderMixedInkText(
 ) {
   // Combine all text for proper seeding
   const fullText = segments.map(s => s.text).join('');
-  const opts = options ? { ...DEFAULT_OPTIONS, ...options } : DEFAULT_OPTIONS;
+  const opts = {
+    ...DEFAULT_OPTIONS,
+    ...options,
+  };
   
   const result = [];
   let globalIndex = 0;
