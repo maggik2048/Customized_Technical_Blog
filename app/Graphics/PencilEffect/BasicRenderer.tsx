@@ -108,11 +108,13 @@ export default function BasicRenderer({
     // ====================
     // hatch
     // ====================
+    
+    let hatchResult = null;
 
     if (
       annotations.showHatching
     ) {
-      replaceGrayRangeWithHatch(
+      hatchResult = replaceGrayRangeWithHatch(
         canvas,
         {
           blockSize: 6,
@@ -221,14 +223,13 @@ export default function BasicRenderer({
     // ====================
 
     if (
-      annotations.showHatchEndpoints
+      annotations.showHatchEndpoints &&
+      hatchResult
     ) {
       drawHatchEndpoints(
         canvas,
+        hatchResult,
         {
-          blockSize: 6,
-          hatchSpacing: 2,
-          coverageThreshold: 0.5,
           endpointRadius: 2,
           endpointColor: "blue",
         }
