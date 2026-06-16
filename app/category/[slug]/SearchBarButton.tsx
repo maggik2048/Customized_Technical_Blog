@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import MorphingTextAnimation from "../../MathematicVisualizer/morphingTextAnimation";
-import CalculatorKeyboardInterface from "../../MathematicVisualizer/CalculatorKeyboardInterface";
+import CalculatorGraphingInterface from "../../MathematicVisualizer/CalculatorGraphingInterface";
 
 type Props = {
   onSearch?: (value: string) => void;
@@ -118,10 +118,6 @@ export default function SearchBarButton({
       <circle cx="16" cy="16" r="1" fill="rgba(0,0,0,0.7)" />
     </svg>
   );
-
-  const handleCalculatorInput = (symbol: string) => {
-    setValue((prev) => prev + symbol);
-  };
 
   return (
     <>
@@ -333,9 +329,8 @@ export default function SearchBarButton({
               animation: "slideUpCalc 0.24s ease",
             }}
           >
-            <CalculatorKeyboardInterface
-              onKeyPress={handleCalculatorInput}
-              onHide={() => setShowCalculator(false)}
+            <CalculatorGraphingInterface
+              onClose={() => setShowCalculator(false)}
             />
           </div>
         </div>
