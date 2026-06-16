@@ -1,4 +1,3 @@
-// RemarkLetterPageStyleRenderer.tsx
 import React, { useMemo, useCallback, memo } from "react";
 import {
   Tangerine,
@@ -285,6 +284,7 @@ export function useLetterStyles(isDark: boolean) {
   const blockquoteStyle = useMemo(() => getBlockquoteStyle(colors), [colors]);
   const hrStyle = useMemo(() => getHrStyle(colors), [colors]);
   const listWrapperStyle = useMemo(() => getListWrapperStyle(), []);
+  const highlightStyle = useMemo(() => getHighlightStyle(colors), [colors]);
 
   const getHeadingStyleForLevel = useCallback((level: number, isLevel1: boolean) => 
     getHeadingStyle(level, colors, isLevel1), [colors]);
@@ -300,6 +300,7 @@ export function useLetterStyles(isDark: boolean) {
     blockquoteStyle,
     hrStyle,
     listWrapperStyle,
+    highlightStyle, // ← Added this
     getHeadingStyleForLevel,
   };
 }
