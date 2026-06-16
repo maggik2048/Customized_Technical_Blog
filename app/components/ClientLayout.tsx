@@ -1,7 +1,8 @@
+// ClientLayout.tsx
 "use client";
 
-import { usePathname } from "next/navigation";
-import ClickableImageBox from "./ClickableImageBox";
+import { usePathname, useRouter } from "next/navigation";
+import ClickableImageBox from "./ClickableImageBox"; // Make sure this path is correct
 
 export default function ClientLayout({
   children,
@@ -11,6 +12,7 @@ export default function ClientLayout({
   sidebar: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
   const isHome = pathname === "/";
 
   if (isHome) {
@@ -32,7 +34,6 @@ export default function ClientLayout({
           backgroundPosition: "center",
         }}
       >
-        {/* 좌측 이미지 박스 */}
         <div
           style={{
             position: "absolute",
@@ -48,11 +49,11 @@ export default function ClientLayout({
         >
           <ClickableImageBox
             imageSrc="/images/manim.png"
-            href="/category/art"
+            onClick={() => router.push("/category/art")}
           />
           <ClickableImageBox
             imageSrc="/images/painting.png"
-            href="/category/code"
+            onClick={() => router.push("/category/code")}
           />
         </div>
 
