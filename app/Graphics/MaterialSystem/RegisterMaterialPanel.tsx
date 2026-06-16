@@ -20,7 +20,12 @@ type ExtendedTextureSet = TextureSet & {
   preview?: File;
 };
 
-export default function RegisterMaterialPanel() {
+// ✅ 추가: Props 타입 정의
+type RegisterMaterialPanelProps = {
+  onRegistered?: (materialId: string) => void;
+};
+
+export default function RegisterMaterialPanel({ onRegistered }: RegisterMaterialPanelProps = {}) {
   const [textures, setTextures] = useState<ExtendedTextureSet>({});
   const [status, setStatus] = useState<RegisterStatus>('');
 
@@ -91,6 +96,11 @@ export default function RegisterMaterialPanel() {
 
       const result = await response.json();
       console.log('REGISTER SUCCESS', result);
+      
+      // ✅ 추가: 등록 성공 시 onRegistered 콜백 호출
+      if (onRegistered && result.materialId) {
+        onRegistered(result.materialId);
+      }
     } catch (err) {
       console.error('REGISTER FAILED', err);
     }
