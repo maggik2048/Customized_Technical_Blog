@@ -145,7 +145,7 @@ export default function GotoGitHubCorresponding({
           border: 1px solid rgba(255,140,0,0.3);
 
           position: relative;
-          min-height: 180px;
+          min-height: 280px;
         }
 
         .topRow {
@@ -155,15 +155,74 @@ export default function GotoGitHubCorresponding({
           width: 100%;
         }
 
+        .bottomSection {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-end;
+          margin-top: 20px;
+          flex: 1;
+        }
+
+        .relatedPosts {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+        }
+
+        .relatedPostsTitle {
+          font-family: "Cormorant Garamond", serif;
+          font-style: italic;
+          font-size: 16px;
+          font-weight: 600;
+          color: #333;
+          margin-bottom: 4px;
+          letter-spacing: 0.02em;
+        }
+
+        .postItem {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-family: "Michroma", "JetBrains Mono", monospace;
+          font-size: 11px;
+          color: #555;
+          letter-spacing: 0.04em;
+          transition: all 0.15s ease;
+          cursor: pointer;
+          padding: 2px 8px;
+          border-radius: 4px;
+        }
+
+        .postItem:hover {
+          background: rgba(255, 140, 0, 0.1);
+          color: #e07c00;
+          transform: translateX(4px);
+        }
+
+        .postNumber {
+          font-weight: 700;
+          color: #f05032;
+          min-width: 24px;
+          font-size: 12px;
+        }
+
+        .postDivider {
+          color: #ccc;
+          font-weight: 300;
+        }
+
+        .postText {
+          font-weight: 400;
+        }
+
         .imageWrapper {
-          position: absolute;
-          bottom: 12px;
-          right: 12px;
+          position: relative;
           width: 500px;
           max-width: 50%;
           height: auto;
           opacity: 0.6;
           pointer-events: none;
+          flex-shrink: 0;
         }
 
         .imageWrapper img {
@@ -310,14 +369,54 @@ export default function GotoGitHubCorresponding({
           )}
         </div>
 
-        {/* Image attached to right-bottom */}
-        <div className="imageWrapper">
-          <img
-            src="/images/githubsync/docGithubSyncimage.jpg"
-            alt="GitHub Sync"
-            width={500}
-            height={300}
-          />
+        {/* Bottom Section: Related Posts (Left) + Image (Right) */}
+        <div className="bottomSection">
+          {/* Related Posts List - Left Bottom */}
+          <div className="relatedPosts">
+            <div className="relatedPostsTitle">
+              RELATED POSTS for this commit:
+            </div>
+            
+            <div className="postItem">
+              <span className="postNumber">(5)</span>
+              <span className="postDivider">•</span>
+              <span className="postText">correctly implemented</span>
+            </div>
+            
+            <div className="postItem">
+              <span className="postNumber">(4)</span>
+              <span className="postDivider">•</span>
+              <span className="postText">debugging</span>
+            </div>
+            
+            <div className="postItem">
+              <span className="postNumber">(3)</span>
+              <span className="postDivider">•</span>
+              <span className="postText">addition of feature</span>
+            </div>
+            
+            <div className="postItem">
+              <span className="postNumber">(2)</span>
+              <span className="postDivider">•</span>
+              <span className="postText">initialize component</span>
+            </div>
+            
+            <div className="postItem">
+              <span className="postNumber">(1)</span>
+              <span className="postDivider">•</span>
+              <span className="postText">overview of trajectory</span>
+            </div>
+          </div>
+
+          {/* Image - Right Bottom */}
+          <div className="imageWrapper">
+            <img
+              src="/images/githubsync/docGithubSyncimage.jpg"
+              alt="GitHub Sync"
+              width={500}
+              height={300}
+            />
+          </div>
         </div>
       </div>
     </>
