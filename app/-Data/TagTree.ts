@@ -246,6 +246,12 @@ export const TAG_TREE: TagItem[] = [
   },
 
     {
+    name: "francais grammaire",
+    slug: "frgrammar",
+    group: "grammar",
+  },
+
+    {
     name: "programming language",
     slug: "programminglanguage",
     group: "concept",
