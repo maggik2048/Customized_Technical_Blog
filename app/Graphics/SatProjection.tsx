@@ -1,24 +1,42 @@
 import React, { useState } from "react";
 import MathVisualizer from "../MathematicVisualizer/MathVisualizer";
 
-function dot(a, b) {
+interface Vector2 {
+  x: number;
+  y: number;
+}
+
+interface Projection {
+  min: number;
+  max: number;
+}
+
+interface MathData {
+  projA: Projection;
+  projB: Projection;
+  overlap: boolean;
+  axisIndex: number;
+  axis: Vector2;
+}
+
+function dot(a: Vector2, b: Vector2): number {
   return a.x * b.x + a.y * b.y;
 }
 
-function normalize(v) {
+function normalize(v: Vector2): Vector2 {
   const len = Math.hypot(v.x, v.y);
   return { x: v.x / len, y: v.y / len };
 }
 
-function sub(a, b) {
+function sub(a: Vector2, b: Vector2): Vector2 {
   return { x: a.x - b.x, y: a.y - b.y };
 }
 
-function perp(v) {
+function perp(v: Vector2): Vector2 {
   return { x: -v.y, y: v.x };
 }
 
-function project(points, axis) {
+function project(points: Vector2[], axis: Vector2): Projection {
   let min = dot(points[0], axis);
   let max = min;
 
@@ -31,7 +49,7 @@ function project(points, axis) {
   return { min, max };
 }
 
-function createBox(cx, cy, w, h, angle) {
+function createBox(cx: number, cy: number, w: number, h: number, angle: number): Vector2[] {
   const hw = w / 2;
   const hh = h / 2;
 
@@ -52,39 +70,39 @@ function createBox(cx, cy, w, h, angle) {
 }
 
 export default function SatProjection() {
-  const [angleA, setAngleA] = useState(0);
-  const [angleB, setAngleB] = useState(0);
-  const [axisIndex, setAxisIndex] = useState(0);
+  const [angleA, setAngleA] = useState<number>(0);
+  const [angleB, setAngleB] = useState<number>(0);
+  const [axisIndex, setAxisIndex] = useState<number>(0);
 
-  const [posAx, setPosAx] = useState(200);
-  const [posAy, setPosAy] = useState(200);
-  const [posBx, setPosBx] = useState(300);
-  const [posBy, setPosBy] = useState(220);
+  const [posAx, setPosAx] = useState<number>(200);
+  const [posAy, setPosAy] = useState<number>(200);
+  const [posBx, setPosBx] = useState<number>(300);
+  const [posBy, setPosBy] = useState<number>(220);
 
-  const boxA = createBox(posAx, posAy, 120, 80, angleA);
-  const boxB = createBox(posBx, posBy, 120, 80, angleB);
+  const boxA: Vector2[] = createBox(posAx, posAy, 120, 80, angleA);
+  const boxB: Vector2[] = createBox(posBx, posBy, 120, 80, angleB);
 
-  const edgeA0 = normalize(sub(boxA[1], boxA[0]));
-  const edgeA1 = normalize(sub(boxA[3], boxA[0]));
+  const edgeA0: Vector2 = normalize(sub(boxA[1], boxA[0]));
+  const edgeA1: Vector2 = normalize(sub(boxA[3], boxA[0]));
 
-  const edgeB0 = normalize(sub(boxB[1], boxB[0]));
-  const edgeB1 = normalize(sub(boxB[3], boxB[0]));
+  const edgeB0: Vector2 = normalize(sub(boxB[1], boxB[0]));
+  const edgeB1: Vector2 = normalize(sub(boxB[3], boxB[0]));
 
-  const axes = [
+  const axes: Vector2[] = [
     normalize(perp(edgeA0)),
     normalize(perp(edgeA1)),
     normalize(perp(edgeB0)),
     normalize(perp(edgeB1)),
   ];
 
-  const axis = axes[axisIndex];
+  const axis: Vector2 = axes[axisIndex];
 
-  const projA = project(boxA, axis);
-  const projB = project(boxB, axis);
+  const projA: Projection = project(boxA, axis);
+  const projB: Projection = project(boxB, axis);
 
-  const overlap = !(projA.max < projB.min || projB.max < projA.min);
+  const overlap: boolean = !(projA.max < projB.min || projB.max < projA.min);
 
-  const mathData = {
+  const mathData: MathData = {
     projA,
     projB,
     overlap,
@@ -92,15 +110,15 @@ export default function SatProjection() {
     axis,
   };
 
-  const toPoint = (t) => ({
+  const toPoint = (t: number): Vector2 => ({
     x: axis.x * t,
     y: axis.y * t,
   });
 
-  const A1 = toPoint(projA.min);
-  const A2 = toPoint(projA.max);
-  const B1 = toPoint(projB.min);
-  const B2 = toPoint(projB.max);
+  const A1: Vector2 = toPoint(projA.min);
+  const A2: Vector2 = toPoint(projA.max);
+  const B1: Vector2 = toPoint(projB.min);
+  const B2: Vector2 = toPoint(projB.max);
 
   return (
     <div style={{ display: "flex", gap: 24 }}>
