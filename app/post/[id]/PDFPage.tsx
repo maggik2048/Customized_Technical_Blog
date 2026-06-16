@@ -82,7 +82,7 @@ export default function PDFPage({
       background: isDark
         ? "rgba(60,60,60,0.6)"
         : "rgba(255,255,255,0.72)",
-      backgroundImage: `url("/images/dossierBg/wood2.png")`,
+      backgroundImage: `url("/images/dossierBg/woodmarble2.jpg")`,
       backgroundSize: "100% auto",  //  cover 대신 100% auto로 변경 (가로에 맞춰 세로는 비율유지)
       backgroundRepeat: "no-repeat",
       backgroundPosition: "center top",  //  top으로 변경해서 이미지 상단부터 표시
@@ -236,11 +236,11 @@ export default function PDFPage({
             <DocContentBackgroundManager
               parentPaddingLeft={64}
               parentPaddingRight={64}
-              backgroundImage="/images/dossierBg/wood2.png"
+              backgroundImage="/images/dossierBg/woodmarble2.jpg"
               objectFit="none"  
               backgroundSize="100% auto"  // 여기도 동일하게 수정
               backgroundPosition="center top"
-              backgroundRepeat="no-repeat"
+              backgroundRepeat="repeat"
               backgroundBlendMode="overlay"
               paddingTop={20}
               paddingBottom={20}

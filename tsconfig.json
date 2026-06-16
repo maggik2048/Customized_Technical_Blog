@@ -40,7 +40,7 @@
     "**/*.cts",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
-  ],
+, "app/ResponseExportAPI/routes/giveSuggestedTitles.js"  ],
   "exclude": [
     "node_modules"
   ]

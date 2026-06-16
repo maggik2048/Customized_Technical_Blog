@@ -38,7 +38,7 @@ export default function HeadertitleAdjustment({ title, children }: Props) {
     const ratio = (len - 30) / (60 - 30);
     let fontSize = maxSize - ratio * (maxSize - minSize);
 
-    //  핵심 수정: 너무 작아지는 것만 살짝 방지
+    //  너무 작아지는 것만 살짝 방지
     fontSize = Math.max(30, fontSize);
 
     return {

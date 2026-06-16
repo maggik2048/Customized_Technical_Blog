@@ -21,7 +21,7 @@ export const BACKGROUND_CONFIGS = Object.freeze({
   }),
 });
 
-export const BACKGROUND_TEXTURE = "/images/letter2.png";
+export const BACKGROUND_TEXTURE = "/images/letter2222.png";
 
 /* =========================
    STYLE GENERATORS

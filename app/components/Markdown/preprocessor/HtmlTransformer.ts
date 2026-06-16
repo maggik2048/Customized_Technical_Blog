@@ -1,4 +1,4 @@
-import { tableToMarkdown } from "./tableToMarkdown";
+import { tableToMarkdown } from "../processors/MarkdownPipeline/tableToMarkdown";
 
 export function transformHtmlToMarkdown(
   html: string

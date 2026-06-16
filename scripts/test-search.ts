@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { semanticSearch } from "../lib/semantic-search";
+import { semanticSearch } from "../lib/semanticSearch";
 
 async function main() {
   const results = await semanticSearch(
