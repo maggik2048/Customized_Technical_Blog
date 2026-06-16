@@ -12,15 +12,9 @@ import RemarkLetterPageRenderer from "./RemarkLetterPageRenderer";
 
 type Props = {
   category?: string;
-
   children: string;
-
   markdownComponents: any;
-
-  sciFiMarkdownComponents: any;
-
   isDark: boolean;
-
   CodeBlock: any;
 };
 
@@ -29,43 +23,24 @@ type Props = {
 ========================= */
 
 const NOTE_STYLE_CATEGORIES = [
-
   "network",
-
   "ai",
-
   "sqldb",
-
   "compiler",
-
   "embed",
-
   "discrete",
-
   "digitalelec",
-
   "os",
-
   "systems",
-
   "dsa",
-
   "cpp",
-
   "oop",
-
   "se",
-
   "security",
-
   "mt_concurrency",
-
   "graphics_pipeline",
-
   "unreal",
-
   "digitalTwin",
-
   "gameMath",
 ];
 
@@ -74,9 +49,7 @@ const NOTE_STYLE_CATEGORIES = [
 ========================= */
 
 const LETTER_STYLE_CATEGORIES = [
-
   // la langue française(French Language)
-
   "french",
 ];
 
@@ -84,50 +57,27 @@ const LETTER_STYLE_CATEGORIES = [
    HELPERS
 ========================= */
 
-function shouldUseNoteRenderer(
-  category?: string
-) {
-
+function shouldUseNoteRenderer(category?: string) {
   if (!category) {
     return false;
   }
-
-  return NOTE_STYLE_CATEGORIES.includes(
-    category.trim()
-  );
+  return NOTE_STYLE_CATEGORIES.includes(category.trim());
 }
 
-function shouldUseLetterRenderer(
-  category?: string
-) {
-
+function shouldUseLetterRenderer(category?: string) {
   if (!category) {
     return false;
   }
-
-  return LETTER_STYLE_CATEGORIES.includes(
-    category.trim()
-  );
+  return LETTER_STYLE_CATEGORIES.includes(category.trim());
 }
 
 /* =========================
    MEMOIZED RENDERERS
 ========================= */
 
-const MemoRemarkPageRenderer =
-  React.memo(
-    RemarkPageRenderer
-  );
-
-const MemoNotePageRenderer =
-  React.memo(
-    NotePageRenderer
-  );
-
-const MemoRemarkLetterPageRenderer =
-  React.memo(
-    RemarkLetterPageRenderer
-  );
+const MemoRemarkPageRenderer = React.memo(RemarkPageRenderer);
+const MemoNotePageRenderer = React.memo(NotePageRenderer);
+const MemoRemarkLetterPageRenderer = React.memo(RemarkLetterPageRenderer);
 
 /* =========================
    COMPONENT
@@ -135,73 +85,44 @@ const MemoRemarkLetterPageRenderer =
 
 function MarkdownRendererCoordinatorComponent({
   category,
-
   children,
-
   markdownComponents,
-
-  sciFiMarkdownComponents,
-
   isDark,
-
   CodeBlock,
 }: Props) {
+  const useNoteRenderer = React.useMemo(
+    () => shouldUseNoteRenderer(category),
+    [category]
+  );
 
-  const useNoteRenderer =
-    React.useMemo(
-      () =>
-        shouldUseNoteRenderer(
-          category
-        ),
-      [category]
-    );
-
-  const useLetterRenderer =
-    React.useMemo(
-      () =>
-        shouldUseLetterRenderer(
-          category
-        ),
-      [category]
-    );
+  const useLetterRenderer = React.useMemo(
+    () => shouldUseLetterRenderer(category),
+    [category]
+  );
 
   // =========================
   // DEBUG
   // =========================
 
-  console.log(
-    "MARKDOWN COORDINATOR:",
-    {
-
-      category,
-
-      useNoteRenderer,
-
-      useLetterRenderer,
-
-      renderer:
-        useLetterRenderer
-          ? "RemarkLetterPageRenderer"
-          : useNoteRenderer
-            ? "NotePageRenderer"
-            : "RemarkPageRenderer",
-    }
-  );
+  console.log("MARKDOWN COORDINATOR:", {
+    category,
+    useNoteRenderer,
+    useLetterRenderer,
+    renderer: useLetterRenderer
+      ? "RemarkLetterPageRenderer"
+      : useNoteRenderer
+      ? "NotePageRenderer"
+      : "RemarkPageRenderer",
+  });
 
   // =========================
   // LETTER STYLE
   // =========================
 
   if (useLetterRenderer) {
-
     return (
       <MemoRemarkLetterPageRenderer
-        markdownComponents={
-          markdownComponents
-        }
-        sciFiMarkdownComponents={
-          sciFiMarkdownComponents
-        }
+        markdownComponents={markdownComponents}
         isDark={isDark}
         CodeBlock={CodeBlock}
       >
@@ -215,15 +136,9 @@ function MarkdownRendererCoordinatorComponent({
   // =========================
 
   if (useNoteRenderer) {
-
     return (
       <MemoNotePageRenderer
-        markdownComponents={
-          markdownComponents
-        }
-        sciFiMarkdownComponents={
-          sciFiMarkdownComponents
-        }
+        markdownComponents={markdownComponents}
         isDark={isDark}
         CodeBlock={CodeBlock}
       >
@@ -238,12 +153,7 @@ function MarkdownRendererCoordinatorComponent({
 
   return (
     <MemoRemarkPageRenderer
-      markdownComponents={
-        markdownComponents
-      }
-      sciFiMarkdownComponents={
-        sciFiMarkdownComponents
-      }
+      markdownComponents={markdownComponents}
       isDark={isDark}
       CodeBlock={CodeBlock}
     >
@@ -256,9 +166,8 @@ function MarkdownRendererCoordinatorComponent({
    EXPORT MEMOIZED
 ========================= */
 
-const MarkdownRendererCoordinator =
-  React.memo(
-    MarkdownRendererCoordinatorComponent
-  );
+const MarkdownRendererCoordinator = React.memo(
+  MarkdownRendererCoordinatorComponent
+);
 
 export default MarkdownRendererCoordinator;
