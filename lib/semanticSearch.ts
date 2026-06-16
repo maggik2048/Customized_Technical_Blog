@@ -1,5 +1,3 @@
-// lib/semanticSearch.ts
-
 import { supabaseServer } from "./supabase-server";
 import { embed } from "../scripts/embed";
 

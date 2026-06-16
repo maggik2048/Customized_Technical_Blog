@@ -5,7 +5,6 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
 
   const query = searchParams.get("q");
-  const category = searchParams.get("category");
 
   if (!query) {
     return NextResponse.json(
@@ -15,10 +14,7 @@ export async function GET(req: Request) {
   }
 
   try {
-    const results = await semanticSearch(
-      query,
-      category || undefined
-    );
+    const results = await semanticSearch(query);
 
     return NextResponse.json(results);
   } catch (err) {
