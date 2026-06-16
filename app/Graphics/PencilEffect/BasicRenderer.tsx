@@ -1,5 +1,3 @@
-// BasicRenderer.tsx
-
 "use client";
 
 import React, {
@@ -31,7 +29,6 @@ import {
   replaceGrayRangeWithHatch,
 } from "./1_hatchWithOneSide";
 
-// 변경
 import {
   drawHatchEndpoints,
 } from "./8_getEndpoint";
@@ -118,18 +115,10 @@ export default function BasicRenderer({
       replaceGrayRangeWithHatch(
         canvas,
         {
-          minGray: 0,
-          maxGray: 1,
-
           blockSize: 6,
-
           lineWidth: 1,
-
           hatchColor: "#000",
-
-          backgroundColor:
-            "#fff",
-
+          backgroundColor: "#fff",
           coverageThreshold: 0.5,
         }
       );
@@ -237,19 +226,11 @@ export default function BasicRenderer({
       drawHatchEndpoints(
         canvas,
         {
-          minGray: 0,
-          maxGray: 1,
-
           blockSize: 6,
-
           hatchSpacing: 2,
-
           coverageThreshold: 0.5,
-
           endpointRadius: 2,
-
-          endpointColor:
-            "blue",
+          endpointColor: "blue",
         }
       );
     }
