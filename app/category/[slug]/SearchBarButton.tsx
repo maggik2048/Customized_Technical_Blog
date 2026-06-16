@@ -119,6 +119,10 @@ export default function SearchBarButton({
     </svg>
   );
 
+  const handleCalculatorInput = (symbol: string) => {
+    setValue((prev) => prev + symbol);
+  };
+
   return (
     <>
       <div
@@ -330,10 +334,8 @@ export default function SearchBarButton({
             }}
           >
             <CalculatorKeyboardInterface
-              onInput={(symbol: string) => {
-                setValue((prev) => prev + symbol);
-              }}
-              onClose={() => setShowCalculator(false)}
+              onKeyPress={handleCalculatorInput}
+              onHide={() => setShowCalculator(false)}
             />
           </div>
         </div>
