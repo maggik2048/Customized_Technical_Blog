@@ -82,7 +82,6 @@ export default function PurgeAllRegisteredMaterial() {
         style={{
           width: '100%',
           height: 44,
-          border: 'none',
           borderRadius: 12,
           cursor: loading ? 'not-allowed' : 'pointer',
           color: 'white',
@@ -90,7 +89,7 @@ export default function PurgeAllRegisteredMaterial() {
           background: loading
             ? 'rgba(255,80,80,0.3)'
             : 'rgba(255,80,80,0.2)',
-          border: '1px solid rgba(255,80,80,0.3)',
+          border: '1px solid rgba(255,80,80,0.3)',  // ← border 하나만 남김
           opacity: loading ? 0.6 : 1,
         }}
       >
