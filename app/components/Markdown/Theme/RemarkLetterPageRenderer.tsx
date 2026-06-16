@@ -48,11 +48,10 @@ interface InkTextProps {
   text: string;
   seed: number;
   options: any;
-  segments?: Array<{ text: string; isRed?: boolean; color?: string }>; // For mixed content
+  segments?: Array<{ text: string; isRed?: boolean; color?: string }>;
 }
 
 const InkText = memo(function InkText({ text, seed, options, segments }: InkTextProps) {
-  // If segments are provided, use renderMixedInkText
   if (segments && segments.length > 0) {
     return renderMixedInkText(segments, seed, options);
   }
@@ -144,7 +143,8 @@ export default function RemarkLetterPageRenderer({
       for (const child of children) {
         if (typeof child === 'string') {
           currentSegment += child;
-        } else if (child?.type === 'strong' || child?.type === 'em') {
+        } else if (child?.type === 'strong' || child?.type === 'em' || child?.type === 'b' || child?.type === 'i') {
+          // This is a strong/em element - mark as red
           flushSegment();
           isRedSegment = true;
           const textContent = extractTextContent(child);
@@ -155,7 +155,8 @@ export default function RemarkLetterPageRenderer({
           // Handle span with custom styles
           flushSegment();
           const isRed = child.props?.style?.color === colors.headingColor || 
-                       child.props?.className?.includes('red');
+                       child.props?.className?.includes('red') ||
+                       child.props?.className?.includes('headingColor');
           const textContent = extractTextContent(child);
           if (textContent) {
             segments.push({ 
@@ -216,25 +217,8 @@ export default function RemarkLetterPageRenderer({
     );
   }), [paragraphStyle, inkOptions.paragraph, processMixedContent]);
 
-  const StrongRenderer = useMemo(() => memo(function StrongRenderer({ children }: any) {
-    // Strong text should NOT be rendered separately - it's handled by processMixedContent
-    // This is a fallback for standalone strong elements
-    const processedChildren = processMixedContent(children, 700, inkOptions.strong);
-    return (
-      <strong className={boldCalligraphyFont.className} style={strongStyle}>
-        {processedChildren}
-      </strong>
-    );
-  }), [strongStyle, inkOptions.strong, processMixedContent]);
-
-  const EmphasisRenderer = useMemo(() => memo(function EmphasisRenderer({ children }: any) {
-    const processedChildren = processMixedContent(children, 2222, inkOptions.emphasis);
-    return (
-      <em style={emphasisStyle}>
-        {processedChildren}
-      </em>
-    );
-  }), [emphasisStyle, inkOptions.emphasis, processMixedContent]);
+  // REMOVED: StrongRenderer - now handled by processMixedContent
+  // REMOVED: EmphasisRenderer - now handled by processMixedContent
 
   const ListItemRenderer = useMemo(() => memo(function ListItemRenderer({ children, index }: any) {
     const bulletSeed = 9000 + (index || 0);
@@ -254,8 +238,9 @@ export default function RemarkLetterPageRenderer({
   }), [listItemStyle, bulletStyle, inkOptions.bullet, inkOptions.list, processMixedContent]);
 
   const BlockquoteRenderer = useMemo(() => memo(function BlockquoteRenderer({ children }: any) {
-    return <blockquote style={blockquoteStyle}>{children}</blockquote>;
-  }), [blockquoteStyle]);
+    const processedChildren = processMixedContent(children, 5000, inkOptions.paragraph);
+    return <blockquote style={blockquoteStyle}>{processedChildren}</blockquote>;
+  }), [blockquoteStyle, inkOptions.paragraph, processMixedContent]);
 
   const HrRenderer = useMemo(() => memo(function HrRenderer() {
     return <div style={hrStyle} />;
@@ -279,8 +264,9 @@ export default function RemarkLetterPageRenderer({
     h2: HeadingRenderer(2),
     h3: HeadingRenderer(3),
     p: ParagraphRenderer,
-    strong: StrongRenderer,
-    em: EmphasisRenderer,
+    // Remove strong and em renderers - let processMixedContent handle them
+    // strong: StrongRenderer,  // REMOVED
+    // em: EmphasisRenderer,    // REMOVED
     li: ListItemRenderer,
     ul: (props: any) => <ListWrapper {...props} isOrdered={false} />,
     ol: (props: any) => <ListWrapper {...props} isOrdered={true} />,
@@ -297,8 +283,6 @@ export default function RemarkLetterPageRenderer({
     CodeBlock,
     HeadingRenderer,
     ParagraphRenderer,
-    StrongRenderer,
-    EmphasisRenderer,
     ListItemRenderer,
     ListWrapper,
     BlockquoteRenderer,
