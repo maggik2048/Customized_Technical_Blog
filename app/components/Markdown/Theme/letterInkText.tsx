@@ -137,6 +137,7 @@ export function renderInkText(
         
         const transform = `translate(${shiftX}px,${shiftY}px) rotate(${rotation}deg) scale(${scale})`;
         
+        // FIX: Use type assertion to resolve style property type issue
         result[i] = React.cloneElement(customElement, {
           key: i,
           style: {
@@ -145,9 +146,9 @@ export function renderInkText(
             transform,
             opacity,
             textShadow: customElement.props.style?.textShadow || textShadow,
-            filter: `blur(${0.01}px)`, // Minimal blur to keep the effect
+            filter: `blur(${0.01}px)`,
           }
-        });
+        } as React.Attributes & React.HTMLAttributes<HTMLElement>);
         continue;
       }
     }
