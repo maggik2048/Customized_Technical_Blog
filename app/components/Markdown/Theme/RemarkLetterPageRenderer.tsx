@@ -67,6 +67,46 @@ const TableFallback = memo(() => (
 TableFallback.displayName = "TableFallback";
 
 /* =========================
+   TABLE SUB-COMPONENTS
+   These wrap the lazy-loaded TableRenderer components
+========================= */
+
+const TableThead = memo((props: any) => (
+  <Suspense fallback={null}>
+    <TableRenderer.Thead {...props} />
+  </Suspense>
+));
+TableThead.displayName = "TableThead";
+
+const TableTbody = memo((props: any) => (
+  <Suspense fallback={null}>
+    <TableRenderer.Tbody {...props} />
+  </Suspense>
+));
+TableTbody.displayName = "TableTbody";
+
+const TableTr = memo((props: any) => (
+  <Suspense fallback={null}>
+    <TableRenderer.Tr {...props} />
+  </Suspense>
+));
+TableTr.displayName = "TableTr";
+
+const TableTh = memo((props: any) => (
+  <Suspense fallback={null}>
+    <TableRenderer.Th {...props} />
+  </Suspense>
+));
+TableTh.displayName = "TableTh";
+
+const TableTd = memo((props: any) => (
+  <Suspense fallback={null}>
+    <TableRenderer.Td {...props} />
+  </Suspense>
+));
+TableTd.displayName = "TableTd";
+
+/* =========================
    MAIN COMPONENT
 ========================= */
 
@@ -214,12 +254,16 @@ export default function RemarkLetterPageRenderer({
     ol: (props: any) => <ListWrapper {...props} isOrdered={true} />,
     blockquote: BlockquoteRenderer,
     hr: HrRenderer,
-    table: TableRenderer,
-    thead: TableRenderer.Thead,
-    tbody: TableRenderer.Tbody,
-    tr: TableRenderer.Tr,
-    th: TableRenderer.Th,
-    td: TableRenderer.Td,
+    table: (props: any) => (
+      <Suspense fallback={<TableFallback />}>
+        <TableRenderer {...props} />
+      </Suspense>
+    ),
+    thead: TableThead,
+    tbody: TableTbody,
+    tr: TableTr,
+    th: TableTh,
+    td: TableTd,
   }), [
     markdownComponents,
     CodeBlock,
