@@ -1,4 +1,10 @@
-import { ASTNode, CodeBlockNode } from "../ast/types";
+import { 
+  ASTNode, 
+  CodeBlockNode,
+  ParagraphNode,
+  ListNode,
+  HeadingNode 
+} from "../ast/types";
 
 /**
  * Parses markdown text into an Abstract Syntax Tree (AST)
