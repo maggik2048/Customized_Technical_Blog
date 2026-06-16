@@ -2,7 +2,7 @@
 
 import {
   PolygonDirectionData,
-} from "./longestside";
+} from "./4_longestside";
 
 export interface PerpendicularDirectionData {
   polygonIndex: number;
