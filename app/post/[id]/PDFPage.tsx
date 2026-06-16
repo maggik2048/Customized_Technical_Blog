@@ -33,6 +33,9 @@ import DocContentBackgroundManager from "./DocContentBackgroundManager";
 ========================= */
 import { TextSelectionEngine } from "@/app/components/Markdown/Theme/TextSelectionEngine";
 
+// Import PostAdminActions
+import PostAdminActions from "@/app/admin/PostAdminActions";
+
 type Props = {
   data: any;
   isActive?: boolean;
@@ -181,6 +184,24 @@ export default function PDFPage({
 
       <div>
         <div style={pageStyle}>
+          {/* =========================
+              ADMIN ACTIONS - RENDERED OUTSIDE HEADER
+          ========================= */}
+          <div
+            style={{
+              position: "absolute",
+              top: 16,
+              right: 40,
+              zIndex: 9999,
+              pointerEvents: "auto",
+            }}
+          >
+            <PostAdminActions
+              postId={data.id}
+              category={data.category}
+            />
+          </div>
+
           <div
             style={{
               position: "absolute",
@@ -234,10 +255,10 @@ export default function PDFPage({
               parentPaddingLeft={64}
               parentPaddingRight={64}
               backgroundImage="/images/dossierBg/woodmarble2.jpg"
-              objectFit="cover"  //  Changed to cover for full width coverage
-              backgroundSize="100% 100%"  //  Stretch to fully cover width and height
+              objectFit="cover"
+              backgroundSize="100% 100%"
               backgroundPosition="center center"
-              backgroundRepeat="no-repeat"  //  Changed to no-repeat for clean coverage
+              backgroundRepeat="no-repeat"
               backgroundBlendMode="overlay"
               paddingTop={20}
               paddingBottom={20}

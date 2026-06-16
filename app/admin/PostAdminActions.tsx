@@ -53,6 +53,7 @@ export default function PostAdminActions({
     overflow: "hidden",
     transition: "all 0.24s ease",
     boxShadow: `inset 0 1px 0 rgba(255,255,255,0.03)`,
+    pointerEvents: "auto", // Ensure clicks work
   };
 
   const innerLineStyle: React.CSSProperties = {
@@ -102,9 +103,20 @@ export default function PostAdminActions({
   };
 
   return (
-    <div style={{ display: "flex", gap: 8 }}>
+    <div 
+      style={{ 
+        display: "flex", 
+        gap: 8,
+        pointerEvents: "auto",
+        position: "relative",
+        zIndex: 9999,
+      }}
+    >
       {/* WRITE */}
-      <Link href={`/admin/write${category ? `?category=${category}` : ""}`}>
+      <Link 
+        href={`/admin/write${category ? `?category=${category}` : ""}`}
+        style={{ pointerEvents: "auto" }}
+      >
         <button
           className={cormorant.className}
           style={buttonStyle}
@@ -122,7 +134,10 @@ export default function PostAdminActions({
       </Link>
 
       {/* MODIFY */}
-      <Link href={`/admin/edit/${postId}`}>
+      <Link 
+        href={`/admin/edit/${postId}`}
+        style={{ pointerEvents: "auto" }}
+      >
         <button
           className={cormorant.className}
           style={buttonStyle}
