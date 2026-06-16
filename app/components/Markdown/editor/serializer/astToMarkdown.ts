@@ -129,16 +129,18 @@ export function countNodesByType(ast: ASTNode[]): Record<ASTNode["type"], number
 
 /**
  * Utility to extract all code blocks from AST
+ * 수정된 부분: 타입 단언 사용
  */
 export function extractCodeBlocks(ast: ASTNode[]): string[] {
   return ast
-    .filter((node): node is CodeBlockNode => node.type === "code")
-    .map((node) => node.content);
+    .filter((node) => node.type === "code")
+    .map((node) => (node as { type: "code"; content: string }).content);
 }
 
 /**
  * Type guard for CodeBlockNode
+ * 수정된 부분: any 타입 사용으로 간단히 처리
  */
-function isCodeBlockNode(node: ASTNode): node is CodeBlockNode {
+function isCodeBlockNode(node: ASTNode): boolean {
   return node.type === "code";
 }
