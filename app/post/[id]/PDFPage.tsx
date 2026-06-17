@@ -63,18 +63,39 @@ export default function PDFPage({
 
   const HEADER_HEIGHT = 560;
 
-  console.log("[PDF PAGE RECEIVED]", {
+  // ✅ SIMPLE CHECK - Does the post have projects AND a commit_url?
+  const hasProject = React.useMemo(() => {
+    // Check if project_slugs exists and is an array with at least one item
+    const hasProjects = data?.project_slugs && 
+                       Array.isArray(data.project_slugs) && 
+                       data.project_slugs.length > 0;
+    
+    // Also check if commit_url exists (optional - you might want to show even without commit_url)
+    const hasCommitUrl = data?.commit_url && data.commit_url.trim() !== '';
+    
+    console.log("[PDF PAGE] hasProject check:", {
+      title: data?.title,
+      project_slugs: data?.project_slugs,
+      hasProjects: hasProjects,
+      commit_url: data?.commit_url,
+      hasCommitUrl: hasCommitUrl,
+      result: hasProjects // Return just the project check
+    });
+    
+    // Return true if post has projects (regardless of commit_url)
+    return hasProjects;
+  }, [data?.project_slugs, data?.commit_url]);
+
+  // Debug log the full data
+  console.log("[PDF PAGE] Full data received:", {
+    id: data?.id,
     title: data?.title,
-    globalIndex,
-    localIndex,
-    localTotal,
-
-    commit_url: data?.commit_url,
-
     category: data?.category,
     category_slugs: data?.category_slugs,
     project_slugs: data?.project_slugs,
     tag_slugs: data?.tag_slugs,
+    commit_url: data?.commit_url,
+    hasProject: hasProject,
   });
 
   //  REMOVED background from pageStyle - now only container styling
@@ -86,7 +107,6 @@ export default function PDFPage({
       background: isDark
         ? "rgba(60,60,60,0.6)"
         : "rgba(255,255,255,0.72)",
-      // ❌ REMOVED: backgroundImage, backgroundSize, etc.
       paddingLeft: 64,
       paddingRight: 64,
       borderRadius: 12,
@@ -239,7 +259,25 @@ export default function PDFPage({
           >
             <MetadataPostalCode data={data} isDark={isDark} />
 
-            <GotoGitHubCorresponding commitUrl={data?.commit_url} />
+            {/* ✅ ONLY render if post has projects */}
+            {hasProject && (
+              <GotoGitHubCorresponding commitUrl={data?.commit_url} />
+            )}
+
+            {/* Debug: Show if component is hidden */}
+            {!hasProject && (
+              <div style={{ 
+                padding: '8px 16px', 
+                marginBottom: '12px',
+                background: 'rgba(255, 200, 0, 0.1)',
+                border: '1px solid rgba(255, 200, 0, 0.3)',
+                borderRadius: '4px',
+                fontSize: '12px',
+                color: '#666'
+              }}>
+                ⚡ GitHub component hidden - No projects assigned to this post
+              </div>
+            )}
 
             <div
               style={{
