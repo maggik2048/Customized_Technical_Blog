@@ -288,16 +288,14 @@ export default function PDFPage({
               }}
             />
 
-            {/* MARKDOWN CONTENT WITH BACKGROUND MANAGER */}
+            {/* ============================================
+                MARKDOWN CONTENT WITH BACKGROUND MANAGER
+                ✅ backgroundImage prop 제거됨
+                ✅ 내부 기본값 사용
+            ============================================ */}
             <DocContentBackgroundManager
               parentPaddingLeft={64}
               parentPaddingRight={64}
-              backgroundImage="/images/dossierBg/woodmarble2.jpg"
-              objectFit="cover"
-              backgroundSize="100% 100%"
-              backgroundPosition="center center"
-              backgroundRepeat="no-repeat"
-              backgroundBlendMode="overlay"
               paddingTop={20}
               paddingBottom={20}
             >

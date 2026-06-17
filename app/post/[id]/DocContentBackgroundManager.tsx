@@ -2,16 +2,19 @@
 
 import React from "react";
 
+//  기본 배경 이미지 상수화
+const DEFAULT_BG_IMAGE = "/images/dossierBg/woodmarble2.jpg";
+
 interface DocContentBackgroundManagerProps {
   children: React.ReactNode;
   parentPaddingLeft?: number;
   parentPaddingRight?: number;
   backgroundColor?: string;
-  backgroundImage?: string;
-  backgroundSize?: string;     // ✅ 직접 조절 가능하게 추가
-  backgroundPosition?: string; // ✅ 직접 조절 가능하게 추가
-  backgroundRepeat?: string;   // ✅ 직접 조절 가능하게 추가
-  objectFit?: "cover" | "contain" | "fill" | "none" | "scale-down";
+  backgroundImage?: string; // 외부에서 덮어쓰고 싶을 때만 사용
+  backgroundSize?: "cover" | "contain" | "auto";
+  backgroundPosition?: string;
+  backgroundRepeat?: "no-repeat" | "repeat" | "repeat-x" | "repeat-y";
+  backgroundBlendMode?: string;
   paddingTop?: number;
   paddingBottom?: number;
 }
@@ -21,11 +24,11 @@ export default function DocContentBackgroundManager({
   parentPaddingLeft = 64,
   parentPaddingRight = 64,
   backgroundColor = "transparent",
-  backgroundImage,
-  backgroundSize = "auto",      // ✅ 기본값 auto (원본 크기 그대로)
+  backgroundImage = DEFAULT_BG_IMAGE,
+  backgroundSize = "cover",
   backgroundPosition = "center center",
-  backgroundRepeat = "no-repeat",
-  objectFit = "cover",
+  backgroundRepeat = "repeat",
+  backgroundBlendMode = "overlay",
   paddingTop = 20,
   paddingBottom = 20,
 }: DocContentBackgroundManagerProps) {
@@ -38,25 +41,13 @@ export default function DocContentBackgroundManager({
     paddingBottom,
     position: "relative",
     backgroundColor,
-  };
-
-  const imgContainerStyle: React.CSSProperties = {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 0,
-    borderRadius: 12,
-    overflow: "hidden",
-  };
-
-  const imgStyle: React.CSSProperties = {
-    width: "100%",
-    height: "100%",
-    objectFit: objectFit,
-    objectPosition: backgroundPosition,
-    display: "block",
+    ...(backgroundImage && {
+      backgroundImage: `url(${backgroundImage})`,
+      backgroundSize,
+      backgroundPosition,
+      backgroundRepeat,
+      backgroundBlendMode: backgroundBlendMode as any,
+    }),
   };
 
   const contentStyle: React.CSSProperties = {
@@ -66,11 +57,6 @@ export default function DocContentBackgroundManager({
 
   return (
     <div style={containerStyle}>
-      {backgroundImage && (
-        <div style={imgContainerStyle}>
-          <img src={backgroundImage} alt="" style={imgStyle} />
-        </div>
-      )}
       <div style={contentStyle}>{children}</div>
     </div>
   );
