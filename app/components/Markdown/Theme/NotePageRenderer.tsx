@@ -86,6 +86,14 @@ export default function NotePageRenderer({
 
   const gridSize = 34;
 
+  // 더 진한 파란색 라인
+  const gridLineColor = isDark
+    ? "rgba(255,255,255,0.08)"
+    : "rgba(60, 100, 220, 0.35)";
+
+  // 크럼블 페이퍼 텍스처 경로
+  const crumbledPaperPath = "/images/dossierBg/crumbledpapertex.jpg";
+
   const notebookStyle = {
 
     position: "relative" as const,
@@ -107,34 +115,44 @@ export default function NotePageRenderer({
         0 12px 38px rgba(0,0,0,0.08)
       `,
 
-    backgroundImage: isDark
-      ? `
-        linear-gradient(
-          rgba(255,255,255,0.04) 1px,
-          transparent 1px
-        ),
+    // 크럼블 페이퍼 텍스처 (반복) + 그리드 오버레이
+    backgroundImage: `
+      url("${crumbledPaperPath}"),
+      linear-gradient(
+        ${gridLineColor} 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        90deg,
+        ${gridLineColor} 1px,
+        transparent 1px
+      )
+    `,
 
-        linear-gradient(
-          90deg,
-          rgba(255,255,255,0.04) 1px,
-          transparent 1px
-        )
-      `
-      : `
-        linear-gradient(
-          rgba(80,120,255,0.11) 1px,
-          transparent 1px
-        ),
+    backgroundBlendMode: `
+      multiply,
+      normal,
+      normal
+    `,
 
-        linear-gradient(
-          90deg,
-          rgba(80,120,255,0.11) 1px,
-          transparent 1px
-        )
-      `,
+    //  텍스처가 반복되도록 설정 (이미지 크기에 맞게 조절)
+    backgroundSize: `
+      4000px 4000px,              //  이 값을 조절하세요! (클수록 화질 좋아짐)
+      ${gridSize}px ${gridSize}px,
+      ${gridSize}px ${gridSize}px
+    `,
 
-    backgroundSize:
-      `${gridSize}px ${gridSize}px`,
+    backgroundRepeat: `
+      repeat,
+      repeat,
+      repeat
+    `,
+
+    backgroundPosition: `
+      0 0,
+      0 0,
+      0 0
+    `,
   };
 
   /* =========================
