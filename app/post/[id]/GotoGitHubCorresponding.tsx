@@ -5,10 +5,12 @@ import Image from "next/image";
 
 type Props = {
   commitUrl?: string;
+  hasProject?: boolean;
 };
 
 export default function GotoGitHubCorresponding({
   commitUrl,
+  hasProject = false,
 }: Props) {
   // Sample commit data - you can pass these as props later
   const commitTitle = "fix: deploy fix: Improve InkOptions type system - support dynamic color assignment (for now just use this proxy name)";
@@ -256,20 +258,21 @@ export default function GotoGitHubCorresponding({
           align-items: flex-end;
           margin-top: 6px;
           flex: 1;
-          gap: 16px; /* Added gap between related posts and image */
+          gap: 16px;
         }
 
+        /* ===== RELATED POSTS (프로젝트 있을 때) ===== */
         .relatedPosts {
           display: flex;
           flex-direction: column;
           gap: 3px;
-          padding: 10px 16px; /* Increased horizontal padding */
+          padding: 10px 16px;
           border-radius: 8px;
           border: 1px solid #000000;
           background: transparent;
-          flex: 1; /* Allow it to grow */
-          min-width: 0; /* Prevent overflow */
-          max-width: 55%; /* Extended to right - was auto, now 55% */
+          flex: 1;
+          min-width: 0;
+          max-width: 55%;
         }
 
         .relatedPostsTitle {
@@ -278,7 +281,7 @@ export default function GotoGitHubCorresponding({
           font-size: 15px;
           font-weight: 600;
           color: #000000;
-          margin-bottom: 4px; /* Slightly increased */
+          margin-bottom: 4px;
           letter-spacing: 0.02em;
         }
 
@@ -295,7 +298,7 @@ export default function GotoGitHubCorresponding({
           padding: 1px 6px;
           border-radius: 4px;
           line-height: 1.4;
-          white-space: nowrap; /* Keep text on one line */
+          white-space: nowrap;
         }
 
         .postItem:hover {
@@ -322,10 +325,68 @@ export default function GotoGitHubCorresponding({
           font-size: 13px;
         }
 
+        /* ===== NO PROJECT (프로젝트 없을 때) ===== */
+        .noProjectContainer {
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+          padding: 10px 16px;
+          border-radius: 8px;
+          border: 1px solid #000000;
+          background: transparent;
+          flex: 1;
+          min-width: 0;
+          max-width: 55%;
+        }
+
+        .noProjectTitle {
+          font-family: "Cormorant Garamond", serif;
+          font-style: italic;
+          font-size: 15px;
+          font-weight: 600;
+          color: #000000;
+          margin-bottom: 4px;
+          letter-spacing: 0.02em;
+        }
+
+        .noProjectItem {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-family: "Michroma", "JetBrains Mono", monospace;
+          font-size: 13px;
+          color: #000000;
+          letter-spacing: 0.03em;
+          padding: 1px 6px;
+          border-radius: 4px;
+          line-height: 1.4;
+          white-space: nowrap;
+        }
+
+        .noProjectIconGroup {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          flex-shrink: 0;
+        }
+
+        .noProjectGitIcon,
+        .noProjectGithubIcon {
+          width: 18px;
+          height: 18px;
+          flex-shrink: 0;
+        }
+
+        .noProjectText {
+          font-weight: 400;
+          font-size: 13px;
+          color: #000000;
+        }
+
         .imageWrapper {
           position: relative;
           width: 500px;
-          max-width: 40%; /* Reduced from 45% to give more space to related posts */
+          max-width: 40%;
           height: auto;
           opacity: 0.6;
           pointer-events: none;
@@ -385,13 +446,23 @@ export default function GotoGitHubCorresponding({
           }
 
           .relatedPosts {
-            max-width: 100%; /* Full width on mobile */
+            max-width: 100%;
+            width: 100%;
+            padding: 10px 12px;
+          }
+
+          .noProjectContainer {
+            max-width: 100%;
             width: 100%;
             padding: 10px 12px;
           }
 
           .postItem {
-            white-space: normal; /* Allow text wrap on mobile */
+            white-space: normal;
+          }
+
+          .noProjectItem {
+            white-space: normal;
           }
 
           .imageWrapper {
@@ -551,46 +622,86 @@ export default function GotoGitHubCorresponding({
           </div>
         </div>
 
-        {/* Bottom Section: Related Posts (Left) + Image (Right) */}
+        {/* Bottom Section: 프로젝트 유무에 따라 다르게 표시 */}
         <div className="bottomSection">
-          {/* Related Posts List - Left Bottom - EXTENDED HORIZONTALLY */}
-          <div className="relatedPosts">
-            <div className="relatedPostsTitle">
-              RELATED POSTS for this commit:
+          {hasProject ? (
+            /* ===== 프로젝트 있을 때: RELATED POSTS ===== */
+            <div className="relatedPosts">
+              <div className="relatedPostsTitle">
+                RELATED POSTS for this commit:
+              </div>
+              
+              <div className="postItem">
+                <span className="postNumber">(5)</span>
+                <span className="postDivider">•</span>
+                <span className="postText">correctly implemented</span>
+              </div>
+              
+              <div className="postItem">
+                <span className="postNumber">(4)</span>
+                <span className="postDivider">•</span>
+                <span className="postText">debugging</span>
+              </div>
+              
+              <div className="postItem">
+                <span className="postNumber">(3)</span>
+                <span className="postDivider">•</span>
+                <span className="postText">addition of feature</span>
+              </div>
+              
+              <div className="postItem">
+                <span className="postNumber">(2)</span>
+                <span className="postDivider">•</span>
+                <span className="postText">initialize component</span>
+              </div>
+              
+              <div className="postItem">
+                <span className="postNumber">(1)</span>
+                <span className="postDivider">•</span>
+                <span className="postText">overview of trajectory</span>
+              </div>
             </div>
-            
-            <div className="postItem">
-              <span className="postNumber">(5)</span>
-              <span className="postDivider">•</span>
-              <span className="postText">correctly implemented</span>
-            </div>
-            
-            <div className="postItem">
-              <span className="postNumber">(4)</span>
-              <span className="postDivider">•</span>
-              <span className="postText">debugging</span>
-            </div>
-            
-            <div className="postItem">
-              <span className="postNumber">(3)</span>
-              <span className="postDivider">•</span>
-              <span className="postText">addition of feature</span>
-            </div>
-            
-            <div className="postItem">
-              <span className="postNumber">(2)</span>
-              <span className="postDivider">•</span>
-              <span className="postText">initialize component</span>
-            </div>
-            
-            <div className="postItem">
-              <span className="postNumber">(1)</span>
-              <span className="postDivider">•</span>
-              <span className="postText">overview of trajectory</span>
-            </div>
-          </div>
+          ) : (
+            /* ===== 프로젝트 없을 때: NO PROJECT ===== */
+            <div className="noProjectContainer">
+              <div className="noProjectTitle">
+                GitHub Component Hidden:
+              </div>
+              
+              <div className="noProjectItem">
+                <div className="noProjectIconGroup">
+                  {/* Git Icon (orange) */}
+                  <svg
+                    className="noProjectGitIcon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M23.546 11.426L12.574 0.454C12.247 0.127 11.754 0 11.264 0C10.774 0 10.279 0.126 9.953 0.454L8.091 2.316L10.688 4.913C11.341 4.618 12.139 4.699 12.724 5.284C13.312 5.872 13.393 6.676 13.094 7.33L15.591 9.827C16.245 9.528 17.049 9.609 17.637 10.197C18.468 11.028 18.468 12.378 17.637 13.209C16.806 14.04 15.456 14.04 14.625 13.209C14.006 12.59 13.911 11.732 14.254 11.051L11.879 8.676V15.605C12.093 15.711 12.294 15.855 12.468 16.029C13.299 16.86 13.299 18.21 12.468 19.041C11.637 19.872 10.287 19.872 9.456 19.041C8.625 18.21 8.625 16.86 9.456 16.029C9.661 15.824 9.9 15.671 10.156 15.566V8.482C9.901 8.377 9.662 8.222 9.457 8.018C8.82 7.381 8.742 6.417 9.207 5.714L6.622 3.129L0.454 9.426C0.127 9.753 0 10.246 0 10.736C0 11.226 0.126 11.721 0.454 12.047L11.426 23.546C11.753 23.873 12.246 24 12.736 24C13.226 24 13.721 23.874 14.047 23.546L23.546 14.047C23.874 13.721 24 13.226 24 12.736C24 12.246 23.873 11.753 23.546 11.426Z"
+                      fill="#F05032"
+                    />
+                  </svg>
 
-          {/* Image - Right Bottom */}
+                  {/* GitHub Octocat Icon (orange) */}
+                  <svg
+                    className="noProjectGithubIcon"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57C20.565 21.795 24 17.31 24 12c0-6.63-5.37-12-12-12z"
+                      fill="#F05032"
+                    />
+                  </svg>
+                </div>
+                <span className="noProjectText">No project assigned to this post</span>
+              </div>
+            </div>
+          )}
+
+          {/* Image - Right Bottom (항상 표시) */}
           <div className="imageWrapper">
             <img
               src="/images/githubsync/sync5.jpg"

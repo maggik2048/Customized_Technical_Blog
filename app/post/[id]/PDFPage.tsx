@@ -63,7 +63,7 @@ export default function PDFPage({
 
   const HEADER_HEIGHT = 560;
 
-  // ✅ SIMPLE CHECK - Does the post have projects AND a commit_url?
+  // ✅ SIMPLE CHECK - Does the post have projects?
   const hasProject = React.useMemo(() => {
     // Check if project_slugs exists and is an array with at least one item
     const hasProjects = data?.project_slugs && 
@@ -269,25 +269,14 @@ export default function PDFPage({
               <MetadataPostalCode data={data} isDark={isDark} />
             </div>
 
-            {/*  ONLY render if post has projects */}
-            {hasProject && (
-              <GotoGitHubCorresponding commitUrl={data?.commit_url} />
-            )}
-
-            {/* Debug: Show if component is hidden */}
-            {!hasProject && (
-              <div style={{ 
-                padding: '8px 16px', 
-                marginBottom: '12px',
-                background: 'rgba(255, 200, 0, 0.1)',
-                border: '1px solid rgba(255, 200, 0, 0.3)',
-                borderRadius: '4px',
-                fontSize: '12px',
-                color: '#666'
-              }}>
-                ⚡ GitHub component hidden - No projects assigned to this post
-              </div>
-            )}
+            {/* =========================
+                GotoGitHubCorresponding - 항상 렌더링 (hasProject를 prop으로 전달)
+                ✅ FIX: 조건부 렌더링 제거, 항상 렌더링
+            ========================= */}
+            <GotoGitHubCorresponding 
+              commitUrl={data?.commit_url}
+              hasProject={hasProject}  // hasProject prop 전달
+            />
 
             <div
               style={{
