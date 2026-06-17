@@ -16,6 +16,209 @@ export default function GotoGitHubCorresponding({
   const commitTitle = "fix: deploy fix: Improve InkOptions type system - support dynamic color assignment (for now just use this proxy name)";
   const commitSHA = "a7f3e8b9c1d4f2e6a8b3c5d7e9f1a4b6c8d2e0f4";
 
+  // If no project, render simplified version
+  if (!hasProject) {
+    return (
+      <>
+        <style jsx>{`
+          .simpleContainer {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+            margin-top: 20px;
+            margin-bottom: 12px;
+            border-top: 1px solid rgba(0, 0, 0, 0.08);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+          }
+
+          .simpleButton {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 4px 12px 4px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            background: #3a3a3a;
+            color: #fff;
+            white-space: nowrap;
+            font-size: 13px;
+            transition: all 0.18s ease;
+            height: 28px;
+          }
+
+          .simpleButton:hover {
+            filter: brightness(1.08);
+            transform: translateY(-1px);
+          }
+
+          .simpleButton .goToText {
+            font-family: "Cormorant Garamond", serif;
+            font-style: italic;
+            font-size: 15px;
+            font-weight: 600;
+          }
+
+          .simpleButton .commitText {
+            font-family: "Michroma", "JetBrains Mono", monospace;
+            font-size: 8px;
+            font-weight: 400;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+          }
+
+          .simpleIconGroup {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+          }
+
+          .simpleGitIcon,
+          .simpleGithubIcon {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+          }
+
+          .simpleArrowSvg {
+            width: 60px;
+            height: 24px;
+            flex-shrink: 0;
+            overflow: visible;
+          }
+
+          .noProjectMessage {
+            font-family: "Michroma", "JetBrains Mono", monospace;
+            font-size: 11px;
+            color: #666;
+            letter-spacing: 0.03em;
+          }
+
+          .noProjectMessage strong {
+            color: #333;
+            font-weight: 600;
+          }
+
+          .simpleCommitLink {
+            color: #60a5fa;
+            text-decoration: underline;
+            word-break: break-all;
+            font-size: 12px;
+          }
+
+          .simpleCommitLink:hover {
+            color: #93bbfc;
+          }
+
+          .simpleNoCommit {
+            color: #999;
+            font-size: 12px;
+          }
+
+          @media (max-width: 768px) {
+            .simpleContainer {
+              flex-wrap: wrap;
+              gap: 8px;
+            }
+            
+            .simpleButton {
+              font-size: 12px;
+              padding: 4px 10px 4px 14px;
+            }
+          }
+        `}</style>
+
+        <div className="simpleContainer">
+          <button
+            type="button"
+            className="simpleButton"
+            onClick={() => {
+              if (commitUrl) {
+                window.open(commitUrl, "_blank");
+              }
+            }}
+            style={{
+              cursor: commitUrl ? "pointer" : "default",
+            }}
+          >
+            <div className="simpleIconGroup">
+              <svg
+                className="simpleGitIcon"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M23.546 11.426L12.574 0.454C12.247 0.127 11.754 0 11.264 0C10.774 0 10.279 0.126 9.953 0.454L8.091 2.316L10.688 4.913C11.341 4.618 12.139 4.699 12.724 5.284C13.312 5.872 13.393 6.676 13.094 7.33L15.591 9.827C16.245 9.528 17.049 9.609 17.637 10.197C18.468 11.028 18.468 12.378 17.637 13.209C16.806 14.04 15.456 14.04 14.625 13.209C14.006 12.59 13.911 11.732 14.254 11.051L11.879 8.676V15.605C12.093 15.711 12.294 15.855 12.468 16.029C13.299 16.86 13.299 18.21 12.468 19.041C11.637 19.872 10.287 19.872 9.456 19.041C8.625 18.21 8.625 16.86 9.456 16.029C9.661 15.824 9.9 15.671 10.156 15.566V8.482C9.901 8.377 9.662 8.222 9.457 8.018C8.82 7.381 8.742 6.417 9.207 5.714L6.622 3.129L0.454 9.426C0.127 9.753 0 10.246 0 10.736C0 11.226 0.126 11.721 0.454 12.047L11.426 23.546C11.753 23.873 12.246 24 12.736 24C13.226 24 13.721 23.874 14.047 23.546L23.546 14.047C23.874 13.721 24 13.226 24 12.736C24 12.246 23.873 11.753 23.546 11.426Z"
+                  fill="#F05032"
+                />
+              </svg>
+
+              <svg
+                className="simpleGithubIcon"
+                viewBox="0 0 24 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57C20.565 21.795 24 17.31 24 12c0-6.63-5.37-12-12-12z"
+                  fill="#F05032"
+                />
+              </svg>
+            </div>
+
+            <span className="goToText">Go To</span>
+            <span className="commitText">Corresponding GitHub Commit</span>
+
+            <svg
+              className="simpleArrowSvg"
+              viewBox="0 0 80 30"
+              aria-hidden="true"
+            >
+              <polygon
+                points="30,2 50,2 65,14 52,11"
+                fill="#ffffff"
+                opacity="0.92"
+              />
+              <polygon
+                points="30,28 50,28 65,16 52,19"
+                fill="#ffffff"
+                opacity="0.92"
+              />
+              <polygon
+                points="42,3 58,15 42,27 52,15"
+                fill="#060608"
+              />
+              <polygon
+                points="56,0 80,15 56,30 64,15"
+                fill="#f0e9e9"
+              />
+            </svg>
+          </button>
+
+          <span className="noProjectMessage">
+            <strong>GitHub Component Hidden:</strong> No project assigned to this post
+          </span>
+
+          {commitUrl ? (
+            <a
+              href={commitUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="simpleCommitLink"
+            >
+              {commitUrl}
+            </a>
+          ) : (
+            <span className="simpleNoCommit">No commit linked yet</span>
+          )}
+        </div>
+      </>
+    );
+  }
+
+  // Full version for posts WITH projects
   return (
     <>
       <style jsx>{`
@@ -23,79 +226,43 @@ export default function GotoGitHubCorresponding({
 
         .githubButton {
           position: relative;
-
           margin-left: auto;
-
           transform: translateX(-180px);
-
           display: flex;
           align-items: center;
           gap: 14px;
-
           height: 26px;
-
           padding: 0 12px 0 18px;
-
           border: none;
-
           border-radius: 8px 0 0 8px;
-
           cursor: pointer;
-
           background: #3a3a3a;
-
           color: #fff;
-
           white-space: nowrap;
-
-          box-shadow:
-            0 2px 8px rgba(0, 0, 0, 0.16);
-
-          transition:
-            transform 0.18s ease,
-            filter 0.18s ease,
-            box-shadow 0.18s ease;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
+          transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease;
         }
 
         .githubButton:hover {
           filter: brightness(1.08);
-
-          transform:
-            translateX(-180px)
-            translateY(-1px);
-
-          box-shadow:
-            0 4px 12px rgba(0, 0, 0, 0.2);
+          transform: translateX(-180px) translateY(-1px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
         }
 
         .goToText {
-          font-family:
-            "Cormorant Garamond",
-            serif;
-
+          font-family: "Cormorant Garamond", serif;
           font-style: italic;
-
           font-size: 17px;
-
           font-weight: 600;
-
           line-height: 1;
         }
 
         .commitText {
-          font-family:
-            "Michroma",
-            "JetBrains Mono",
-            monospace;
-
+          font-family: "Michroma", "JetBrains Mono", monospace;
           font-size: 9px;
-
           font-weight: 400;
-
           text-transform: uppercase;
-
           letter-spacing: 0.14em;
-
           line-height: 1;
         }
 
@@ -114,19 +281,11 @@ export default function GotoGitHubCorresponding({
 
         .arrowSvg {
           width: 96px;
-
           height: 34px;
-
           margin-right: -40px;
-
           flex-shrink: 0;
-
           overflow: visible;
-
-          filter:
-            drop-shadow(
-              0 2px 8px rgba(0, 0, 0, 0.16)
-            );
+          filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.16));
         }
 
         .arrowWrap {
@@ -137,39 +296,24 @@ export default function GotoGitHubCorresponding({
         .container {
           margin-top: 20px;
           margin-bottom: 24px;
-
           display: flex;
           flex-direction: column;
           gap: 8px;
-
           padding: 18px 18px 16px 18px;
-
           border-radius: 12px;
-
           position: relative;
           min-height: 260px;
-
-          /* Background image with opacity - NO DARKENING */
           background-image: url('/images/githubsync/desk9.jpg');
           background-size: cover;
           background-position: center;
           background-repeat: no-repeat;
-          
-          /* Background opacity using pseudo-element instead of dark overlay */
           background-color: transparent;
-
-          /* Glass morphism effect */
           backdrop-filter: blur(2px);
           -webkit-backdrop-filter: blur(2px);
-
-          /* Subtle border */
           border: 1px solid rgba(255, 255, 255, 0.2);
-          
-          /* Box shadow for depth */
           box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
 
-        /* Background opacity overlay - NO DARKENING, just opacity */
         .container::before {
           content: '';
           position: absolute;
@@ -177,14 +321,13 @@ export default function GotoGitHubCorresponding({
           left: 0;
           right: 0;
           bottom: 0;
-          background: rgba(255, 255, 255, 0.35); /* White overlay for opacity effect */
+          background: rgba(255, 255, 255, 0.35);
           border-radius: 12px;
           z-index: 0;
           backdrop-filter: blur(2px);
           -webkit-backdrop-filter: blur(2px);
         }
 
-        /* Ensure all content is above the overlay */
         .container > * {
           position: relative;
           z-index: 1;
@@ -261,7 +404,6 @@ export default function GotoGitHubCorresponding({
           gap: 16px;
         }
 
-        /* ===== RELATED POSTS (프로젝트 있을 때) ===== */
         .relatedPosts {
           display: flex;
           flex-direction: column;
@@ -325,64 +467,6 @@ export default function GotoGitHubCorresponding({
           font-size: 13px;
         }
 
-        /* ===== NO PROJECT (프로젝트 없을 때) ===== */
-        .noProjectContainer {
-          display: flex;
-          flex-direction: column;
-          gap: 3px;
-          padding: 10px 16px;
-          border-radius: 8px;
-          border: 1px solid #000000;
-          background: transparent;
-          flex: 1;
-          min-width: 0;
-          max-width: 55%;
-        }
-
-        .noProjectTitle {
-          font-family: "Cormorant Garamond", serif;
-          font-style: italic;
-          font-size: 15px;
-          font-weight: 600;
-          color: #000000;
-          margin-bottom: 4px;
-          letter-spacing: 0.02em;
-        }
-
-        .noProjectItem {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          font-family: "Michroma", "JetBrains Mono", monospace;
-          font-size: 13px;
-          color: #000000;
-          letter-spacing: 0.03em;
-          padding: 1px 6px;
-          border-radius: 4px;
-          line-height: 1.4;
-          white-space: nowrap;
-        }
-
-        .noProjectIconGroup {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          flex-shrink: 0;
-        }
-
-        .noProjectGitIcon,
-        .noProjectGithubIcon {
-          width: 18px;
-          height: 18px;
-          flex-shrink: 0;
-        }
-
-        .noProjectText {
-          font-weight: 400;
-          font-size: 13px;
-          color: #000000;
-        }
-
         .imageWrapper {
           position: relative;
           width: 500px;
@@ -421,7 +505,6 @@ export default function GotoGitHubCorresponding({
           text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
         }
 
-        /* Adjust button for dark background */
         .githubButton {
           background: rgba(58, 58, 58, 0.9);
           backdrop-filter: blur(4px);
@@ -432,7 +515,6 @@ export default function GotoGitHubCorresponding({
           background: rgba(58, 58, 58, 0.95);
         }
 
-        /* Responsive adjustments */
         @media (max-width: 768px) {
           .container {
             padding: 14px;
@@ -451,17 +533,7 @@ export default function GotoGitHubCorresponding({
             padding: 10px 12px;
           }
 
-          .noProjectContainer {
-            max-width: 100%;
-            width: 100%;
-            padding: 10px 12px;
-          }
-
           .postItem {
-            white-space: normal;
-          }
-
-          .noProjectItem {
             white-space: normal;
           }
 
@@ -492,20 +564,14 @@ export default function GotoGitHubCorresponding({
             className="githubButton"
             onClick={() => {
               if (commitUrl) {
-                window.open(
-                  commitUrl,
-                  "_blank"
-                );
+                window.open(commitUrl, "_blank");
               }
             }}
             style={{
-              cursor: commitUrl
-                ? "pointer"
-                : "default",
+              cursor: commitUrl ? "pointer" : "default",
             }}
           >
             <div className="iconGroup">
-              {/* Git Icon (orange) */}
               <svg
                 className="gitIcon"
                 viewBox="0 0 24 24"
@@ -518,7 +584,6 @@ export default function GotoGitHubCorresponding({
                 />
               </svg>
 
-              {/* GitHub Octocat Icon (orange) */}
               <svg
                 className="githubIcon"
                 viewBox="0 0 24 24"
@@ -532,13 +597,8 @@ export default function GotoGitHubCorresponding({
               </svg>
             </div>
 
-            <span className="goToText">
-              Go To
-            </span>
-
-            <span className="commitText">
-              Corresponding GitHub Commit
-            </span>
+            <span className="goToText">Go To</span>
+            <span className="commitText">Corresponding GitHub Commit</span>
 
             <span className="arrowWrap">
               <svg
@@ -546,51 +606,10 @@ export default function GotoGitHubCorresponding({
                 viewBox="0 0 120 40"
                 aria-hidden="true"
               >
-                {/* 위쪽 날개 */}
-                <polygon
-                  points="
-                    40,2
-                    62,2
-                    82,18
-                    64,13
-                  "
-                  fill="#ffffff"
-                  opacity="0.92"
-                />
-
-                {/* 아래쪽 날개 */}
-                <polygon
-                  points="
-                    40,38
-                    62,38
-                    82,22
-                    64,27
-                  "
-                  fill="#ffffff"
-                  opacity="0.92"
-                />
-
-                {/* 작은 화살촉 */}
-                <polygon
-                  points="
-                    54,4
-                    74,20
-                    54,36
-                    66,20
-                  "
-                  fill="#060608"
-                />
-
-                {/* 큰 화살촉 */}
-                <polygon
-                  points="
-                    72,0
-                    120,20
-                    72,40
-                    88,20
-                  "
-                  fill="#f0e9e9"
-                />
+                <polygon points="40,2 62,2 82,18 64,13" fill="#ffffff" opacity="0.92" />
+                <polygon points="40,38 62,38 82,22 64,27" fill="#ffffff" opacity="0.92" />
+                <polygon points="54,4 74,20 54,36 66,20" fill="#060608" />
+                <polygon points="72,0 120,20 72,40 88,20" fill="#f0e9e9" />
               </svg>
             </span>
           </button>
@@ -605,103 +624,53 @@ export default function GotoGitHubCorresponding({
               {commitUrl}
             </a>
           ) : (
-            <span className="noCommitText">
-              No commit linked yet
-            </span>
+            <span className="noCommitText">No commit linked yet</span>
           )}
         </div>
 
-        {/* Commit Title and SHA Row */}
         <div className="commitInfoRow">
-          <div className="commitTitle">
-            {commitTitle}
-          </div>
+          <div className="commitTitle">{commitTitle}</div>
           <div className="commitSHAWrapper">
             <span className="shaLabel">SHA:</span>
             <span className="shaValue">{commitSHA}</span>
           </div>
         </div>
 
-        {/* Bottom Section: 프로젝트 유무에 따라 다르게 표시 */}
         <div className="bottomSection">
-          {hasProject ? (
-            /* ===== 프로젝트 있을 때: RELATED POSTS ===== */
-            <div className="relatedPosts">
-              <div className="relatedPostsTitle">
-                RELATED POSTS for this commit:
-              </div>
-              
-              <div className="postItem">
-                <span className="postNumber">(5)</span>
-                <span className="postDivider">•</span>
-                <span className="postText">correctly implemented</span>
-              </div>
-              
-              <div className="postItem">
-                <span className="postNumber">(4)</span>
-                <span className="postDivider">•</span>
-                <span className="postText">debugging</span>
-              </div>
-              
-              <div className="postItem">
-                <span className="postNumber">(3)</span>
-                <span className="postDivider">•</span>
-                <span className="postText">addition of feature</span>
-              </div>
-              
-              <div className="postItem">
-                <span className="postNumber">(2)</span>
-                <span className="postDivider">•</span>
-                <span className="postText">initialize component</span>
-              </div>
-              
-              <div className="postItem">
-                <span className="postNumber">(1)</span>
-                <span className="postDivider">•</span>
-                <span className="postText">overview of trajectory</span>
-              </div>
+          <div className="relatedPosts">
+            <div className="relatedPostsTitle">RELATED POSTS for this commit:</div>
+            
+            <div className="postItem">
+              <span className="postNumber">(5)</span>
+              <span className="postDivider">•</span>
+              <span className="postText">correctly implemented</span>
             </div>
-          ) : (
-            /* ===== 프로젝트 없을 때: NO PROJECT ===== */
-            <div className="noProjectContainer">
-              <div className="noProjectTitle">
-                GitHub Component Hidden:
-              </div>
-              
-              <div className="noProjectItem">
-                <div className="noProjectIconGroup">
-                  {/* Git Icon (orange) */}
-                  <svg
-                    className="noProjectGitIcon"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M23.546 11.426L12.574 0.454C12.247 0.127 11.754 0 11.264 0C10.774 0 10.279 0.126 9.953 0.454L8.091 2.316L10.688 4.913C11.341 4.618 12.139 4.699 12.724 5.284C13.312 5.872 13.393 6.676 13.094 7.33L15.591 9.827C16.245 9.528 17.049 9.609 17.637 10.197C18.468 11.028 18.468 12.378 17.637 13.209C16.806 14.04 15.456 14.04 14.625 13.209C14.006 12.59 13.911 11.732 14.254 11.051L11.879 8.676V15.605C12.093 15.711 12.294 15.855 12.468 16.029C13.299 16.86 13.299 18.21 12.468 19.041C11.637 19.872 10.287 19.872 9.456 19.041C8.625 18.21 8.625 16.86 9.456 16.029C9.661 15.824 9.9 15.671 10.156 15.566V8.482C9.901 8.377 9.662 8.222 9.457 8.018C8.82 7.381 8.742 6.417 9.207 5.714L6.622 3.129L0.454 9.426C0.127 9.753 0 10.246 0 10.736C0 11.226 0.126 11.721 0.454 12.047L11.426 23.546C11.753 23.873 12.246 24 12.736 24C13.226 24 13.721 23.874 14.047 23.546L23.546 14.047C23.874 13.721 24 13.226 24 12.736C24 12.246 23.873 11.753 23.546 11.426Z"
-                      fill="#F05032"
-                    />
-                  </svg>
-
-                  {/* GitHub Octocat Icon (orange) */}
-                  <svg
-                    className="noProjectGithubIcon"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57C20.565 21.795 24 17.31 24 12c0-6.63-5.37-12-12-12z"
-                      fill="#F05032"
-                    />
-                  </svg>
-                </div>
-                <span className="noProjectText">No project assigned to this post</span>
-              </div>
+            
+            <div className="postItem">
+              <span className="postNumber">(4)</span>
+              <span className="postDivider">•</span>
+              <span className="postText">debugging</span>
             </div>
-          )}
+            
+            <div className="postItem">
+              <span className="postNumber">(3)</span>
+              <span className="postDivider">•</span>
+              <span className="postText">addition of feature</span>
+            </div>
+            
+            <div className="postItem">
+              <span className="postNumber">(2)</span>
+              <span className="postDivider">•</span>
+              <span className="postText">initialize component</span>
+            </div>
+            
+            <div className="postItem">
+              <span className="postNumber">(1)</span>
+              <span className="postDivider">•</span>
+              <span className="postText">overview of trajectory</span>
+            </div>
+          </div>
 
-          {/* Image - Right Bottom (항상 표시) */}
           <div className="imageWrapper">
             <img
               src="/images/githubsync/sync5.jpg"
