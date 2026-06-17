@@ -32,7 +32,7 @@ interface CodeBlock3DProps {
   index?: number;
 }
 
-// ✅ 컬러 매핑 함수 (컴포넌트 외부로 이동)
+// ✅ 컬러 매핑 함수
 const getColorFromClassName = (className: string): string => {
   const colors: Record<string, string> = {
     'token comment': '#6a9955',
@@ -60,14 +60,12 @@ const getColorFromClassName = (className: string): string => {
     'token url': '#ce9178',
   };
   
-  // 클래스명에서 색상 찾기
   for (const [key, color] of Object.entries(colors)) {
     if (className.includes(key)) {
       return color;
     }
   }
   
-  // 기본값
   return '#d4d4d4';
 };
 
@@ -118,13 +116,22 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
   // ✅ 구문 강조가 적용된 코드 텍스처 생성
   const codeTexture = useMemo(() => {
     const codeText = String(children);
-    const lines = codeText.split("\n");
-    const lineHeight = 34;
-    const padding = 44;
-    const fontSize = 20;
-    const maxLines = Math.min(lines.length, 25);
-    const canvasHeight = Math.max(420, maxLines * lineHeight + padding * 2);
-    const canvasWidth = 1400;
+    
+    // ✅ 빈 줄 제거 (실제 내용이 있는 줄만 필터링)
+    const allLines = codeText.split("\n");
+    const nonEmptyLines = allLines.filter(line => line.trim() !== "");
+    
+    // ✅ 빈 줄이 모두 제거되었으면 최소 1줄 유지
+    const lines = nonEmptyLines.length > 0 ? nonEmptyLines : [" "];
+    
+    const fontSize = 22;
+    const lineHeight = 36;
+    const padding = 48;
+    const maxLines = Math.min(lines.length, 30);
+    
+    // ✅ 실제 내용에 맞게 캔버스 높이 계산
+    const canvasWidth = 1600;
+    const canvasHeight = Math.max(400, maxLines * lineHeight + padding * 2);
 
     if (!codeCanvasRef.current) {
       codeCanvasRef.current = document.createElement("canvas");
@@ -144,35 +151,39 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-    // ✅ 구문 강조 적용
+    // ✅ 구문 강조 적용 (빈 줄 제거된 상태로)
     let highlightedLines: string[] = [];
     
     try {
-      // Prism으로 구문 강조
+      const codeToHighlight = lines.join("\n");
       const grammar = Prism.languages[language] || Prism.languages.text;
-      const highlighted = Prism.highlight(codeText, grammar, language);
+      const highlighted = Prism.highlight(codeToHighlight, grammar, language);
       
-      // HTML 태그를 라인별로 분리
       const tempDiv = document.createElement('div');
       tempDiv.innerHTML = `<pre>${highlighted}</pre>`;
       const preElement = tempDiv.querySelector('pre');
       
       if (preElement) {
-        // 각 라인을 span으로 감싸서 처리
         const rawLines = preElement.innerHTML.split('\n');
         highlightedLines = rawLines.filter(line => line.trim() !== '');
       } else {
-        // 폴백: 일반 텍스트
-        highlightedLines = codeText.split('\n');
+        highlightedLines = lines;
       }
     } catch (error) {
-      // 폴백: 일반 텍스트
       console.warn('Syntax highlighting failed, using plain text:', error);
-      highlightedLines = codeText.split('\n');
+      highlightedLines = lines;
+    }
+
+    // ✅ 최대 줄 수 제한
+    if (highlightedLines.length > maxLines) {
+      highlightedLines = highlightedLines.slice(0, maxLines);
     }
 
     // ✅ 라인 번호 그리기
     ctx.textBaseline = "top";
+    
+    // ✅ 최대 글자수 계산
+    const maxCharsPerLine = 80;
     
     highlightedLines.forEach((line, i) => {
       if (i < maxLines) {
@@ -183,9 +194,8 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
         ctx.font = `${fontSize}px "JetBrains Mono", "Fira Code", monospace`;
         ctx.fillText(`${i + 1}`, 20, y + 4);
         
-        // ✅ HTML 태그를 파싱하여 컬러 텍스트 렌더링
+        // ✅ HTML 태그 파싱하여 컬러 텍스트 렌더링
         if (line.includes('<span')) {
-          // HTML 태그가 있는 경우 (Prism 하이라이트)
           const tempSpan = document.createElement('div');
           tempSpan.innerHTML = line;
           const spans = tempSpan.querySelectorAll('span');
@@ -195,28 +205,37 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
             spans.forEach((span) => {
               const text = span.textContent || '';
               const className = span.className || '';
-              // ✅ getColorFromClassName은 이제 외부에서 정의됨
               const color = getColorFromClassName(className);
               
               ctx.fillStyle = color;
               ctx.font = `bold ${fontSize}px "JetBrains Mono", "Fira Code", monospace`;
               const displayText = decodeHtmlEntities(text);
-              ctx.fillText(displayText, currentX, y + 4);
-              currentX += ctx.measureText(displayText).width;
+              
+              // ✅ 텍스트 자르기
+              const truncated = displayText.length > maxCharsPerLine 
+                ? displayText.slice(0, maxCharsPerLine) + "…" 
+                : displayText;
+              
+              ctx.fillText(truncated, currentX, y + 4);
+              currentX += ctx.measureText(truncated).width;
             });
           } else {
-            // 폴백
             const cleanText = decodeHtmlEntities(line.replace(/<[^>]*>/g, ''));
             ctx.fillStyle = "#e0e0e0";
             ctx.font = `bold ${fontSize}px "JetBrains Mono", "Fira Code", monospace`;
-            ctx.fillText(cleanText, 55, y + 4);
+            const truncated = cleanText.length > maxCharsPerLine 
+              ? cleanText.slice(0, maxCharsPerLine) + "…" 
+              : cleanText;
+            ctx.fillText(truncated, 55, y + 4);
           }
         } else {
           // 일반 텍스트
           ctx.fillStyle = "#e0e0e0";
           ctx.font = `bold ${fontSize}px "JetBrains Mono", "Fira Code", monospace`;
           const cleanText = decodeHtmlEntities(line);
-          const truncated = cleanText.length > 65 ? cleanText.slice(0, 62) + "..." : cleanText;
+          const truncated = cleanText.length > maxCharsPerLine 
+            ? cleanText.slice(0, maxCharsPerLine) + "…" 
+            : cleanText;
           ctx.fillText(truncated, 55, y + 4);
         }
       }
@@ -232,23 +251,23 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
 
     // ✅ 상단 타이틀 바
     ctx.fillStyle = "rgba(255, 255, 255, 0.06)";
-    ctx.fillRect(0, 0, canvasWidth, 32);
+    ctx.fillRect(0, 0, canvasWidth, 34);
     
     ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
-    ctx.font = `13px "JetBrains Mono", monospace`;
+    ctx.font = `14px "JetBrains Mono", monospace`;
     ctx.textBaseline = "middle";
     const langDisplay = language || "text";
-    ctx.fillText(langDisplay.toUpperCase(), 16, 16);
+    ctx.fillText(langDisplay.toUpperCase(), 16, 17);
 
     // ✅ 창 컨트롤 버튼
     const dots = [
-      { x: canvasWidth - 80, color: "#ff5f56" },
-      { x: canvasWidth - 60, color: "#ffbd2e" },
+      { x: canvasWidth - 84, color: "#ff5f56" },
+      { x: canvasWidth - 62, color: "#ffbd2e" },
       { x: canvasWidth - 40, color: "#27c93f" },
     ];
     dots.forEach((dot) => {
       ctx.beginPath();
-      ctx.arc(dot.x, 16, 6, 0, Math.PI * 2);
+      ctx.arc(dot.x, 17, 7, 0, Math.PI * 2);
       ctx.fillStyle = dot.color;
       ctx.fill();
     });
@@ -353,9 +372,14 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     const group = new THREE.Group();
     groupRef.current = group;
 
-    // 화이트보드 본체
-    const boardWidth = 4.6;
-    const boardHeight = 3.0;
+    // ✅ 종횡비 계산
+    const textureWidth = codeTexture.image?.width || 1600;
+    const textureHeight = codeTexture.image?.height || 400;
+    const textureAspect = textureWidth / textureHeight;
+    
+    // ✅ 보드 크기: 내용에 맞게 최적화 (높이를 기준으로 너비 계산)
+    const boardHeight = Math.min(3.0, Math.max(2.0, textureHeight / 200)); // 내용에 따라 높이 조정
+    const boardWidth = boardHeight * textureAspect * 0.82; // 비율 유지
     const boardDepth = 0.04;
 
     const boardGeometry = new THREE.BoxGeometry(boardWidth, boardHeight, boardDepth);
@@ -377,7 +401,7 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     group.add(board);
     whiteboardRef.current = board;
 
-    // 프레임
+    // ✅ 프레임 (보드 크기에 맞춤)
     const frameMaterial = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color(0.4, 0.4, 0.48),
       roughness: 0.02,
@@ -390,10 +414,10 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
       ior: 2.0,
     });
 
-    const frameThickness = 0.04;
+    const frameThickness = 0.045;
     const frameWidth = boardWidth + frameThickness * 2.5;
     const frameHeight = boardHeight + frameThickness * 2.5;
-    const frameDepth = 0.08;
+    const frameDepth = 0.09;
     const frameZ = 0.01;
 
     const topFrame = new THREE.Mesh(
@@ -561,7 +585,7 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
         ref={canvasRef}
         className="w-full rounded-2xl"
         style={{
-          height: "340px",
+          height: "360px",
           display: "block",
           background: "transparent",
         }}
