@@ -257,7 +257,12 @@ export default function PDFPage({
               zIndex: 1,
             }}
           >
-            <MetadataPostalCode data={data} isDark={isDark} />
+            {/* =========================
+                METADATA POSTAL CODE - 원래 위치 그대로, z-index만 최상위로
+            ========================= */}
+            <div style={{ position: "relative", zIndex: 9998 }}>
+              <MetadataPostalCode data={data} isDark={isDark} />
+            </div>
 
             {/* ✅ ONLY render if post has projects */}
             {hasProject && (
