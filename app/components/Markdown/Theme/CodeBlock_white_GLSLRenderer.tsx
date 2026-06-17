@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, forwardRef, useImperativeHandle } from "react";
+import React, { useEffect, useRef, forwardRef, useImperativeHandle, useCallback } from "react";
 import * as THREE from "three";
 import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
@@ -23,7 +23,6 @@ const CodeBlock_white_GLSLRenderer = forwardRef<GLSLRendererRef, GLSLRendererPro
     {
       width = "100%",
       height = "100%",
-      // ✅ 4K HDR 파일로 기본 경로 변경
       hdriUrl = "/environments/poly_haven_studio_4k.hdr",
       className = "",
       scrollSensitivity = 0.08,
@@ -43,6 +42,25 @@ const CodeBlock_white_GLSLRenderer = forwardRef<GLSLRendererRef, GLSLRendererPro
 
     const scrollPositionRef = useRef<number>(0);
     const hoverStateRef = useRef<boolean>(false);
+    const frameCountRef = useRef<number>(0);
+    const lastCleanupRef = useRef<number>(Date.now());
+
+    // ✅ 메모리 최적화: 정리 함수
+    const disposeObject = useCallback((obj: THREE.Object3D) => {
+      obj.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.geometry?.dispose();
+          if (Array.isArray(child.material)) {
+            child.material.forEach(m => m.dispose());
+          } else if (child.material) {
+            child.material.dispose();
+          }
+        }
+      });
+    }, []);
+
+    // ✅ 메모리 최적화: 텍스처 캐시
+    const textureCache = useRef<Map<string, THREE.DataTexture>>(new Map());
 
     useEffect(() => {
       if (!containerRef.current) return;
@@ -84,18 +102,27 @@ const CodeBlock_white_GLSLRenderer = forwardRef<GLSLRendererRef, GLSLRendererPro
       controls.update();
       controlsRef.current = controls;
 
+      // ✅ HDRI 로드 (캐시 사용)
       const loadHDRI = async () => {
         try {
+          // 캐시 확인
+          if (textureCache.current.has(hdriUrl)) {
+            const cachedTexture = textureCache.current.get(hdriUrl)!;
+            hdriTextureRef.current = cachedTexture;
+            scene.environment = cachedTexture;
+            updateMaterials(cachedTexture);
+            return;
+          }
+
           const loader = new RGBELoader();
           const texture = await loader.loadAsync(hdriUrl);
           texture.mapping = THREE.EquirectangularReflectionMapping;
           
-          scene.environment = texture;
+          // 캐시 저장
+          textureCache.current.set(hdriUrl, texture);
           hdriTextureRef.current = texture;
-
-          if (whiteboardRef.current || frameRef.current) {
-            updateMaterials(texture);
-          }
+          scene.environment = texture;
+          updateMaterials(texture);
         } catch (error) {
           console.warn("HDRI 로드 실패, 기본 라이팅 사용:", error);
           const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
@@ -243,8 +270,18 @@ const CodeBlock_white_GLSLRenderer = forwardRef<GLSLRendererRef, GLSLRendererPro
         }
       };
 
+      // ✅ 최적화된 애니메이션 루프
       const animate = () => {
         animationRef.current = requestAnimationFrame(animate);
+
+        frameCountRef.current++;
+        
+        // ✅ 5분마다 GPU 메모리 정리 (개발 환경)
+        if (process.env.NODE_ENV === 'development' && frameCountRef.current % 18000 === 0) {
+          if (rendererRef.current) {
+            rendererRef.current.renderLists?.dispose?.();
+          }
+        }
 
         if (controlsRef.current) {
           controlsRef.current.update();
@@ -252,7 +289,6 @@ const CodeBlock_white_GLSLRenderer = forwardRef<GLSLRendererRef, GLSLRendererPro
 
         if (cameraRef.current) {
           const scrollOffset = scrollPositionRef.current * scrollSensitivity;
-          const radius = 5.5;
           const angleX = Math.sin(scrollOffset) * 0.3;
           const angleY = Math.cos(scrollOffset * 0.7) * 0.15;
           
@@ -272,7 +308,24 @@ const CodeBlock_white_GLSLRenderer = forwardRef<GLSLRendererRef, GLSLRendererPro
         }
       };
 
-      const handleResize = () => {
+      // ✅ 탭 가시성 변경 처리
+      const handleVisibilityChange = () => {
+        if (document.hidden) {
+          // 탭이 비활성화되면 애니메이션 속도 줄이기
+          if (rendererRef.current) {
+            rendererRef.current.setAnimationLoop(null);
+          }
+        } else {
+          // 탭이 다시 활성화되면 재개
+          if (rendererRef.current && sceneRef.current && cameraRef.current) {
+            rendererRef.current.setAnimationLoop(() => {
+              animate();
+            });
+          }
+        }
+      };
+
+      const handleResize = useCallback(() => {
         if (!containerRef.current || !rendererRef.current || !cameraRef.current) return;
         const rect = containerRef.current.getBoundingClientRect();
         const w = rect.width;
@@ -282,12 +335,12 @@ const CodeBlock_white_GLSLRenderer = forwardRef<GLSLRendererRef, GLSLRendererPro
           cameraRef.current.updateProjectionMatrix();
           rendererRef.current.setSize(w, h);
         }
-      };
+      }, []);
 
-      const handleScroll = () => {
+      const handleScroll = useCallback(() => {
         const scrollY = window.scrollY || window.pageYOffset || 0;
         scrollPositionRef.current = scrollY;
-      };
+      }, []);
 
       loadHDRI();
       createModel();
@@ -302,6 +355,7 @@ const CodeBlock_white_GLSLRenderer = forwardRef<GLSLRendererRef, GLSLRendererPro
 
       window.addEventListener("resize", handleResize);
       window.addEventListener("scroll", handleScroll, { passive: true });
+      document.addEventListener("visibilitychange", handleVisibilityChange);
 
       setTimeout(handleScroll, 100);
 
@@ -311,6 +365,7 @@ const CodeBlock_white_GLSLRenderer = forwardRef<GLSLRendererRef, GLSLRendererPro
         }
         window.removeEventListener("resize", handleResize);
         window.removeEventListener("scroll", handleScroll);
+        document.removeEventListener("visibilitychange", handleVisibilityChange);
         resizeObserver.disconnect();
 
         if (rendererRef.current) {
@@ -321,21 +376,12 @@ const CodeBlock_white_GLSLRenderer = forwardRef<GLSLRendererRef, GLSLRendererPro
           }
         }
 
-        if (hdriTextureRef.current) {
+        if (hdriTextureRef.current && !textureCache.current.has(hdriUrl)) {
           hdriTextureRef.current.dispose();
         }
 
         if (sceneRef.current) {
-          sceneRef.current.traverse((object) => {
-            if (object instanceof THREE.Mesh) {
-              object.geometry?.dispose();
-              if (Array.isArray(object.material)) {
-                object.material.forEach((m) => m.dispose());
-              } else {
-                object.material?.dispose();
-              }
-            }
-          });
+          disposeObject(sceneRef.current);
         }
 
         rendererRef.current = null;
@@ -347,7 +393,7 @@ const CodeBlock_white_GLSLRenderer = forwardRef<GLSLRendererRef, GLSLRendererPro
         groupRef.current = null;
         hdriTextureRef.current = null;
       };
-    }, [hdriUrl]);
+    }, [hdriUrl, scrollSensitivity, disposeObject]);
 
     useImperativeHandle(ref, () => ({
       setScrollPosition: (scrollY: number) => {

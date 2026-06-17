@@ -1,7 +1,6 @@
-// app/components/Markdown/Theme/CodeBlock3D.tsx
 "use client";
 
-import React, { useRef, useEffect, useMemo, useState } from "react";
+import React, { useRef, useEffect, useMemo, useState, useCallback } from "react";
 import * as THREE from "three";
 import { useHDRI } from "./HDRIProvider";
 
@@ -22,8 +21,13 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
   const groupRef = useRef<THREE.Group | null>(null);
   const whiteboardRef = useRef<THREE.Mesh | null>(null);
   const frameRef = useRef<THREE.Mesh | null>(null);
+  const frameCountRef = useRef<number>(0);
   
   const [viewportPosition, setViewportPosition] = useState(0);
+
+  // ✅ 캔버스 재사용을 위한 ref
+  const codeCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const codeTextureRef = useRef<THREE.CanvasTexture | null>(null);
   
   const randomOffset = useMemo(() => {
     const seed = index * 7.3;
@@ -38,7 +42,7 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     };
   }, [index]);
 
-  // 고화질 코드 텍스처
+  // ✅ 최적화된 코드 텍스처 생성 (캔버스 재사용)
   const codeTexture = useMemo(() => {
     const lines = String(children).split("\n");
     const lineHeight = 28;
@@ -47,7 +51,12 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     const canvasHeight = Math.max(400, maxLines * lineHeight + padding * 2);
     const canvasWidth = 1200;
 
-    const canvas = document.createElement("canvas");
+    // ✅ 기존 캔버스 재사용
+    if (!codeCanvasRef.current) {
+      codeCanvasRef.current = document.createElement("canvas");
+    }
+    
+    const canvas = codeCanvasRef.current;
     canvas.width = canvasWidth;
     canvas.height = canvasHeight;
 
@@ -82,17 +91,51 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     ctx.lineTo(45, canvasHeight);
     ctx.stroke();
 
+    // ✅ 기존 텍스처 업데이트 또는 새로 생성
+    if (codeTextureRef.current) {
+      codeTextureRef.current.needsUpdate = true;
+      return codeTextureRef.current;
+    }
+
     const texture = new THREE.CanvasTexture(canvas);
-    texture.needsUpdate = true;
     texture.anisotropy = 8;
     texture.minFilter = THREE.LinearMipmapLinearFilter;
     texture.magFilter = THREE.LinearFilter;
     texture.generateMipmaps = true;
+    codeTextureRef.current = texture;
     return texture;
   }, [children]);
 
-  // 뷰포트 위치 추적
+  // ✅ 메모리 정리 함수 (컴포넌트 레벨에서 정의)
+  const disposeObject = useCallback((obj: THREE.Object3D) => {
+    obj.traverse((child) => {
+      if (child instanceof THREE.Mesh) {
+        child.geometry?.dispose();
+        if (Array.isArray(child.material)) {
+          child.material.forEach(m => m.dispose());
+        } else if (child.material) {
+          child.material.dispose();
+        }
+      }
+    });
+  }, []);
+
+  // ✅ 리사이즈 핸들러 (컴포넌트 레벨에서 정의)
+  const handleResize = useCallback(() => {
+    if (!canvasRef.current || !rendererRef.current || !cameraRef.current) return;
+    const w = canvasRef.current.clientWidth;
+    const h = canvasRef.current.clientHeight;
+    if (w > 0 && h > 0) {
+      cameraRef.current.aspect = w / h;
+      cameraRef.current.updateProjectionMatrix();
+      rendererRef.current.setSize(w, h);
+    }
+  }, []);
+
+  // 뷰포트 위치 추적 (최적화)
   useEffect(() => {
+    let rafId: number | null = null;
+    
     const updatePosition = () => {
       if (!containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
@@ -103,7 +146,8 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     };
 
     const handleScroll = () => {
-      requestAnimationFrame(updatePosition);
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(updatePosition);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -111,6 +155,7 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     updatePosition();
 
     return () => {
+      if (rafId) cancelAnimationFrame(rafId);
       window.removeEventListener("scroll", handleScroll);
       window.removeEventListener("resize", handleScroll);
     };
@@ -148,9 +193,7 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     const group = new THREE.Group();
     groupRef.current = group;
 
-    // ============================================================
-    // 1. 화이트보드 본체 (얇은 판)
-    // ============================================================
+    // 화이트보드 본체
     const boardWidth = 4.4;
     const boardHeight = 2.8;
     const boardDepth = 0.06;
@@ -174,12 +217,7 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     group.add(board);
     whiteboardRef.current = board;
 
-    // ============================================================
-    // 2. 베벨/챔퍼 처리된 통합 프레임 (RoundedBoxGeometry 사용)
-    // ============================================================
-    // Three.js에는 기본 RoundedBoxGeometry가 없으므로 
-    // BoxGeometry + EdgesGeometry + Bevel 효과를 시뮬레이션
-    
+    // 프레임
     const frameMaterial = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color(0.45, 0.45, 0.50),
       roughness: 0.03,
@@ -198,23 +236,14 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     const frameDepth = 0.10;
     const frameZ = 0.015;
 
-    // ✅ 프레임을 4개의 분리된 조각 대신, 
-    //    하나의 큰 프레임 + 내부 홀(화이트보드 영역)을 가진 형태로 구현
-    
-    // 방법: 상/하/좌/우 4개 조각을 이어붙여 하나의 프레임처럼 보이게
-    // 하지만 모서리가 자연스럽게 연결되도록
-    
-    // 상단 프레임 (베벨 효과: z축으로 약간 라운딩)
     const topFrame = new THREE.Mesh(
       new THREE.BoxGeometry(frameWidth, frameThickness, frameDepth),
       frameMaterial
     );
     topFrame.position.set(0, frameHeight / 2, frameZ);
-    // 상단 모서리 라운딩 효과를 위해 살짝 회전
     topFrame.rotation.x = 0.02;
     group.add(topFrame);
 
-    // 하단 프레임
     const bottomFrame = new THREE.Mesh(
       new THREE.BoxGeometry(frameWidth, frameThickness, frameDepth),
       frameMaterial
@@ -223,7 +252,6 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     bottomFrame.rotation.x = -0.02;
     group.add(bottomFrame);
 
-    // 좌측 프레임
     const leftFrame = new THREE.Mesh(
       new THREE.BoxGeometry(frameThickness, frameHeight, frameDepth),
       frameMaterial
@@ -232,7 +260,6 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     leftFrame.rotation.y = 0.02;
     group.add(leftFrame);
 
-    // 우측 프레임
     const rightFrame = new THREE.Mesh(
       new THREE.BoxGeometry(frameThickness, frameHeight, frameDepth),
       frameMaterial
@@ -241,7 +268,6 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     rightFrame.rotation.y = -0.02;
     group.add(rightFrame);
 
-    // ✅ 모서리 연결 부분 (인셋 효과 - 부드러운 연결)
     const cornerMaterial = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color(0.48, 0.48, 0.52),
       roughness: 0.02,
@@ -265,16 +291,13 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
         cornerMaterial
       );
       corner.position.set(x, y, frameZ);
-      // 모서리 라운딩 효과를 위한 미세 회전
       corner.rotation.z = 0.01;
       group.add(corner);
     });
 
     frameRef.current = topFrame;
 
-    // ============================================================
-    // 3. 분필 받침대 (트레이) - 크게 확장
-    // ============================================================
+    // 분필 받침대
     const trayMaterial = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color(0.3, 0.3, 0.35),
       roughness: 0.2,
@@ -285,13 +308,11 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
       clearcoatRoughness: 0.2,
     });
 
-    // ✅ 트레이 크기 확장 (칠판 너비의 90%)
     const trayWidth = boardWidth * 0.9;
     const trayHeight = 0.035;
-    const trayDepth = 0.15; // ✅ 깊이 증가
+    const trayDepth = 0.15;
     const trayY = -boardHeight / 2 - 0.06;
 
-    // 트레이 본체
     const tray = new THREE.Mesh(
       new THREE.BoxGeometry(trayWidth, trayHeight, trayDepth),
       trayMaterial
@@ -299,7 +320,6 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     tray.position.set(0, trayY, 0.04);
     group.add(tray);
 
-    // ✅ 트레이 앞쪽 테두리 (분필 낙하 방지 - 더 높게)
     const trayLipMaterial = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color(0.35, 0.35, 0.4),
       roughness: 0.15,
@@ -315,7 +335,6 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     trayLip.position.set(0, trayY + 0.03, 0.12);
     group.add(trayLip);
 
-    // ✅ 트레이 양쪽 끝 마감
     const trayEndMaterial = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color(0.28, 0.28, 0.32),
       roughness: 0.2,
@@ -333,38 +352,7 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
       group.add(trayEnd);
     });
 
-    // ============================================================
-    // 4. 뒷면 프레임 (얇게)
-    // ============================================================
-    const backFrameMaterial = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color(0.4, 0.4, 0.45),
-      roughness: 0.08,
-      metalness: 0.95,
-      envMap: hdriTexture || undefined,
-      envMapIntensity: 2.5,
-      side: THREE.BackSide,
-    });
-
-    const backFrameZ = -0.02;
-    const backDepth = 0.05;
-
-    [
-      { x: 0, y: frameHeight / 2, w: frameWidth, h: frameThickness },
-      { x: 0, y: -frameHeight / 2, w: frameWidth, h: frameThickness },
-      { x: -frameWidth / 2, y: 0, w: frameThickness, h: frameHeight },
-      { x: frameWidth / 2, y: 0, w: frameThickness, h: frameHeight },
-    ].forEach(({ x, y, w, h }) => {
-      const backFrame = new THREE.Mesh(
-        new THREE.BoxGeometry(w, h, backDepth),
-        backFrameMaterial
-      );
-      backFrame.position.set(x, y, backFrameZ);
-      group.add(backFrame);
-    });
-
-    // ============================================================
-    // 5. 조명
-    // ============================================================
+    // 조명
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
     const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
@@ -376,11 +364,18 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
 
     scene.add(group);
 
-    // ============================================================
-    // 6. 애니메이션
-    // ============================================================
+    // ✅ 최적화된 애니메이션 루프
     const animate = () => {
       animationRef.current = requestAnimationFrame(animate);
+      
+      frameCountRef.current++;
+      
+      // ✅ 5분마다 GPU 메모리 정리 (개발 환경)
+      if (process.env.NODE_ENV === 'development' && frameCountRef.current % 18000 === 0) {
+        if (rendererRef.current) {
+          rendererRef.current.renderLists?.dispose?.();
+        }
+      }
 
       if (groupRef.current && cameraRef.current) {
         const targetY = viewportPosition * -0.8;
@@ -407,40 +402,47 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     };
     animate();
 
-    const handleResize = () => {
-      if (!canvasRef.current || !rendererRef.current || !cameraRef.current) return;
-      const w = canvasRef.current.clientWidth;
-      const h = canvasRef.current.clientHeight;
-      if (w > 0 && h > 0) {
-        cameraRef.current.aspect = w / h;
-        cameraRef.current.updateProjectionMatrix();
-        rendererRef.current.setSize(w, h);
+    // ✅ 탭 가시성 변경 처리
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        if (rendererRef.current) {
+          rendererRef.current.setAnimationLoop(null);
+        }
+      } else {
+        if (rendererRef.current && sceneRef.current && cameraRef.current) {
+          rendererRef.current.setAnimationLoop(() => {
+            animate();
+          });
+        }
       }
     };
 
     const resizeObserver = new ResizeObserver(handleResize);
     resizeObserver.observe(canvas);
+    
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
       resizeObserver.disconnect();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       
       if (rendererRef.current) {
         rendererRef.current.dispose();
         rendererRef.current = null;
       }
       
-      boardGeometry.dispose();
-      boardMaterial.dispose();
-      frameMaterial.dispose();
-      cornerMaterial.dispose();
-      trayMaterial.dispose();
-      trayLipMaterial.dispose();
-      trayEndMaterial.dispose();
-      backFrameMaterial.dispose();
-      if (codeTexture) codeTexture.dispose();
+      if (sceneRef.current) {
+        disposeObject(sceneRef.current);
+      }
+      
+      // ✅ 텍스처 정리
+      if (codeTextureRef.current) {
+        codeTextureRef.current.dispose();
+        codeTextureRef.current = null;
+      }
       
       sceneRef.current = null;
       cameraRef.current = null;
@@ -448,7 +450,7 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
       whiteboardRef.current = null;
       frameRef.current = null;
     };
-  }, [hdriTexture, codeTexture, viewportPosition, randomOffset, index]);
+  }, [hdriTexture, codeTexture, viewportPosition, randomOffset, index, disposeObject, handleResize]);
 
   return (
     <div ref={containerRef} style={{ width: "100%", height: "100%", position: "relative" }}>

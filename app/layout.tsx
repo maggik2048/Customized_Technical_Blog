@@ -2,6 +2,7 @@
 
 import "./globals.css";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 
 import SidebarState from "./components/SidebarCategory/SidebarState";
 import { DarkModeProvider } from "./context/DarkModeContext.tsx";
@@ -16,21 +17,31 @@ export default function RootLayout({
 }) {
   const pathname = usePathname();
   const isHome = pathname === "/";
+  
+  // ✅ Hydration 에러 방지를 위한 상태
+  const [mounted, setMounted] = useState(false);
+
+  // ✅ 클라이언트 마운트 확인
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const bgImage = "/images/mathdraw32.png";
   const birdsImage = "/images/birds2.png";
 
   return (
-    <html lang="en">
-      <body className="font-lm m-0">
-
+    <html lang="en" suppressHydrationWarning>
+      <body 
+        className="font-lm m-0"
+        suppressHydrationWarning
+      >
         {/* ✅ HDRIProvider로 전체 감싸기 (기존 Provider들은 내부에 그대로) */}
         <HDRIProvider>
           <CastShadowFilterProvider>
             <DarkModeProvider>
 
               {/* ================= HOME BACKGROUND ================= */}
-              {isHome && (
+              {isHome && mounted && (
                 <>
                   {/* BASE BACKGROUND */}
                   <div
