@@ -260,11 +260,16 @@ export default function PDFPage({
             {/* =========================
                 METADATA POSTAL CODE - 원래 위치 그대로, z-index만 최상위로
             ========================= */}
-            <div style={{ position: "relative", zIndex: 9998 }}>
+            <div style={{ 
+              position: "relative", 
+              zIndex: 9998,
+              transform: "translateY(60px)", // 필요에 따라 값 조정
+              marginBottom: "10px", // 아래 요소와의 간격 조정
+            }}>
               <MetadataPostalCode data={data} isDark={isDark} />
             </div>
 
-            {/* ✅ ONLY render if post has projects */}
+            {/*  ONLY render if post has projects */}
             {hasProject && (
               <GotoGitHubCorresponding commitUrl={data?.commit_url} />
             )}
