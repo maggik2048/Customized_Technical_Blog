@@ -138,18 +138,49 @@ export default function GotoGitHubCorresponding({
 
           display: flex;
           flex-direction: column;
-          gap: 8px; /* Reduced from 12px to 8px */
+          gap: 8px;
 
-          padding: 18px 18px 16px 18px; /* Adjusted padding */
+          padding: 18px 18px 16px 18px;
 
           border-radius: 12px;
 
-          background: rgba(255,140,0,0.08);
-
-          border: 1px solid rgba(255,140,0,0.3);
-
           position: relative;
           min-height: 260px;
+
+          /* Background image with overlay */
+          background-image: url('/images/githubsync/desk7.jpg');
+          background-size: cover;
+          background-position: center;
+          background-repeat: no-repeat;
+
+          /* Glass morphism effect */
+          backdrop-filter: blur(2px);
+          -webkit-backdrop-filter: blur(2px);
+
+          /* Subtle border */
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          
+          /* Box shadow for depth */
+          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Lighter overlay for less vignetting - REDUCED OPACITY */
+        .container::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.15); /* Changed from 0.5 to 0.25 */
+          border-radius: 12px;
+          z-index: 0;
+        }
+
+        /* Ensure all content is above the overlay */
+        .container > * {
+          position: relative;
+          z-index: 1;
         }
 
         .topRow {
@@ -159,15 +190,18 @@ export default function GotoGitHubCorresponding({
           width: 100%;
         }
 
-        /* New: Commit Info Row */
         .commitInfoRow {
           display: flex;
           flex-direction: column;
           gap: 4px;
           padding: 6px 0 4px 0;
-          border-top: 1px solid rgba(255, 140, 0, 0.15);
-          border-bottom: 1px solid rgba(255, 140, 0, 0.15);
-          margin: 0; /* No extra margin */
+          border-top: 1px solid rgba(255, 255, 255, 0.15);
+          border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+          margin: 0;
+          background: rgba(0, 0, 0, 0.15); /* Reduced from 0.2 to 0.15 */
+          border-radius: 4px;
+          backdrop-filter: blur(4px);
+          -webkit-backdrop-filter: blur(4px);
         }
 
         .commitTitle {
@@ -175,10 +209,11 @@ export default function GotoGitHubCorresponding({
           font-style: italic;
           font-size: 15px;
           font-weight: 600;
-          color: #2d2d2d;
+          color: #ffffff;
           letter-spacing: 0.02em;
           line-height: 1.3;
           padding: 2px 4px;
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .commitSHAWrapper {
@@ -192,7 +227,7 @@ export default function GotoGitHubCorresponding({
           font-family: "Michroma", "JetBrains Mono", monospace;
           font-size: 8px;
           font-weight: 400;
-          color: #888;
+          color: rgba(255, 255, 255, 0.7);
           text-transform: uppercase;
           letter-spacing: 0.1em;
         }
@@ -201,84 +236,98 @@ export default function GotoGitHubCorresponding({
           font-family: "JetBrains Mono", monospace;
           font-size: 11px;
           font-weight: 500;
-          color: #3a3a3a;
-          background: rgba(0, 0, 0, 0.05);
+          color: #ffffff;
+          background: rgba(255, 255, 255, 0.15);
           padding: 2px 8px;
           border-radius: 4px;
           letter-spacing: 0.04em;
+          backdrop-filter: blur(2px);
+          -webkit-backdrop-filter: blur(2px);
         }
 
         .bottomSection {
           display: flex;
           justify-content: space-between;
           align-items: flex-end;
-          margin-top: 6px; /* Reduced from 20px to 6px */
+          margin-top: 6px;
           flex: 1;
         }
 
         .relatedPosts {
           display: flex;
           flex-direction: column;
-          gap: 3px; /* Reduced from 6px to 3px for tighter spacing */
+          gap: 3px;
+          background: rgba(0, 0, 0, 0.2); /* Reduced from 0.3 to 0.2 */
+          padding: 8px 12px;
+          border-radius: 8px;
+          backdrop-filter: blur(4px);
+          -webkit-backdrop-filter: blur(4px);
+          border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .relatedPostsTitle {
           font-family: "Cormorant Garamond", serif;
           font-style: italic;
-          font-size: 15px; /* Slightly smaller */
+          font-size: 15px;
           font-weight: 600;
-          color: #333;
-          margin-bottom: 2px; /* Reduced from 4px */
+          color: #ffffff;
+          margin-bottom: 2px;
           letter-spacing: 0.02em;
+          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .postItem {
           display: flex;
           align-items: center;
-          gap: 6px; /* Reduced from 8px */
+          gap: 6px;
           font-family: "Michroma", "JetBrains Mono", monospace;
-          font-size: 13px; /* Increased from 11px to 13px */
-          color: #444; /* Slightly darker for better readability */
-          letter-spacing: 0.03em; /* Slightly reduced */
+          font-size: 13px;
+          color: rgba(255, 255, 255, 0.9);
+          letter-spacing: 0.03em;
           transition: all 0.15s ease;
           cursor: pointer;
-          padding: 1px 6px; /* Reduced vertical padding */
+          padding: 1px 6px;
           border-radius: 4px;
-          line-height: 1.4; /* Added for better spacing */
+          line-height: 1.4;
         }
 
         .postItem:hover {
-          background: rgba(255, 140, 0, 0.1);
-          color: #e07c00;
+          background: rgba(255, 140, 0, 0.2);
+          color: #ffb366;
           transform: translateX(4px);
         }
 
         .postNumber {
           font-weight: 700;
           color: #f05032;
-          min-width: 28px; /* Slightly wider for bigger text */
-          font-size: 14px; /* Increased from 12px */
+          min-width: 28px;
+          font-size: 14px;
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
         }
 
         .postDivider {
-          color: #ccc;
+          color: rgba(255, 255, 255, 0.3);
           font-weight: 300;
-          font-size: 16px; /* Increased for better visibility */
+          font-size: 16px;
         }
 
         .postText {
           font-weight: 400;
-          font-size: 13px; /* Explicit size */
+          font-size: 13px;
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
         }
 
         .imageWrapper {
           position: relative;
           width: 500px;
-          max-width: 45%; /* Slightly reduced */
+          max-width: 45%;
           height: auto;
-          opacity: 0.6;
+          opacity: 0.85;
           pointer-events: none;
           flex-shrink: 0;
+          border-radius: 8px;
+          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+          border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .imageWrapper img {
@@ -289,15 +338,68 @@ export default function GotoGitHubCorresponding({
         }
 
         .commitLink {
-          color: #3b82f6;
+          color: #60a5fa;
           text-decoration: underline;
           word-break: break-all;
           font-size: 13px;
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        .commitLink:hover {
+          color: #93bbfc;
         }
 
         .noCommitText {
-          color: #888;
+          color: rgba(255, 255, 255, 0.7);
           font-size: 13px;
+          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Adjust button for dark background */
+        .githubButton {
+          background: rgba(58, 58, 58, 0.9);
+          backdrop-filter: blur(4px);
+          -webkit-backdrop-filter: blur(4px);
+        }
+
+        .githubButton:hover {
+          background: rgba(58, 58, 58, 0.95);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+          .container {
+            padding: 14px;
+            min-height: 300px;
+          }
+
+          .bottomSection {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+          }
+
+          .imageWrapper {
+            max-width: 100%;
+            width: 100%;
+          }
+
+          .relatedPosts {
+            width: 100%;
+          }
+
+          .githubButton {
+            transform: translateX(0);
+            border-radius: 8px;
+          }
+
+          .githubButton:hover {
+            transform: translateY(-1px);
+          }
+
+          .topRow {
+            flex-wrap: wrap;
+          }
         }
       `}</style>
 
@@ -427,7 +529,7 @@ export default function GotoGitHubCorresponding({
           )}
         </div>
 
-        {/* NEW: Commit Title and SHA Row */}
+        {/* Commit Title and SHA Row */}
         <div className="commitInfoRow">
           <div className="commitTitle">
             {commitTitle}
