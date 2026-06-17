@@ -38,14 +38,14 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     };
   }, [index]);
 
-  // ✅ 고화질 코드 텍스처 생성 (해상도 2배 증가)
+  // 고화질 코드 텍스처
   const codeTexture = useMemo(() => {
     const lines = String(children).split("\n");
-    const lineHeight = 28; // ✅ 24 → 28 (더 선명하게)
-    const padding = 40;    // ✅ 30 → 40
+    const lineHeight = 28;
+    const padding = 40;
     const maxLines = Math.min(lines.length, 30);
-    const canvasHeight = Math.max(400, maxLines * lineHeight + padding * 2); // ✅ 300 → 400
-    const canvasWidth = 1200; // ✅ 800 → 1200 (고해상도)
+    const canvasHeight = Math.max(400, maxLines * lineHeight + padding * 2);
+    const canvasWidth = 1200;
 
     const canvas = document.createElement("canvas");
     canvas.width = canvasWidth;
@@ -53,13 +53,11 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
 
     const ctx = canvas.getContext("2d")!;
     
-    // ✅ 더 선명한 배경
     ctx.fillStyle = "rgba(255, 255, 255, 0.96)";
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-    // ✅ 더 선명한 줄 번호
     ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
-    ctx.font = "16px monospace"; // ✅ 14 → 16
+    ctx.font = "16px monospace";
     ctx.textBaseline = "top";
     lines.forEach((line, i) => {
       if (i < maxLines) {
@@ -67,9 +65,8 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
       }
     });
 
-    // ✅ 더 선명한 코드
     ctx.fillStyle = "rgba(20, 20, 20, 0.95)";
-    ctx.font = "17px monospace"; // ✅ 15 → 17
+    ctx.font = "17px monospace";
     ctx.textBaseline = "top";
     lines.forEach((line, i) => {
       if (i < maxLines) {
@@ -78,7 +75,6 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
       }
     });
 
-    // ✅ 더 선명한 구분선
     ctx.strokeStyle = "rgba(0, 0, 0, 0.06)";
     ctx.lineWidth = 1.5;
     ctx.beginPath();
@@ -88,7 +84,7 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
 
     const texture = new THREE.CanvasTexture(canvas);
     texture.needsUpdate = true;
-    texture.anisotropy = 8; // ✅ 텍스처 필터링 최대치
+    texture.anisotropy = 8;
     texture.minFilter = THREE.LinearMipmapLinearFilter;
     texture.magFilter = THREE.LinearFilter;
     texture.generateMipmaps = true;
@@ -120,7 +116,7 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     };
   }, []);
 
-  // Three.js 씬 설정 (화이트보드 + 금속 프레임)
+  // Three.js 씬 설정
   useEffect(() => {
     if (!canvasRef.current) return;
 
@@ -153,22 +149,22 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     groupRef.current = group;
 
     // ============================================================
-    // 1. 화이트보드 (고화질 크롬 재질)
+    // 1. 화이트보드 본체
     // ============================================================
     const boardWidth = 4.4;
     const boardHeight = 2.8;
-    const boardDepth = 0.08;
+    const boardDepth = 0.06; // ✅ 더 얇게
 
     const boardGeometry = new THREE.BoxGeometry(boardWidth, boardHeight, boardDepth);
     const boardMaterial = new THREE.MeshPhysicalMaterial({
       map: codeTexture,
       color: new THREE.Color(0.98, 0.98, 0.99),
-      roughness: 0.05, // ✅ 0.1 → 0.05 (더 매끄럽게)
+      roughness: 0.05,
       metalness: 0.9,
-      clearcoat: 0.5, // ✅ 0.3 → 0.5 (더 반짝)
+      clearcoat: 0.5,
       clearcoatRoughness: 0.1,
       envMap: hdriTexture || undefined,
-      envMapIntensity: 1.8, // ✅ 1.5 → 1.8 (반사 강화)
+      envMapIntensity: 1.8,
       reflectivity: 0.95,
       side: THREE.DoubleSide,
       ior: 1.5,
@@ -179,25 +175,26 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     whiteboardRef.current = board;
 
     // ============================================================
-    // 2. 금속 프레임 (고광택)
+    // 2. 얇은 금속 프레임 (현실적인 두께)
     // ============================================================
     const frameMaterial = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color(0.5, 0.5, 0.55),
-      roughness: 0.03, // ✅ 0.05 → 0.03 (더 반짝)
+      color: new THREE.Color(0.45, 0.45, 0.50),
+      roughness: 0.03,
       metalness: 0.98,
       envMap: hdriTexture || undefined,
-      envMapIntensity: 4.0, // ✅ 3.5 → 4.0
+      envMapIntensity: 4.0,
       clearcoat: 0.6,
       clearcoatRoughness: 0.03,
       reflectivity: 1.0,
       ior: 2.0,
     });
 
-    const frameThickness = 0.18;
-    const frameWidth = boardWidth + frameThickness * 2.5;
-    const frameHeight = boardHeight + frameThickness * 2.5;
-    const frameDepth = 0.35;
-    const frameZ = 0.06;
+    // ✅ 얇은 프레임 (0.18 → 0.06)
+    const frameThickness = 0.06;
+    const frameWidth = boardWidth + frameThickness * 2;
+    const frameHeight = boardHeight + frameThickness * 2;
+    const frameDepth = 0.12; // ✅ 얇게
+    const frameZ = 0.02; // ✅ 앞으로 약간
 
     // 상단
     const topFrame = new THREE.Mesh(
@@ -234,36 +231,117 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     frameRef.current = topFrame;
 
     // ============================================================
-    // 3. 프레임 모서리 (둥근 볼트)
+    // 3. 분필 받침대 (트레이)
     // ============================================================
-    const cornerMaterial = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color(0.45, 0.45, 0.50),
-      roughness: 0.02,
-      metalness: 0.99,
+    const trayMaterial = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color(0.3, 0.3, 0.35),
+      roughness: 0.2,
+      metalness: 0.7,
       envMap: hdriTexture || undefined,
-      envMapIntensity: 5.0,
-      reflectivity: 1.0,
+      envMapIntensity: 2.0,
+      clearcoat: 0.2,
+      clearcoatRoughness: 0.2,
     });
 
-    const cornerPositions = [
-      [-frameWidth / 2, -frameHeight / 2],
-      [-frameWidth / 2, frameHeight / 2],
-      [frameWidth / 2, -frameHeight / 2],
-      [frameWidth / 2, frameHeight / 2],
+    const trayWidth = boardWidth * 0.7;
+    const trayHeight = 0.04;
+    const trayDepth = 0.12;
+    const trayY = -boardHeight / 2 - 0.08;
+
+    // 트레이 본체
+    const tray = new THREE.Mesh(
+      new THREE.BoxGeometry(trayWidth, trayHeight, trayDepth),
+      trayMaterial
+    );
+    tray.position.set(0, trayY, 0.04);
+    group.add(tray);
+
+    // 트레이 앞쪽 테두리 (살짝 올라간 부분)
+    const trayLipMaterial = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color(0.35, 0.35, 0.4),
+      roughness: 0.15,
+      metalness: 0.8,
+      envMap: hdriTexture || undefined,
+      envMapIntensity: 2.5,
+    });
+
+    const trayLip = new THREE.Mesh(
+      new THREE.BoxGeometry(trayWidth, 0.015, 0.015),
+      trayLipMaterial
+    );
+    trayLip.position.set(0, trayY + 0.025, 0.1);
+    group.add(trayLip);
+
+    // ============================================================
+    // 4. 분필 (Chalk)
+    // ============================================================
+    const chalkMaterial = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color(0.95, 0.92, 0.85),
+      roughness: 0.9,
+      metalness: 0.0,
+      clearcoat: 0.0,
+    });
+
+    const chalkColors = [
+      new THREE.Color(0.95, 0.92, 0.85), // 흰색
+      new THREE.Color(0.9, 0.7, 0.7),    // 분홍
+      new THREE.Color(0.7, 0.8, 0.9),    // 하늘
+      new THREE.Color(0.8, 0.9, 0.7),    // 연두
+      new THREE.Color(0.9, 0.8, 0.6),    // 노랑
     ];
 
-    cornerPositions.forEach(([x, y]) => {
-      const corner = new THREE.Mesh(
-        new THREE.CylinderGeometry(frameThickness * 0.9, frameThickness * 0.9, frameDepth * 1.2, 16),
-        cornerMaterial
+    const chalkPositions = [
+      { x: -0.8, rot: 0.1 },
+      { x: -0.5, rot: -0.15 },
+      { x: -0.2, rot: 0.05 },
+      { x: 0.1, rot: -0.08 },
+      { x: 0.4, rot: 0.12 },
+    ];
+
+    chalkPositions.forEach((pos, i) => {
+      const chalk = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.015, 0.018, 0.08, 8),
+        chalkMaterial.clone()
       );
-      corner.position.set(x, y, frameZ);
-      corner.rotation.x = Math.PI / 2;
-      group.add(corner);
+      chalk.material.color = chalkColors[i % chalkColors.length];
+      chalk.position.set(pos.x, trayY + 0.04, 0.04);
+      chalk.rotation.x = 0.2 + pos.rot;
+      chalk.rotation.z = pos.rot * 0.5;
+      group.add(chalk);
     });
 
     // ============================================================
-    // 4. 뒷면 프레임
+    // 5. 지우개 (Eraser)
+    // ============================================================
+    const eraserMaterial = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color(0.2, 0.2, 0.25),
+      roughness: 0.8,
+      metalness: 0.0,
+    });
+
+    const eraser = new THREE.Mesh(
+      new THREE.BoxGeometry(0.12, 0.025, 0.06),
+      eraserMaterial
+    );
+    eraser.position.set(0.7, trayY + 0.025, 0.04);
+    group.add(eraser);
+
+    // 지우개 흰색 부분 (지우개 면)
+    const eraserTipMaterial = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color(0.9, 0.85, 0.8),
+      roughness: 0.95,
+      metalness: 0.0,
+    });
+
+    const eraserTip = new THREE.Mesh(
+      new THREE.BoxGeometry(0.1, 0.005, 0.05),
+      eraserTipMaterial
+    );
+    eraserTip.position.set(0.7, trayY + 0.04, 0.04);
+    group.add(eraserTip);
+
+    // ============================================================
+    // 6. 뒷면 프레임 (얇게)
     // ============================================================
     const backFrameMaterial = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color(0.4, 0.4, 0.45),
@@ -274,8 +352,8 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
       side: THREE.BackSide,
     });
 
-    const backFrameZ = -0.06;
-    const backDepth = frameDepth * 0.5;
+    const backFrameZ = -0.02;
+    const backDepth = 0.06;
 
     [
       { x: 0, y: frameHeight / 2, w: frameWidth, h: frameThickness },
@@ -292,7 +370,7 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     });
 
     // ============================================================
-    // 5. 조명
+    // 7. 조명
     // ============================================================
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
@@ -306,7 +384,7 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     scene.add(group);
 
     // ============================================================
-    // 6. 애니메이션
+    // 8. 애니메이션
     // ============================================================
     const animate = () => {
       animationRef.current = requestAnimationFrame(animate);
@@ -364,7 +442,11 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
       boardGeometry.dispose();
       boardMaterial.dispose();
       frameMaterial.dispose();
-      cornerMaterial.dispose();
+      trayMaterial.dispose();
+      trayLipMaterial.dispose();
+      chalkMaterial.dispose();
+      eraserMaterial.dispose();
+      eraserTipMaterial.dispose();
       backFrameMaterial.dispose();
       if (codeTexture) codeTexture.dispose();
       
