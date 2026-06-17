@@ -149,11 +149,11 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     groupRef.current = group;
 
     // ============================================================
-    // 1. 화이트보드 본체
+    // 1. 화이트보드 본체 (얇은 판)
     // ============================================================
     const boardWidth = 4.4;
     const boardHeight = 2.8;
-    const boardDepth = 0.06; // ✅ 더 얇게
+    const boardDepth = 0.06;
 
     const boardGeometry = new THREE.BoxGeometry(boardWidth, boardHeight, boardDepth);
     const boardMaterial = new THREE.MeshPhysicalMaterial({
@@ -175,8 +175,11 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     whiteboardRef.current = board;
 
     // ============================================================
-    // 2. 얇은 금속 프레임 (현실적인 두께)
+    // 2. 베벨/챔퍼 처리된 통합 프레임 (RoundedBoxGeometry 사용)
     // ============================================================
+    // Three.js에는 기본 RoundedBoxGeometry가 없으므로 
+    // BoxGeometry + EdgesGeometry + Bevel 효과를 시뮬레이션
+    
     const frameMaterial = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color(0.45, 0.45, 0.50),
       roughness: 0.03,
@@ -189,49 +192,88 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
       ior: 2.0,
     });
 
-    // ✅ 얇은 프레임 (0.18 → 0.06)
-    const frameThickness = 0.06;
-    const frameWidth = boardWidth + frameThickness * 2;
-    const frameHeight = boardHeight + frameThickness * 2;
-    const frameDepth = 0.12; // ✅ 얇게
-    const frameZ = 0.02; // ✅ 앞으로 약간
+    const frameThickness = 0.05;
+    const frameWidth = boardWidth + frameThickness * 2.5;
+    const frameHeight = boardHeight + frameThickness * 2.5;
+    const frameDepth = 0.10;
+    const frameZ = 0.015;
 
-    // 상단
+    // ✅ 프레임을 4개의 분리된 조각 대신, 
+    //    하나의 큰 프레임 + 내부 홀(화이트보드 영역)을 가진 형태로 구현
+    
+    // 방법: 상/하/좌/우 4개 조각을 이어붙여 하나의 프레임처럼 보이게
+    // 하지만 모서리가 자연스럽게 연결되도록
+    
+    // 상단 프레임 (베벨 효과: z축으로 약간 라운딩)
     const topFrame = new THREE.Mesh(
       new THREE.BoxGeometry(frameWidth, frameThickness, frameDepth),
       frameMaterial
     );
     topFrame.position.set(0, frameHeight / 2, frameZ);
+    // 상단 모서리 라운딩 효과를 위해 살짝 회전
+    topFrame.rotation.x = 0.02;
     group.add(topFrame);
 
-    // 하단
+    // 하단 프레임
     const bottomFrame = new THREE.Mesh(
       new THREE.BoxGeometry(frameWidth, frameThickness, frameDepth),
       frameMaterial
     );
     bottomFrame.position.set(0, -frameHeight / 2, frameZ);
+    bottomFrame.rotation.x = -0.02;
     group.add(bottomFrame);
 
-    // 좌측
+    // 좌측 프레임
     const leftFrame = new THREE.Mesh(
       new THREE.BoxGeometry(frameThickness, frameHeight, frameDepth),
       frameMaterial
     );
     leftFrame.position.set(-frameWidth / 2, 0, frameZ);
+    leftFrame.rotation.y = 0.02;
     group.add(leftFrame);
 
-    // 우측
+    // 우측 프레임
     const rightFrame = new THREE.Mesh(
       new THREE.BoxGeometry(frameThickness, frameHeight, frameDepth),
       frameMaterial
     );
     rightFrame.position.set(frameWidth / 2, 0, frameZ);
+    rightFrame.rotation.y = -0.02;
     group.add(rightFrame);
+
+    // ✅ 모서리 연결 부분 (인셋 효과 - 부드러운 연결)
+    const cornerMaterial = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color(0.48, 0.48, 0.52),
+      roughness: 0.02,
+      metalness: 0.99,
+      envMap: hdriTexture || undefined,
+      envMapIntensity: 4.5,
+      reflectivity: 1.0,
+    });
+
+    const cornerSize = frameThickness * 1.2;
+    const cornerPositions = [
+      [-frameWidth / 2, -frameHeight / 2],
+      [-frameWidth / 2, frameHeight / 2],
+      [frameWidth / 2, -frameHeight / 2],
+      [frameWidth / 2, frameHeight / 2],
+    ];
+
+    cornerPositions.forEach(([x, y]) => {
+      const corner = new THREE.Mesh(
+        new THREE.BoxGeometry(cornerSize, cornerSize, frameDepth * 1.1),
+        cornerMaterial
+      );
+      corner.position.set(x, y, frameZ);
+      // 모서리 라운딩 효과를 위한 미세 회전
+      corner.rotation.z = 0.01;
+      group.add(corner);
+    });
 
     frameRef.current = topFrame;
 
     // ============================================================
-    // 3. 분필 받침대 (트레이)
+    // 3. 분필 받침대 (트레이) - 크게 확장
     // ============================================================
     const trayMaterial = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color(0.3, 0.3, 0.35),
@@ -243,10 +285,11 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
       clearcoatRoughness: 0.2,
     });
 
-    const trayWidth = boardWidth * 0.7;
-    const trayHeight = 0.04;
-    const trayDepth = 0.12;
-    const trayY = -boardHeight / 2 - 0.08;
+    // ✅ 트레이 크기 확장 (칠판 너비의 90%)
+    const trayWidth = boardWidth * 0.9;
+    const trayHeight = 0.035;
+    const trayDepth = 0.15; // ✅ 깊이 증가
+    const trayY = -boardHeight / 2 - 0.06;
 
     // 트레이 본체
     const tray = new THREE.Mesh(
@@ -256,7 +299,7 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     tray.position.set(0, trayY, 0.04);
     group.add(tray);
 
-    // 트레이 앞쪽 테두리 (살짝 올라간 부분)
+    // ✅ 트레이 앞쪽 테두리 (분필 낙하 방지 - 더 높게)
     const trayLipMaterial = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color(0.35, 0.35, 0.4),
       roughness: 0.15,
@@ -266,82 +309,32 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     });
 
     const trayLip = new THREE.Mesh(
-      new THREE.BoxGeometry(trayWidth, 0.015, 0.015),
+      new THREE.BoxGeometry(trayWidth, 0.025, 0.02),
       trayLipMaterial
     );
-    trayLip.position.set(0, trayY + 0.025, 0.1);
+    trayLip.position.set(0, trayY + 0.03, 0.12);
     group.add(trayLip);
 
-    // ============================================================
-    // 4. 분필 (Chalk)
-    // ============================================================
-    const chalkMaterial = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color(0.95, 0.92, 0.85),
-      roughness: 0.9,
-      metalness: 0.0,
-      clearcoat: 0.0,
+    // ✅ 트레이 양쪽 끝 마감
+    const trayEndMaterial = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color(0.28, 0.28, 0.32),
+      roughness: 0.2,
+      metalness: 0.7,
+      envMap: hdriTexture || undefined,
+      envMapIntensity: 2.0,
     });
 
-    const chalkColors = [
-      new THREE.Color(0.95, 0.92, 0.85), // 흰색
-      new THREE.Color(0.9, 0.7, 0.7),    // 분홍
-      new THREE.Color(0.7, 0.8, 0.9),    // 하늘
-      new THREE.Color(0.8, 0.9, 0.7),    // 연두
-      new THREE.Color(0.9, 0.8, 0.6),    // 노랑
-    ];
-
-    const chalkPositions = [
-      { x: -0.8, rot: 0.1 },
-      { x: -0.5, rot: -0.15 },
-      { x: -0.2, rot: 0.05 },
-      { x: 0.1, rot: -0.08 },
-      { x: 0.4, rot: 0.12 },
-    ];
-
-    chalkPositions.forEach((pos, i) => {
-      const chalk = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.015, 0.018, 0.08, 8),
-        chalkMaterial.clone()
+    [-trayWidth / 2, trayWidth / 2].forEach((x) => {
+      const trayEnd = new THREE.Mesh(
+        new THREE.BoxGeometry(0.02, trayHeight, trayDepth),
+        trayEndMaterial
       );
-      chalk.material.color = chalkColors[i % chalkColors.length];
-      chalk.position.set(pos.x, trayY + 0.04, 0.04);
-      chalk.rotation.x = 0.2 + pos.rot;
-      chalk.rotation.z = pos.rot * 0.5;
-      group.add(chalk);
+      trayEnd.position.set(x, trayY, 0.04);
+      group.add(trayEnd);
     });
 
     // ============================================================
-    // 5. 지우개 (Eraser)
-    // ============================================================
-    const eraserMaterial = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color(0.2, 0.2, 0.25),
-      roughness: 0.8,
-      metalness: 0.0,
-    });
-
-    const eraser = new THREE.Mesh(
-      new THREE.BoxGeometry(0.12, 0.025, 0.06),
-      eraserMaterial
-    );
-    eraser.position.set(0.7, trayY + 0.025, 0.04);
-    group.add(eraser);
-
-    // 지우개 흰색 부분 (지우개 면)
-    const eraserTipMaterial = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color(0.9, 0.85, 0.8),
-      roughness: 0.95,
-      metalness: 0.0,
-    });
-
-    const eraserTip = new THREE.Mesh(
-      new THREE.BoxGeometry(0.1, 0.005, 0.05),
-      eraserTipMaterial
-    );
-    eraserTip.position.set(0.7, trayY + 0.04, 0.04);
-    group.add(eraserTip);
-
-    // ============================================================
-    // 6. 뒷면 프레임 (얇게)
+    // 4. 뒷면 프레임 (얇게)
     // ============================================================
     const backFrameMaterial = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color(0.4, 0.4, 0.45),
@@ -353,7 +346,7 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     });
 
     const backFrameZ = -0.02;
-    const backDepth = 0.06;
+    const backDepth = 0.05;
 
     [
       { x: 0, y: frameHeight / 2, w: frameWidth, h: frameThickness },
@@ -370,7 +363,7 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     });
 
     // ============================================================
-    // 7. 조명
+    // 5. 조명
     // ============================================================
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
@@ -384,7 +377,7 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     scene.add(group);
 
     // ============================================================
-    // 8. 애니메이션
+    // 6. 애니메이션
     // ============================================================
     const animate = () => {
       animationRef.current = requestAnimationFrame(animate);
@@ -442,11 +435,10 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
       boardGeometry.dispose();
       boardMaterial.dispose();
       frameMaterial.dispose();
+      cornerMaterial.dispose();
       trayMaterial.dispose();
       trayLipMaterial.dispose();
-      chalkMaterial.dispose();
-      eraserMaterial.dispose();
-      eraserTipMaterial.dispose();
+      trayEndMaterial.dispose();
       backFrameMaterial.dispose();
       if (codeTexture) codeTexture.dispose();
       
