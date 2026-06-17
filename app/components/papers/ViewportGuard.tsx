@@ -1,3 +1,4 @@
+// app/components/papers/ViewportGuard.tsx
 "use client";
 
 import React from "react";
@@ -26,9 +27,9 @@ export default function ViewportGuard({
 
         margin: "0 auto",
 
-        overflowX: "hidden",
-
-        overflowY: "auto",
+        //  overflow를 visible로 변경 - 스크롤바가 보이도록
+        overflowX: "visible",
+        overflowY: "visible",
 
         height: "100vh",
 

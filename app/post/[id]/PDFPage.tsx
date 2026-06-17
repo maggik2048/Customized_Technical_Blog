@@ -12,7 +12,7 @@ import { visualizationRegistry } from "@/lib/visualizationRegistry";
 
 import NotepageLines from "@/app/components/Markdown/Theme/NotepageLines";
 import MarkdownRendererCoordinator from "@/app/components/Markdown/Theme/MarkdownRendererCoordinator";
-import CodeBlock_white from "@/app/components/Markdown/Theme/CodeBlock_white"; // 🆕 변경
+import CodeBlock_white from "@/app/components/Markdown/Theme/CodeBlock_white";
 
 import MetadataPostalCode from "@/app/components/papers/MetadataPostalCode";
 import DiffVisualizer from "@/app/components/Markdown/processors/MarkdownPipeline/DiffVisualizer";
@@ -21,6 +21,7 @@ import GotoGitHubCorresponding from "./GotoGitHubCorresponding";
 import PDFPageHeader from "./PDFPageHeader";
 import GotoTheTop from "./GotoTheTop";
 import ScrollWithKeyboardArrow from "./ScrollWithKeyboardArrow";
+import PDFPageScrollBar from "./PDFPageScrollBar";
 
 import { useParsedPDFContent } from "./useParsedPDFContent";
 import DocContentBackgroundManager from "./DocContentBackgroundManager";
@@ -97,7 +98,6 @@ export default function PDFPage({
     };
   }, []);
 
-  // 🆕 CodeBlock_white 사용 (index 전달 가능)
   const CodeBlock = React.useMemo(
     () => CodeBlock_white,
     []
@@ -142,141 +142,150 @@ export default function PDFPage({
   }, [highlightEngine]);
 
   return (
-    <motion.div style={{ color: textColor }}>
-      <ScrollWithKeyboardArrow />
+    <>
+      {/* 🆕 스크롤바를 최상위에 배치 - 항상 표시 */}
+      <PDFPageScrollBar
+        isDark={isDark}
+        totalPages={localTotal}
+        currentPage={localIndex !== undefined ? localIndex + 1 : undefined}
+      />
+      
+      <motion.div style={{ color: textColor }}>
+        <ScrollWithKeyboardArrow />
 
-      <div>
-        <div style={pageStyle}>
-          {/* ADMIN ACTIONS */}
-          <div
-            style={{
-              position: "absolute",
-              top: 16,
-              right: 40,
-              zIndex: 9999,
-              pointerEvents: "auto",
-            }}
-          >
-            <PostAdminActions
-              postId={data.id}
-              category={data.category}
-            />
-          </div>
-
-          <div
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: isDark
-                ? "rgba(60,60,60,0.3)"
-                : "rgba(255,255,255,0.2)",
-              borderRadius: 12,
-              pointerEvents: "none",
-              zIndex: 0,
-            }}
-          />
-
-          {/* HEADER */}
-          <PDFPageHeader
-            data={data}
-            isDark={isDark}
-            headerImage={headerImage}
-            globalIndex={globalIndex}
-            localIndex={localIndex}
-            localTotal={localTotal}
-            headerHeight={HEADER_HEIGHT}
-          />
-
-          {/* CONTENT */}
-          <div
-            style={{
-              paddingTop: HEADER_HEIGHT - 36,
-              position: "relative",
-              zIndex: 1,
-            }}
-          >
-            {/* METADATA */}
-            <div style={{ 
-              position: "relative", 
-              zIndex: 9998,
-              transform: "translateY(60px)",
-              marginBottom: "10px",
-            }}>
-              <MetadataPostalCode data={data} isDark={isDark} />
+        <div>
+          <div style={pageStyle}>
+            {/* ADMIN ACTIONS */}
+            <div
+              style={{
+                position: "absolute",
+                top: 16,
+                right: 40,
+                zIndex: 9999,
+                pointerEvents: "auto",
+              }}
+            >
+              <PostAdminActions
+                postId={data.id}
+                category={data.category}
+              />
             </div>
-
-            <GotoGitHubCorresponding 
-              commitUrl={data?.commit_url}
-              hasProject={hasProject}
-            />
 
             <div
               style={{
-                float: "left",
-                width: 165,
-                height: 110,
+                position: "absolute",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                background: isDark
+                  ? "rgba(60,60,60,0.3)"
+                  : "rgba(255,255,255,0.2)",
+                borderRadius: 12,
                 pointerEvents: "none",
+                zIndex: 0,
               }}
             />
 
-            {/* MARKDOWN CONTENT */}
-            <DocContentBackgroundManager
-              parentPaddingLeft={64}
-              parentPaddingRight={64}
-              paddingTop={20}
-              paddingBottom={20}
-              backgroundSize="520px 520px"
+            {/* HEADER */}
+            <PDFPageHeader
+              data={data}
+              isDark={isDark}
+              headerImage={headerImage}
+              globalIndex={globalIndex}
+              localIndex={localIndex}
+              localTotal={localTotal}
+              headerHeight={HEADER_HEIGHT}
+            />
+
+            {/* CONTENT */}
+            <div
+              style={{
+                paddingTop: HEADER_HEIGHT - 36,
+                position: "relative",
+                zIndex: 1,
+              }}
             >
-              <div
-                ref={contentRef}
-                style={markdownWrapperStyle}
-                onMouseUp={handleMouseUp}
-              >
-                <NotepageLines>
-                  {parsedParts.map((item) => {
-                    if (item.kind === "viz") {
-                      const Component = item.Component;
-                      return (
-                        <div key={item.key}>
-                          <Component />
-                        </div>
-                      );
-                    }
-
-                    if (item.kind === "diff") {
-                      return (
-                        <DiffVisualizer
-                          key={item.key}
-                          raw={item.content}
-                        />
-                      );
-                    }
-
-                    return (
-                      <MemoMarkdownRendererCoordinator
-                        key={item.key}
-                        category={data?.category}
-                        markdownComponents={mdComponents}
-                        isDark={isDark}
-                        CodeBlock={CodeBlock}
-                      >
-                        {item.content}
-                      </MemoMarkdownRendererCoordinator>
-                    );
-                  })}
-                </NotepageLines>
+              {/* METADATA */}
+              <div style={{ 
+                position: "relative", 
+                zIndex: 9998,
+                transform: "translateY(60px)",
+                marginBottom: "10px",
+              }}>
+                <MetadataPostalCode data={data} isDark={isDark} />
               </div>
-            </DocContentBackgroundManager>
 
-            <div style={{ clear: "both" }} />
+              <GotoGitHubCorresponding 
+                commitUrl={data?.commit_url}
+                hasProject={hasProject}
+              />
 
-            <GotoTheTop isDark={isDark} />
+              <div
+                style={{
+                  float: "left",
+                  width: 165,
+                  height: 110,
+                  pointerEvents: "none",
+                }}
+              />
+
+              {/* MARKDOWN CONTENT */}
+              <DocContentBackgroundManager
+                parentPaddingLeft={64}
+                parentPaddingRight={64}
+                paddingTop={20}
+                paddingBottom={20}
+                backgroundSize="520px 520px"
+              >
+                <div
+                  ref={contentRef}
+                  style={markdownWrapperStyle}
+                  onMouseUp={handleMouseUp}
+                >
+                  <NotepageLines>
+                    {parsedParts.map((item) => {
+                      if (item.kind === "viz") {
+                        const Component = item.Component;
+                        return (
+                          <div key={item.key}>
+                            <Component />
+                          </div>
+                        );
+                      }
+
+                      if (item.kind === "diff") {
+                        return (
+                          <DiffVisualizer
+                            key={item.key}
+                            raw={item.content}
+                          />
+                        );
+                      }
+
+                      return (
+                        <MemoMarkdownRendererCoordinator
+                          key={item.key}
+                          category={data?.category}
+                          markdownComponents={mdComponents}
+                          isDark={isDark}
+                          CodeBlock={CodeBlock}
+                        >
+                          {item.content}
+                        </MemoMarkdownRendererCoordinator>
+                      );
+                    })}
+                  </NotepageLines>
+                </div>
+              </DocContentBackgroundManager>
+
+              <div style={{ clear: "both" }} />
+
+              <GotoTheTop isDark={isDark} />
+            </div>
           </div>
         </div>
-      </div>
-    </motion.div>
+      </motion.div>
+    </>
   );
 }

@@ -1,3 +1,4 @@
+// app/components/papers/StackedPostViewer.tsx
 "use client";
 
 import { motion } from "framer-motion";
@@ -52,7 +53,8 @@ const BASE_STYLE = {
   WebkitBackfaceVisibility:
     "hidden" as const,
 
-  overflow: "hidden",
+  // 🆕 overflow 제거 - 스크롤바가 보이도록
+  overflow: "visible" as const,
 };
 
 export default function StackedPostViewer({
@@ -85,29 +87,6 @@ export default function StackedPostViewer({
     []
   );
 
-  // =========================
-  // DEBUG
-  // =========================
-
-  console.log(
-    "STACKED VIEWER POSTS:",
-    posts.map((p) => ({
-      title: p.title,
-
-      global:
-        p.__globalIndex,
-
-      local:
-        p.__localIndex,
-
-      total:
-        p.__localTotal,
-
-      category:
-        p.category,
-    }))
-  );
-
   return (
     <>
       <ViewportGuard maxWidth="1400px">
@@ -134,6 +113,9 @@ export default function StackedPostViewer({
               "preserve-3d",
 
             perspective: 1800,
+
+            // 🆕 overflow visible로 변경
+            overflow: "visible" as const,
           }}
         >
           {/* LEFT */}
