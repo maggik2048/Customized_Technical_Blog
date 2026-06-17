@@ -94,6 +94,7 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
   const whiteboardRef = useRef<THREE.Mesh | null>(null);
   const frameRef = useRef<THREE.Mesh | null>(null);
   const frameCountRef = useRef<number>(0);
+  const isMountedRef = useRef<boolean>(true);
   
   const [viewportPosition, setViewportPosition] = useState(0);
 
@@ -113,7 +114,7 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     };
   }, [index]);
 
-  // ✅ 구문 강조가 적용된 코드 텍스처 생성
+  // ✅ 구문 강조가 적용된 코드 텍스처 생성 (동적 크기)
   const codeTexture = useMemo(() => {
     const codeText = String(children);
     
@@ -129,9 +130,56 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     const padding = 48;
     const maxLines = Math.min(lines.length, 30);
     
-    // ✅ 실제 내용에 맞게 캔버스 높이 계산
-    const canvasWidth = 1600;
-    const canvasHeight = Math.max(400, maxLines * lineHeight + padding * 2);
+    // ✅ 각 줄의 최대 길이 계산 (실제 텍스트 길이 기준)
+    let maxLineLength = 0;
+    const processedLines: string[] = [];
+    
+    try {
+      const codeToHighlight = lines.join("\n");
+      const grammar = Prism.languages[language] || Prism.languages.text;
+      const highlighted = Prism.highlight(codeToHighlight, grammar, language);
+      
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = `<pre>${highlighted}</pre>`;
+      const preElement = tempDiv.querySelector('pre');
+      
+      if (preElement) {
+        const rawLines = preElement.innerHTML.split('\n');
+        processedLines.push(...rawLines.filter(line => line.trim() !== ''));
+      } else {
+        processedLines.push(...lines);
+      }
+    } catch (error) {
+      console.warn('Syntax highlighting failed, using plain text:', error);
+      processedLines.push(...lines);
+    }
+
+    // ✅ 최대 줄 수 제한
+    if (processedLines.length > maxLines) {
+      processedLines.splice(maxLines);
+    }
+
+    // ✅ 각 줄의 실제 텍스트 길이 계산 (HTML 태그 제거)
+    processedLines.forEach(line => {
+      const cleanText = line.replace(/<[^>]*>/g, '');
+      const decodedText = decodeHtmlEntities(cleanText);
+      // 한글은 2배, 영문은 1배로 계산 (대략적인 폭 측정)
+      let length = 0;
+      for (const char of decodedText) {
+        length += char.charCodeAt(0) > 127 ? 1.8 : 1;
+      }
+      maxLineLength = Math.max(maxLineLength, length);
+    });
+
+    // ✅ 최소/최대 너비 설정 (황금비율 유지)
+    const minChars = 20; // 최소 20자
+    const maxChars = 120; // 최대 120자
+    const effectiveLength = Math.max(minChars, Math.min(maxChars, maxLineLength));
+    
+    // ✅ 캔버스 크기 계산 (내용에 맞게)
+    const charWidth = fontSize * 0.6;
+    const canvasWidth = Math.max(600, effectiveLength * charWidth + padding * 2);
+    const canvasHeight = Math.max(300, Math.min(processedLines.length, maxLines) * lineHeight + padding * 2 + 34);
 
     if (!codeCanvasRef.current) {
       codeCanvasRef.current = document.createElement("canvas");
@@ -151,41 +199,13 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-    // ✅ 구문 강조 적용 (빈 줄 제거된 상태로)
-    let highlightedLines: string[] = [];
-    
-    try {
-      const codeToHighlight = lines.join("\n");
-      const grammar = Prism.languages[language] || Prism.languages.text;
-      const highlighted = Prism.highlight(codeToHighlight, grammar, language);
-      
-      const tempDiv = document.createElement('div');
-      tempDiv.innerHTML = `<pre>${highlighted}</pre>`;
-      const preElement = tempDiv.querySelector('pre');
-      
-      if (preElement) {
-        const rawLines = preElement.innerHTML.split('\n');
-        highlightedLines = rawLines.filter(line => line.trim() !== '');
-      } else {
-        highlightedLines = lines;
-      }
-    } catch (error) {
-      console.warn('Syntax highlighting failed, using plain text:', error);
-      highlightedLines = lines;
-    }
-
-    // ✅ 최대 줄 수 제한
-    if (highlightedLines.length > maxLines) {
-      highlightedLines = highlightedLines.slice(0, maxLines);
-    }
-
     // ✅ 라인 번호 그리기
     ctx.textBaseline = "top";
     
-    // ✅ 최대 글자수 계산
-    const maxCharsPerLine = 80;
+    // ✅ 최대 글자수 계산 (실제 표시 가능한 글자수)
+    const maxDisplayChars = Math.floor((canvasWidth - padding * 2 - 40) / (fontSize * 0.6));
     
-    highlightedLines.forEach((line, i) => {
+    processedLines.forEach((line, i) => {
       if (i < maxLines) {
         const y = padding + i * lineHeight;
         
@@ -201,6 +221,7 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
           const spans = tempSpan.querySelectorAll('span');
           
           let currentX = 55;
+          
           if (spans.length > 0) {
             spans.forEach((span) => {
               const text = span.textContent || '';
@@ -212,8 +233,10 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
               const displayText = decodeHtmlEntities(text);
               
               // ✅ 텍스트 자르기
-              const truncated = displayText.length > maxCharsPerLine 
-                ? displayText.slice(0, maxCharsPerLine) + "…" 
+              const remainingSpace = canvasWidth - padding - currentX - 20;
+              const maxWidth = Math.min(displayText.length, Math.floor(remainingSpace / (fontSize * 0.6)));
+              const truncated = displayText.length > maxWidth && maxWidth > 0 
+                ? displayText.slice(0, Math.max(0, maxWidth - 1)) + "…" 
                 : displayText;
               
               ctx.fillText(truncated, currentX, y + 4);
@@ -223,8 +246,8 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
             const cleanText = decodeHtmlEntities(line.replace(/<[^>]*>/g, ''));
             ctx.fillStyle = "#e0e0e0";
             ctx.font = `bold ${fontSize}px "JetBrains Mono", "Fira Code", monospace`;
-            const truncated = cleanText.length > maxCharsPerLine 
-              ? cleanText.slice(0, maxCharsPerLine) + "…" 
+            const truncated = cleanText.length > maxDisplayChars 
+              ? cleanText.slice(0, maxDisplayChars - 1) + "…" 
               : cleanText;
             ctx.fillText(truncated, 55, y + 4);
           }
@@ -233,8 +256,8 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
           ctx.fillStyle = "#e0e0e0";
           ctx.font = `bold ${fontSize}px "JetBrains Mono", "Fira Code", monospace`;
           const cleanText = decodeHtmlEntities(line);
-          const truncated = cleanText.length > maxCharsPerLine 
-            ? cleanText.slice(0, maxCharsPerLine) + "…" 
+          const truncated = cleanText.length > maxDisplayChars 
+            ? cleanText.slice(0, maxDisplayChars - 1) + "…" 
             : cleanText;
           ctx.fillText(truncated, 55, y + 4);
         }
@@ -279,10 +302,10 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     }
 
     const texture = new THREE.CanvasTexture(canvas);
-    texture.anisotropy = 8;
-    texture.minFilter = THREE.LinearMipmapLinearFilter;
+    texture.anisotropy = 4;
+    texture.minFilter = THREE.LinearFilter;
     texture.magFilter = THREE.LinearFilter;
-    texture.generateMipmaps = true;
+    texture.generateMipmaps = false;
     codeTextureRef.current = texture;
     return texture;
   }, [children, language]);
@@ -292,8 +315,12 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
       if (child instanceof THREE.Mesh) {
         child.geometry?.dispose();
         if (Array.isArray(child.material)) {
-          child.material.forEach(m => m.dispose());
+          child.material.forEach(m => {
+            m.map = null;
+            m.dispose();
+          });
         } else if (child.material) {
+          child.material.map = null;
           child.material.dispose();
         }
       }
@@ -344,6 +371,8 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
   useEffect(() => {
     if (!canvasRef.current) return;
 
+    isMountedRef.current = true;
+
     const canvas = canvasRef.current;
     const width = canvas.clientWidth || 600;
     const height = canvas.clientHeight || 400;
@@ -361,25 +390,28 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
       canvas: canvas,
       alpha: true,
       antialias: true,
+      powerPreference: "high-performance",
     });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.2;
     renderer.setClearColor(0x000000, 0);
+    renderer.outputColorSpace = THREE.SRGBColorSpace;
     rendererRef.current = renderer;
 
     const group = new THREE.Group();
     groupRef.current = group;
 
-    // ✅ 종횡비 계산
+    // ✅ 종횡비 계산 (동적 크기)
     const textureWidth = codeTexture.image?.width || 1600;
     const textureHeight = codeTexture.image?.height || 400;
     const textureAspect = textureWidth / textureHeight;
     
-    // ✅ 보드 크기: 내용에 맞게 최적화 (높이를 기준으로 너비 계산)
-    const boardHeight = Math.min(3.0, Math.max(2.0, textureHeight / 200)); // 내용에 따라 높이 조정
-    const boardWidth = boardHeight * textureAspect * 0.82; // 비율 유지
+    // ✅ 보드 크기: 내용에 맞게 최적화 (황금비율 유지하면서 동적)
+    const baseHeight = 2.8;
+    const boardHeight = Math.min(3.5, Math.max(1.8, baseHeight * (textureHeight / 500)));
+    const boardWidth = boardHeight * textureAspect * 0.85;
     const boardDepth = 0.04;
 
     const boardGeometry = new THREE.BoxGeometry(boardWidth, boardHeight, boardDepth);
@@ -495,17 +527,15 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     scene.add(group);
 
     // 애니메이션
+    let animationId: number | null = null;
+    
     const animate = () => {
-      animationRef.current = requestAnimationFrame(animate);
+      if (!isMountedRef.current) return;
+      
+      animationId = requestAnimationFrame(animate);
       
       frameCountRef.current++;
       
-      if (process.env.NODE_ENV === 'development' && frameCountRef.current % 18000 === 0) {
-        if (rendererRef.current) {
-          rendererRef.current.renderLists?.dispose?.();
-        }
-      }
-
       if (groupRef.current && cameraRef.current) {
         const targetY = viewportPosition * -0.8;
         
@@ -525,22 +555,30 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
         );
       }
 
-      if (rendererRef.current && sceneRef.current && cameraRef.current) {
-        rendererRef.current.render(sceneRef.current, cameraRef.current);
+      if (rendererRef.current && sceneRef.current && cameraRef.current && isMountedRef.current) {
+        try {
+          rendererRef.current.render(sceneRef.current, cameraRef.current);
+        } catch (error) {
+          // 셰이더 에러 무시
+          if (process.env.NODE_ENV === 'development') {
+            console.debug('Render error:', error);
+          }
+        }
       }
     };
+    
     animate();
+    animationRef.current = animationId;
 
     const handleVisibilityChange = () => {
       if (document.hidden) {
-        if (rendererRef.current) {
-          rendererRef.current.setAnimationLoop(null);
+        if (animationRef.current) {
+          cancelAnimationFrame(animationRef.current);
+          animationRef.current = null;
         }
       } else {
-        if (rendererRef.current && sceneRef.current && cameraRef.current) {
-          rendererRef.current.setAnimationLoop(() => {
-            animate();
-          });
+        if (!animationRef.current && isMountedRef.current) {
+          animate();
         }
       }
     };
@@ -551,9 +589,13 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     return () => {
+      isMountedRef.current = false;
+      
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
+        animationRef.current = null;
       }
+      
       resizeObserver.disconnect();
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       
@@ -564,6 +606,7 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
       
       if (sceneRef.current) {
         disposeObject(sceneRef.current);
+        sceneRef.current = null;
       }
       
       if (codeTextureRef.current) {
@@ -571,7 +614,6 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
         codeTextureRef.current = null;
       }
       
-      sceneRef.current = null;
       cameraRef.current = null;
       groupRef.current = null;
       whiteboardRef.current = null;
