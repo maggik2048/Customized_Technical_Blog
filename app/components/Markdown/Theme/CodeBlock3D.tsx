@@ -25,7 +25,20 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
   // 🆕 각 블록의 뷰포트 상대 위치 ( -1 ~ 1 )
   const [viewportPosition, setViewportPosition] = useState(0);
   
-  const offsetRef = useRef(index * 0.7);
+  // 🆕 랜덤 위치/회전 값 (index 기반 + 랜덤 시드)
+  const randomOffset = useMemo(() => {
+    // index를 시드로 사용하여 일관된 랜덤 값 생성
+    const seed = index * 7.3;
+    return {
+      x: (Math.sin(seed) * 1.2 + Math.cos(seed * 0.7) * 0.8),
+      y: (Math.cos(seed * 1.3) * 0.8 + Math.sin(seed * 0.5) * 1.0),
+      z: (Math.sin(seed * 0.9) * 0.4 + Math.cos(seed * 1.7) * 0.3),
+      rotX: (Math.sin(seed * 2.1) * 0.15),
+      rotY: (Math.cos(seed * 1.7) * 0.15),
+      rotZ: (Math.sin(seed * 1.3) * 0.08),
+      scale: 0.85 + Math.sin(seed * 1.1) * 0.15,
+    };
+  }, [index]);
 
   // 코드를 Canvas Texture로 변환
   const codeTexture = useMemo(() => {
@@ -78,7 +91,7 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     return texture;
   }, [children]);
 
-  // 🆕 뷰포트 위치 추적 (각 블록의 DOM 위치 기준)
+  // 🆕 뷰포트 위치 추적 - 각 블록이 독립적으로 계산
   useEffect(() => {
     const updatePosition = () => {
       if (!containerRef.current) return;
@@ -99,7 +112,6 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", handleScroll, { passive: true });
     
-    // 초기값 설정
     updatePosition();
 
     return () => {
@@ -120,7 +132,7 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     const scene = new THREE.Scene();
     sceneRef.current = scene;
 
-    // Camera
+    // Camera - 각 블록마다 독립적인 카메라
     const camera = new THREE.PerspectiveCamera(30, width / height, 0.1, 30);
     camera.position.set(0, 0, 7);
     camera.lookAt(0, 0, 0);
@@ -194,27 +206,45 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     scene.add(wireframe);
     wireframeRef.current = wireframe;
 
-    // 🆕 애니메이션 (viewportPosition 사용)
+    // 🆕 랜덤 위치 적용 (초기 위치)
+    mesh.position.x = randomOffset.x * 0.3;
+    mesh.position.y = randomOffset.y * 0.3;
+    mesh.position.z = randomOffset.z * 0.2;
+    mesh.rotation.x = randomOffset.rotX;
+    mesh.rotation.y = randomOffset.rotY;
+    mesh.rotation.z = randomOffset.rotZ;
+    mesh.scale.set(randomOffset.scale, randomOffset.scale, randomOffset.scale);
+
+    // 🆕 애니메이션 - viewportPosition + 랜덤 오프셋 결합
     const animate = () => {
       animationRef.current = requestAnimationFrame(animate);
       
       if (meshRef.current && cameraRef.current) {
-        // 🆕 viewportPosition으로 렌즈 위치 결정
-        // 위에 있을수록 렌즈가 위로 (음수 방향)
+        // 🆕 viewportPosition으로 렌즈 위치 결정 (각 블록 독립적)
         const targetY = viewportPosition * -0.8;
         
-        meshRef.current.position.y = targetY;
-        cameraRef.current.position.y = targetY * 0.4;
-        cameraRef.current.lookAt(0, targetY * 0.6, 0);
+        // 랜덤 오프셋 + viewport 반응
+        meshRef.current.position.x = randomOffset.x * 0.3 + Math.sin(Date.now() * 0.0003 + index) * 0.02;
+        meshRef.current.position.y = randomOffset.y * 0.3 + targetY * 0.2;
+        meshRef.current.position.z = randomOffset.z * 0.2 + Math.sin(Date.now() * 0.0004 + index * 0.5) * 0.01;
+        
+        // 카메라도 각 블록의 위치에 따라 독립적으로 반응
+        cameraRef.current.position.y = targetY * 0.3 + randomOffset.y * 0.1;
+        cameraRef.current.position.x = randomOffset.x * 0.1;
+        cameraRef.current.lookAt(
+          meshRef.current.position.x * 0.3,
+          meshRef.current.position.y * 0.5,
+          0
+        );
         
         // 미세한 브레스 효과
-        const breathe = Math.sin(Date.now() * 0.0005) * 0.002;
-        meshRef.current.position.z = breathe;
+        const breathe = Math.sin(Date.now() * 0.0005 + index * 0.7) * 0.002;
+        meshRef.current.position.z += breathe;
         
-        // 아주 느린 회전 (스크롤 위치에 따라 살짝 변화)
-        const rotationSpeed = 0.002 + (viewportPosition * 0.001);
+        // 아주 느린 회전 (각 블록마다 다른 속도)
+        const rotationSpeed = 0.002 + (viewportPosition * 0.001) + (index * 0.0003);
         meshRef.current.rotation.y += rotationSpeed;
-        meshRef.current.rotation.x = Math.sin(Date.now() * 0.0004) * 0.02 + viewportPosition * 0.02;
+        meshRef.current.rotation.x = Math.sin(Date.now() * 0.0004 + index * 0.3) * 0.02 + viewportPosition * 0.02;
       }
 
       if (rendererRef.current && sceneRef.current && cameraRef.current) {
@@ -270,7 +300,7 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
       meshRef.current = null;
       wireframeRef.current = null;
     };
-  }, [hdriTexture, codeTexture, viewportPosition]); // 🆕 viewportPosition 의존성 추가
+  }, [hdriTexture, codeTexture, viewportPosition, randomOffset, index]);
 
   return (
     <div ref={containerRef} style={{ width: "100%", height: "100%", position: "relative" }}>
