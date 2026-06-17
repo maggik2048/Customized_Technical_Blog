@@ -4,7 +4,6 @@
 import React, { useRef, useEffect, useMemo, useState } from "react";
 import * as THREE from "three";
 import { useHDRI } from "./HDRIProvider";
-import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
 
 interface CodeBlock3DProps {
   children: string;
@@ -26,7 +25,6 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
   
   const [viewportPosition, setViewportPosition] = useState(0);
   
-  // 랜덤 오프셋
   const randomOffset = useMemo(() => {
     const seed = index * 7.3;
     return {
@@ -40,14 +38,14 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     };
   }, [index]);
 
-  // 코드를 Canvas Texture로 변환
+  // ✅ 고화질 코드 텍스처 생성 (해상도 2배 증가)
   const codeTexture = useMemo(() => {
     const lines = String(children).split("\n");
-    const lineHeight = 24;
-    const padding = 30;
+    const lineHeight = 28; // ✅ 24 → 28 (더 선명하게)
+    const padding = 40;    // ✅ 30 → 40
     const maxLines = Math.min(lines.length, 30);
-    const canvasHeight = Math.max(300, maxLines * lineHeight + padding * 2);
-    const canvasWidth = 800;
+    const canvasHeight = Math.max(400, maxLines * lineHeight + padding * 2); // ✅ 300 → 400
+    const canvasWidth = 1200; // ✅ 800 → 1200 (고해상도)
 
     const canvas = document.createElement("canvas");
     canvas.width = canvasWidth;
@@ -55,35 +53,45 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
 
     const ctx = canvas.getContext("2d")!;
     
-    ctx.fillStyle = "rgba(255, 255, 255, 0.92)";
+    // ✅ 더 선명한 배경
+    ctx.fillStyle = "rgba(255, 255, 255, 0.96)";
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-    ctx.fillStyle = "rgba(0, 0, 0, 0.25)";
-    ctx.font = "14px monospace";
+    // ✅ 더 선명한 줄 번호
+    ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+    ctx.font = "16px monospace"; // ✅ 14 → 16
+    ctx.textBaseline = "top";
     lines.forEach((line, i) => {
       if (i < maxLines) {
-        ctx.fillText(`${i + 1}`, 12, padding + i * lineHeight + 14);
+        ctx.fillText(`${i + 1}`, 16, padding + i * lineHeight + 4);
       }
     });
 
-    ctx.fillStyle = "rgba(20, 20, 20, 0.92)";
-    ctx.font = "15px monospace";
+    // ✅ 더 선명한 코드
+    ctx.fillStyle = "rgba(20, 20, 20, 0.95)";
+    ctx.font = "17px monospace"; // ✅ 15 → 17
+    ctx.textBaseline = "top";
     lines.forEach((line, i) => {
       if (i < maxLines) {
-        const truncated = line.length > 60 ? line.slice(0, 57) + "..." : line;
-        ctx.fillText(truncated, 45, padding + i * lineHeight + 14);
+        const truncated = line.length > 70 ? line.slice(0, 67) + "..." : line;
+        ctx.fillText(truncated, 55, padding + i * lineHeight + 4);
       }
     });
 
-    ctx.strokeStyle = "rgba(0, 0, 0, 0.05)";
-    ctx.lineWidth = 1;
+    // ✅ 더 선명한 구분선
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.06)";
+    ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.moveTo(35, 0);
-    ctx.lineTo(35, canvasHeight);
+    ctx.moveTo(45, 0);
+    ctx.lineTo(45, canvasHeight);
     ctx.stroke();
 
     const texture = new THREE.CanvasTexture(canvas);
     texture.needsUpdate = true;
+    texture.anisotropy = 8; // ✅ 텍스처 필터링 최대치
+    texture.minFilter = THREE.LinearMipmapLinearFilter;
+    texture.magFilter = THREE.LinearFilter;
+    texture.generateMipmaps = true;
     return texture;
   }, [children]);
 
@@ -120,18 +128,15 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     const width = canvas.clientWidth || 600;
     const height = canvas.clientHeight || 400;
 
-    // Scene
     const scene = new THREE.Scene();
     scene.background = null;
     sceneRef.current = scene;
 
-    // Camera
     const camera = new THREE.PerspectiveCamera(35, width / height, 0.1, 30);
     camera.position.set(3.5, 2.0, 5.5);
     camera.lookAt(0, 0, 0);
     cameraRef.current = camera;
 
-    // Renderer
     const renderer = new THREE.WebGLRenderer({
       canvas: canvas,
       alpha: true,
@@ -144,12 +149,11 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     renderer.setClearColor(0x000000, 0);
     rendererRef.current = renderer;
 
-    // Group
     const group = new THREE.Group();
     groupRef.current = group;
 
     // ============================================================
-    // 1. 화이트보드 (크롬 재질)
+    // 1. 화이트보드 (고화질 크롬 재질)
     // ============================================================
     const boardWidth = 4.4;
     const boardHeight = 2.8;
@@ -158,14 +162,14 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     const boardGeometry = new THREE.BoxGeometry(boardWidth, boardHeight, boardDepth);
     const boardMaterial = new THREE.MeshPhysicalMaterial({
       map: codeTexture,
-      color: new THREE.Color(0.92, 0.93, 0.95),
-      roughness: 0.1,
+      color: new THREE.Color(0.98, 0.98, 0.99),
+      roughness: 0.05, // ✅ 0.1 → 0.05 (더 매끄럽게)
       metalness: 0.9,
-      clearcoat: 0.3,
+      clearcoat: 0.5, // ✅ 0.3 → 0.5 (더 반짝)
       clearcoatRoughness: 0.1,
       envMap: hdriTexture || undefined,
-      envMapIntensity: 1.5,
-      reflectivity: 0.9,
+      envMapIntensity: 1.8, // ✅ 1.5 → 1.8 (반사 강화)
+      reflectivity: 0.95,
       side: THREE.DoubleSide,
       ior: 1.5,
     });
@@ -175,16 +179,16 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     whiteboardRef.current = board;
 
     // ============================================================
-    // 2. 금속 프레임 (두껍고 반짝)
+    // 2. 금속 프레임 (고광택)
     // ============================================================
     const frameMaterial = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color(0.5, 0.5, 0.55),
-      roughness: 0.05,
+      roughness: 0.03, // ✅ 0.05 → 0.03 (더 반짝)
       metalness: 0.98,
       envMap: hdriTexture || undefined,
-      envMapIntensity: 3.5,
-      clearcoat: 0.5,
-      clearcoatRoughness: 0.05,
+      envMapIntensity: 4.0, // ✅ 3.5 → 4.0
+      clearcoat: 0.6,
+      clearcoatRoughness: 0.03,
       reflectivity: 1.0,
       ior: 2.0,
     });
@@ -234,10 +238,10 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     // ============================================================
     const cornerMaterial = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color(0.45, 0.45, 0.50),
-      roughness: 0.03,
+      roughness: 0.02,
       metalness: 0.99,
       envMap: hdriTexture || undefined,
-      envMapIntensity: 4.0,
+      envMapIntensity: 5.0,
       reflectivity: 1.0,
     });
 
@@ -263,10 +267,10 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     // ============================================================
     const backFrameMaterial = new THREE.MeshPhysicalMaterial({
       color: new THREE.Color(0.4, 0.4, 0.45),
-      roughness: 0.1,
+      roughness: 0.08,
       metalness: 0.95,
       envMap: hdriTexture || undefined,
-      envMapIntensity: 2.0,
+      envMapIntensity: 2.5,
       side: THREE.BackSide,
     });
 
@@ -290,11 +294,14 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     // ============================================================
     // 5. 조명
     // ============================================================
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
-    const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
     dirLight.position.set(3, 4, 5);
     scene.add(dirLight);
+    const dirLight2 = new THREE.DirectionalLight(0x8888ff, 0.3);
+    dirLight2.position.set(-3, 2, -4);
+    scene.add(dirLight2);
 
     scene.add(group);
 
@@ -329,7 +336,6 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     };
     animate();
 
-    // 리사이즈
     const handleResize = () => {
       if (!canvasRef.current || !rendererRef.current || !cameraRef.current) return;
       const w = canvasRef.current.clientWidth;
@@ -355,7 +361,6 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
         rendererRef.current = null;
       }
       
-      // Cleanup geometries and materials
       boardGeometry.dispose();
       boardMaterial.dispose();
       frameMaterial.dispose();
