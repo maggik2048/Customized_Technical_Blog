@@ -293,8 +293,9 @@ export default function NotePageRenderer({
       h2: renderHeading(2),
       h3: renderHeading(3),
 
+      // ✅ p → div로 변경 (hydration 에러 해결)
       p: ({ children }: any) => (
-        <p
+        <div
           style={{
 
             fontFamily:
@@ -325,7 +326,7 @@ export default function NotePageRenderer({
           }}
         >
           {children}
-        </p>
+        </div>
       ),
 
       strong: ({ children }: any) => (
