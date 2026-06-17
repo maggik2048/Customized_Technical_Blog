@@ -1,5 +1,3 @@
-/* globals.css */
-
 @import url('https://fonts.googleapis.com/css2?family=Carattere&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;500;600;700&display=swap');
@@ -309,9 +307,6 @@ code {
    SIDEBAR END
 ========================= */
 
-
-
-
  /* =========================
    TEXT HIGHLIGHT (BRUSH STYLE)
 ========================= */
@@ -348,8 +343,6 @@ code {
   pointer-events: none;
 }
 
-
-
 @font-face {
   font-family: "ZenSerifKR";
 
@@ -360,3 +353,31 @@ code {
   font-style: normal;
   font-display: swap;
 }
+
+/* =========================
+   NANUM PEN FONT (로컬)
+========================= */
+
+@font-face {
+  font-family: "NanumPen";
+
+  src: url("/fonts/nanum-pen/NanumPen.otf")
+    format("opentype");
+
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* TTF 파일 사용시:
+@font-face {
+  font-family: "NanumPen";
+
+  src: url("/fonts/nanum-pen/NanumPen.ttf")
+    format("truetype");
+
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+*/

@@ -21,7 +21,7 @@ import TableRenderer from "./TableRenderer";
 import KaTeXPostProcessor from "./KaTeXPostProcessor";
 
 /* =========================
-   HANDWRITING FONTS
+   HANDWRITING FONTS (Google Fonts)
 ========================= */
 
 const titleFont = Caveat({
@@ -40,19 +40,7 @@ const bodyFont = Shadows_Into_Light({
 });
 
 /* =========================
-   LOCAL FONTS (Nanum Pen)
-========================= */
-
-// NanumPen 폰트를 로컬 파일에서 로드
-const nanumPenFont = {
-  fontFamily: "NanumPen",
-  src: `url("/fonts/nanum-pen/NanumPen.otf") format("opentype")`,
-  // 만약 ttf 파일이라면:
-  // src: `url("/fonts/nanum-pen/NanumPen.ttf") format("truetype")`,
-};
-
-/* =========================
-   BASE FONT (NanumPen 우선 사용)
+   BASE FONT (NanumPen 우선 사용 - globals.css에서 등록)
 ========================= */
 
 const handwritingFont = `
@@ -99,12 +87,10 @@ export default function NotePageRenderer({
 
   const gridSize = 34;
 
-  // 더 진한 파란색 라인
   const gridLineColor = isDark
-    ? "rgba(255,255,255,0.15)"     // 다크모드에서도 보이게
-    : "rgba(60, 100, 220, 0.45)";  // 더 진하게
+    ? "rgba(255,255,255,0.15)"
+    : "rgba(60, 100, 220, 0.45)";
 
-  // 크럼블 페이퍼 텍스처 경로
   const crumbledPaperPath = "/images/dossierBg/crumbledpapertex.jpg";
 
   const notebookStyle = {
@@ -128,9 +114,7 @@ export default function NotePageRenderer({
         0 12px 38px rgba(0,0,0,0.08)
       `,
 
-    // 📌 그리드가 텍스처 위에 오도록 순서 변경!
     backgroundImage: `
-      /* 1️⃣ 그리드 라인 (맨 위) */
       linear-gradient(
         ${gridLineColor} 1px,
         transparent 1px
@@ -140,7 +124,6 @@ export default function NotePageRenderer({
         ${gridLineColor} 1px,
         transparent 1px
       ),
-      /* 2️⃣ 크럼블 페이퍼 텍스처 (맨 아래) */
       url("${crumbledPaperPath}")
     `,
 
