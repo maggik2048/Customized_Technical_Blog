@@ -343,6 +343,10 @@ code {
   pointer-events: none;
 }
 
+/* =========================
+   ZEN SERIF KR FONT (로컬)
+========================= */
+
 @font-face {
   font-family: "ZenSerifKR";
 
@@ -375,6 +379,65 @@ code {
 
   src: url("/fonts/nanum-pen/NanumPen.ttf")
     format("truetype");
+
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+*/
+
+/* =========================
+   BM EULJIRO FONT (로컬)
+========================= */
+
+@font-face {
+  font-family: "BMEuljiro";
+
+  src: url("/fonts/bamin/BMEuljiro10yearslaterOTF.otf")
+    format("opentype");
+
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* TTF 파일 사용시 (OTF가 안 될 경우):
+@font-face {
+  font-family: "BMEuljiro";
+
+  src: url("/fonts/bamin/BMEuljiro10yearslater.ttf")
+    format("truetype");
+
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+*/
+
+
+
+
+/* =========================
+   BM KKUBULIM FONT (로컬)
+========================= */
+
+@font-face {
+  font-family: "BMKkubulim";
+
+  src: url("/fonts/bamin/BMKkubulimTTF.ttf")
+    format("truetype");
+
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* OTF 파일 사용시 (TTF가 안 될 경우):
+@font-face {
+  font-family: "BMKkubulim";
+
+  src: url("/fonts/bamin/BMKkubulim.otf")
+    format("opentype");
 
   font-weight: 400;
   font-style: normal;

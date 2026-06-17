@@ -97,8 +97,8 @@ export default function NotePageRenderer({
   const gridSize = 34;
 
   const gridLineColor = isDark
-    ? "rgba(255,255,255,0.15)"
-    : "rgba(60, 100, 220, 0.45)";
+    ? "rgba(255,255,255,0.10)"
+    : "rgba(60, 100, 220, 0.25)";
 
   const crumbledPaperPath = "/images/dossierBg/crumbledpapertex.jpg";
 
@@ -137,9 +137,9 @@ export default function NotePageRenderer({
     `,
 
     backgroundBlendMode: `
-      normal,
-      normal,
-      multiply
+      multiply,
+      multiply,
+      normal
     `,
 
     backgroundSize: `
@@ -178,14 +178,16 @@ export default function NotePageRenderer({
     width: 2,
 
     background: isDark
-      ? "rgba(255,120,120,0.25)"
-      : "rgba(255,70,70,0.30)",
+      ? "rgba(255,120,120,0.15)"
+      : "rgba(255,70,70,0.18)",
 
     pointerEvents: "none" as const,
+
+    mixBlendMode: "multiply" as const,
   };
 
   /* =========================
-     HEADINGS
+     HEADINGS (BMKkubulim 폰트 적용!)
   ========================= */
 
   const renderHeading =
@@ -193,9 +195,9 @@ export default function NotePageRenderer({
     ({ children }: any) => {
 
       const sizeMap: any = {
-        1: 46,
-        2: 32,
-        3: 24,
+        1: 52,
+        2: 38,
+        3: 28,
       };
 
       const rotateMap: any = {
@@ -204,33 +206,29 @@ export default function NotePageRenderer({
         3: "0.3deg",
       };
 
-      // 제목에도 그림자 적용
-      const headingTextShadow = `
-        0 1px 0 rgba(255,255,255,0.65),
-        0 2px 4px rgba(0,0,0,0.25)
-      `;
+      const headingTextShadow = isDark
+        ? "0 1px 0 rgba(255,255,255,0.15), 0 2px 4px rgba(0,0,0,0.5)"
+        : "0 1px 0 rgba(255,255,255,0.65), 0 2px 4px rgba(0,0,0,0.25)";
 
       return (
         <div
           style={{
             marginTop:
               level === 1
-                ? 28
-                : 18,
+                ? 32
+                : 22,
 
-            marginBottom: 10,
+            marginBottom: 12,
 
             transform:
               `rotate(${rotateMap[level]})`,
           }}
         >
           <span
-            className={
-              level === 1
-                ? titleFont.className
-                : headingFont.className
-            }
             style={{
+
+              // ✅ BMKkubulim 폰트 적용!
+              fontFamily: `"BMKkubulim", ${level === 1 ? titleFont.style.fontFamily : headingFont.style.fontFamily}`,
 
               color:
                 level === 1
@@ -245,12 +243,7 @@ export default function NotePageRenderer({
               letterSpacing:
                 "0.02em",
 
-              textShadow: headingTextShadow,  // ✅ 제목에도 그림자 적용
-
-              textShadow:
-                isDark
-                  ? "0 1px 0 rgba(255,255,255,0.15), 0 2px 4px rgba(0,0,0,0.5)"
-                  : "0 1px 0 rgba(255,255,255,0.65), 0 2px 4px rgba(0,0,0,0.25)",
+              textShadow: headingTextShadow,
             }}
           >
             {children}
@@ -309,12 +302,12 @@ export default function NotePageRenderer({
 
             color: inkColor,
 
-            fontSize: 23,
+            fontSize: 26,
 
-            lineHeight: 1.85,
+            lineHeight: 1.9,
 
             margin:
-              "10px 0",
+              "12px 0",
 
             transform:
               "rotate(-0.15deg)",
@@ -328,7 +321,7 @@ export default function NotePageRenderer({
             whiteSpace:
               "pre-wrap",
 
-            textShadow,  // ✅ 그림자 적용
+            textShadow,
           }}
         >
           {children}
@@ -347,7 +340,7 @@ export default function NotePageRenderer({
 
             fontWeight: 700,
 
-            textShadow,  // ✅ 그림자 적용
+            textShadow,
           }}
         >
           {children}
@@ -368,7 +361,7 @@ export default function NotePageRenderer({
             display:
               "inline-block",
 
-            textShadow,  // ✅ 그림자 적용
+            textShadow,
           }}
         >
           {children}
@@ -389,26 +382,26 @@ export default function NotePageRenderer({
 
             color: inkColor,
 
-            fontSize: 22,
+            fontSize: 25,
 
-            lineHeight: 1.8,
+            lineHeight: 1.9,
 
             margin:
-              "4px 0",
+              "6px 0",
 
             transform:
               "rotate(-0.2deg)",
 
-            textShadow,  // ✅ 그림자 적용
+            textShadow,
           }}
         >
           <span
             style={{
-              marginRight: 12,
+              marginRight: 14,
 
               opacity: 0.8,
 
-              textShadow,  // ✅ 아이콘에도 그림자 적용
+              textShadow,
             }}
           >
             ✎
@@ -428,7 +421,7 @@ export default function NotePageRenderer({
             padding: 0,
 
             margin:
-              "10px 0",
+              "12px 0",
           }}
         >
           {children}
@@ -443,7 +436,7 @@ export default function NotePageRenderer({
             padding: 0,
 
             margin:
-              "10px 0",
+              "12px 0",
           }}
         >
           {children}
@@ -457,10 +450,10 @@ export default function NotePageRenderer({
           style={{
 
             margin:
-              "18px 0",
+              "20px 0",
 
             padding:
-              "12px 18px",
+              "14px 20px",
 
             borderLeft:
               "4px solid rgba(120,120,120,0.2)",
@@ -475,7 +468,7 @@ export default function NotePageRenderer({
             transform:
               "rotate(-0.4deg)",
 
-            textShadow,  // ✅ 인용구에도 그림자 적용
+            textShadow,
           }}
         >
           {children}
