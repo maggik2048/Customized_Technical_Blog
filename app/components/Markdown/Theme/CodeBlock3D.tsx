@@ -4,6 +4,7 @@
 import React, { useRef, useEffect, useMemo, useState } from "react";
 import * as THREE from "three";
 import { useHDRI } from "./HDRIProvider";
+import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
 
 interface CodeBlock3DProps {
   children: string;
@@ -18,16 +19,15 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
-  const meshRef = useRef<THREE.Mesh | null>(null);
-  const wireframeRef = useRef<THREE.LineSegments | null>(null);
   const animationRef = useRef<number | null>(null);
+  const groupRef = useRef<THREE.Group | null>(null);
+  const whiteboardRef = useRef<THREE.Mesh | null>(null);
+  const frameRef = useRef<THREE.Mesh | null>(null);
   
-  // 🆕 각 블록의 뷰포트 상대 위치 ( -1 ~ 1 )
   const [viewportPosition, setViewportPosition] = useState(0);
   
-  // 🆕 랜덤 위치/회전 값 (index 기반 + 랜덤 시드)
+  // 랜덤 오프셋
   const randomOffset = useMemo(() => {
-    // index를 시드로 사용하여 일관된 랜덤 값 생성
     const seed = index * 7.3;
     return {
       x: (Math.sin(seed) * 1.2 + Math.cos(seed * 0.7) * 0.8),
@@ -55,11 +55,9 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
 
     const ctx = canvas.getContext("2d")!;
     
-    // 배경
     ctx.fillStyle = "rgba(255, 255, 255, 0.92)";
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-    // 줄 번호
     ctx.fillStyle = "rgba(0, 0, 0, 0.25)";
     ctx.font = "14px monospace";
     lines.forEach((line, i) => {
@@ -68,7 +66,6 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
       }
     });
 
-    // 코드
     ctx.fillStyle = "rgba(20, 20, 20, 0.92)";
     ctx.font = "15px monospace";
     lines.forEach((line, i) => {
@@ -78,7 +75,6 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
       }
     });
 
-    // 구분선
     ctx.strokeStyle = "rgba(0, 0, 0, 0.05)";
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -91,16 +87,13 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     return texture;
   }, [children]);
 
-  // 🆕 뷰포트 위치 추적 - 각 블록이 독립적으로 계산
+  // 뷰포트 위치 추적
   useEffect(() => {
     const updatePosition = () => {
       if (!containerRef.current) return;
-      
       const rect = containerRef.current.getBoundingClientRect();
       const center = rect.top + rect.height / 2;
       const viewportCenter = window.innerHeight / 2;
-      
-      // -1 (화면 아래) ~ 1 (화면 위)
       const normalized = (viewportCenter - center) / (window.innerHeight / 2);
       setViewportPosition(Math.max(-1, Math.min(1, normalized)));
     };
@@ -111,7 +104,6 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     window.addEventListener("resize", handleScroll, { passive: true });
-    
     updatePosition();
 
     return () => {
@@ -120,7 +112,7 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     };
   }, []);
 
-  // Three.js 씬 설정
+  // Three.js 씬 설정 (화이트보드 + 금속 프레임)
   useEffect(() => {
     if (!canvasRef.current) return;
 
@@ -130,11 +122,12 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
 
     // Scene
     const scene = new THREE.Scene();
+    scene.background = null;
     sceneRef.current = scene;
 
-    // Camera - 각 블록마다 독립적인 카메라
-    const camera = new THREE.PerspectiveCamera(30, width / height, 0.1, 30);
-    camera.position.set(0, 0, 7);
+    // Camera
+    const camera = new THREE.PerspectiveCamera(35, width / height, 0.1, 30);
+    camera.position.set(3.5, 2.0, 5.5);
     camera.lookAt(0, 0, 0);
     cameraRef.current = camera;
 
@@ -151,100 +144,183 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     renderer.setClearColor(0x000000, 0);
     rendererRef.current = renderer;
 
-    // 오목/볼록 평면
-    const geometry = new THREE.PlaneGeometry(4.0, 3.0, 64, 64);
-    const positions = geometry.attributes.position;
-    for (let i = 0; i < positions.count; i++) {
-      const x = positions.getX(i);
-      const y = positions.getY(i);
-      const u = x / 2.0;
-      const v = y / 1.5;
-      const distortion = 0.12;
-      const z = (u * u + v * v) * distortion;
-      positions.setZ(i, z);
-    }
-    geometry.computeVertexNormals();
+    // Group
+    const group = new THREE.Group();
+    groupRef.current = group;
 
-    // 크롬 재질
-    const material = new THREE.MeshPhysicalMaterial({
+    // ============================================================
+    // 1. 화이트보드 (크롬 재질)
+    // ============================================================
+    const boardWidth = 4.4;
+    const boardHeight = 2.8;
+    const boardDepth = 0.08;
+
+    const boardGeometry = new THREE.BoxGeometry(boardWidth, boardHeight, boardDepth);
+    const boardMaterial = new THREE.MeshPhysicalMaterial({
       map: codeTexture,
-      envMap: hdriTexture || undefined,
-      envMapIntensity: hdriTexture ? 2.0 : 0.5,
-      metalness: 0.95,
+      color: new THREE.Color(0.92, 0.93, 0.95),
       roughness: 0.1,
-      clearcoat: 0.4,
+      metalness: 0.9,
+      clearcoat: 0.3,
       clearcoatRoughness: 0.1,
-      reflectivity: 1.0,
-      transparent: true,
-      opacity: 0.93,
+      envMap: hdriTexture || undefined,
+      envMapIntensity: 1.5,
+      reflectivity: 0.9,
       side: THREE.DoubleSide,
-      ior: 2.5,
-      color: new THREE.Color(0.9, 0.92, 0.95),
-      emissive: new THREE.Color(0.03, 0.03, 0.04),
-      emissiveIntensity: 0.1,
+      ior: 1.5,
+    });
+    const board = new THREE.Mesh(boardGeometry, boardMaterial);
+    board.position.z = 0;
+    group.add(board);
+    whiteboardRef.current = board;
+
+    // ============================================================
+    // 2. 금속 프레임 (두껍고 반짝)
+    // ============================================================
+    const frameMaterial = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color(0.5, 0.5, 0.55),
+      roughness: 0.05,
+      metalness: 0.98,
+      envMap: hdriTexture || undefined,
+      envMapIntensity: 3.5,
+      clearcoat: 0.5,
+      clearcoatRoughness: 0.05,
+      reflectivity: 1.0,
+      ior: 2.0,
     });
 
-    const mesh = new THREE.Mesh(geometry, material);
-    scene.add(mesh);
-    meshRef.current = mesh;
+    const frameThickness = 0.18;
+    const frameWidth = boardWidth + frameThickness * 2.5;
+    const frameHeight = boardHeight + frameThickness * 2.5;
+    const frameDepth = 0.35;
+    const frameZ = 0.06;
 
-    // 조명
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+    // 상단
+    const topFrame = new THREE.Mesh(
+      new THREE.BoxGeometry(frameWidth, frameThickness, frameDepth),
+      frameMaterial
+    );
+    topFrame.position.set(0, frameHeight / 2, frameZ);
+    group.add(topFrame);
+
+    // 하단
+    const bottomFrame = new THREE.Mesh(
+      new THREE.BoxGeometry(frameWidth, frameThickness, frameDepth),
+      frameMaterial
+    );
+    bottomFrame.position.set(0, -frameHeight / 2, frameZ);
+    group.add(bottomFrame);
+
+    // 좌측
+    const leftFrame = new THREE.Mesh(
+      new THREE.BoxGeometry(frameThickness, frameHeight, frameDepth),
+      frameMaterial
+    );
+    leftFrame.position.set(-frameWidth / 2, 0, frameZ);
+    group.add(leftFrame);
+
+    // 우측
+    const rightFrame = new THREE.Mesh(
+      new THREE.BoxGeometry(frameThickness, frameHeight, frameDepth),
+      frameMaterial
+    );
+    rightFrame.position.set(frameWidth / 2, 0, frameZ);
+    group.add(rightFrame);
+
+    frameRef.current = topFrame;
+
+    // ============================================================
+    // 3. 프레임 모서리 (둥근 볼트)
+    // ============================================================
+    const cornerMaterial = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color(0.45, 0.45, 0.50),
+      roughness: 0.03,
+      metalness: 0.99,
+      envMap: hdriTexture || undefined,
+      envMapIntensity: 4.0,
+      reflectivity: 1.0,
+    });
+
+    const cornerPositions = [
+      [-frameWidth / 2, -frameHeight / 2],
+      [-frameWidth / 2, frameHeight / 2],
+      [frameWidth / 2, -frameHeight / 2],
+      [frameWidth / 2, frameHeight / 2],
+    ];
+
+    cornerPositions.forEach(([x, y]) => {
+      const corner = new THREE.Mesh(
+        new THREE.CylinderGeometry(frameThickness * 0.9, frameThickness * 0.9, frameDepth * 1.2, 16),
+        cornerMaterial
+      );
+      corner.position.set(x, y, frameZ);
+      corner.rotation.x = Math.PI / 2;
+      group.add(corner);
+    });
+
+    // ============================================================
+    // 4. 뒷면 프레임
+    // ============================================================
+    const backFrameMaterial = new THREE.MeshPhysicalMaterial({
+      color: new THREE.Color(0.4, 0.4, 0.45),
+      roughness: 0.1,
+      metalness: 0.95,
+      envMap: hdriTexture || undefined,
+      envMapIntensity: 2.0,
+      side: THREE.BackSide,
+    });
+
+    const backFrameZ = -0.06;
+    const backDepth = frameDepth * 0.5;
+
+    [
+      { x: 0, y: frameHeight / 2, w: frameWidth, h: frameThickness },
+      { x: 0, y: -frameHeight / 2, w: frameWidth, h: frameThickness },
+      { x: -frameWidth / 2, y: 0, w: frameThickness, h: frameHeight },
+      { x: frameWidth / 2, y: 0, w: frameThickness, h: frameHeight },
+    ].forEach(({ x, y, w, h }) => {
+      const backFrame = new THREE.Mesh(
+        new THREE.BoxGeometry(w, h, backDepth),
+        backFrameMaterial
+      );
+      backFrame.position.set(x, y, backFrameZ);
+      group.add(backFrame);
+    });
+
+    // ============================================================
+    // 5. 조명
+    // ============================================================
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
     scene.add(ambientLight);
-    const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
-    dirLight.position.set(2, 3, 4);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    dirLight.position.set(3, 4, 5);
     scene.add(dirLight);
 
-    // 테두리
-    const edges = new THREE.EdgesGeometry(geometry);
-    const lineMat = new THREE.LineBasicMaterial({
-      color: 0x8899aa,
-      transparent: true,
-      opacity: 0.15,
-    });
-    const wireframe = new THREE.LineSegments(edges, lineMat);
-    scene.add(wireframe);
-    wireframeRef.current = wireframe;
+    scene.add(group);
 
-    // 🆕 랜덤 위치 적용 (초기 위치)
-    mesh.position.x = randomOffset.x * 0.3;
-    mesh.position.y = randomOffset.y * 0.3;
-    mesh.position.z = randomOffset.z * 0.2;
-    mesh.rotation.x = randomOffset.rotX;
-    mesh.rotation.y = randomOffset.rotY;
-    mesh.rotation.z = randomOffset.rotZ;
-    mesh.scale.set(randomOffset.scale, randomOffset.scale, randomOffset.scale);
-
-    // 🆕 애니메이션 - viewportPosition + 랜덤 오프셋 결합
+    // ============================================================
+    // 6. 애니메이션
+    // ============================================================
     const animate = () => {
       animationRef.current = requestAnimationFrame(animate);
-      
-      if (meshRef.current && cameraRef.current) {
-        // 🆕 viewportPosition으로 렌즈 위치 결정 (각 블록 독립적)
+
+      if (groupRef.current && cameraRef.current) {
         const targetY = viewportPosition * -0.8;
         
-        // 랜덤 오프셋 + viewport 반응
-        meshRef.current.position.x = randomOffset.x * 0.3 + Math.sin(Date.now() * 0.0003 + index) * 0.02;
-        meshRef.current.position.y = randomOffset.y * 0.3 + targetY * 0.2;
-        meshRef.current.position.z = randomOffset.z * 0.2 + Math.sin(Date.now() * 0.0004 + index * 0.5) * 0.01;
+        groupRef.current.position.x = randomOffset.x * 0.3 + Math.sin(Date.now() * 0.0003 + index) * 0.02;
+        groupRef.current.position.y = randomOffset.y * 0.3 + targetY * 0.2;
+        groupRef.current.position.z = randomOffset.z * 0.2 + Math.sin(Date.now() * 0.0004 + index * 0.5) * 0.01;
         
-        // 카메라도 각 블록의 위치에 따라 독립적으로 반응
+        groupRef.current.rotation.y += 0.002 + (viewportPosition * 0.001) + (index * 0.0003);
+        groupRef.current.rotation.x = Math.sin(Date.now() * 0.0004 + index * 0.3) * 0.02 + viewportPosition * 0.02;
+        
         cameraRef.current.position.y = targetY * 0.3 + randomOffset.y * 0.1;
         cameraRef.current.position.x = randomOffset.x * 0.1;
         cameraRef.current.lookAt(
-          meshRef.current.position.x * 0.3,
-          meshRef.current.position.y * 0.5,
+          groupRef.current.position.x * 0.3,
+          groupRef.current.position.y * 0.5,
           0
         );
-        
-        // 미세한 브레스 효과
-        const breathe = Math.sin(Date.now() * 0.0005 + index * 0.7) * 0.002;
-        meshRef.current.position.z += breathe;
-        
-        // 아주 느린 회전 (각 블록마다 다른 속도)
-        const rotationSpeed = 0.002 + (viewportPosition * 0.001) + (index * 0.0003);
-        meshRef.current.rotation.y += rotationSpeed;
-        meshRef.current.rotation.x = Math.sin(Date.now() * 0.0004 + index * 0.3) * 0.02 + viewportPosition * 0.02;
       }
 
       if (rendererRef.current && sceneRef.current && cameraRef.current) {
@@ -279,26 +355,19 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
         rendererRef.current = null;
       }
       
-      if (geometry) {
-        geometry.dispose();
-      }
-      if (material) {
-        material.dispose();
-      }
-      if (codeTexture) {
-        codeTexture.dispose();
-      }
-      if (edges) {
-        edges.dispose();
-      }
-      if (lineMat) {
-        lineMat.dispose();
-      }
+      // Cleanup geometries and materials
+      boardGeometry.dispose();
+      boardMaterial.dispose();
+      frameMaterial.dispose();
+      cornerMaterial.dispose();
+      backFrameMaterial.dispose();
+      if (codeTexture) codeTexture.dispose();
       
       sceneRef.current = null;
       cameraRef.current = null;
-      meshRef.current = null;
-      wireframeRef.current = null;
+      groupRef.current = null;
+      whiteboardRef.current = null;
+      frameRef.current = null;
     };
   }, [hdriTexture, codeTexture, viewportPosition, randomOffset, index]);
 
