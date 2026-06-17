@@ -290,14 +290,15 @@ export default function PDFPage({
 
             {/* ============================================
                 MARKDOWN CONTENT WITH BACKGROUND MANAGER
-                ✅ backgroundImage prop 제거됨
-                ✅ 내부 기본값 사용
+                 backgroundImage prop 제거됨
+                 내부 기본값 사용
             ============================================ */}
             <DocContentBackgroundManager
               parentPaddingLeft={64}
               parentPaddingRight={64}
               paddingTop={20}
               paddingBottom={20}
+              backgroundSize="520px 520px"
             >
               <div
                 ref={contentRef}
