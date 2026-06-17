@@ -23,7 +23,8 @@ const CodeBlock_white_GLSLRenderer = forwardRef<GLSLRendererRef, GLSLRendererPro
     {
       width = "100%",
       height = "100%",
-      hdriUrl = "/environments/studio_small_09_2k.hdr",
+      // ✅ 4K HDR 파일로 기본 경로 변경
+      hdriUrl = "/environments/poly_haven_studio_4k.hdr",
       className = "",
       scrollSensitivity = 0.08,
     },
@@ -53,8 +54,8 @@ const CodeBlock_white_GLSLRenderer = forwardRef<GLSLRendererRef, GLSLRendererPro
       scene.background = null;
       sceneRef.current = scene;
 
-      const camera = new THREE.PerspectiveCamera(35, rect.width / rect.height, 0.1, 100);
-      camera.position.set(4.0, 2.0, 6.0);
+      const camera = new THREE.PerspectiveCamera(40, rect.width / rect.height, 0.1, 100);
+      camera.position.set(3.5, 1.8, 5.5);
       camera.lookAt(0, 0, 0);
       cameraRef.current = camera;
 
@@ -88,8 +89,10 @@ const CodeBlock_white_GLSLRenderer = forwardRef<GLSLRendererRef, GLSLRendererPro
           const loader = new RGBELoader();
           const texture = await loader.loadAsync(hdriUrl);
           texture.mapping = THREE.EquirectangularReflectionMapping;
+          
           scene.environment = texture;
           hdriTextureRef.current = texture;
+
           if (whiteboardRef.current || frameRef.current) {
             updateMaterials(texture);
           }
@@ -110,13 +113,13 @@ const CodeBlock_white_GLSLRenderer = forwardRef<GLSLRendererRef, GLSLRendererPro
         if (whiteboardRef.current) {
           const mat = whiteboardRef.current.material as THREE.MeshPhysicalMaterial;
           mat.envMap = envMap;
-          mat.envMapIntensity = 1.5;
+          mat.envMapIntensity = 0.4;
           mat.needsUpdate = true;
         }
         if (frameRef.current) {
           const mat = frameRef.current.material as THREE.MeshPhysicalMaterial;
           mat.envMap = envMap;
-          mat.envMapIntensity = 3.0;
+          mat.envMapIntensity = 1.8;
           mat.needsUpdate = true;
         }
         if (groupRef.current) {
@@ -137,23 +140,16 @@ const CodeBlock_white_GLSLRenderer = forwardRef<GLSLRendererRef, GLSLRendererPro
       const createModel = () => {
         const group = new THREE.Group();
 
-        // ============================================================
-        // 1. 화이트보드 (얇은 판) - 크롬 재질
-        // ============================================================
-        const boardWidth = 4.4;
-        const boardHeight = 2.8;
-        const boardDepth = 0.08;
-
-        const boardGeometry = new THREE.BoxGeometry(boardWidth, boardHeight, boardDepth);
+        const boardGeometry = new THREE.BoxGeometry(4.6, 3.0, 0.25);
         const boardMaterial = new THREE.MeshPhysicalMaterial({
-          color: new THREE.Color(0.92, 0.93, 0.95),
-          roughness: 0.1,
-          metalness: 0.9,
+          color: new THREE.Color(0.95, 0.95, 0.97),
+          roughness: 0.15,
+          metalness: 0.85,
           clearcoat: 0.3,
-          clearcoatRoughness: 0.1,
+          clearcoatRoughness: 0.2,
           envMap: hdriTextureRef.current || undefined,
-          envMapIntensity: 1.5,
-          reflectivity: 0.9,
+          envMapIntensity: 1.2,
+          reflectivity: 0.8,
           side: THREE.DoubleSide,
           ior: 1.5,
         });
@@ -162,70 +158,57 @@ const CodeBlock_white_GLSLRenderer = forwardRef<GLSLRendererRef, GLSLRendererPro
         group.add(board);
         whiteboardRef.current = board;
 
-        // ============================================================
-        // 2. 금속 프레임 - 두껍고 화이트보드보다 살짝 앞으로
-        // ============================================================
         const frameMaterial = new THREE.MeshPhysicalMaterial({
-          color: new THREE.Color(0.5, 0.5, 0.55),
-          roughness: 0.05,
+          color: new THREE.Color(0.45, 0.45, 0.50),
+          roughness: 0.15,
           metalness: 0.98,
           envMap: hdriTextureRef.current || undefined,
-          envMapIntensity: 3.5,
-          clearcoat: 0.5,
-          clearcoatRoughness: 0.05,
+          envMapIntensity: 2.5,
+          clearcoat: 0.4,
+          clearcoatRoughness: 0.1,
           reflectivity: 1.0,
           ior: 2.0,
         });
 
-        const frameThickness = 0.18;
-        const frameWidth = boardWidth + frameThickness * 2.5;
-        const frameHeight = boardHeight + frameThickness * 2.5;
+        const frameThickness = 0.08;
+        const frameWidth = 4.6 + frameThickness * 2;
+        const frameHeight = 3.0 + frameThickness * 2;
         const frameDepth = 0.35;
 
-        // ✅ 프레임을 화이트보드보다 앞으로 (z=0.06)
-        const frameZ = 0.06;
-
-        // 상단 프레임
         const topFrame = new THREE.Mesh(
           new THREE.BoxGeometry(frameWidth, frameThickness, frameDepth),
           frameMaterial
         );
-        topFrame.position.set(0, frameHeight / 2, frameZ);
+        topFrame.position.set(0, frameHeight / 2, 0);
         group.add(topFrame);
 
-        // 하단 프레임
         const bottomFrame = new THREE.Mesh(
           new THREE.BoxGeometry(frameWidth, frameThickness, frameDepth),
           frameMaterial
         );
-        bottomFrame.position.set(0, -frameHeight / 2, frameZ);
+        bottomFrame.position.set(0, -frameHeight / 2, 0);
         group.add(bottomFrame);
 
-        // 좌측 프레임
         const leftFrame = new THREE.Mesh(
           new THREE.BoxGeometry(frameThickness, frameHeight, frameDepth),
           frameMaterial
         );
-        leftFrame.position.set(-frameWidth / 2, 0, frameZ);
+        leftFrame.position.set(-frameWidth / 2, 0, 0);
         group.add(leftFrame);
 
-        // 우측 프레임
         const rightFrame = new THREE.Mesh(
           new THREE.BoxGeometry(frameThickness, frameHeight, frameDepth),
           frameMaterial
         );
-        rightFrame.position.set(frameWidth / 2, 0, frameZ);
+        rightFrame.position.set(frameWidth / 2, 0, 0);
         group.add(rightFrame);
 
-        // ============================================================
-        // 3. 프레임 모서리 - 둥근 볼트 느낌
-        // ============================================================
         const cornerMaterial = new THREE.MeshPhysicalMaterial({
-          color: new THREE.Color(0.45, 0.45, 0.50),
-          roughness: 0.03,
+          color: new THREE.Color(0.4, 0.4, 0.45),
+          roughness: 0.1,
           metalness: 0.99,
           envMap: hdriTextureRef.current || undefined,
-          envMapIntensity: 4.0,
+          envMapIntensity: 3.0,
           reflectivity: 1.0,
         });
 
@@ -238,85 +221,17 @@ const CodeBlock_white_GLSLRenderer = forwardRef<GLSLRendererRef, GLSLRendererPro
 
         cornerPositions.forEach(([x, y]) => {
           const corner = new THREE.Mesh(
-            new THREE.CylinderGeometry(frameThickness * 0.9, frameThickness * 0.9, frameDepth * 1.2, 16),
+            new THREE.BoxGeometry(frameThickness * 1.5, frameThickness * 1.5, frameDepth * 1.2),
             cornerMaterial
           );
-          corner.position.set(x, y, frameZ);
-          corner.rotation.x = Math.PI / 2;
+          corner.position.set(x, y, 0);
           group.add(corner);
         });
 
-        // ============================================================
-        // 4. 프레임 뒷면 (뒤에서 볼 때도 프레임이 보이도록)
-        // ============================================================
-        const backFrameMaterial = new THREE.MeshPhysicalMaterial({
-          color: new THREE.Color(0.4, 0.4, 0.45),
-          roughness: 0.1,
-          metalness: 0.95,
-          envMap: hdriTextureRef.current || undefined,
-          envMapIntensity: 2.0,
-          side: THREE.BackSide,
-        });
-
-        // 뒷면 프레임 (앞면과 동일한 위치 but z-)
-        const backFrameZ = -0.06;
-        
-        const topBackFrame = new THREE.Mesh(
-          new THREE.BoxGeometry(frameWidth, frameThickness, frameDepth * 0.5),
-          backFrameMaterial
-        );
-        topBackFrame.position.set(0, frameHeight / 2, backFrameZ);
-        group.add(topBackFrame);
-
-        const bottomBackFrame = new THREE.Mesh(
-          new THREE.BoxGeometry(frameWidth, frameThickness, frameDepth * 0.5),
-          backFrameMaterial
-        );
-        bottomBackFrame.position.set(0, -frameHeight / 2, backFrameZ);
-        group.add(bottomBackFrame);
-
-        const leftBackFrame = new THREE.Mesh(
-          new THREE.BoxGeometry(frameThickness, frameHeight, frameDepth * 0.5),
-          backFrameMaterial
-        );
-        leftBackFrame.position.set(-frameWidth / 2, 0, backFrameZ);
-        group.add(leftBackFrame);
-
-        const rightBackFrame = new THREE.Mesh(
-          new THREE.BoxGeometry(frameThickness, frameHeight, frameDepth * 0.5),
-          backFrameMaterial
-        );
-        rightBackFrame.position.set(frameWidth / 2, 0, backFrameZ);
-        group.add(rightBackFrame);
-
-        // ============================================================
-        // 5. 화이트보드 가장자리 라이트 글로우
-        // ============================================================
-        const edgeMaterial = new THREE.MeshPhysicalMaterial({
-          color: new THREE.Color(0.4, 0.6, 1.0),
-          roughness: 0.1,
-          metalness: 0.8,
-          transparent: true,
-          opacity: 0.2,
-          emissive: new THREE.Color(0.2, 0.4, 0.9),
-          emissiveIntensity: 0.15,
-        });
-
-        // 얇은 엣지 라인
-        const edgePositions = [
-          { x: 0, y: boardHeight / 2 + 0.01, w: boardWidth, h: 0.01 },
-          { x: 0, y: -boardHeight / 2 - 0.01, w: boardWidth, h: 0.01 },
-          { x: boardWidth / 2 + 0.01, y: 0, w: 0.01, h: boardHeight },
-          { x: -boardWidth / 2 - 0.01, y: 0, w: 0.01, h: boardHeight },
-        ];
-
-        edgePositions.forEach(({ x, y, w, h }) => {
-          const edge = new THREE.Mesh(
-            new THREE.BoxGeometry(w, h, 0.02),
-            edgeMaterial
-          );
-          edge.position.set(x, y, 0.04);
-          group.add(edge);
+        group.children.forEach((child) => {
+          if (child !== board) {
+            child.position.z = 0.05;
+          }
         });
 
         scene.add(group);
@@ -337,13 +252,13 @@ const CodeBlock_white_GLSLRenderer = forwardRef<GLSLRendererRef, GLSLRendererPro
 
         if (cameraRef.current) {
           const scrollOffset = scrollPositionRef.current * scrollSensitivity;
-          const radius = 6.0;
-          const angleX = Math.sin(scrollOffset) * 0.25;
+          const radius = 5.5;
+          const angleX = Math.sin(scrollOffset) * 0.3;
           const angleY = Math.cos(scrollOffset * 0.7) * 0.15;
           
           cameraRef.current.position.x = Math.sin(angleX) * radius * 0.3;
-          cameraRef.current.position.y = 2.0 + Math.sin(angleY) * 0.5;
-          cameraRef.current.position.z = 6.0 + Math.cos(angleX) * 0.5;
+          cameraRef.current.position.y = 1.8 + Math.sin(angleY) * 0.5;
+          cameraRef.current.position.z = 5.5 + Math.cos(angleX) * 0.5;
           cameraRef.current.lookAt(0, 0, 0);
         }
 
@@ -445,12 +360,12 @@ const CodeBlock_white_GLSLRenderer = forwardRef<GLSLRendererRef, GLSLRendererPro
         }
         if (frameRef.current) {
           const mat = frameRef.current.material as THREE.MeshPhysicalMaterial;
-          mat.envMapIntensity = isHovered ? 4.5 : 3.5;
+          mat.envMapIntensity = isHovered ? 3.5 : 2.5;
           mat.needsUpdate = true;
         }
         if (whiteboardRef.current) {
           const mat = whiteboardRef.current.material as THREE.MeshPhysicalMaterial;
-          mat.envMapIntensity = isHovered ? 2.5 : 1.5;
+          mat.envMapIntensity = isHovered ? 1.8 : 1.2;
           mat.needsUpdate = true;
         }
       },

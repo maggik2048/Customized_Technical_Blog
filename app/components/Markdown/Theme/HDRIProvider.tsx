@@ -1,4 +1,4 @@
-// HDRIProvider.tsx 수정
+// HDRIProvider.tsx
 "use client";
 
 import React, { createContext, useContext, useEffect, useRef, useState } from "react";
@@ -22,13 +22,14 @@ export function HDRIProvider({ children }: { children: React.ReactNode }) {
     console.log("🔄 HDRIProvider: HDRI 로딩 시작...");
     
     const loader = new RGBELoader();
+    // ✅ 4K HDR 파일로 변경
     loader.load(
-      "/environments/studio_small_09_2k.hdr",
+      "/environments/poly_haven_studio_4k.hdr",
       (tex) => {
         tex.mapping = THREE.EquirectangularReflectionMapping;
         textureRef.current = tex;
         setTexture(tex);
-        console.log("✅ HDRIProvider: HDRI 로드 완료!");
+        console.log("✅ HDRIProvider: 4K HDRI 로드 완료!");
       },
       undefined,
       (error) => {
@@ -36,13 +37,12 @@ export function HDRIProvider({ children }: { children: React.ReactNode }) {
       }
     );
 
-    // ✅ 글로벌 스크롤 이벤트 리스너
     const handleScroll = () => {
       setScrollY(window.scrollY || window.pageYOffset || 0);
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll(); // 초기값 설정
+    handleScroll();
 
     return () => {
       if (textureRef.current) {
