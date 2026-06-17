@@ -13,7 +13,6 @@ import { syntaxTree } from "@codemirror/language";
 
 import TurndownService from "turndown";
 
-import { gfm } from "turndown-plugin-gfm";
 
 import MarkdownPreview from "./MarkdownPreview";
 
