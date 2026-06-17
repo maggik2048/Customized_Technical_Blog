@@ -3,12 +3,86 @@
 import React, { useRef, useEffect, useMemo, useState, useCallback } from "react";
 import * as THREE from "three";
 import { useHDRI } from "./HDRIProvider";
+import Prism from "prismjs";
+import "prismjs/themes/prism-tomorrow.css";
+
+// Prism 언어 임포트
+import "prismjs/components/prism-javascript";
+import "prismjs/components/prism-typescript";
+import "prismjs/components/prism-jsx";
+import "prismjs/components/prism-tsx";
+import "prismjs/components/prism-python";
+import "prismjs/components/prism-java";
+import "prismjs/components/prism-c";
+import "prismjs/components/prism-cpp";
+import "prismjs/components/prism-csharp";
+import "prismjs/components/prism-go";
+import "prismjs/components/prism-rust";
+import "prismjs/components/prism-sql";
+import "prismjs/components/prism-json";
+import "prismjs/components/prism-yaml";
+import "prismjs/components/prism-markdown";
+import "prismjs/components/prism-bash";
+import "prismjs/components/prism-docker";
+import "prismjs/components/prism-git";
 
 interface CodeBlock3DProps {
   children: string;
   language?: string;
   index?: number;
 }
+
+// ✅ 컬러 매핑 함수 (컴포넌트 외부로 이동)
+const getColorFromClassName = (className: string): string => {
+  const colors: Record<string, string> = {
+    'token comment': '#6a9955',
+    'token string': '#ce9178',
+    'token number': '#b5cea8',
+    'token keyword': '#c586c0',
+    'token function': '#dcdcaa',
+    'token variable': '#9cdcfe',
+    'token operator': '#d4d4d4',
+    'token punctuation': '#d4d4d4',
+    'token class-name': '#4ec9b0',
+    'token constant': '#4fc1ff',
+    'token boolean': '#569cd6',
+    'token builtin': '#4ec9b0',
+    'token property': '#9cdcfe',
+    'token tag': '#569cd6',
+    'token attr-value': '#ce9178',
+    'token attr-name': '#9cdcfe',
+    'token selector': '#d7ba7d',
+    'token important': '#c586c0',
+    'token deleted': '#f14c4c',
+    'token inserted': '#b5cea8',
+    'token regex': '#d16969',
+    'token atrule': '#c586c0',
+    'token url': '#ce9178',
+  };
+  
+  // 클래스명에서 색상 찾기
+  for (const [key, color] of Object.entries(colors)) {
+    if (className.includes(key)) {
+      return color;
+    }
+  }
+  
+  // 기본값
+  return '#d4d4d4';
+};
+
+// ✅ HTML 엔티티 디코딩 함수
+const decodeHtmlEntities = (text: string): string => {
+  const entities: Record<string, string> = {
+    '&lt;': '<',
+    '&gt;': '>',
+    '&amp;': '&',
+    '&quot;': '"',
+    '&#39;': "'",
+    '&apos;': "'",
+  };
+  return text.replace(/&[a-z]+;/g, (match) => entities[match] || match);
+};
 
 export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBlock3DProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -25,7 +99,6 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
   
   const [viewportPosition, setViewportPosition] = useState(0);
 
-  // ✅ 캔버스 재사용을 위한 ref
   const codeCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const codeTextureRef = useRef<THREE.CanvasTexture | null>(null);
   
@@ -42,16 +115,17 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     };
   }, [index]);
 
-  // ✅ 최적화된 코드 텍스처 생성 (캔버스 재사용)
+  // ✅ 구문 강조가 적용된 코드 텍스처 생성
   const codeTexture = useMemo(() => {
-    const lines = String(children).split("\n");
-    const lineHeight = 28;
-    const padding = 40;
-    const maxLines = Math.min(lines.length, 30);
-    const canvasHeight = Math.max(400, maxLines * lineHeight + padding * 2);
-    const canvasWidth = 1200;
+    const codeText = String(children);
+    const lines = codeText.split("\n");
+    const lineHeight = 34;
+    const padding = 44;
+    const fontSize = 20;
+    const maxLines = Math.min(lines.length, 25);
+    const canvasHeight = Math.max(420, maxLines * lineHeight + padding * 2);
+    const canvasWidth = 1400;
 
-    // ✅ 기존 캔버스 재사용
     if (!codeCanvasRef.current) {
       codeCanvasRef.current = document.createElement("canvas");
     }
@@ -62,36 +136,124 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
 
     const ctx = canvas.getContext("2d")!;
     
-    ctx.fillStyle = "rgba(255, 255, 255, 0.96)";
+    // ✅ 어두운 배경
+    const gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
+    gradient.addColorStop(0, "#1a1a2e");
+    gradient.addColorStop(0.5, "#16213e");
+    gradient.addColorStop(1, "#0f0f23");
+    ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-    ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
-    ctx.font = "16px monospace";
+    // ✅ 구문 강조 적용
+    let highlightedLines: string[] = [];
+    
+    try {
+      // Prism으로 구문 강조
+      const grammar = Prism.languages[language] || Prism.languages.text;
+      const highlighted = Prism.highlight(codeText, grammar, language);
+      
+      // HTML 태그를 라인별로 분리
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = `<pre>${highlighted}</pre>`;
+      const preElement = tempDiv.querySelector('pre');
+      
+      if (preElement) {
+        // 각 라인을 span으로 감싸서 처리
+        const rawLines = preElement.innerHTML.split('\n');
+        highlightedLines = rawLines.filter(line => line.trim() !== '');
+      } else {
+        // 폴백: 일반 텍스트
+        highlightedLines = codeText.split('\n');
+      }
+    } catch (error) {
+      // 폴백: 일반 텍스트
+      console.warn('Syntax highlighting failed, using plain text:', error);
+      highlightedLines = codeText.split('\n');
+    }
+
+    // ✅ 라인 번호 그리기
     ctx.textBaseline = "top";
-    lines.forEach((line, i) => {
+    
+    highlightedLines.forEach((line, i) => {
       if (i < maxLines) {
-        ctx.fillText(`${i + 1}`, 16, padding + i * lineHeight + 4);
+        const y = padding + i * lineHeight;
+        
+        // 라인 번호
+        ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
+        ctx.font = `${fontSize}px "JetBrains Mono", "Fira Code", monospace`;
+        ctx.fillText(`${i + 1}`, 20, y + 4);
+        
+        // ✅ HTML 태그를 파싱하여 컬러 텍스트 렌더링
+        if (line.includes('<span')) {
+          // HTML 태그가 있는 경우 (Prism 하이라이트)
+          const tempSpan = document.createElement('div');
+          tempSpan.innerHTML = line;
+          const spans = tempSpan.querySelectorAll('span');
+          
+          let currentX = 55;
+          if (spans.length > 0) {
+            spans.forEach((span) => {
+              const text = span.textContent || '';
+              const className = span.className || '';
+              // ✅ getColorFromClassName은 이제 외부에서 정의됨
+              const color = getColorFromClassName(className);
+              
+              ctx.fillStyle = color;
+              ctx.font = `bold ${fontSize}px "JetBrains Mono", "Fira Code", monospace`;
+              const displayText = decodeHtmlEntities(text);
+              ctx.fillText(displayText, currentX, y + 4);
+              currentX += ctx.measureText(displayText).width;
+            });
+          } else {
+            // 폴백
+            const cleanText = decodeHtmlEntities(line.replace(/<[^>]*>/g, ''));
+            ctx.fillStyle = "#e0e0e0";
+            ctx.font = `bold ${fontSize}px "JetBrains Mono", "Fira Code", monospace`;
+            ctx.fillText(cleanText, 55, y + 4);
+          }
+        } else {
+          // 일반 텍스트
+          ctx.fillStyle = "#e0e0e0";
+          ctx.font = `bold ${fontSize}px "JetBrains Mono", "Fira Code", monospace`;
+          const cleanText = decodeHtmlEntities(line);
+          const truncated = cleanText.length > 65 ? cleanText.slice(0, 62) + "..." : cleanText;
+          ctx.fillText(truncated, 55, y + 4);
+        }
       }
     });
 
-    ctx.fillStyle = "rgba(20, 20, 20, 0.95)";
-    ctx.font = "17px monospace";
-    ctx.textBaseline = "top";
-    lines.forEach((line, i) => {
-      if (i < maxLines) {
-        const truncated = line.length > 70 ? line.slice(0, 67) + "..." : line;
-        ctx.fillText(truncated, 55, padding + i * lineHeight + 4);
-      }
-    });
-
-    ctx.strokeStyle = "rgba(0, 0, 0, 0.06)";
-    ctx.lineWidth = 1.5;
+    // ✅ 구분선
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+    ctx.lineWidth = 2;
     ctx.beginPath();
-    ctx.moveTo(45, 0);
-    ctx.lineTo(45, canvasHeight);
+    ctx.moveTo(48, padding - 10);
+    ctx.lineTo(48, canvasHeight - padding + 10);
     ctx.stroke();
 
-    // ✅ 기존 텍스처 업데이트 또는 새로 생성
+    // ✅ 상단 타이틀 바
+    ctx.fillStyle = "rgba(255, 255, 255, 0.06)";
+    ctx.fillRect(0, 0, canvasWidth, 32);
+    
+    ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+    ctx.font = `13px "JetBrains Mono", monospace`;
+    ctx.textBaseline = "middle";
+    const langDisplay = language || "text";
+    ctx.fillText(langDisplay.toUpperCase(), 16, 16);
+
+    // ✅ 창 컨트롤 버튼
+    const dots = [
+      { x: canvasWidth - 80, color: "#ff5f56" },
+      { x: canvasWidth - 60, color: "#ffbd2e" },
+      { x: canvasWidth - 40, color: "#27c93f" },
+    ];
+    dots.forEach((dot) => {
+      ctx.beginPath();
+      ctx.arc(dot.x, 16, 6, 0, Math.PI * 2);
+      ctx.fillStyle = dot.color;
+      ctx.fill();
+    });
+
+    // ✅ 텍스처 생성 또는 업데이트
     if (codeTextureRef.current) {
       codeTextureRef.current.needsUpdate = true;
       return codeTextureRef.current;
@@ -104,9 +266,8 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     texture.generateMipmaps = true;
     codeTextureRef.current = texture;
     return texture;
-  }, [children]);
+  }, [children, language]);
 
-  // ✅ 메모리 정리 함수 (컴포넌트 레벨에서 정의)
   const disposeObject = useCallback((obj: THREE.Object3D) => {
     obj.traverse((child) => {
       if (child instanceof THREE.Mesh) {
@@ -120,7 +281,6 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     });
   }, []);
 
-  // ✅ 리사이즈 핸들러 (컴포넌트 레벨에서 정의)
   const handleResize = useCallback(() => {
     if (!canvasRef.current || !rendererRef.current || !cameraRef.current) return;
     const w = canvasRef.current.clientWidth;
@@ -132,7 +292,7 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     }
   }, []);
 
-  // 뷰포트 위치 추적 (최적화)
+  // 뷰포트 위치 추적
   useEffect(() => {
     let rafId: number | null = null;
     
@@ -194,21 +354,21 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     groupRef.current = group;
 
     // 화이트보드 본체
-    const boardWidth = 4.4;
-    const boardHeight = 2.8;
-    const boardDepth = 0.06;
+    const boardWidth = 4.6;
+    const boardHeight = 3.0;
+    const boardDepth = 0.04;
 
     const boardGeometry = new THREE.BoxGeometry(boardWidth, boardHeight, boardDepth);
     const boardMaterial = new THREE.MeshPhysicalMaterial({
       map: codeTexture,
       color: new THREE.Color(0.98, 0.98, 0.99),
-      roughness: 0.05,
-      metalness: 0.9,
-      clearcoat: 0.5,
-      clearcoatRoughness: 0.1,
+      roughness: 0.02,
+      metalness: 0.85,
+      clearcoat: 0.6,
+      clearcoatRoughness: 0.05,
       envMap: hdriTexture || undefined,
-      envMapIntensity: 1.8,
-      reflectivity: 0.95,
+      envMapIntensity: 2.0,
+      reflectivity: 0.9,
       side: THREE.DoubleSide,
       ior: 1.5,
     });
@@ -219,29 +379,29 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
 
     // 프레임
     const frameMaterial = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color(0.45, 0.45, 0.50),
-      roughness: 0.03,
+      color: new THREE.Color(0.4, 0.4, 0.48),
+      roughness: 0.02,
       metalness: 0.98,
       envMap: hdriTexture || undefined,
       envMapIntensity: 4.0,
-      clearcoat: 0.6,
-      clearcoatRoughness: 0.03,
+      clearcoat: 0.8,
+      clearcoatRoughness: 0.02,
       reflectivity: 1.0,
       ior: 2.0,
     });
 
-    const frameThickness = 0.05;
+    const frameThickness = 0.04;
     const frameWidth = boardWidth + frameThickness * 2.5;
     const frameHeight = boardHeight + frameThickness * 2.5;
-    const frameDepth = 0.10;
-    const frameZ = 0.015;
+    const frameDepth = 0.08;
+    const frameZ = 0.01;
 
     const topFrame = new THREE.Mesh(
       new THREE.BoxGeometry(frameWidth, frameThickness, frameDepth),
       frameMaterial
     );
     topFrame.position.set(0, frameHeight / 2, frameZ);
-    topFrame.rotation.x = 0.02;
+    topFrame.rotation.x = 0.01;
     group.add(topFrame);
 
     const bottomFrame = new THREE.Mesh(
@@ -249,7 +409,7 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
       frameMaterial
     );
     bottomFrame.position.set(0, -frameHeight / 2, frameZ);
-    bottomFrame.rotation.x = -0.02;
+    bottomFrame.rotation.x = -0.01;
     group.add(bottomFrame);
 
     const leftFrame = new THREE.Mesh(
@@ -257,7 +417,7 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
       frameMaterial
     );
     leftFrame.position.set(-frameWidth / 2, 0, frameZ);
-    leftFrame.rotation.y = 0.02;
+    leftFrame.rotation.y = 0.01;
     group.add(leftFrame);
 
     const rightFrame = new THREE.Mesh(
@@ -265,12 +425,13 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
       frameMaterial
     );
     rightFrame.position.set(frameWidth / 2, 0, frameZ);
-    rightFrame.rotation.y = -0.02;
+    rightFrame.rotation.y = -0.01;
     group.add(rightFrame);
 
+    // 모서리
     const cornerMaterial = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color(0.48, 0.48, 0.52),
-      roughness: 0.02,
+      color: new THREE.Color(0.45, 0.45, 0.5),
+      roughness: 0.01,
       metalness: 0.99,
       envMap: hdriTexture || undefined,
       envMapIntensity: 4.5,
@@ -291,86 +452,30 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
         cornerMaterial
       );
       corner.position.set(x, y, frameZ);
-      corner.rotation.z = 0.01;
+      corner.rotation.z = 0.005;
       group.add(corner);
     });
 
     frameRef.current = topFrame;
 
-    // 분필 받침대
-    const trayMaterial = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color(0.3, 0.3, 0.35),
-      roughness: 0.2,
-      metalness: 0.7,
-      envMap: hdriTexture || undefined,
-      envMapIntensity: 2.0,
-      clearcoat: 0.2,
-      clearcoatRoughness: 0.2,
-    });
-
-    const trayWidth = boardWidth * 0.9;
-    const trayHeight = 0.035;
-    const trayDepth = 0.15;
-    const trayY = -boardHeight / 2 - 0.06;
-
-    const tray = new THREE.Mesh(
-      new THREE.BoxGeometry(trayWidth, trayHeight, trayDepth),
-      trayMaterial
-    );
-    tray.position.set(0, trayY, 0.04);
-    group.add(tray);
-
-    const trayLipMaterial = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color(0.35, 0.35, 0.4),
-      roughness: 0.15,
-      metalness: 0.8,
-      envMap: hdriTexture || undefined,
-      envMapIntensity: 2.5,
-    });
-
-    const trayLip = new THREE.Mesh(
-      new THREE.BoxGeometry(trayWidth, 0.025, 0.02),
-      trayLipMaterial
-    );
-    trayLip.position.set(0, trayY + 0.03, 0.12);
-    group.add(trayLip);
-
-    const trayEndMaterial = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color(0.28, 0.28, 0.32),
-      roughness: 0.2,
-      metalness: 0.7,
-      envMap: hdriTexture || undefined,
-      envMapIntensity: 2.0,
-    });
-
-    [-trayWidth / 2, trayWidth / 2].forEach((x) => {
-      const trayEnd = new THREE.Mesh(
-        new THREE.BoxGeometry(0.02, trayHeight, trayDepth),
-        trayEndMaterial
-      );
-      trayEnd.position.set(x, trayY, 0.04);
-      group.add(trayEnd);
-    });
-
     // 조명
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1.0);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
     dirLight.position.set(3, 4, 5);
     scene.add(dirLight);
-    const dirLight2 = new THREE.DirectionalLight(0x8888ff, 0.3);
+    const dirLight2 = new THREE.DirectionalLight(0x8888ff, 0.4);
     dirLight2.position.set(-3, 2, -4);
     scene.add(dirLight2);
 
     scene.add(group);
 
-    // ✅ 최적화된 애니메이션 루프
+    // 애니메이션
     const animate = () => {
       animationRef.current = requestAnimationFrame(animate);
       
       frameCountRef.current++;
       
-      // ✅ 5분마다 GPU 메모리 정리 (개발 환경)
       if (process.env.NODE_ENV === 'development' && frameCountRef.current % 18000 === 0) {
         if (rendererRef.current) {
           rendererRef.current.renderLists?.dispose?.();
@@ -402,7 +507,6 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     };
     animate();
 
-    // ✅ 탭 가시성 변경 처리
     const handleVisibilityChange = () => {
       if (document.hidden) {
         if (rendererRef.current) {
@@ -438,7 +542,6 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
         disposeObject(sceneRef.current);
       }
       
-      // ✅ 텍스처 정리
       if (codeTextureRef.current) {
         codeTextureRef.current.dispose();
         codeTextureRef.current = null;
@@ -458,7 +561,7 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
         ref={canvasRef}
         className="w-full rounded-2xl"
         style={{
-          height: "320px",
+          height: "340px",
           display: "block",
           background: "transparent",
         }}
