@@ -42,15 +42,10 @@ const fontBody = Cormorant_SC({
   weight: ["500"],
 });
 
-
-
-
 const bodyFont = Libre_Baskerville({
   subsets: ["latin"],
   weight: ["400", "700"],
 });
-
-
 
 /* =========================
     BASE FONT (영문 가독성 + fallback)
@@ -60,6 +55,7 @@ const baseFontFamily =
   `${bodyFont.style.fontFamily},
    "ZenSerifKR",
    serif`;
+
 /* =========================
     COMPONENT
 ========================= */
@@ -207,48 +203,36 @@ export default function RemarkPageRenderer({
       h2: renderHeading(2),
       h3: renderHeading(3),
 
+      // ✅ p → div로 변경 (hydration 에러 해결)
       p: ({ children }: any) => (
-        <p
+        <div
           style={{
             fontFamily: baseFontFamily,
-
             fontSize: 20,
-
             lineHeight: 1.75,
-
             letterSpacing: "0.015em",
-
             margin: "6px 0",
-
             color: "#4a3110",
-
             textShadow,
-
             fontWeight: 600,
           }}
         >
           {children}
-        </p>
+        </div>
       ),
 
       li: ({ children }: any) => (
         <li
           style={{
             display: "flex",
-
             margin: "6px 0",
-
             fontFamily: baseFontFamily,
-
             lineHeight: 1.75,
-
             fontWeight: 600,
-
             fontSize: 19,
           }}
         >
           <span style={starMarker}>✦</span>
-
           <span
             style={{
               color: "#b48f46",
@@ -303,7 +287,6 @@ export default function RemarkPageRenderer({
   return (
     <>
       <KaTeXPostProcessor />
-
       <div
         style={{
           paddingTop: 68,

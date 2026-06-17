@@ -1,9 +1,8 @@
+// app/components/papers/PDFPage.tsx
 "use client";
 
 import React from "react";
-
 import "katex/dist/katex.min.css";
-
 import { motion } from "framer-motion";
 
 import { markdownComponents } from "@/lib/markdownComponents";
@@ -13,14 +12,12 @@ import { visualizationRegistry } from "@/lib/visualizationRegistry";
 
 import NotepageLines from "@/app/components/Markdown/Theme/NotepageLines";
 import MarkdownRendererCoordinator from "@/app/components/Markdown/Theme/MarkdownRendererCoordinator";
-import CodeBlockThemeCoordinator from "@/app/components/Markdown/Theme/CodeBlockThemeCoordinator";
+import CodeBlock_white from "@/app/components/Markdown/Theme/CodeBlock_white"; // 🆕 변경
 
 import MetadataPostalCode from "@/app/components/papers/MetadataPostalCode";
-
 import DiffVisualizer from "@/app/components/Markdown/processors/MarkdownPipeline/DiffVisualizer";
 
 import GotoGitHubCorresponding from "./GotoGitHubCorresponding";
-
 import PDFPageHeader from "./PDFPageHeader";
 import GotoTheTop from "./GotoTheTop";
 import ScrollWithKeyboardArrow from "./ScrollWithKeyboardArrow";
@@ -28,12 +25,7 @@ import ScrollWithKeyboardArrow from "./ScrollWithKeyboardArrow";
 import { useParsedPDFContent } from "./useParsedPDFContent";
 import DocContentBackgroundManager from "./DocContentBackgroundManager";
 
-/* =========================
-    HIGHLIGHT ENGINE
-========================= */
 import { TextSelectionEngine } from "@/app/components/Markdown/Theme/TextSelectionEngine";
-
-// Import PostAdminActions
 import PostAdminActions from "@/app/admin/PostAdminActions";
 
 type Props = {
@@ -45,8 +37,7 @@ type Props = {
   localTotal?: number;
 };
 
-const MemoMarkdownRendererCoordinator =
-  React.memo(MarkdownRendererCoordinator);
+const MemoMarkdownRendererCoordinator = React.memo(MarkdownRendererCoordinator);
 
 export default function PDFPage({
   data,
@@ -63,42 +54,13 @@ export default function PDFPage({
 
   const HEADER_HEIGHT = 560;
 
-  // ✅ SIMPLE CHECK - Does the post have projects?
   const hasProject = React.useMemo(() => {
-    // Check if project_slugs exists and is an array with at least one item
     const hasProjects = data?.project_slugs && 
                        Array.isArray(data.project_slugs) && 
                        data.project_slugs.length > 0;
-    
-    // Also check if commit_url exists (optional - you might want to show even without commit_url)
-    const hasCommitUrl = data?.commit_url && data.commit_url.trim() !== '';
-    
-    console.log("[PDF PAGE] hasProject check:", {
-      title: data?.title,
-      project_slugs: data?.project_slugs,
-      hasProjects: hasProjects,
-      commit_url: data?.commit_url,
-      hasCommitUrl: hasCommitUrl,
-      result: hasProjects // Return just the project check
-    });
-    
-    // Return true if post has projects (regardless of commit_url)
     return hasProjects;
-  }, [data?.project_slugs, data?.commit_url]);
+  }, [data?.project_slugs]);
 
-  // Debug log the full data
-  console.log("[PDF PAGE] Full data received:", {
-    id: data?.id,
-    title: data?.title,
-    category: data?.category,
-    category_slugs: data?.category_slugs,
-    project_slugs: data?.project_slugs,
-    tag_slugs: data?.tag_slugs,
-    commit_url: data?.commit_url,
-    hasProject: hasProject,
-  });
-
-  //  REMOVED background from pageStyle - now only container styling
   const pageStyle = React.useMemo(
     () => ({
       width: 860,
@@ -118,11 +80,6 @@ export default function PDFPage({
     [isDark]
   );
 
-  /**
-   * =========================
-   * MARKDOWN COMPONENTS
-   * =========================
-   */
   const mdComponents = React.useMemo(() => {
     return {
       ...markdownComponents,
@@ -140,8 +97,9 @@ export default function PDFPage({
     };
   }, []);
 
+  // 🆕 CodeBlock_white 사용 (index 전달 가능)
   const CodeBlock = React.useMemo(
-    () => CodeBlockThemeCoordinator,
+    () => CodeBlock_white,
     []
   );
 
@@ -150,21 +108,11 @@ export default function PDFPage({
     []
   );
 
-  /**
-   * =========================
-   * PARSED CONTENT
-   * =========================
-   */
   const parsedParts = useParsedPDFContent(
     data.content,
     getVizComponent
   );
 
-  /**
-   * =========================
-   * HIGHLIGHT ENGINE (FIXED)
-   * =========================
-   */
   const highlightEngine = React.useMemo(
     () => new TextSelectionEngine(),
     []
@@ -187,11 +135,6 @@ export default function PDFPage({
     [textColor]
   );
 
-  /**
-   * =========================
-   * SAFE HIGHLIGHT HANDLER
-   * =========================
-   */
   const handleMouseUp = React.useCallback(() => {
     requestAnimationFrame(() => {
       highlightEngine.applyHighlight();
@@ -204,9 +147,7 @@ export default function PDFPage({
 
       <div>
         <div style={pageStyle}>
-          {/* =========================
-              ADMIN ACTIONS - RENDERED OUTSIDE HEADER
-          ========================= */}
+          {/* ADMIN ACTIONS */}
           <div
             style={{
               position: "absolute",
@@ -257,25 +198,19 @@ export default function PDFPage({
               zIndex: 1,
             }}
           >
-            {/* =========================
-                METADATA POSTAL CODE - 원래 위치 그대로, z-index만 최상위로
-            ========================= */}
+            {/* METADATA */}
             <div style={{ 
               position: "relative", 
               zIndex: 9998,
-              transform: "translateY(60px)", // 필요에 따라 값 조정
-              marginBottom: "10px", // 아래 요소와의 간격 조정
+              transform: "translateY(60px)",
+              marginBottom: "10px",
             }}>
               <MetadataPostalCode data={data} isDark={isDark} />
             </div>
 
-            {/* =========================
-                GotoGitHubCorresponding - 항상 렌더링 (hasProject를 prop으로 전달)
-                ✅ FIX: 조건부 렌더링 제거, 항상 렌더링
-            ========================= */}
             <GotoGitHubCorresponding 
               commitUrl={data?.commit_url}
-              hasProject={hasProject}  // hasProject prop 전달
+              hasProject={hasProject}
             />
 
             <div
@@ -287,11 +222,7 @@ export default function PDFPage({
               }}
             />
 
-            {/* ============================================
-                MARKDOWN CONTENT WITH BACKGROUND MANAGER
-                 backgroundImage prop 제거됨
-                 내부 기본값 사용
-            ============================================ */}
+            {/* MARKDOWN CONTENT */}
             <DocContentBackgroundManager
               parentPaddingLeft={64}
               parentPaddingRight={64}

@@ -116,6 +116,29 @@ function MarkdownRendererCoordinatorComponent({
   });
 
   // =========================
+  // 🆕 CODE BLOCK INDEX WRAPPER
+  // =========================
+  // 각 렌더러에 전달할 CodeBlock을 index 기능이 추가된 버전으로 래핑
+  const CodeBlockWithIndex = React.useMemo(() => {
+    // 코드 블록 카운터
+    let codeBlockIndex = 0;
+
+    // 실제 렌더링에 사용될 컴포넌트
+    const WrappedCodeBlock = (props: any) => {
+      // 코드 블록인지 확인 (inline이 아니고 language-가 있으면)
+      const isCodeBlock = !props.inline && props.className?.includes("language-");
+      
+      // 코드 블록이면 index 할당하고 증가
+      const index = isCodeBlock ? codeBlockIndex++ : undefined;
+      
+      // 원래 CodeBlock 컴포넌트에 index prop 추가해서 전달
+      return <CodeBlock {...props} index={index} />;
+    };
+
+    return WrappedCodeBlock;
+  }, [CodeBlock]);
+
+  // =========================
   // LETTER STYLE
   // =========================
 
@@ -124,7 +147,7 @@ function MarkdownRendererCoordinatorComponent({
       <MemoRemarkLetterPageRenderer
         markdownComponents={markdownComponents}
         isDark={isDark}
-        CodeBlock={CodeBlock}
+        CodeBlock={CodeBlockWithIndex}
       >
         {children}
       </MemoRemarkLetterPageRenderer>
@@ -140,7 +163,7 @@ function MarkdownRendererCoordinatorComponent({
       <MemoNotePageRenderer
         markdownComponents={markdownComponents}
         isDark={isDark}
-        CodeBlock={CodeBlock}
+        CodeBlock={CodeBlockWithIndex}
       >
         {children}
       </MemoNotePageRenderer>
@@ -155,7 +178,7 @@ function MarkdownRendererCoordinatorComponent({
     <MemoRemarkPageRenderer
       markdownComponents={markdownComponents}
       isDark={isDark}
-      CodeBlock={CodeBlock}
+      CodeBlock={CodeBlockWithIndex}
     >
       {children}
     </MemoRemarkPageRenderer>

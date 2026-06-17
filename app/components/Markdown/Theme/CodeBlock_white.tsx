@@ -1,33 +1,20 @@
+// app/components/Markdown/Theme/CodeBlock_white.tsx
 "use client";
 
 import React, {
   useEffect,
   useRef,
   useState,
-  useCallback,
 } from "react";
 
 import { motion } from "framer-motion";
-
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-
-import { oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
-
-import type { Components } from "react-markdown";
-
-import DiffVisualizer from "@/app/components/Markdown/processors/MarkdownPipeline/DiffVisualizer";
-
-// ✅ CodeBlock3D import (GLSL 렌더러 대체)
 import { CodeBlock3D } from "./CodeBlock3D";
 
 /* =========================
    TYPES
 ========================= */
 
-type CodeProps =
-  Components["code"] extends React.ComponentType<infer P>
-    ? P
-    : any;
+type CodeProps = React.ComponentProps<"code">;
 
 /* =========================
    ICONS
@@ -72,8 +59,9 @@ export default function CodeBlock_white({
   inline,
   className,
   children,
+  index = 0,
   ...props
-}: CodeProps) {
+}: CodeProps & { index?: number }) {
   const [copied, setCopied] = useState(false);
   const [hovered, setHovered] = useState(false);
 
@@ -162,7 +150,7 @@ export default function CodeBlock_white({
   }
 
   /* =========================
-     BLOCK CODE - 3D Enhanced (HDRI 반사 + 오목/볼록 렌즈 효과)
+     BLOCK CODE - 3D Enhanced
   ========================= */
   return (
     <motion.div
@@ -179,12 +167,12 @@ export default function CodeBlock_white({
         boxShadow: "none",
       }}
     >
-      {/* 3D 코드블록 (HDRI 반사 + 오목/볼록 효과) */}
-      <CodeBlock3D language={language}>
+      {/* 3D 코드블록 */}
+      <CodeBlock3D language={language} index={index}>
         {text}
       </CodeBlock3D>
 
-      {/* COPY BUTTON - 3D 위에 오버레이 */}
+      {/* COPY BUTTON */}
       <motion.button
         onClick={handleCopy}
         initial={false}

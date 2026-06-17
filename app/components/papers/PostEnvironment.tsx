@@ -6,6 +6,8 @@ import { useDarkMode } from "@/app/context/DarkModeContext";
 import DarkModeContextButtonRenderer from "@/app/context/DarkModeContextButtonRenderer";
 import DrawingPenButton from "@/app/Graphics/DrawingNotation/DrawingPenButton";
 
+import { HDRIProvider } from "@/app/components/Markdown/Theme/HDRIProvider";
+
 export default function PostEnvironment({
   children,
 }: {
@@ -144,7 +146,10 @@ export default function PostEnvironment({
       {/* TOPMOST FLOATING ACTION BUTTON */}
       <DrawingPenButton />
 
-      {children}
+      {/* 🆕 HDRIProvider로 children 감싸기 */}
+      <HDRIProvider>
+        {children}
+      </HDRIProvider>
     </>
   );
 }

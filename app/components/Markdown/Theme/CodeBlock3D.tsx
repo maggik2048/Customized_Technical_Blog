@@ -1,22 +1,31 @@
+// app/components/Markdown/Theme/CodeBlock3D.tsx
 "use client";
 
-import React, { useRef, useEffect, useMemo } from "react";
+import React, { useRef, useEffect, useMemo, useState } from "react";
 import * as THREE from "three";
 import { useHDRI } from "./HDRIProvider";
 
 interface CodeBlock3DProps {
   children: string;
   language?: string;
+  index?: number;
 }
 
-export function CodeBlock3D({ children, language = "text" }: CodeBlock3DProps) {
+export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBlock3DProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const hdriTexture = useHDRI();
+  const containerRef = useRef<HTMLDivElement>(null);
+  const { texture: hdriTexture } = useHDRI();
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const sceneRef = useRef<THREE.Scene | null>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
   const meshRef = useRef<THREE.Mesh | null>(null);
+  const wireframeRef = useRef<THREE.LineSegments | null>(null);
   const animationRef = useRef<number | null>(null);
+  
+  // 🆕 각 블록의 뷰포트 상대 위치 ( -1 ~ 1 )
+  const [viewportPosition, setViewportPosition] = useState(0);
+  
+  const offsetRef = useRef(index * 0.7);
 
   // 코드를 Canvas Texture로 변환
   const codeTexture = useMemo(() => {
@@ -33,11 +42,11 @@ export function CodeBlock3D({ children, language = "text" }: CodeBlock3DProps) {
 
     const ctx = canvas.getContext("2d")!;
     
-    // 배경 (반투명 흰색)
+    // 배경
     ctx.fillStyle = "rgba(255, 255, 255, 0.92)";
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-    // 라인 넘버
+    // 줄 번호
     ctx.fillStyle = "rgba(0, 0, 0, 0.25)";
     ctx.font = "14px monospace";
     lines.forEach((line, i) => {
@@ -46,7 +55,7 @@ export function CodeBlock3D({ children, language = "text" }: CodeBlock3DProps) {
       }
     });
 
-    // 코드 텍스트
+    // 코드
     ctx.fillStyle = "rgba(20, 20, 20, 0.92)";
     ctx.font = "15px monospace";
     lines.forEach((line, i) => {
@@ -69,6 +78,37 @@ export function CodeBlock3D({ children, language = "text" }: CodeBlock3DProps) {
     return texture;
   }, [children]);
 
+  // 🆕 뷰포트 위치 추적 (각 블록의 DOM 위치 기준)
+  useEffect(() => {
+    const updatePosition = () => {
+      if (!containerRef.current) return;
+      
+      const rect = containerRef.current.getBoundingClientRect();
+      const center = rect.top + rect.height / 2;
+      const viewportCenter = window.innerHeight / 2;
+      
+      // -1 (화면 아래) ~ 1 (화면 위)
+      const normalized = (viewportCenter - center) / (window.innerHeight / 2);
+      setViewportPosition(Math.max(-1, Math.min(1, normalized)));
+    };
+
+    const handleScroll = () => {
+      requestAnimationFrame(updatePosition);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleScroll, { passive: true });
+    
+    // 초기값 설정
+    updatePosition();
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+    };
+  }, []);
+
+  // Three.js 씬 설정
   useEffect(() => {
     if (!canvasRef.current) return;
 
@@ -76,15 +116,13 @@ export function CodeBlock3D({ children, language = "text" }: CodeBlock3DProps) {
     const width = canvas.clientWidth || 600;
     const height = canvas.clientHeight || 400;
 
-    console.log("🎨 CodeBlock3D: 초기화 시작");
-
     // Scene
     const scene = new THREE.Scene();
     sceneRef.current = scene;
 
     // Camera
-    const camera = new THREE.PerspectiveCamera(35, width / height, 0.1, 20);
-    camera.position.set(0, 0.2, 5.5);
+    const camera = new THREE.PerspectiveCamera(30, width / height, 0.1, 30);
+    camera.position.set(0, 0, 7);
     camera.lookAt(0, 0, 0);
     cameraRef.current = camera;
 
@@ -101,113 +139,82 @@ export function CodeBlock3D({ children, language = "text" }: CodeBlock3DProps) {
     renderer.setClearColor(0x000000, 0);
     rendererRef.current = renderer;
 
-    console.log("✅ Renderer created");
-
-    // ============================================================
-    // 1. PlaneGeometry (오목/볼록 렌즈 효과)
-    // ============================================================
-    const geometry = new THREE.PlaneGeometry(3.8, 2.8, 64, 64);
-    
-    // 정점 변형으로 오목/볼록 효과
+    // 오목/볼록 평면
+    const geometry = new THREE.PlaneGeometry(4.0, 3.0, 64, 64);
     const positions = geometry.attributes.position;
     for (let i = 0; i < positions.count; i++) {
       const x = positions.getX(i);
       const y = positions.getY(i);
-      const u = x / 1.9;
-      const v = y / 1.4;
-      
-      // 볼록 렌즈 효과 (양수: 볼록, 음수: 오목)
-      const distortion = 0.15;
+      const u = x / 2.0;
+      const v = y / 1.5;
+      const distortion = 0.12;
       const z = (u * u + v * v) * distortion;
       positions.setZ(i, z);
     }
     geometry.computeVertexNormals();
 
-    console.log("✅ Geometry created with distortion");
-
-    // ============================================================
-    // 2. 크롬 재질 (HDRI 반사 + 코드 텍스처)
-    // ============================================================
+    // 크롬 재질
     const material = new THREE.MeshPhysicalMaterial({
-      // 코드 텍스처
       map: codeTexture,
-      
-      // HDRI 환경 반사
       envMap: hdriTexture || undefined,
       envMapIntensity: hdriTexture ? 2.0 : 0.5,
-      
-      // ✅ 크롬 재질 설정
       metalness: 0.95,
       roughness: 0.1,
-      
-      // 광학 특성
       clearcoat: 0.4,
       clearcoatRoughness: 0.1,
       reflectivity: 1.0,
-      
-      // 투명도
       transparent: true,
       opacity: 0.93,
       side: THREE.DoubleSide,
-      
-      // IOR (굴절률)
       ior: 2.5,
-      
-      // 색상 (크롬 - 약간 청색빛)
       color: new THREE.Color(0.9, 0.92, 0.95),
-      
-      // Fallback: HDRI 없을 때도 보이도록
       emissive: new THREE.Color(0.03, 0.03, 0.04),
       emissiveIntensity: 0.1,
     });
 
     const mesh = new THREE.Mesh(geometry, material);
-    mesh.position.z = 0;
     scene.add(mesh);
     meshRef.current = mesh;
 
-    console.log("✅ Mesh created with chrome material");
-
-    // ============================================================
-    // 3. 조명 (HDRI 없을 때 대비)
-    // ============================================================
+    // 조명
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
     scene.add(ambientLight);
-
     const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
     dirLight.position.set(2, 3, 4);
     scene.add(dirLight);
 
-    const dirLight2 = new THREE.DirectionalLight(0x4488ff, 0.2);
-    dirLight2.position.set(-3, 1, 2);
-    scene.add(dirLight2);
-
-    // ============================================================
-    // 4. 얇은 테두리 (크롬 프레임 느낌)
-    // ============================================================
+    // 테두리
     const edges = new THREE.EdgesGeometry(geometry);
     const lineMat = new THREE.LineBasicMaterial({
       color: 0x8899aa,
       transparent: true,
-      opacity: 0.2,
+      opacity: 0.15,
     });
     const wireframe = new THREE.LineSegments(edges, lineMat);
     scene.add(wireframe);
+    wireframeRef.current = wireframe;
 
-    // ============================================================
-    // 5. 애니메이션 (회전 + 떨림)
-    // ============================================================
+    // 🆕 애니메이션 (viewportPosition 사용)
     const animate = () => {
       animationRef.current = requestAnimationFrame(animate);
       
-      if (meshRef.current) {
-        // 미세한 떨림 (생동감)
+      if (meshRef.current && cameraRef.current) {
+        // 🆕 viewportPosition으로 렌즈 위치 결정
+        // 위에 있을수록 렌즈가 위로 (음수 방향)
+        const targetY = viewportPosition * -0.8;
+        
+        meshRef.current.position.y = targetY;
+        cameraRef.current.position.y = targetY * 0.4;
+        cameraRef.current.lookAt(0, targetY * 0.6, 0);
+        
+        // 미세한 브레스 효과
         const breathe = Math.sin(Date.now() * 0.0005) * 0.002;
         meshRef.current.position.z = breathe;
         
-        // ✅ 천천히 회전 (크롬 반사 효과 강조)
-        meshRef.current.rotation.y += 0.003;
-        meshRef.current.rotation.x = Math.sin(Date.now() * 0.0004) * 0.03;
+        // 아주 느린 회전 (스크롤 위치에 따라 살짝 변화)
+        const rotationSpeed = 0.002 + (viewportPosition * 0.001);
+        meshRef.current.rotation.y += rotationSpeed;
+        meshRef.current.rotation.x = Math.sin(Date.now() * 0.0004) * 0.02 + viewportPosition * 0.02;
       }
 
       if (rendererRef.current && sceneRef.current && cameraRef.current) {
@@ -216,11 +223,7 @@ export function CodeBlock3D({ children, language = "text" }: CodeBlock3DProps) {
     };
     animate();
 
-    console.log("✅ Animation started");
-
-    // ============================================================
-    // 6. 리사이즈
-    // ============================================================
+    // 리사이즈
     const handleResize = () => {
       if (!canvasRef.current || !rendererRef.current || !cameraRef.current) return;
       const w = canvasRef.current.clientWidth;
@@ -235,34 +238,51 @@ export function CodeBlock3D({ children, language = "text" }: CodeBlock3DProps) {
     const resizeObserver = new ResizeObserver(handleResize);
     resizeObserver.observe(canvas);
 
-    // ============================================================
-    // 7. Cleanup
-    // ============================================================
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
       resizeObserver.disconnect();
+      
       if (rendererRef.current) {
         rendererRef.current.dispose();
+        rendererRef.current = null;
       }
-      geometry.dispose();
-      material.dispose();
-      codeTexture.dispose();
-      edges.dispose();
-      lineMat.dispose();
+      
+      if (geometry) {
+        geometry.dispose();
+      }
+      if (material) {
+        material.dispose();
+      }
+      if (codeTexture) {
+        codeTexture.dispose();
+      }
+      if (edges) {
+        edges.dispose();
+      }
+      if (lineMat) {
+        lineMat.dispose();
+      }
+      
+      sceneRef.current = null;
+      cameraRef.current = null;
+      meshRef.current = null;
+      wireframeRef.current = null;
     };
-  }, [hdriTexture, codeTexture]);
+  }, [hdriTexture, codeTexture, viewportPosition]); // 🆕 viewportPosition 의존성 추가
 
   return (
-    <canvas
-      ref={canvasRef}
-      className="w-full rounded-2xl"
-      style={{
-        height: "320px",
-        display: "block",
-        background: "transparent",
-      }}
-    />
+    <div ref={containerRef} style={{ width: "100%", height: "100%", position: "relative" }}>
+      <canvas
+        ref={canvasRef}
+        className="w-full rounded-2xl"
+        style={{
+          height: "320px",
+          display: "block",
+          background: "transparent",
+        }}
+      />
+    </div>
   );
 }
