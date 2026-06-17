@@ -52,6 +52,15 @@ const handwritingFont = `
 `;
 
 /* =========================
+   TEXT SHADOW (모든 글자에 적용)
+========================= */
+
+const textShadow = `
+  0 1px 0 rgba(255,255,255,0.55),
+  0 1px 2px rgba(0,0,0,0.28)
+`;
+
+/* =========================
    COMPONENT
 ========================= */
 
@@ -195,6 +204,12 @@ export default function NotePageRenderer({
         3: "0.3deg",
       };
 
+      // 제목에도 그림자 적용
+      const headingTextShadow = `
+        0 1px 0 rgba(255,255,255,0.65),
+        0 2px 4px rgba(0,0,0,0.25)
+      `;
+
       return (
         <div
           style={{
@@ -230,10 +245,12 @@ export default function NotePageRenderer({
               letterSpacing:
                 "0.02em",
 
+              textShadow: headingTextShadow,  // ✅ 제목에도 그림자 적용
+
               textShadow:
                 isDark
-                  ? "0 1px 2px rgba(0,0,0,0.4)"
-                  : "0 1px 0 rgba(255,255,255,0.8)",
+                  ? "0 1px 0 rgba(255,255,255,0.15), 0 2px 4px rgba(0,0,0,0.5)"
+                  : "0 1px 0 rgba(255,255,255,0.65), 0 2px 4px rgba(0,0,0,0.25)",
             }}
           >
             {children}
@@ -310,6 +327,8 @@ export default function NotePageRenderer({
 
             whiteSpace:
               "pre-wrap",
+
+            textShadow,  // ✅ 그림자 적용
           }}
         >
           {children}
@@ -327,6 +346,8 @@ export default function NotePageRenderer({
                 : "#5b3f00",
 
             fontWeight: 700,
+
+            textShadow,  // ✅ 그림자 적용
           }}
         >
           {children}
@@ -346,6 +367,8 @@ export default function NotePageRenderer({
 
             display:
               "inline-block",
+
+            textShadow,  // ✅ 그림자 적용
           }}
         >
           {children}
@@ -375,6 +398,8 @@ export default function NotePageRenderer({
 
             transform:
               "rotate(-0.2deg)",
+
+            textShadow,  // ✅ 그림자 적용
           }}
         >
           <span
@@ -382,6 +407,8 @@ export default function NotePageRenderer({
               marginRight: 12,
 
               opacity: 0.8,
+
+              textShadow,  // ✅ 아이콘에도 그림자 적용
             }}
           >
             ✎
@@ -447,6 +474,8 @@ export default function NotePageRenderer({
 
             transform:
               "rotate(-0.4deg)",
+
+            textShadow,  // ✅ 인용구에도 그림자 적용
           }}
         >
           {children}
