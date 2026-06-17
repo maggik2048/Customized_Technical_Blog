@@ -27,9 +27,9 @@ export default function ViewportGuard({
 
         margin: "0 auto",
 
-        //  overflow를 visible로 변경 - 스크롤바가 보이도록
-        overflowX: "visible",
-        overflowY: "visible",
+        // 🔄 CHANGE BACK TO "hidden" to clip overflow content
+        overflowX: "hidden",
+        overflowY: "auto", // Keep auto for vertical scrolling
 
         height: "100vh",
 
