@@ -147,11 +147,14 @@ export default function GotoGitHubCorresponding({
           position: relative;
           min-height: 260px;
 
-          /* Background image with overlay */
+          /* Background image with opacity - NO DARKENING */
           background-image: url('/images/githubsync/desk7.jpg');
           background-size: cover;
           background-position: center;
           background-repeat: no-repeat;
+          
+          /* Background opacity using pseudo-element instead of dark overlay */
+          background-color: transparent;
 
           /* Glass morphism effect */
           backdrop-filter: blur(2px);
@@ -164,7 +167,7 @@ export default function GotoGitHubCorresponding({
           box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
         }
 
-        /* Lighter overlay for less vignetting - REDUCED OPACITY */
+        /* Background opacity overlay - NO DARKENING, just opacity */
         .container::before {
           content: '';
           position: absolute;
@@ -172,9 +175,11 @@ export default function GotoGitHubCorresponding({
           left: 0;
           right: 0;
           bottom: 0;
-          background: rgba(0, 0, 0, 0.15); /* Changed from 0.5 to 0.25 */
+          background: rgba(255, 255, 255, 0.35); /* White overlay for opacity effect */
           border-radius: 12px;
           z-index: 0;
+          backdrop-filter: blur(2px);
+          -webkit-backdrop-filter: blur(2px);
         }
 
         /* Ensure all content is above the overlay */
@@ -198,7 +203,7 @@ export default function GotoGitHubCorresponding({
           border-top: 1px solid rgba(255, 255, 255, 0.15);
           border-bottom: 1px solid rgba(255, 255, 255, 0.15);
           margin: 0;
-          background: rgba(0, 0, 0, 0.15); /* Reduced from 0.2 to 0.15 */
+          background: rgba(0, 0, 0, 0.1);
           border-radius: 4px;
           backdrop-filter: blur(4px);
           -webkit-backdrop-filter: blur(4px);
@@ -251,18 +256,22 @@ export default function GotoGitHubCorresponding({
           align-items: flex-end;
           margin-top: 6px;
           flex: 1;
+          gap: 16px; /* Added gap between related posts and image */
         }
 
         .relatedPosts {
           display: flex;
           flex-direction: column;
           gap: 3px;
-          background: rgba(0, 0, 0, 0.2); /* Reduced from 0.3 to 0.2 */
-          padding: 8px 12px;
+          background: rgba(0, 0, 0, 0.15);
+          padding: 10px 16px; /* Increased horizontal padding */
           border-radius: 8px;
           backdrop-filter: blur(4px);
           -webkit-backdrop-filter: blur(4px);
           border: 1px solid rgba(255, 255, 255, 0.1);
+          flex: 1; /* Allow it to grow */
+          min-width: 0; /* Prevent overflow */
+          max-width: 55%; /* Extended to right - was auto, now 55% */
         }
 
         .relatedPostsTitle {
@@ -271,7 +280,7 @@ export default function GotoGitHubCorresponding({
           font-size: 15px;
           font-weight: 600;
           color: #ffffff;
-          margin-bottom: 2px;
+          margin-bottom: 4px; /* Slightly increased */
           letter-spacing: 0.02em;
           text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
@@ -289,6 +298,7 @@ export default function GotoGitHubCorresponding({
           padding: 1px 6px;
           border-radius: 4px;
           line-height: 1.4;
+          white-space: nowrap; /* Keep text on one line */
         }
 
         .postItem:hover {
@@ -320,7 +330,7 @@ export default function GotoGitHubCorresponding({
         .imageWrapper {
           position: relative;
           width: 500px;
-          max-width: 45%;
+          max-width: 40%; /* Reduced from 45% to give more space to related posts */
           height: auto;
           opacity: 0.85;
           pointer-events: none;
@@ -379,12 +389,18 @@ export default function GotoGitHubCorresponding({
             gap: 12px;
           }
 
-          .imageWrapper {
-            max-width: 100%;
+          .relatedPosts {
+            max-width: 100%; /* Full width on mobile */
             width: 100%;
+            padding: 10px 12px;
           }
 
-          .relatedPosts {
+          .postItem {
+            white-space: normal; /* Allow text wrap on mobile */
+          }
+
+          .imageWrapper {
+            max-width: 100%;
             width: 100%;
           }
 
@@ -542,7 +558,7 @@ export default function GotoGitHubCorresponding({
 
         {/* Bottom Section: Related Posts (Left) + Image (Right) */}
         <div className="bottomSection">
-          {/* Related Posts List - Left Bottom */}
+          {/* Related Posts List - Left Bottom - EXTENDED HORIZONTALLY */}
           <div className="relatedPosts">
             <div className="relatedPostsTitle">
               RELATED POSTS for this commit:
