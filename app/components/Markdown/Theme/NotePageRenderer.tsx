@@ -40,10 +40,23 @@ const bodyFont = Shadows_Into_Light({
 });
 
 /* =========================
-   BASE FONT
+   LOCAL FONTS (Nanum Pen)
+========================= */
+
+// NanumPen 폰트를 로컬 파일에서 로드
+const nanumPenFont = {
+  fontFamily: "NanumPen",
+  src: `url("/fonts/nanum-pen/NanumPen.otf") format("opentype")`,
+  // 만약 ttf 파일이라면:
+  // src: `url("/fonts/nanum-pen/NanumPen.ttf") format("truetype")`,
+};
+
+/* =========================
+   BASE FONT (NanumPen 우선 사용)
 ========================= */
 
 const handwritingFont = `
+  "NanumPen",
   ${bodyFont.style.fontFamily},
   "Nanum Pen Script",
   "Gaegu",
@@ -88,8 +101,8 @@ export default function NotePageRenderer({
 
   // 더 진한 파란색 라인
   const gridLineColor = isDark
-    ? "rgba(255,255,255,0.08)"
-    : "rgba(60, 100, 220, 0.35)";
+    ? "rgba(255,255,255,0.15)"     // 다크모드에서도 보이게
+    : "rgba(60, 100, 220, 0.45)";  // 더 진하게
 
   // 크럼블 페이퍼 텍스처 경로
   const crumbledPaperPath = "/images/dossierBg/crumbledpapertex.jpg";
@@ -115,9 +128,9 @@ export default function NotePageRenderer({
         0 12px 38px rgba(0,0,0,0.08)
       `,
 
-    // 크럼블 페이퍼 텍스처 (반복) + 그리드 오버레이
+    // 📌 그리드가 텍스처 위에 오도록 순서 변경!
     backgroundImage: `
-      url("${crumbledPaperPath}"),
+      /* 1️⃣ 그리드 라인 (맨 위) */
       linear-gradient(
         ${gridLineColor} 1px,
         transparent 1px
@@ -126,20 +139,21 @@ export default function NotePageRenderer({
         90deg,
         ${gridLineColor} 1px,
         transparent 1px
-      )
+      ),
+      /* 2️⃣ 크럼블 페이퍼 텍스처 (맨 아래) */
+      url("${crumbledPaperPath}")
     `,
 
     backgroundBlendMode: `
-      multiply,
       normal,
-      normal
+      normal,
+      multiply
     `,
 
-    //  텍스처가 반복되도록 설정 (이미지 크기에 맞게 조절)
     backgroundSize: `
-      4000px 4000px,              //  이 값을 조절하세요! (클수록 화질 좋아짐)
       ${gridSize}px ${gridSize}px,
-      ${gridSize}px ${gridSize}px
+      ${gridSize}px ${gridSize}px,
+      400px 400px
     `,
 
     backgroundRepeat: `
@@ -172,8 +186,8 @@ export default function NotePageRenderer({
     width: 2,
 
     background: isDark
-      ? "rgba(255,120,120,0.18)"
-      : "rgba(255,70,70,0.22)",
+      ? "rgba(255,120,120,0.25)"
+      : "rgba(255,70,70,0.30)",
 
     pointerEvents: "none" as const,
   };
