@@ -148,7 +148,7 @@ export default function GotoGitHubCorresponding({
           min-height: 260px;
 
           /* Background image with opacity - NO DARKENING */
-          background-image: url('/images/githubsync/desk7.jpg');
+          background-image: url('/images/githubsync/desk9.jpg');
           background-size: cover;
           background-position: center;
           background-repeat: no-repeat;
@@ -212,13 +212,13 @@ export default function GotoGitHubCorresponding({
         .commitTitle {
           font-family: "Cormorant Garamond", serif;
           font-style: italic;
-          font-size: 15px;
-          font-weight: 600;
-          color: #ffffff;
+          font-size: 18px;
+          font-weight: 700;
+          color: #1a1a1a;
           letter-spacing: 0.02em;
           line-height: 1.3;
           padding: 2px 4px;
-          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+          text-shadow: 0 1px 2px rgba(255, 255, 255, 0.5);
         }
 
         .commitSHAWrapper {
@@ -232,7 +232,7 @@ export default function GotoGitHubCorresponding({
           font-family: "Michroma", "JetBrains Mono", monospace;
           font-size: 8px;
           font-weight: 400;
-          color: rgba(255, 255, 255, 0.7);
+          color: rgba(0, 0, 0, 0.5);
           text-transform: uppercase;
           letter-spacing: 0.1em;
         }
@@ -241,8 +241,8 @@ export default function GotoGitHubCorresponding({
           font-family: "JetBrains Mono", monospace;
           font-size: 11px;
           font-weight: 500;
-          color: #ffffff;
-          background: rgba(255, 255, 255, 0.15);
+          color: rgba(0, 0, 0, 0.7);
+          background: rgba(255, 255, 255, 0.3);
           padding: 2px 8px;
           border-radius: 4px;
           letter-spacing: 0.04em;
@@ -263,12 +263,10 @@ export default function GotoGitHubCorresponding({
           display: flex;
           flex-direction: column;
           gap: 3px;
-          background: rgba(0, 0, 0, 0.15);
           padding: 10px 16px; /* Increased horizontal padding */
           border-radius: 8px;
-          backdrop-filter: blur(4px);
-          -webkit-backdrop-filter: blur(4px);
-          border: 1px solid rgba(255, 255, 255, 0.1);
+          border: 1px solid #000000;
+          background: transparent;
           flex: 1; /* Allow it to grow */
           min-width: 0; /* Prevent overflow */
           max-width: 55%; /* Extended to right - was auto, now 55% */
@@ -279,10 +277,9 @@ export default function GotoGitHubCorresponding({
           font-style: italic;
           font-size: 15px;
           font-weight: 600;
-          color: #ffffff;
+          color: #000000;
           margin-bottom: 4px; /* Slightly increased */
           letter-spacing: 0.02em;
-          text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
         }
 
         .postItem {
@@ -291,7 +288,7 @@ export default function GotoGitHubCorresponding({
           gap: 6px;
           font-family: "Michroma", "JetBrains Mono", monospace;
           font-size: 13px;
-          color: rgba(255, 255, 255, 0.9);
+          color: #000000;
           letter-spacing: 0.03em;
           transition: all 0.15s ease;
           cursor: pointer;
@@ -302,21 +299,20 @@ export default function GotoGitHubCorresponding({
         }
 
         .postItem:hover {
-          background: rgba(255, 140, 0, 0.2);
-          color: #ffb366;
+          background: rgba(255, 140, 0, 0.1);
+          color: #cc4400;
           transform: translateX(4px);
         }
 
         .postNumber {
           font-weight: 700;
-          color: #f05032;
+          color: #000000;
           min-width: 28px;
           font-size: 14px;
-          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
         }
 
         .postDivider {
-          color: rgba(255, 255, 255, 0.3);
+          color: rgba(0, 0, 0, 0.3);
           font-weight: 300;
           font-size: 16px;
         }
@@ -324,7 +320,6 @@ export default function GotoGitHubCorresponding({
         .postText {
           font-weight: 400;
           font-size: 13px;
-          text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
         }
 
         .imageWrapper {
@@ -332,7 +327,7 @@ export default function GotoGitHubCorresponding({
           width: 500px;
           max-width: 40%; /* Reduced from 45% to give more space to related posts */
           height: auto;
-          opacity: 0.85;
+          opacity: 0.6;
           pointer-events: none;
           flex-shrink: 0;
           border-radius: 8px;
