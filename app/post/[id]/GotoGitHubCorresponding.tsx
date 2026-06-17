@@ -593,7 +593,7 @@ export default function GotoGitHubCorresponding({
           {/* Image - Right Bottom */}
           <div className="imageWrapper">
             <img
-              src="/images/githubsync/docGithubSyncimage.jpg"
+              src="/images/githubsync/sync5.jpg"
               alt="GitHub Sync"
               width={500}
               height={300}
