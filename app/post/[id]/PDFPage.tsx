@@ -1,7 +1,7 @@
 // app/post/[id]/PDFPage.tsx
 "use client";
 
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import "katex/dist/katex.min.css";
 import { motion } from "framer-motion";
 
@@ -29,6 +29,9 @@ import DocContentBackgroundManager from "./DocContentBackgroundManager";
 import { TextSelectionEngine } from "@/app/components/Markdown/Theme/TextSelectionEngine";
 import PostAdminActions from "@/app/admin/PostAdminActions";
 
+import { usePageFlip } from "@/app/hooks/usePageFlip";
+import PaperFlipPage from "@/app/components/papers/PaperFlipPage";
+
 type Props = {
   data: any;
   isActive?: boolean;
@@ -50,16 +53,20 @@ export default function PDFPage({
   const { mode } = useDarkMode();
   const isDark = mode === "dark";
   const contentRef = useRef<HTMLDivElement>(null);
+  const pageContainerRef = useRef<HTMLDivElement>(null);
 
   const headerImage = getHeaderImage(data);
   const textColor = isDark ? "#eee" : "#111";
 
   const HEADER_HEIGHT = 560;
 
-  // 간단한 플립 상태
-  const [isFlipping, setIsFlipping] = useState(false);
-  const [flipDirection, setFlipDirection] = useState<'forward' | 'backward'>('forward');
-  const [currentPage, setCurrentPage] = useState(localIndex || 0);
+  const { 
+    progress, 
+    isFlipping, 
+    direction, 
+    pageIndex, 
+    startFlip 
+  } = usePageFlip(localTotal || 1, localIndex || 0);
 
   const hasProject = React.useMemo(() => {
     const hasProjects = data?.project_slugs && 
@@ -145,31 +152,17 @@ export default function PDFPage({
     });
   }, [highlightEngine]);
 
-  // 간단한 플립 핸들러
-  const handleFlip = (direction: 'forward' | 'backward') => {
-    if (isFlipping) return;
-    
-    const newPage = direction === 'forward' 
-      ? Math.min(currentPage + 1, (localTotal || 1) - 1)
-      : Math.max(currentPage - 1, 0);
-    
-    if (newPage === currentPage) return;
-    
-    setFlipDirection(direction);
-    setIsFlipping(true);
-    
-    // 애니메이션 후 페이지 변경
-    setTimeout(() => {
-      setCurrentPage(newPage);
-      setIsFlipping(false);
-    }, 600);
-  };
+  const handleFlipForward = useCallback(() => {
+    startFlip('forward');
+  }, [startFlip]);
 
-  // 실제 콘텐츠 렌더링
-  const renderContent = () => {
+  const handleFlipBackward = useCallback(() => {
+    startFlip('backward');
+  }, [startFlip]);
+
+  const renderPageContent = () => {
     return (
       <div style={pageStyle}>
-        {/* ADMIN ACTIONS */}
         <div
           style={{
             position: "absolute",
@@ -206,7 +199,7 @@ export default function PDFPage({
           isDark={isDark}
           headerImage={headerImage}
           globalIndex={globalIndex}
-          localIndex={currentPage}
+          localIndex={pageIndex}
           localTotal={localTotal}
           headerHeight={HEADER_HEIGHT}
         />
@@ -296,47 +289,88 @@ export default function PDFPage({
     );
   };
 
-  // 플립 애니메이션 래퍼
-  const renderWithFlip = () => {
-    const flipTransform = flipDirection === 'forward' 
-      ? `rotateY(${isFlipping ? -180 : 0}deg)`
-      : `rotateY(${isFlipping ? 180 : 0}deg)`;
+  const renderWithPaperFlip = () => {
+    const currentContent = renderPageContent();
 
-    return (
-      <div
-        style={{
-          perspective: '1200px',
-          transformStyle: 'preserve-3d',
-        }}
-      >
-        <motion.div
-          animate={{
-            rotateY: isFlipping 
-              ? (flipDirection === 'forward' ? -180 : 180) 
-              : 0
-          }}
-          transition={{
-            duration: 0.6,
-            ease: "easeInOut",
-          }}
+    if (isFlipping) {
+      const isForward = direction === 'forward';
+      
+      const nextPageContent = (
+        <div style={{ 
+          padding: '20px',
+          opacity: 0.3,
+          filter: 'blur(2px)',
+          pointerEvents: 'none'
+        }}>
+          <div style={{ 
+            height: '400px', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            background: isDark ? '#333' : '#f5f5f5',
+            borderRadius: '8px'
+          }}>
+            <span style={{ color: isDark ? '#aaa' : '#666' }}>
+              Page {pageIndex + (isForward ? 2 : 0)}
+            </span>
+          </div>
+        </div>
+      );
+
+      return (
+        <div
+          ref={pageContainerRef}
           style={{
-            transformStyle: 'preserve-3d',
-            backfaceVisibility: 'hidden',
-          }}
-          onAnimationComplete={() => {
-            if (isFlipping) {
-              const newPage = flipDirection === 'forward' 
-                ? Math.min(currentPage + 1, (localTotal || 1) - 1)
-                : Math.max(currentPage - 1, 0);
-              setCurrentPage(newPage);
-              setIsFlipping(false);
-            }
+            position: 'relative',
+            perspective: '1500px',
+            perspectiveOrigin: 'center center',
+            minHeight: '600px',
           }}
         >
-          {renderContent()}
-        </motion.div>
-      </div>
-    );
+          {/* 뒷면 페이지 */}
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              zIndex: 0,
+            }}
+          >
+            {nextPageContent}
+          </div>
+
+          {/* 앞면 페이지 - 깔끔한 3D 회전만 */}
+          <PaperFlipPage
+            isFlipping={isFlipping}
+            direction={direction}
+            progress={progress}
+          >
+            {currentContent}
+          </PaperFlipPage>
+
+          {/* 그림자 */}
+          <div
+            style={{
+              position: 'absolute',
+              top: 0,
+              bottom: 0,
+              [isForward ? 'left' : 'right']: 0,
+              width: '30px',
+              background: `linear-gradient(to ${isForward ? 'right' : 'left'}, 
+                rgba(0,0,0,${0.1 * progress}), 
+                rgba(0,0,0,${0.2 * progress})
+              )`,
+              zIndex: 2,
+              pointerEvents: 'none',
+            }}
+          />
+        </div>
+      );
+    }
+
+    return currentContent;
   };
 
   return (
@@ -344,13 +378,12 @@ export default function PDFPage({
       <PDFPageScrollBar
         isDark={isDark}
         totalPages={localTotal}
-        currentPage={currentPage !== undefined ? currentPage + 1 : undefined}
+        currentPage={pageIndex !== undefined ? pageIndex + 1 : undefined}
       />
       
       <motion.div style={{ color: textColor }}>
         <ScrollWithKeyboardArrow />
 
-        {/* 플립 버튼 */}
         <div style={{
           position: 'fixed',
           bottom: '100px',
@@ -361,16 +394,16 @@ export default function PDFPage({
           gap: '10px'
         }}>
           <button
-            onClick={() => handleFlip('backward')}
-            disabled={currentPage === 0 || isFlipping}
+            onClick={handleFlipBackward}
+            disabled={pageIndex === 0 || isFlipping}
             style={{
               padding: '12px 20px',
               background: isDark ? '#444' : '#eee',
               color: isDark ? '#fff' : '#333',
               border: 'none',
               borderRadius: '8px',
-              cursor: currentPage > 0 && !isFlipping ? 'pointer' : 'not-allowed',
-              opacity: currentPage > 0 && !isFlipping ? 1 : 0.5,
+              cursor: pageIndex > 0 && !isFlipping ? 'pointer' : 'not-allowed',
+              opacity: pageIndex > 0 && !isFlipping ? 1 : 0.5,
               fontSize: '14px',
               fontWeight: 'bold',
               boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
@@ -379,16 +412,16 @@ export default function PDFPage({
             ◀ Previous
           </button>
           <button
-            onClick={() => handleFlip('forward')}
-            disabled={currentPage === (localTotal || 1) - 1 || isFlipping}
+            onClick={handleFlipForward}
+            disabled={pageIndex === (localTotal || 1) - 1 || isFlipping}
             style={{
               padding: '12px 20px',
               background: isDark ? '#444' : '#eee',
               color: isDark ? '#fff' : '#333',
               border: 'none',
               borderRadius: '8px',
-              cursor: currentPage < (localTotal || 1) - 1 && !isFlipping ? 'pointer' : 'not-allowed',
-              opacity: currentPage < (localTotal || 1) - 1 && !isFlipping ? 1 : 0.5,
+              cursor: pageIndex < (localTotal || 1) - 1 && !isFlipping ? 'pointer' : 'not-allowed',
+              opacity: pageIndex < (localTotal || 1) - 1 && !isFlipping ? 1 : 0.5,
               fontSize: '14px',
               fontWeight: 'bold',
               boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
@@ -405,13 +438,13 @@ export default function PDFPage({
             padding: '4px 8px',
             borderRadius: '4px'
           }}>
-            {currentPage + 1} / {localTotal || 1}
+            {pageIndex + 1} / {localTotal || 1}
             {isFlipping && ' 🔄'}
           </div>
         </div>
 
         <div>
-          {renderWithFlip()}
+          {renderWithPaperFlip()}
         </div>
       </motion.div>
     </>
