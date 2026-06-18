@@ -29,8 +29,8 @@ import DocContentBackgroundManager from "./DocContentBackgroundManager";
 import { TextSelectionEngine } from "@/app/components/Markdown/Theme/TextSelectionEngine";
 import PostAdminActions from "@/app/admin/PostAdminActions";
 
-import { usePageFlip } from "@/app/hooks/usePageFlip";
-import PaperFlipPage from "@/app/components/papers/PaperFlipPage";
+// 🆕 3D 종이 import
+import PaperWobble3D from "@/app/components/papers/PaperWobble3D";
 
 type Props = {
   data: any;
@@ -53,20 +53,18 @@ export default function PDFPage({
   const { mode } = useDarkMode();
   const isDark = mode === "dark";
   const contentRef = useRef<HTMLDivElement>(null);
-  const pageContainerRef = useRef<HTMLDivElement>(null);
 
   const headerImage = getHeaderImage(data);
   const textColor = isDark ? "#eee" : "#111";
 
   const HEADER_HEIGHT = 560;
 
-  const { 
-    progress, 
-    isFlipping, 
-    direction, 
-    pageIndex, 
-    startFlip 
-  } = usePageFlip(localTotal || 1, localIndex || 0);
+  // 🆕 플립 상태
+  const [isFlipping, setIsFlipping] = useState(false);
+  const [flipDirection, setFlipDirection] = useState<'forward' | 'backward'>('forward');
+  const [currentPageIndex, setCurrentPageIndex] = useState(localIndex || 0);
+  const [isWobble, setIsWobble] = useState(false);
+  const [flipProgress, setFlipProgress] = useState(0);
 
   const hasProject = React.useMemo(() => {
     const hasProjects = data?.project_slugs && 
@@ -152,13 +150,57 @@ export default function PDFPage({
     });
   }, [highlightEngine]);
 
+  // 🆕 플립 핸들러
   const handleFlipForward = useCallback(() => {
-    startFlip('forward');
-  }, [startFlip]);
+    if (currentPageIndex < (localTotal || 1) - 1 && !isFlipping) {
+      setFlipDirection('forward');
+      setIsFlipping(true);
+      setFlipProgress(0);
+    }
+  }, [currentPageIndex, localTotal, isFlipping]);
 
   const handleFlipBackward = useCallback(() => {
-    startFlip('backward');
-  }, [startFlip]);
+    if (currentPageIndex > 0 && !isFlipping) {
+      setFlipDirection('backward');
+      setIsFlipping(true);
+      setFlipProgress(0);
+    }
+  }, [currentPageIndex, isFlipping]);
+
+  const handleFlipComplete = useCallback(() => {
+    const newIndex = flipDirection === 'forward' 
+      ? Math.min(currentPageIndex + 1, (localTotal || 1) - 1)
+      : Math.max(currentPageIndex - 1, 0);
+    setCurrentPageIndex(newIndex);
+    setIsFlipping(false);
+    setFlipProgress(0);
+  }, [flipDirection, currentPageIndex, localTotal]);
+
+  // 🆕 플립 프로그레스 업데이트
+  useEffect(() => {
+    if (!isFlipping) return;
+
+    const startTime = performance.now();
+    const duration = isWobble ? 1200 : 600;
+
+    const animate = (timestamp: number) => {
+      const elapsed = (timestamp - startTime) / duration;
+      const progress = Math.min(elapsed, 1);
+      
+      // easing
+      const eased = progress < 0.5 
+        ? 2 * progress * progress
+        : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+      
+      setFlipProgress(eased);
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+
+    requestAnimationFrame(animate);
+  }, [isFlipping, isWobble]);
 
   const renderPageContent = () => {
     return (
@@ -199,7 +241,7 @@ export default function PDFPage({
           isDark={isDark}
           headerImage={headerImage}
           globalIndex={globalIndex}
-          localIndex={pageIndex}
+          localIndex={currentPageIndex}
           localTotal={localTotal}
           headerHeight={HEADER_HEIGHT}
         />
@@ -289,88 +331,21 @@ export default function PDFPage({
     );
   };
 
-  const renderWithPaperFlip = () => {
-    const currentContent = renderPageContent();
-
+  // 🆕 3D 종이 렌더링
+  const renderWith3D = () => {
     if (isFlipping) {
-      const isForward = direction === 'forward';
-      
-      const nextPageContent = (
-        <div style={{ 
-          padding: '20px',
-          opacity: 0.3,
-          filter: 'blur(2px)',
-          pointerEvents: 'none'
-        }}>
-          <div style={{ 
-            height: '400px', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center',
-            background: isDark ? '#333' : '#f5f5f5',
-            borderRadius: '8px'
-          }}>
-            <span style={{ color: isDark ? '#aaa' : '#666' }}>
-              Page {pageIndex + (isForward ? 2 : 0)}
-            </span>
-          </div>
-        </div>
-      );
-
       return (
-        <div
-          ref={pageContainerRef}
-          style={{
-            position: 'relative',
-            perspective: '1500px',
-            perspectiveOrigin: 'center center',
-            minHeight: '600px',
-          }}
-        >
-          {/* 뒷면 페이지 */}
-          <div
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              zIndex: 0,
-            }}
-          >
-            {nextPageContent}
-          </div>
-
-          {/* 앞면 페이지 - 깔끔한 3D 회전만 */}
-          <PaperFlipPage
-            isFlipping={isFlipping}
-            direction={direction}
-            progress={progress}
-          >
-            {currentContent}
-          </PaperFlipPage>
-
-          {/* 그림자 */}
-          <div
-            style={{
-              position: 'absolute',
-              top: 0,
-              bottom: 0,
-              [isForward ? 'left' : 'right']: 0,
-              width: '30px',
-              background: `linear-gradient(to ${isForward ? 'right' : 'left'}, 
-                rgba(0,0,0,${0.1 * progress}), 
-                rgba(0,0,0,${0.2 * progress})
-              )`,
-              zIndex: 2,
-              pointerEvents: 'none',
-            }}
-          />
-        </div>
+        <PaperWobble3D
+          imagePath="/CurrentPage/currentpageCaptured.jpg"
+          isActive={true}
+          progress={flipProgress}
+          direction={flipDirection}
+          onFlipComplete={handleFlipComplete}
+        />
       );
     }
 
-    return currentContent;
+    return renderPageContent();
   };
 
   return (
@@ -378,7 +353,7 @@ export default function PDFPage({
       <PDFPageScrollBar
         isDark={isDark}
         totalPages={localTotal}
-        currentPage={pageIndex !== undefined ? pageIndex + 1 : undefined}
+        currentPage={currentPageIndex !== undefined ? currentPageIndex + 1 : undefined}
       />
       
       <motion.div style={{ color: textColor }}>
@@ -393,17 +368,46 @@ export default function PDFPage({
           flexDirection: 'column',
           gap: '10px'
         }}>
+          {/* Wobble 체크박스 */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            padding: '8px 12px',
+            background: isDark ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.9)',
+            borderRadius: '8px',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+            fontSize: '13px',
+            color: isDark ? '#eee' : '#333',
+          }}>
+            <input
+              type="checkbox"
+              id="wobble-toggle"
+              checked={isWobble}
+              onChange={() => setIsWobble(!isWobble)}
+              style={{
+                width: '18px',
+                height: '18px',
+                cursor: 'pointer',
+                accentColor: isDark ? '#666' : '#333',
+              }}
+            />
+            <label htmlFor="wobble-toggle" style={{ cursor: 'pointer' }}>
+              🌊 3D Wobble
+            </label>
+          </div>
+
           <button
             onClick={handleFlipBackward}
-            disabled={pageIndex === 0 || isFlipping}
+            disabled={currentPageIndex === 0 || isFlipping}
             style={{
               padding: '12px 20px',
               background: isDark ? '#444' : '#eee',
               color: isDark ? '#fff' : '#333',
               border: 'none',
               borderRadius: '8px',
-              cursor: pageIndex > 0 && !isFlipping ? 'pointer' : 'not-allowed',
-              opacity: pageIndex > 0 && !isFlipping ? 1 : 0.5,
+              cursor: currentPageIndex > 0 && !isFlipping ? 'pointer' : 'not-allowed',
+              opacity: currentPageIndex > 0 && !isFlipping ? 1 : 0.5,
               fontSize: '14px',
               fontWeight: 'bold',
               boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
@@ -413,15 +417,15 @@ export default function PDFPage({
           </button>
           <button
             onClick={handleFlipForward}
-            disabled={pageIndex === (localTotal || 1) - 1 || isFlipping}
+            disabled={currentPageIndex === (localTotal || 1) - 1 || isFlipping}
             style={{
               padding: '12px 20px',
               background: isDark ? '#444' : '#eee',
               color: isDark ? '#fff' : '#333',
               border: 'none',
               borderRadius: '8px',
-              cursor: pageIndex < (localTotal || 1) - 1 && !isFlipping ? 'pointer' : 'not-allowed',
-              opacity: pageIndex < (localTotal || 1) - 1 && !isFlipping ? 1 : 0.5,
+              cursor: currentPageIndex < (localTotal || 1) - 1 && !isFlipping ? 'pointer' : 'not-allowed',
+              opacity: currentPageIndex < (localTotal || 1) - 1 && !isFlipping ? 1 : 0.5,
               fontSize: '14px',
               fontWeight: 'bold',
               boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
@@ -438,13 +442,14 @@ export default function PDFPage({
             padding: '4px 8px',
             borderRadius: '4px'
           }}>
-            {pageIndex + 1} / {localTotal || 1}
+            {currentPageIndex + 1} / {localTotal || 1}
             {isFlipping && ' 🔄'}
+            {isWobble && ' 🌊'}
           </div>
         </div>
 
         <div>
-          {renderWithPaperFlip()}
+          {renderWith3D()}
         </div>
       </motion.div>
     </>

@@ -6,6 +6,7 @@ interface FlipState {
   isFlipping: boolean;
   direction: 'forward' | 'backward' | null;
   pageIndex: number;
+  isWobble: boolean;
 }
 
 export const usePageFlip = (totalPages: number, initialPage: number = 0) => {
@@ -14,11 +15,12 @@ export const usePageFlip = (totalPages: number, initialPage: number = 0) => {
     isFlipping: false,
     direction: null,
     pageIndex: initialPage,
+    isWobble: false,
   });
 
   const animationRef = useRef<number | null>(null);
 
-  const startFlip = (direction: 'forward' | 'backward') => {
+  const startFlip = (direction: 'forward' | 'backward', wobble: boolean = false) => {
     if (state.isFlipping) return;
     
     const newIndex = direction === 'forward' 
@@ -32,19 +34,24 @@ export const usePageFlip = (totalPages: number, initialPage: number = 0) => {
       isFlipping: true,
       direction,
       pageIndex: state.pageIndex,
+      isWobble: wobble,
     });
 
     const startTime = performance.now();
-    const duration = 600;
+    const duration = wobble ? 800 : 600; // wobble은 조금 더 느리게
 
     const animate = (timestamp: number) => {
       const elapsed = (timestamp - startTime) / duration;
       const progress = Math.min(elapsed, 1);
       
-      // 부드러운 easing
-      const eased = progress < 0.5 
-        ? 2 * progress * progress
-        : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+      // wobble일 때는 약간 다른 easing (더 자연스러운 종이 느낌)
+      const eased = wobble
+        ? progress < 0.5 
+          ? 3 * progress * progress * progress * progress
+          : 1 - Math.pow(-2 * progress + 2, 3) / 2
+        : progress < 0.5 
+          ? 2 * progress * progress
+          : 1 - Math.pow(-2 * progress + 2, 2) / 2;
 
       setState(prev => ({
         ...prev,
@@ -59,11 +66,19 @@ export const usePageFlip = (totalPages: number, initialPage: number = 0) => {
           isFlipping: false,
           direction: null,
           pageIndex: newIndex,
+          isWobble: false,
         });
       }
     };
 
     animationRef.current = requestAnimationFrame(animate);
+  };
+
+  const toggleWobble = () => {
+    setState(prev => ({
+      ...prev,
+      isWobble: !prev.isWobble,
+    }));
   };
 
   useEffect(() => {
@@ -77,5 +92,6 @@ export const usePageFlip = (totalPages: number, initialPage: number = 0) => {
   return {
     ...state,
     startFlip,
+    toggleWobble,
   };
 };
