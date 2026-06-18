@@ -31,6 +31,9 @@ import PostAdminActions from "@/app/admin/PostAdminActions";
 
 // 🆕 3D 종이 import
 import PaperWobble3D from "@/app/components/papers/PaperWobble3D";
+// 🆕 바람 설정 import
+import { windConfigs, windConfigList, getWindConfig } from "@/app/data/windConfigs";
+import type { WindConfig } from "@/app/data/windConfigs";
 
 type Props = {
   data: any;
@@ -65,6 +68,16 @@ export default function PDFPage({
   const [currentPageIndex, setCurrentPageIndex] = useState(localIndex || 0);
   const [isWobble, setIsWobble] = useState(false);
   const [flipProgress, setFlipProgress] = useState(0);
+  
+  // 🆕 바람 설정 상태
+  const [selectedWindId, setSelectedWindId] = useState('gentleBreeze');
+  const [windConfig, setWindConfig] = useState<WindConfig>(windConfigs.gentleBreeze);
+
+  // 🆕 바람 설정 변경 핸들러
+  const handleWindConfigChange = useCallback((windId: string) => {
+    setSelectedWindId(windId);
+    setWindConfig(getWindConfig(windId));
+  }, []);
 
   const hasProject = React.useMemo(() => {
     const hasProjects = data?.project_slugs && 
@@ -176,12 +189,13 @@ export default function PDFPage({
     setFlipProgress(0);
   }, [flipDirection, currentPageIndex, localTotal]);
 
-  // 🆕 플립 프로그레스 업데이트
+  // 🆕 플립 프로그레스 업데이트 (wobble 모드일 때 duration을 config에서 가져옴)
   useEffect(() => {
     if (!isFlipping) return;
 
     const startTime = performance.now();
-    const duration = isWobble ? 1200 : 600;
+    // 🔥 config에서 duration 가져오기
+    const duration = isWobble ? (windConfig.flipDuration || 1200) : 600;
 
     const animate = (timestamp: number) => {
       const elapsed = (timestamp - startTime) / duration;
@@ -200,7 +214,7 @@ export default function PDFPage({
     };
 
     requestAnimationFrame(animate);
-  }, [isFlipping, isWobble]);
+  }, [isFlipping, isWobble, windConfig]);
 
   const renderPageContent = () => {
     return (
@@ -331,9 +345,9 @@ export default function PDFPage({
     );
   };
 
-  // 🆕 3D 종이 렌더링
+  // 🆕 3D 종이 렌더링 (windConfig 전달)
   const renderWith3D = () => {
-    if (isFlipping) {
+    if (isFlipping && isWobble) {
       return (
         <PaperWobble3D
           imagePath="/CurrentPage/currentpageCaptured.jpg"
@@ -341,6 +355,7 @@ export default function PDFPage({
           progress={flipProgress}
           direction={flipDirection}
           onFlipComplete={handleFlipComplete}
+          windConfig={windConfig} // 🔥 현재 선택된 바람 설정 전달
         />
       );
     }
@@ -366,7 +381,8 @@ export default function PDFPage({
           zIndex: 9999,
           display: 'flex',
           flexDirection: 'column',
-          gap: '10px'
+          gap: '10px',
+          maxWidth: '280px',
         }}>
           {/* Wobble 체크박스 */}
           <div style={{
@@ -396,6 +412,43 @@ export default function PDFPage({
               🌊 3D Wobble
             </label>
           </div>
+
+          {/* 🆕 바람 설정 드롭다운 (wobble 활성화 시에만 표시) */}
+          {isWobble && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '4px 8px',
+              background: isDark ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.9)',
+              borderRadius: '8px',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+              fontSize: '12px',
+              color: isDark ? '#eee' : '#333',
+            }}>
+              <span style={{ fontSize: '11px', opacity: 0.7 }}>💨</span>
+              <select
+                value={selectedWindId}
+                onChange={(e) => handleWindConfigChange(e.target.value)}
+                style={{
+                  flex: 1,
+                  padding: '4px 8px',
+                  background: 'transparent',
+                  color: isDark ? '#eee' : '#333',
+                  border: 'none',
+                  fontSize: '12px',
+                  cursor: 'pointer',
+                  outline: 'none',
+                }}
+              >
+                {windConfigList.map((config) => (
+                  <option key={config.id} value={config.id}>
+                    {config.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <button
             onClick={handleFlipBackward}
@@ -444,7 +497,7 @@ export default function PDFPage({
           }}>
             {currentPageIndex + 1} / {localTotal || 1}
             {isFlipping && ' 🔄'}
-            {isWobble && ' 🌊'}
+            {isWobble && ` 🌊 ${windConfig.name}`}
           </div>
         </div>
 

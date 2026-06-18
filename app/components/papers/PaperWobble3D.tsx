@@ -6,6 +6,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { Plane } from '@react-three/drei';
 import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
+import { WindConfig, windConfigs } from '@/app/data/windConfigs';
 
 interface PaperWobble3DProps {
   imagePath: string;
@@ -13,9 +14,10 @@ interface PaperWobble3DProps {
   progress: number;
   direction: 'forward' | 'backward' | null;
   onFlipComplete?: () => void;
+  windConfig?: WindConfig; // 🆕 바람 설정 받기
 }
 
-// 🔥 순수 물리 기반 종이 (파동 없음, 오직 물리 엔진만)
+// 🔥 순수 물리 기반 종이
 class PhysicsPaper {
   public mesh: THREE.Mesh;
   public particles: CANNON.Body[] = [];
@@ -27,13 +29,15 @@ class PhysicsPaper {
   private segments: number;
   private cols: number;
   private rows: number;
+  private config: WindConfig;
 
   constructor(
     mesh: THREE.Mesh,
     world: CANNON.World,
     width: number,
     height: number,
-    segments: number
+    segments: number,
+    config: WindConfig
   ) {
     this.mesh = mesh;
     this.world = world;
@@ -42,12 +46,13 @@ class PhysicsPaper {
     this.segments = segments;
     this.cols = segments + 1;
     this.rows = segments + 1;
+    this.config = config;
     
     this.createPhysicsParticles();
     this.connectParticles();
   }
 
-  // 🔥 입자 생성 (모든 버텍스에 물리 입자 할당)
+  // 입자 생성
   private createPhysicsParticles() {
     const positions = this.mesh.geometry.attributes.position;
     const posArray = positions.array;
@@ -62,18 +67,20 @@ class PhysicsPaper {
       const col = i % this.cols;
       const row = Math.floor(i / this.cols);
       
-      // 🔥 가장자리 고정 (왼쪽/오른쪽 가장자리 완전 고정)
       const isLeftEdge = col === 0;
       const isRightEdge = col === this.cols - 1;
       const isEdge = isLeftEdge || isRightEdge;
       
-      // 입자 생성
+      // 🔥 config에서 가져온 파라미터로 입자 생성
+      const mass = isEdge ? 0 : 0.015 * (1 - this.config.paperStiffness * 0.5);
+      const damping = 0.01 + this.config.paperDamping * 0.05;
+      
       const particle = new CANNON.Body({
-        mass: isEdge ? 0 : 0.015, // 가장자리는 고정, 내부는 가볍게
+        mass: mass,
         shape: new CANNON.Sphere(0.005),
         position: new CANNON.Vec3(x, y, z),
-        linearDamping: 0.01,
-        angularDamping: 0.01,
+        linearDamping: damping,
+        angularDamping: damping,
       });
       
       if (isEdge) {
@@ -86,14 +93,17 @@ class PhysicsPaper {
     }
   }
 
-  // 🔥 입자 연결 (강한 스프링으로 찢어짐 방지)
+  // 입자 연결
   private connectParticles() {
+    // 🔥 config에서 가져온 강성
+    const stiffness = 0.3 + this.config.paperStiffness * 0.6;
+    
     // 수평 연결
     for (let row = 0; row < this.rows; row++) {
       for (let col = 0; col < this.cols - 1; col++) {
         const idx = row * this.cols + col;
         const nextIdx = row * this.cols + (col + 1);
-        this.addConstraint(idx, nextIdx, 0.8); // 강성 0.8
+        this.addConstraint(idx, nextIdx, stiffness);
       }
     }
     
@@ -102,11 +112,12 @@ class PhysicsPaper {
       for (let col = 0; col < this.cols; col++) {
         const idx = row * this.cols + col;
         const nextIdx = (row + 1) * this.cols + col;
-        this.addConstraint(idx, nextIdx, 0.8);
+        this.addConstraint(idx, nextIdx, stiffness);
       }
     }
     
-    // 🔥 대각선 연결 (찢어짐 방지를 위해 강하게)
+    // 대각선 연결
+    const diagStiffness = stiffness * 0.6;
     for (let row = 0; row < this.rows - 1; row++) {
       for (let col = 0; col < this.cols - 1; col++) {
         const idx = row * this.cols + col;
@@ -114,8 +125,8 @@ class PhysicsPaper {
         const diag2 = row * this.cols + (col + 1);
         const diag3 = (row + 1) * this.cols + col;
         
-        this.addConstraint(idx, diag1, 0.5);
-        this.addConstraint(diag2, diag3, 0.5);
+        this.addConstraint(idx, diag1, diagStiffness);
+        this.addConstraint(diag2, diag3, diagStiffness);
       }
     }
   }
@@ -125,7 +136,6 @@ class PhysicsPaper {
     const p2 = this.particles[idx2];
     if (!p1 || !p2) return;
     
-    // 거리 계산
     const dx = p1.position.x - p2.position.x;
     const dy = p1.position.y - p2.position.y;
     const dz = p1.position.z - p2.position.z;
@@ -138,27 +148,65 @@ class PhysicsPaper {
     this.constraints.push(constraint);
   }
 
-  // 🔥 바람 힘 적용 (순수 물리, 파동 없음)
-  public applyWind(windStrength: number, windDirection: THREE.Vector3) {
+  // 🔥 바람 적용 (config 사용)
+  public applyWind(time: number, progress: number) {
     const vertexCount = this.particles.length;
+    const p = Math.min(Math.max(progress, 0), 1);
+    
+    // 🔥 config에서 가져온 파라미터
+    const baseStrength = this.config.windStrength;
+    const turbulence = this.config.turbulence;
+    const directionSpeed = this.config.directionChangeSpeed;
+    const strengthVariation = this.config.strengthVariation;
+    const edgeWeight = this.config.edgeWeight;
+    const wobbleIntensity = this.config.wobbleIntensity;
+    
+    // 바람 강도 (progress에 따라 변동)
+    const progressFactor = Math.sin(p * Math.PI);
+    const windStrength = baseStrength * (0.5 + progressFactor * 0.5) * (1 + strengthVariation * 0.5);
+    
+    // 바람 방향 (시간에 따라 변화)
+    const angleX = time * directionSpeed * 0.5;
+    const angleY = time * directionSpeed * 0.3;
+    const angleZ = time * directionSpeed * 0.2;
+    
+    const baseDir = this.config.windDirection;
+    const dirX = baseDir.x + Math.sin(angleX) * turbulence * 0.5;
+    const dirY = baseDir.y + Math.cos(angleY) * turbulence * 0.3;
+    const dirZ = baseDir.z + Math.sin(angleZ) * turbulence * 0.4;
+    
+    const windDir = new THREE.Vector3(dirX, dirY, dirZ).normalize();
     
     for (let i = 0; i < vertexCount; i++) {
       const particle = this.particles[i];
-      
-      // 고정 입자 스킵
       if (particle.type === CANNON.Body.STATIC) continue;
       
-      // 🔥 랜덤 노이즈 (Perlin noise 대신 Math.random 사용)
-      const noiseX = (Math.random() - 0.5) * 0.3;
-      const noiseY = (Math.random() - 0.5) * 0.2;
-      const noiseZ = (Math.random() - 0.5) * 0.3;
+      const col = i % this.cols;
+      const row = Math.floor(i / this.cols);
+      const u = col / this.cols;
+      const v = row / this.rows;
       
-      // 바람 힘 (불규칙성 부여)
+      // 가장자리 효과
+      const edgeX = Math.sin(u * Math.PI);
+      const edgeY = Math.sin(v * Math.PI);
+      const edgeFactor = edgeX * edgeY * edgeWeight + (1 - edgeWeight);
+      
+      // 🔥 난기류 (turbulence 사용)
+      const noise1 = (Math.random() - 0.5) * turbulence * 2;
+      const noise2 = (Math.random() - 0.5) * turbulence * 1.5;
+      const noise3 = (Math.random() - 0.5) * turbulence * 2;
+      
+      // wobble 강도
+      const wobble = wobbleIntensity * (0.5 + Math.sin(time * 2 + u * 5 + v * 3) * 0.5);
+      
       const force = new CANNON.Vec3(
-        (windDirection.x + noiseX) * windStrength * 0.4,
-        (windDirection.y + noiseY) * windStrength * 0.15,
-        (windDirection.z + noiseZ) * windStrength * 0.5
+        (windDir.x + noise1 * 0.3) * windStrength * 0.4 * (1 + wobble * 0.3),
+        (windDir.y + noise2 * 0.2) * windStrength * 0.15 * (1 + wobble * 0.2),
+        (windDir.z + noise3 * 0.3) * windStrength * 0.5 * (1 + wobble * 0.4)
       );
+      
+      // edgeFactor 적용
+      force.scale(edgeFactor, force);
       
       particle.applyForce(force, particle.position);
     }
@@ -184,7 +232,6 @@ class PhysicsPaper {
     this.mesh.geometry.computeVertexNormals();
   }
 
-  // 리소스 정리
   public dispose() {
     this.particles.forEach(p => this.world.removeBody(p));
     this.constraints.forEach(c => this.world.removeConstraint(c));
@@ -198,7 +245,8 @@ function PaperMesh({
   direction, 
   isActive,
   onComplete,
-  isWobble
+  isWobble,
+  windConfig
 }: { 
   texture: THREE.Texture | null;
   progress: number;
@@ -206,6 +254,7 @@ function PaperMesh({
   isActive: boolean;
   onComplete?: () => void;
   isWobble: boolean;
+  windConfig: WindConfig;
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
   const { viewport } = useThree();
@@ -213,9 +262,7 @@ function PaperMesh({
   const worldRef = useRef<CANNON.World | null>(null);
   const [isFlipping, setIsFlipping] = useState(false);
   const timeRef = useRef(0);
-  const windTimerRef = useRef(0);
   
-  // 🔥 세그먼트 20으로 충분히 나누면서도 성능 유지
   const segments = 20;
   const width = viewport.width * 0.7;
   const height = viewport.height * 0.5;
@@ -224,36 +271,30 @@ function PaperMesh({
   useEffect(() => {
     if (!meshRef.current || !isWobble) return;
 
-    // 물리 세계 생성
     const world = new CANNON.World();
     world.gravity.set(0, -0.2, 0);
     world.broadphase = new CANNON.SAPBroadphase(world);
     world.allowSleep = true;
     world.sleepTimeLimit = 0.5;
     
-    // 🔥 물리 스텝을 작게 해서 안정성 증가
-    world.stepFrequency = 120;
-    
     worldRef.current = world;
 
-    // 물리 종이 생성
     const physics = new PhysicsPaper(
       meshRef.current,
       world,
       width,
       height,
-      segments
+      segments,
+      windConfig
     );
     physicsRef.current = physics;
-
-    console.log(`✅ Physics paper created with ${(segments+1)*(segments+1)} vertices`);
 
     return () => {
       if (physicsRef.current) {
         physicsRef.current.dispose();
       }
     };
-  }, [isWobble, width, height, segments]);
+  }, [isWobble, width, height, segments, windConfig]);
 
   // 물리 시뮬레이션
   useFrame(({ clock }) => {
@@ -268,39 +309,21 @@ function PaperMesh({
     const isForward = direction === 'forward';
     const p = Math.min(Math.max(progress, 0), 1);
     
-    // 종이 넘김 각도
     const rotateY = isForward ? -Math.PI * p : Math.PI * p;
     mesh.rotation.y = rotateY;
     
-    // 종이 위치
     const offset = isForward ? -viewport.width * 0.3 * p : viewport.width * 0.3 * p;
     mesh.position.x = offset;
     mesh.position.z = -Math.sin(p * Math.PI) * 0.3;
 
     if (isWobble && isActive) {
-      // 🔥 바람 강도 (물리적으로만 제어)
-      const windStrength = Math.sin(p * Math.PI) * 2.5 + 1.0;
+      // 🔥 config 기반 바람 적용
+      physics.applyWind(time, p);
       
-      // 🔥 바람 방향 (시간에 따라 천천히 변화)
-      windTimerRef.current += 0.01;
-      const windAngle = Math.sin(windTimerRef.current * 0.2) * 0.5;
-      const windDir = new THREE.Vector3(
-        0.6 + Math.sin(windTimerRef.current * 0.15) * 0.3,
-        0.1 + Math.cos(windTimerRef.current * 0.1) * 0.1,
-        0.3 + Math.sin(windTimerRef.current * 0.12) * 0.2
-      ).normalize();
-      
-      // 🔥 물리 바람 적용 (파동 없음, 순수 물리 엔진)
-      physics.applyWind(windStrength, windDir);
-      
-      // 🔥 물리 스텝 (더 작은 스텝으로 안정성 증가)
       world.step(1 / 120, 1 / 120, 5);
-      
-      // 물리 결과 동기화
       physics.syncToMesh();
     }
     
-    // 애니메이션 완료
     if (p >= 1 && !isFlipping) {
       setIsFlipping(true);
       if (onComplete) {
@@ -339,6 +362,7 @@ export default function PaperWobble3D({
   progress,
   direction,
   onFlipComplete,
+  windConfig = windConfigs.gentleBreeze, // 기본값
 }: PaperWobble3DProps) {
   const [texture, setTexture] = useState<THREE.Texture | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -425,6 +449,7 @@ export default function PaperWobble3D({
           isActive={isActive}
           onComplete={onFlipComplete}
           isWobble={isWobble}
+          windConfig={windConfig}
         />
         
         <mesh position={[0, -0.55, -0.3]} rotation={[-Math.PI / 2, 0, 0]}>
@@ -457,7 +482,7 @@ export default function PaperWobble3D({
         <span>{Math.round(progress * 100)}%</span>
         <span style={{ opacity: 0.5 }}>|</span>
         <span style={{ color: isActive ? '#4ade80' : '#888' }}>
-          {isActive ? '🌊 Physics ON' : '⏸ Paused'}
+          {isActive ? `🌊 ${windConfig.name}` : '⏸ Paused'}
         </span>
       </div>
     </div>
