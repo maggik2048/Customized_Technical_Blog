@@ -1,7 +1,7 @@
-// app/components/papers/PDFPage.tsx
+// app/post/[id]/PDFPage.tsx
 "use client";
 
-import React from "react";
+import React, { useRef, useState, useEffect } from "react";
 import "katex/dist/katex.min.css";
 import { motion } from "framer-motion";
 
@@ -49,11 +49,17 @@ export default function PDFPage({
 }: Props) {
   const { mode } = useDarkMode();
   const isDark = mode === "dark";
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const headerImage = getHeaderImage(data);
   const textColor = isDark ? "#eee" : "#111";
 
   const HEADER_HEIGHT = 560;
+
+  // 간단한 플립 상태
+  const [isFlipping, setIsFlipping] = useState(false);
+  const [flipDirection, setFlipDirection] = useState<'forward' | 'backward'>('forward');
+  const [currentPage, setCurrentPage] = useState(localIndex || 0);
 
   const hasProject = React.useMemo(() => {
     const hasProjects = data?.project_slugs && 
@@ -118,8 +124,6 @@ export default function PDFPage({
     []
   );
 
-  const contentRef = React.useRef<HTMLDivElement>(null);
-
   React.useEffect(() => {
     highlightEngine.setContainer(contentRef.current);
   }, [highlightEngine]);
@@ -141,149 +145,273 @@ export default function PDFPage({
     });
   }, [highlightEngine]);
 
+  // 간단한 플립 핸들러
+  const handleFlip = (direction: 'forward' | 'backward') => {
+    if (isFlipping) return;
+    
+    const newPage = direction === 'forward' 
+      ? Math.min(currentPage + 1, (localTotal || 1) - 1)
+      : Math.max(currentPage - 1, 0);
+    
+    if (newPage === currentPage) return;
+    
+    setFlipDirection(direction);
+    setIsFlipping(true);
+    
+    // 애니메이션 후 페이지 변경
+    setTimeout(() => {
+      setCurrentPage(newPage);
+      setIsFlipping(false);
+    }, 600);
+  };
+
+  // 실제 콘텐츠 렌더링
+  const renderContent = () => {
+    return (
+      <div style={pageStyle}>
+        {/* ADMIN ACTIONS */}
+        <div
+          style={{
+            position: "absolute",
+            top: 16,
+            right: 40,
+            zIndex: 9999,
+            pointerEvents: "auto",
+          }}
+        >
+          <PostAdminActions
+            postId={data.id}
+            category={data.category}
+          />
+        </div>
+
+        <div
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: isDark
+              ? "rgba(60,60,60,0.3)"
+              : "rgba(255,255,255,0.2)",
+            borderRadius: 12,
+            pointerEvents: "none",
+            zIndex: 0,
+          }}
+        />
+
+        <PDFPageHeader
+          data={data}
+          isDark={isDark}
+          headerImage={headerImage}
+          globalIndex={globalIndex}
+          localIndex={currentPage}
+          localTotal={localTotal}
+          headerHeight={HEADER_HEIGHT}
+        />
+
+        <div
+          style={{
+            paddingTop: HEADER_HEIGHT - 36,
+            position: "relative",
+            zIndex: 1,
+          }}
+        >
+          <div style={{ 
+            position: "relative", 
+            zIndex: 9998,
+            transform: "translateY(60px)",
+            marginBottom: "10px",
+          }}>
+            <MetadataPostalCode data={data} isDark={isDark} />
+          </div>
+
+          <GotoGitHubCorresponding 
+            commitUrl={data?.commit_url}
+            hasProject={hasProject}
+          />
+
+          <div
+            style={{
+              float: "left",
+              width: 165,
+              height: 110,
+              pointerEvents: "none",
+            }}
+          />
+
+          <DocContentBackgroundManager
+            parentPaddingLeft={64}
+            parentPaddingRight={64}
+            paddingTop={20}
+            paddingBottom={20}
+            backgroundSize="520px 520px"
+          >
+            <div
+              ref={contentRef}
+              style={markdownWrapperStyle}
+              onMouseUp={handleMouseUp}
+            >
+              <NotepageLines>
+                {parsedParts.map((item) => {
+                  if (item.kind === "viz") {
+                    const Component = item.Component;
+                    return (
+                      <div key={item.key}>
+                        <Component />
+                      </div>
+                    );
+                  }
+
+                  if (item.kind === "diff") {
+                    return (
+                      <DiffVisualizer
+                        key={item.key}
+                        raw={item.content}
+                      />
+                    );
+                  }
+
+                  return (
+                    <MemoMarkdownRendererCoordinator
+                      key={item.key}
+                      category={data?.category}
+                      markdownComponents={mdComponents}
+                      isDark={isDark}
+                      CodeBlock={CodeBlock}
+                    >
+                      {item.content}
+                    </MemoMarkdownRendererCoordinator>
+                  );
+                })}
+              </NotepageLines>
+            </div>
+          </DocContentBackgroundManager>
+
+          <div style={{ clear: "both" }} />
+          <GotoTheTop isDark={isDark} />
+        </div>
+      </div>
+    );
+  };
+
+  // 플립 애니메이션 래퍼
+  const renderWithFlip = () => {
+    const flipTransform = flipDirection === 'forward' 
+      ? `rotateY(${isFlipping ? -180 : 0}deg)`
+      : `rotateY(${isFlipping ? 180 : 0}deg)`;
+
+    return (
+      <div
+        style={{
+          perspective: '1200px',
+          transformStyle: 'preserve-3d',
+        }}
+      >
+        <motion.div
+          animate={{
+            rotateY: isFlipping 
+              ? (flipDirection === 'forward' ? -180 : 180) 
+              : 0
+          }}
+          transition={{
+            duration: 0.6,
+            ease: "easeInOut",
+          }}
+          style={{
+            transformStyle: 'preserve-3d',
+            backfaceVisibility: 'hidden',
+          }}
+          onAnimationComplete={() => {
+            if (isFlipping) {
+              const newPage = flipDirection === 'forward' 
+                ? Math.min(currentPage + 1, (localTotal || 1) - 1)
+                : Math.max(currentPage - 1, 0);
+              setCurrentPage(newPage);
+              setIsFlipping(false);
+            }
+          }}
+        >
+          {renderContent()}
+        </motion.div>
+      </div>
+    );
+  };
+
   return (
     <>
-      {/* 🆕 스크롤바를 최상위에 배치 - 항상 표시 */}
       <PDFPageScrollBar
         isDark={isDark}
         totalPages={localTotal}
-        currentPage={localIndex !== undefined ? localIndex + 1 : undefined}
+        currentPage={currentPage !== undefined ? currentPage + 1 : undefined}
       />
       
       <motion.div style={{ color: textColor }}>
         <ScrollWithKeyboardArrow />
 
-        <div>
-          <div style={pageStyle}>
-            {/* ADMIN ACTIONS */}
-            <div
-              style={{
-                position: "absolute",
-                top: 16,
-                right: 40,
-                zIndex: 9999,
-                pointerEvents: "auto",
-              }}
-            >
-              <PostAdminActions
-                postId={data.id}
-                category={data.category}
-              />
-            </div>
-
-            <div
-              style={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                background: isDark
-                  ? "rgba(60,60,60,0.3)"
-                  : "rgba(255,255,255,0.2)",
-                borderRadius: 12,
-                pointerEvents: "none",
-                zIndex: 0,
-              }}
-            />
-
-            {/* HEADER */}
-            <PDFPageHeader
-              data={data}
-              isDark={isDark}
-              headerImage={headerImage}
-              globalIndex={globalIndex}
-              localIndex={localIndex}
-              localTotal={localTotal}
-              headerHeight={HEADER_HEIGHT}
-            />
-
-            {/* CONTENT */}
-            <div
-              style={{
-                paddingTop: HEADER_HEIGHT - 36,
-                position: "relative",
-                zIndex: 1,
-              }}
-            >
-              {/* METADATA */}
-              <div style={{ 
-                position: "relative", 
-                zIndex: 9998,
-                transform: "translateY(60px)",
-                marginBottom: "10px",
-              }}>
-                <MetadataPostalCode data={data} isDark={isDark} />
-              </div>
-
-              <GotoGitHubCorresponding 
-                commitUrl={data?.commit_url}
-                hasProject={hasProject}
-              />
-
-              <div
-                style={{
-                  float: "left",
-                  width: 165,
-                  height: 110,
-                  pointerEvents: "none",
-                }}
-              />
-
-              {/* MARKDOWN CONTENT */}
-              <DocContentBackgroundManager
-                parentPaddingLeft={64}
-                parentPaddingRight={64}
-                paddingTop={20}
-                paddingBottom={20}
-                backgroundSize="520px 520px"
-              >
-                <div
-                  ref={contentRef}
-                  style={markdownWrapperStyle}
-                  onMouseUp={handleMouseUp}
-                >
-                  <NotepageLines>
-                    {parsedParts.map((item) => {
-                      if (item.kind === "viz") {
-                        const Component = item.Component;
-                        return (
-                          <div key={item.key}>
-                            <Component />
-                          </div>
-                        );
-                      }
-
-                      if (item.kind === "diff") {
-                        return (
-                          <DiffVisualizer
-                            key={item.key}
-                            raw={item.content}
-                          />
-                        );
-                      }
-
-                      return (
-                        <MemoMarkdownRendererCoordinator
-                          key={item.key}
-                          category={data?.category}
-                          markdownComponents={mdComponents}
-                          isDark={isDark}
-                          CodeBlock={CodeBlock}
-                        >
-                          {item.content}
-                        </MemoMarkdownRendererCoordinator>
-                      );
-                    })}
-                  </NotepageLines>
-                </div>
-              </DocContentBackgroundManager>
-
-              <div style={{ clear: "both" }} />
-
-              <GotoTheTop isDark={isDark} />
-            </div>
+        {/* 플립 버튼 */}
+        <div style={{
+          position: 'fixed',
+          bottom: '100px',
+          right: '40px',
+          zIndex: 9999,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '10px'
+        }}>
+          <button
+            onClick={() => handleFlip('backward')}
+            disabled={currentPage === 0 || isFlipping}
+            style={{
+              padding: '12px 20px',
+              background: isDark ? '#444' : '#eee',
+              color: isDark ? '#fff' : '#333',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: currentPage > 0 && !isFlipping ? 'pointer' : 'not-allowed',
+              opacity: currentPage > 0 && !isFlipping ? 1 : 0.5,
+              fontSize: '14px',
+              fontWeight: 'bold',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
+            }}
+          >
+            ◀ Previous
+          </button>
+          <button
+            onClick={() => handleFlip('forward')}
+            disabled={currentPage === (localTotal || 1) - 1 || isFlipping}
+            style={{
+              padding: '12px 20px',
+              background: isDark ? '#444' : '#eee',
+              color: isDark ? '#fff' : '#333',
+              border: 'none',
+              borderRadius: '8px',
+              cursor: currentPage < (localTotal || 1) - 1 && !isFlipping ? 'pointer' : 'not-allowed',
+              opacity: currentPage < (localTotal || 1) - 1 && !isFlipping ? 1 : 0.5,
+              fontSize: '14px',
+              fontWeight: 'bold',
+              boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
+            }}
+          >
+            Next ▶
+          </button>
+          
+          <div style={{
+            fontSize: '11px',
+            color: isDark ? '#aaa' : '#666',
+            textAlign: 'center',
+            background: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.8)',
+            padding: '4px 8px',
+            borderRadius: '4px'
+          }}>
+            {currentPage + 1} / {localTotal || 1}
+            {isFlipping && ' 🔄'}
           </div>
+        </div>
+
+        <div>
+          {renderWithFlip()}
         </div>
       </motion.div>
     </>
