@@ -29,11 +29,11 @@ import DocContentBackgroundManager from "./DocContentBackgroundManager";
 import { TextSelectionEngine } from "@/app/components/Markdown/Theme/TextSelectionEngine";
 import PostAdminActions from "@/app/admin/PostAdminActions";
 
+// 🆕 리팩토링된 컨트롤러 import
+import { PageFlipController, usePageFlip } from "./pageFlipController";
+
 // 🆕 3D 종이 import
 import PaperWobble3D from "@/app/components/papers/PaperWobble3D";
-// 🆕 바람 설정 import
-import { windConfigs, windConfigList, getWindConfig } from "@/app/data/windConfigs";
-import type { WindConfig } from "@/app/data/windConfigs";
 
 type Props = {
   data: any;
@@ -46,38 +46,28 @@ type Props = {
 
 const MemoMarkdownRendererCoordinator = React.memo(MarkdownRendererCoordinator);
 
-export default function PDFPage({
-  data,
-  isActive = true,
-  globalIndex,
-  localIndex,
-  localTotal,
-}: Props) {
-  const { mode } = useDarkMode();
-  const isDark = mode === "dark";
+// 🔥 수정: PDFPageContent를 PageFlipController의 자식으로 받도록 변경
+const PDFPageContent: React.FC<{
+  data: any;
+  isDark: boolean;
+  globalIndex?: number;
+  localTotal?: number;
+}> = ({ data, isDark, globalIndex, localTotal }) => {
   const contentRef = useRef<HTMLDivElement>(null);
-
   const headerImage = getHeaderImage(data);
   const textColor = isDark ? "#eee" : "#111";
-
   const HEADER_HEIGHT = 560;
 
-  // 🆕 플립 상태
-  const [isFlipping, setIsFlipping] = useState(false);
-  const [flipDirection, setFlipDirection] = useState<'forward' | 'backward'>('forward');
-  const [currentPageIndex, setCurrentPageIndex] = useState(localIndex || 0);
-  const [isWobble, setIsWobble] = useState(false);
-  const [flipProgress, setFlipProgress] = useState(0);
-  
-  // 🆕 바람 설정 상태
-  const [selectedWindId, setSelectedWindId] = useState('gentleBreeze');
-  const [windConfig, setWindConfig] = useState<WindConfig>(windConfigs.gentleBreeze);
-
-  // 🆕 바람 설정 변경 핸들러
-  const handleWindConfigChange = useCallback((windId: string) => {
-    setSelectedWindId(windId);
-    setWindConfig(getWindConfig(windId));
-  }, []);
+  // 🔥 이제 usePageFlip을 안전하게 사용 가능 (PageFlipController 내부에서 렌더링됨)
+  const {
+    currentPageIndex,
+    isFlipping,
+    flipDirection,
+    flipProgress,
+    windConfig,
+    isWobble,
+    handleFlipComplete,
+  } = usePageFlip();
 
   const hasProject = React.useMemo(() => {
     const hasProjects = data?.project_slugs && 
@@ -162,59 +152,6 @@ export default function PDFPage({
       highlightEngine.applyHighlight();
     });
   }, [highlightEngine]);
-
-  // 🆕 플립 핸들러
-  const handleFlipForward = useCallback(() => {
-    if (currentPageIndex < (localTotal || 1) - 1 && !isFlipping) {
-      setFlipDirection('forward');
-      setIsFlipping(true);
-      setFlipProgress(0);
-    }
-  }, [currentPageIndex, localTotal, isFlipping]);
-
-  const handleFlipBackward = useCallback(() => {
-    if (currentPageIndex > 0 && !isFlipping) {
-      setFlipDirection('backward');
-      setIsFlipping(true);
-      setFlipProgress(0);
-    }
-  }, [currentPageIndex, isFlipping]);
-
-  const handleFlipComplete = useCallback(() => {
-    const newIndex = flipDirection === 'forward' 
-      ? Math.min(currentPageIndex + 1, (localTotal || 1) - 1)
-      : Math.max(currentPageIndex - 1, 0);
-    setCurrentPageIndex(newIndex);
-    setIsFlipping(false);
-    setFlipProgress(0);
-  }, [flipDirection, currentPageIndex, localTotal]);
-
-  // 🆕 플립 프로그레스 업데이트 (wobble 모드일 때 duration을 config에서 가져옴)
-  useEffect(() => {
-    if (!isFlipping) return;
-
-    const startTime = performance.now();
-    // 🔥 config에서 duration 가져오기
-    const duration = isWobble ? (windConfig.flipDuration || 1200) : 600;
-
-    const animate = (timestamp: number) => {
-      const elapsed = (timestamp - startTime) / duration;
-      const progress = Math.min(elapsed, 1);
-      
-      // easing
-      const eased = progress < 0.5 
-        ? 2 * progress * progress
-        : 1 - Math.pow(-2 * progress + 2, 2) / 2;
-      
-      setFlipProgress(eased);
-
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      }
-    };
-
-    requestAnimationFrame(animate);
-  }, [isFlipping, isWobble, windConfig]);
 
   const renderPageContent = () => {
     return (
@@ -355,7 +292,7 @@ export default function PDFPage({
           progress={flipProgress}
           direction={flipDirection}
           onFlipComplete={handleFlipComplete}
-          windConfig={windConfig} // 🔥 현재 선택된 바람 설정 전달
+          windConfig={windConfig}
         />
       );
     }
@@ -364,147 +301,56 @@ export default function PDFPage({
   };
 
   return (
-    <>
+    <div>
       <PDFPageScrollBar
         isDark={isDark}
         totalPages={localTotal}
         currentPage={currentPageIndex !== undefined ? currentPageIndex + 1 : undefined}
       />
-      
       <motion.div style={{ color: textColor }}>
         <ScrollWithKeyboardArrow />
-
-        <div style={{
-          position: 'fixed',
-          bottom: '100px',
-          right: '40px',
-          zIndex: 9999,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '10px',
-          maxWidth: '280px',
-        }}>
-          {/* Wobble 체크박스 */}
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            padding: '8px 12px',
-            background: isDark ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.9)',
-            borderRadius: '8px',
-            boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
-            fontSize: '13px',
-            color: isDark ? '#eee' : '#333',
-          }}>
-            <input
-              type="checkbox"
-              id="wobble-toggle"
-              checked={isWobble}
-              onChange={() => setIsWobble(!isWobble)}
-              style={{
-                width: '18px',
-                height: '18px',
-                cursor: 'pointer',
-                accentColor: isDark ? '#666' : '#333',
-              }}
-            />
-            <label htmlFor="wobble-toggle" style={{ cursor: 'pointer' }}>
-              🌊 3D Wobble
-            </label>
-          </div>
-
-          {/* 🆕 바람 설정 드롭다운 (wobble 활성화 시에만 표시) */}
-          {isWobble && (
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              padding: '4px 8px',
-              background: isDark ? 'rgba(0,0,0,0.6)' : 'rgba(255,255,255,0.9)',
-              borderRadius: '8px',
-              boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
-              fontSize: '12px',
-              color: isDark ? '#eee' : '#333',
-            }}>
-              <span style={{ fontSize: '11px', opacity: 0.7 }}>💨</span>
-              <select
-                value={selectedWindId}
-                onChange={(e) => handleWindConfigChange(e.target.value)}
-                style={{
-                  flex: 1,
-                  padding: '4px 8px',
-                  background: 'transparent',
-                  color: isDark ? '#eee' : '#333',
-                  border: 'none',
-                  fontSize: '12px',
-                  cursor: 'pointer',
-                  outline: 'none',
-                }}
-              >
-                {windConfigList.map((config) => (
-                  <option key={config.id} value={config.id}>
-                    {config.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          <button
-            onClick={handleFlipBackward}
-            disabled={currentPageIndex === 0 || isFlipping}
-            style={{
-              padding: '12px 20px',
-              background: isDark ? '#444' : '#eee',
-              color: isDark ? '#fff' : '#333',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: currentPageIndex > 0 && !isFlipping ? 'pointer' : 'not-allowed',
-              opacity: currentPageIndex > 0 && !isFlipping ? 1 : 0.5,
-              fontSize: '14px',
-              fontWeight: 'bold',
-              boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
-            }}
-          >
-            ◀ Previous
-          </button>
-          <button
-            onClick={handleFlipForward}
-            disabled={currentPageIndex === (localTotal || 1) - 1 || isFlipping}
-            style={{
-              padding: '12px 20px',
-              background: isDark ? '#444' : '#eee',
-              color: isDark ? '#fff' : '#333',
-              border: 'none',
-              borderRadius: '8px',
-              cursor: currentPageIndex < (localTotal || 1) - 1 && !isFlipping ? 'pointer' : 'not-allowed',
-              opacity: currentPageIndex < (localTotal || 1) - 1 && !isFlipping ? 1 : 0.5,
-              fontSize: '14px',
-              fontWeight: 'bold',
-              boxShadow: '0 2px 10px rgba(0,0,0,0.2)'
-            }}
-          >
-            Next ▶
-          </button>
-          
-          <div style={{
-            fontSize: '11px',
-            color: isDark ? '#aaa' : '#666',
-            textAlign: 'center',
-            background: isDark ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.8)',
-            padding: '4px 8px',
-            borderRadius: '4px'
-          }}>
-            {currentPageIndex + 1} / {localTotal || 1}
-            {isFlipping && ' 🔄'}
-            {isWobble && ` 🌊 ${windConfig.name}`}
-          </div>
-        </div>
-
-        <div>
-          {renderWith3D()}
-        </div>
+        {renderWith3D()}
       </motion.div>
+    </div>
+  );
+};
+
+// 🔥 수정: 메인 컴포넌트 - PageFlipController가 PDFPageContent를 감싸도록 함
+export default function PDFPage({
+  data,
+  isActive = true,
+  globalIndex,
+  localIndex,
+  localTotal,
+}: Props) {
+  const { mode } = useDarkMode();
+  const isDark = mode === "dark";
+  
+  // 🆕 Wobble 상태 - 페이지 레벨에서 관리
+  const [isWobble, setIsWobble] = useState(false);
+  
+  // 🆕 Wobble 토글 핸들러
+  const handleWobbleToggle = useCallback(() => {
+    setIsWobble(prev => !prev);
+  }, []);
+
+  return (
+    <>
+      {/* 🆕 PageFlipController가 PDFPageContent를 감싸도록 함 */}
+      <PageFlipController
+        isDark={isDark}
+        totalPages={localTotal || 1}
+        isWobble={isWobble}
+        onWobbleToggle={handleWobbleToggle}
+      >
+        {/* 🔥 PDFPageContent를 children으로 전달 */}
+        <PDFPageContent
+          data={data}
+          isDark={isDark}
+          globalIndex={globalIndex}
+          localTotal={localTotal}
+        />
+      </PageFlipController>
     </>
   );
 }
