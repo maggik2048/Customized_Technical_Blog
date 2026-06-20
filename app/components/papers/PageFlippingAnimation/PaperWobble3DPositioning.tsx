@@ -9,15 +9,15 @@ import React from 'react';
  */
 
 // ============================================================
-// 1. 컨테이너 크기 설정 (전체 화면)
+// 1. 컨테이너 크기 설정 (전체 화면) - 배경 투명
 // ============================================================
 export const CONTAINER_CONFIG = {
   /** 컨테이너 높이 - '100vh'로 전체 화면 높이 */
   height: '100vh',
   /** 컨테이너 너비 - '100vw'로 전체 화면 너비 */
   width: '100vw',
-  /** 컨테이너 배경 그라데이션 */
-  background: 'linear-gradient(180deg, #e8e8e8 0%, #d0d0d0 100%)',
+  /** 컨테이너 배경 - 투명으로 변경 */
+  background: 'transparent',
   /** 컨테이너 테두리 반경 (전체 화면이면 0) */
   borderRadius: '0px',
   /** 컨테이너 overflow */
@@ -29,6 +29,8 @@ export const CONTAINER_CONFIG = {
   left: 0,
   /** z-index - 매우 높게 설정 (다른 요소 위에) */
   zIndex: 99999,
+  /** 포인터 이벤트 - 배경 클릭 방지용 */
+  pointerEvents: 'none' as const,
 } as const;
 
 // ============================================================
@@ -105,15 +107,15 @@ export const SHADOW_CONFIG = {
 } as const;
 
 // ============================================================
-// 7. 로딩 UI 설정
+// 7. 로딩 UI 설정 (🔥 추가됨)
 // ============================================================
 export const LOADING_CONFIG = {
   height: '100vh',
   width: '100vw',
-  background: '#f0f0f0',
+  background: 'rgba(0,0,0,0.3)',
   borderRadius: '0px',
   fontSize: '18px',
-  color: '#666',
+  color: '#fff',
 } as const;
 
 // ============================================================
@@ -121,19 +123,20 @@ export const LOADING_CONFIG = {
 // ============================================================
 export const OVERLAY_CONFIG = {
   position: 'absolute' as const,
-  bottom: '40px',
+  bottom: '30px',
   left: '50%',
   transform: 'translateX(-50%)',
-  background: 'rgba(0,0,0,0.7)',
+  background: 'rgba(0,0,0,0.4)',
   color: 'white',
-  padding: '10px 24px',
-  borderRadius: '30px',
-  fontSize: '16px',
-  backdropFilter: 'blur(8px)',
+  padding: '6px 16px',
+  borderRadius: '20px',
+  fontSize: '13px',
+  backdropFilter: 'blur(4px)',
   display: 'flex',
-  gap: '20px',
+  gap: '12px',
   alignItems: 'center',
-  boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+  boxShadow: '0 2px 10px rgba(0,0,0,0.2)',
+  pointerEvents: 'auto' as const,
 } as const;
 
 // ============================================================

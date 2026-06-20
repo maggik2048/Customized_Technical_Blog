@@ -30,7 +30,7 @@ interface PaperWobble3DProps {
   direction: 'forward' | 'backward' | null;
   onFlipComplete?: () => void;
   windConfig?: WindConfig;
-  onClose?: () => void; // 🆕 닫기 핸들러 추가
+  onClose?: () => void;
 }
 
 // 🔥 순수 물리 기반 종이
@@ -68,7 +68,6 @@ class PhysicsPaper {
     this.connectParticles();
   }
 
-  // 입자 생성
   private createPhysicsParticles() {
     const positions = this.mesh.geometry.attributes.position;
     const posArray = positions.array;
@@ -108,7 +107,6 @@ class PhysicsPaper {
     }
   }
 
-  // 입자 연결
   private connectParticles() {
     const stiffness = 0.3 + this.config.paperStiffness * 0.6;
     
@@ -264,13 +262,9 @@ function PaperMesh({
   const [isFlipping, setIsFlipping] = useState(false);
   const timeRef = useRef(0);
   
-  // 🔥 PAPER_CONFIG에서 segments 사용
   const segments = PAPER_CONFIG.segments;
-  
-  // 🔥 calculatePaperSize 사용
   const { width, height } = calculatePaperSize(viewport.width, viewport.height);
 
-  // 물리 세계 초기화
   useEffect(() => {
     if (!meshRef.current || !isWobble) return;
 
@@ -299,7 +293,6 @@ function PaperMesh({
     };
   }, [isWobble, width, height, segments, windConfig]);
 
-  // 물리 시뮬레이션
   useFrame(({ clock }) => {
     if (!meshRef.current || !worldRef.current || !physicsRef.current) return;
     
@@ -312,11 +305,9 @@ function PaperMesh({
     const isForward = direction === 'forward';
     const p = Math.min(Math.max(progress, 0), 1);
     
-    // 🔥 calculatePaperRotation 사용
     const rotateY = calculatePaperRotation(p, isForward);
     mesh.rotation.y = rotateY;
     
-    // 🔥 calculatePaperPosition 사용
     const { x, z } = calculatePaperPosition(p, viewport.width, isForward);
     mesh.position.x = x;
     mesh.position.z = z;
@@ -366,14 +357,13 @@ export default function PaperWobble3D({
   direction,
   onFlipComplete,
   windConfig = windConfigs.gentleBreeze,
-  onClose, // 🆕 닫기 핸들러
+  onClose,
 }: PaperWobble3DProps) {
   const [texture, setTexture] = useState<THREE.Texture | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isWobble, setIsWobble] = useState(true);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // 🆕 ESC 키로 닫기
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape' && onClose) {
@@ -385,7 +375,6 @@ export default function PaperWobble3D({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
-  // 🆕 마운트 시 body 스크롤 방지
   useEffect(() => {
     if (isActive) {
       document.body.style.overflow = 'hidden';
@@ -423,7 +412,7 @@ export default function PaperWobble3D({
   }, [isActive]);
 
   if (!isActive) {
-    return null; // 🆕 isActive가 false면 아예 렌더링하지 않음
+    return null;
   }
 
   if (isLoading || !texture) {
@@ -436,17 +425,19 @@ export default function PaperWobble3D({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: LOADING_CONFIG.background,
+          background: 'rgba(0,0,0,0.3)', // 🔥 투명한 로딩
           borderRadius: LOADING_CONFIG.borderRadius,
           fontSize: LOADING_CONFIG.fontSize,
-          color: LOADING_CONFIG.color,
+          color: '#fff',
           position: CONTAINER_CONFIG.position,
           top: CONTAINER_CONFIG.top,
           left: CONTAINER_CONFIG.left,
           zIndex: CONTAINER_CONFIG.zIndex,
         }}
       >
-        Loading 3D paper physics...
+        <span style={{ background: 'rgba(0,0,0,0.5)', padding: '20px 40px', borderRadius: '12px' }}>
+          Loading 3D paper...
+        </span>
       </div>
     );
   }
@@ -464,11 +455,11 @@ export default function PaperWobble3D({
         top: CONTAINER_CONFIG.top,
         left: CONTAINER_CONFIG.left,
         zIndex: CONTAINER_CONFIG.zIndex,
-        // 🆕 페이드 인 애니메이션
+        pointerEvents: CONTAINER_CONFIG.pointerEvents,
         animation: 'fadeIn 0.3s ease-out',
       }}
     >
-      {/* 🆕 닫기 버튼 */}
+      {/* 닫기 버튼 */}
       {onClose && (
         <button
           onClick={onClose}
@@ -477,35 +468,36 @@ export default function PaperWobble3D({
             top: '30px',
             right: '40px',
             zIndex: 100000,
-            background: 'rgba(0,0,0,0.6)',
+            background: 'rgba(0,0,0,0.4)',
             color: 'white',
             border: 'none',
             borderRadius: '50%',
-            width: '50px',
-            height: '50px',
-            fontSize: '24px',
+            width: '44px',
+            height: '44px',
+            fontSize: '20px',
             cursor: 'pointer',
             backdropFilter: 'blur(10px)',
             transition: 'all 0.3s ease',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+            pointerEvents: 'auto',
           }}
           onMouseEnter={(e) => {
             e.currentTarget.style.transform = 'scale(1.1)';
-            e.currentTarget.style.background = 'rgba(255,0,0,0.8)';
+            e.currentTarget.style.background = 'rgba(255,0,0,0.7)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = 'scale(1)';
-            e.currentTarget.style.background = 'rgba(0,0,0,0.6)';
+            e.currentTarget.style.background = 'rgba(0,0,0,0.4)';
           }}
         >
           ✕
         </button>
       )}
 
-      {/* 🆕 상단 정보 */}
+      {/* 상단 정보 */}
       <div
         style={{
           position: 'absolute',
@@ -513,21 +505,20 @@ export default function PaperWobble3D({
           left: '40px',
           zIndex: 100000,
           color: 'white',
-          fontSize: '14px',
-          background: 'rgba(0,0,0,0.5)',
-          padding: '8px 16px',
-          borderRadius: '8px',
-          backdropFilter: 'blur(10px)',
+          fontSize: '12px',
+          background: 'rgba(0,0,0,0.3)',
+          padding: '6px 12px',
+          borderRadius: '6px',
+          backdropFilter: 'blur(6px)',
           display: 'flex',
           alignItems: 'center',
-          gap: '12px',
+          gap: '8px',
+          pointerEvents: 'auto',
         }}
       >
-        <span>🌊 3D 모드</span>
-        <span style={{ opacity: 0.5 }}>|</span>
-        <span style={{ fontSize: '12px', opacity: 0.7 }}>
-          ESC 또는 ✕ 버튼으로 닫기
-        </span>
+        <span>🌊 3D</span>
+        <span style={{ opacity: 0.4 }}>|</span>
+        <span style={{ fontSize: '10px', opacity: 0.6 }}>ESC 닫기</span>
       </div>
 
       <Canvas
@@ -540,21 +531,20 @@ export default function PaperWobble3D({
         style={{
           width: '100%',
           height: '100%',
+          background: 'transparent',
+        }}
+        gl={{
+          alpha: true,
+          antialias: true,
+          powerPreference: "high-performance",
         }}
       >
-        {/* 조명 */}
-        <ambientLight intensity={LIGHTING_CONFIG.ambient.intensity} />
-        {LIGHTING_CONFIG.directionalLights.map((light, index) => (
-          <directionalLight
-            key={index}
-            position={light.position}
-            intensity={light.intensity}
-          />
-        ))}
-        <pointLight 
-          position={LIGHTING_CONFIG.pointLight.position}
-          intensity={LIGHTING_CONFIG.pointLight.intensity}
-        />
+        {/* 배경 제거 - 약한 조명만 유지 */}
+        <ambientLight intensity={0.9} />
+        <directionalLight position={[3, 4, 3]} intensity={1.2} />
+        <directionalLight position={[-3, 2, -2]} intensity={0.5} />
+        <directionalLight position={[0, -2, 2]} intensity={0.3} />
+        <pointLight position={[0, 0, 3]} intensity={0.4} />
         
         <PaperMesh
           texture={texture}
@@ -566,25 +556,14 @@ export default function PaperWobble3D({
           windConfig={windConfig}
         />
         
-        {/* 그림자 */}
-        <mesh 
-          position={[0, SHADOW_CONFIG.positionY, SHADOW_CONFIG.positionZ]} 
-          rotation={[-Math.PI / 2, 0, 0]}
-        >
-          <planeGeometry args={[SHADOW_CONFIG.width, SHADOW_CONFIG.height]} />
-          <meshBasicMaterial 
-            color={0x000000}
-            transparent
-            opacity={SHADOW_CONFIG.opacity}
-          />
-        </mesh>
+        {/* 그림자 제거 */}
       </Canvas>
       
       {/* 하단 오버레이 */}
       <div style={OVERLAY_CONFIG}>
         <span>{Math.round(progress * 100)}%</span>
-        <span style={{ opacity: 0.5 }}>|</span>
-        <span style={{ color: isActive ? '#4ade80' : '#888' }}>
+        <span style={{ opacity: 0.3 }}>|</span>
+        <span style={{ color: isActive ? '#4ade80' : '#888', fontSize: '12px' }}>
           {isActive ? `🌊 ${windConfig.name}` : '⏸ Paused'}
         </span>
       </div>
