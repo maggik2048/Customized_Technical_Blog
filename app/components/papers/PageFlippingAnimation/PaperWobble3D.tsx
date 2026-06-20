@@ -8,13 +8,29 @@ import * as THREE from 'three';
 import * as CANNON from 'cannon-es';
 import { WindConfig, windConfigs } from '@/app/data/windConfigs';
 
+// 🔥 위치/크기 설정 import
+import {
+  CONTAINER_CONFIG,
+  CAMERA_CONFIG,
+  PAPER_CONFIG,
+  POSITION_CONFIG,
+  LIGHTING_CONFIG,
+  SHADOW_CONFIG,
+  LOADING_CONFIG,
+  OVERLAY_CONFIG,
+  calculatePaperSize,
+  calculatePaperPosition,
+  calculatePaperRotation,
+} from './PaperWobble3DPositioning';
+
 interface PaperWobble3DProps {
   imagePath: string;
   isActive: boolean;
   progress: number;
   direction: 'forward' | 'backward' | null;
   onFlipComplete?: () => void;
-  windConfig?: WindConfig; // 🆕 바람 설정 받기
+  windConfig?: WindConfig;
+  onClose?: () => void; // 🆕 닫기 핸들러 추가
 }
 
 // 🔥 순수 물리 기반 종이
@@ -71,7 +87,6 @@ class PhysicsPaper {
       const isRightEdge = col === this.cols - 1;
       const isEdge = isLeftEdge || isRightEdge;
       
-      // 🔥 config에서 가져온 파라미터로 입자 생성
       const mass = isEdge ? 0 : 0.015 * (1 - this.config.paperStiffness * 0.5);
       const damping = 0.01 + this.config.paperDamping * 0.05;
       
@@ -95,10 +110,8 @@ class PhysicsPaper {
 
   // 입자 연결
   private connectParticles() {
-    // 🔥 config에서 가져온 강성
     const stiffness = 0.3 + this.config.paperStiffness * 0.6;
     
-    // 수평 연결
     for (let row = 0; row < this.rows; row++) {
       for (let col = 0; col < this.cols - 1; col++) {
         const idx = row * this.cols + col;
@@ -107,7 +120,6 @@ class PhysicsPaper {
       }
     }
     
-    // 수직 연결
     for (let row = 0; row < this.rows - 1; row++) {
       for (let col = 0; col < this.cols; col++) {
         const idx = row * this.cols + col;
@@ -116,7 +128,6 @@ class PhysicsPaper {
       }
     }
     
-    // 대각선 연결
     const diagStiffness = stiffness * 0.6;
     for (let row = 0; row < this.rows - 1; row++) {
       for (let col = 0; col < this.cols - 1; col++) {
@@ -148,12 +159,10 @@ class PhysicsPaper {
     this.constraints.push(constraint);
   }
 
-  // 🔥 바람 적용 (config 사용)
   public applyWind(time: number, progress: number) {
     const vertexCount = this.particles.length;
     const p = Math.min(Math.max(progress, 0), 1);
     
-    // 🔥 config에서 가져온 파라미터
     const baseStrength = this.config.windStrength;
     const turbulence = this.config.turbulence;
     const directionSpeed = this.config.directionChangeSpeed;
@@ -161,11 +170,9 @@ class PhysicsPaper {
     const edgeWeight = this.config.edgeWeight;
     const wobbleIntensity = this.config.wobbleIntensity;
     
-    // 바람 강도 (progress에 따라 변동)
     const progressFactor = Math.sin(p * Math.PI);
     const windStrength = baseStrength * (0.5 + progressFactor * 0.5) * (1 + strengthVariation * 0.5);
     
-    // 바람 방향 (시간에 따라 변화)
     const angleX = time * directionSpeed * 0.5;
     const angleY = time * directionSpeed * 0.3;
     const angleZ = time * directionSpeed * 0.2;
@@ -186,17 +193,14 @@ class PhysicsPaper {
       const u = col / this.cols;
       const v = row / this.rows;
       
-      // 가장자리 효과
       const edgeX = Math.sin(u * Math.PI);
       const edgeY = Math.sin(v * Math.PI);
       const edgeFactor = edgeX * edgeY * edgeWeight + (1 - edgeWeight);
       
-      // 🔥 난기류 (turbulence 사용)
       const noise1 = (Math.random() - 0.5) * turbulence * 2;
       const noise2 = (Math.random() - 0.5) * turbulence * 1.5;
       const noise3 = (Math.random() - 0.5) * turbulence * 2;
       
-      // wobble 강도
       const wobble = wobbleIntensity * (0.5 + Math.sin(time * 2 + u * 5 + v * 3) * 0.5);
       
       const force = new CANNON.Vec3(
@@ -205,14 +209,11 @@ class PhysicsPaper {
         (windDir.z + noise3 * 0.3) * windStrength * 0.5 * (1 + wobble * 0.4)
       );
       
-      // edgeFactor 적용
       force.scale(edgeFactor, force);
-      
       particle.applyForce(force, particle.position);
     }
   }
 
-  // 물리 결과 동기화
   public syncToMesh() {
     const positions = this.mesh.geometry.attributes.position;
     const posArray = positions.array;
@@ -263,9 +264,11 @@ function PaperMesh({
   const [isFlipping, setIsFlipping] = useState(false);
   const timeRef = useRef(0);
   
-  const segments = 20;
-  const width = viewport.width * 0.7;
-  const height = viewport.height * 0.5;
+  // 🔥 PAPER_CONFIG에서 segments 사용
+  const segments = PAPER_CONFIG.segments;
+  
+  // 🔥 calculatePaperSize 사용
+  const { width, height } = calculatePaperSize(viewport.width, viewport.height);
 
   // 물리 세계 초기화
   useEffect(() => {
@@ -309,17 +312,17 @@ function PaperMesh({
     const isForward = direction === 'forward';
     const p = Math.min(Math.max(progress, 0), 1);
     
-    const rotateY = isForward ? -Math.PI * p : Math.PI * p;
+    // 🔥 calculatePaperRotation 사용
+    const rotateY = calculatePaperRotation(p, isForward);
     mesh.rotation.y = rotateY;
     
-    const offset = isForward ? -viewport.width * 0.3 * p : viewport.width * 0.3 * p;
-    mesh.position.x = offset;
-    mesh.position.z = -Math.sin(p * Math.PI) * 0.3;
+    // 🔥 calculatePaperPosition 사용
+    const { x, z } = calculatePaperPosition(p, viewport.width, isForward);
+    mesh.position.x = x;
+    mesh.position.z = z;
 
     if (isWobble && isActive) {
-      // 🔥 config 기반 바람 적용
       physics.applyWind(time, p);
-      
       world.step(1 / 120, 1 / 120, 5);
       physics.syncToMesh();
     }
@@ -344,11 +347,11 @@ function PaperMesh({
     >
       <meshStandardMaterial 
         map={texture}
-        roughness={0.3}
-        metalness={0.0}
+        roughness={PAPER_CONFIG.roughness}
+        metalness={PAPER_CONFIG.metalness}
         side={THREE.DoubleSide}
         transparent={true}
-        opacity={0.95}
+        opacity={PAPER_CONFIG.opacity}
         depthWrite={true}
       />
     </Plane>
@@ -362,11 +365,37 @@ export default function PaperWobble3D({
   progress,
   direction,
   onFlipComplete,
-  windConfig = windConfigs.gentleBreeze, // 기본값
+  windConfig = windConfigs.gentleBreeze,
+  onClose, // 🆕 닫기 핸들러
 }: PaperWobble3DProps) {
   const [texture, setTexture] = useState<THREE.Texture | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isWobble, setIsWobble] = useState(true);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // 🆕 ESC 키로 닫기
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && onClose) {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
+  // 🆕 마운트 시 body 스크롤 방지
+  useEffect(() => {
+    if (isActive) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isActive]);
 
   useEffect(() => {
     if (!imagePath) return;
@@ -393,19 +422,28 @@ export default function PaperWobble3D({
     setIsWobble(isActive);
   }, [isActive]);
 
+  if (!isActive) {
+    return null; // 🆕 isActive가 false면 아예 렌더링하지 않음
+  }
+
   if (isLoading || !texture) {
     return (
       <div
+        ref={containerRef}
         style={{
-          width: '100%',
-          height: '600px',
+          width: CONTAINER_CONFIG.width,
+          height: CONTAINER_CONFIG.height,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: '#f0f0f0',
-          borderRadius: '8px',
-          fontSize: '14px',
-          color: '#666',
+          background: LOADING_CONFIG.background,
+          borderRadius: LOADING_CONFIG.borderRadius,
+          fontSize: LOADING_CONFIG.fontSize,
+          color: LOADING_CONFIG.color,
+          position: CONTAINER_CONFIG.position,
+          top: CONTAINER_CONFIG.top,
+          left: CONTAINER_CONFIG.left,
+          zIndex: CONTAINER_CONFIG.zIndex,
         }}
       >
         Loading 3D paper physics...
@@ -415,32 +453,108 @@ export default function PaperWobble3D({
 
   return (
     <div
+      ref={containerRef}
       style={{
-        width: '100%',
-        height: '600px',
-        borderRadius: '8px',
-        overflow: 'hidden',
-        background: 'linear-gradient(180deg, #e8e8e8 0%, #d0d0d0 100%)',
-        position: 'relative',
+        width: CONTAINER_CONFIG.width,
+        height: CONTAINER_CONFIG.height,
+        borderRadius: CONTAINER_CONFIG.borderRadius,
+        overflow: CONTAINER_CONFIG.overflow,
+        background: CONTAINER_CONFIG.background,
+        position: CONTAINER_CONFIG.position,
+        top: CONTAINER_CONFIG.top,
+        left: CONTAINER_CONFIG.left,
+        zIndex: CONTAINER_CONFIG.zIndex,
+        // 🆕 페이드 인 애니메이션
+        animation: 'fadeIn 0.3s ease-out',
       }}
     >
+      {/* 🆕 닫기 버튼 */}
+      {onClose && (
+        <button
+          onClick={onClose}
+          style={{
+            position: 'absolute',
+            top: '30px',
+            right: '40px',
+            zIndex: 100000,
+            background: 'rgba(0,0,0,0.6)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '50%',
+            width: '50px',
+            height: '50px',
+            fontSize: '24px',
+            cursor: 'pointer',
+            backdropFilter: 'blur(10px)',
+            transition: 'all 0.3s ease',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'scale(1.1)';
+            e.currentTarget.style.background = 'rgba(255,0,0,0.8)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'scale(1)';
+            e.currentTarget.style.background = 'rgba(0,0,0,0.6)';
+          }}
+        >
+          ✕
+        </button>
+      )}
+
+      {/* 🆕 상단 정보 */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '30px',
+          left: '40px',
+          zIndex: 100000,
+          color: 'white',
+          fontSize: '14px',
+          background: 'rgba(0,0,0,0.5)',
+          padding: '8px 16px',
+          borderRadius: '8px',
+          backdropFilter: 'blur(10px)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+        }}
+      >
+        <span>🌊 3D 모드</span>
+        <span style={{ opacity: 0.5 }}>|</span>
+        <span style={{ fontSize: '12px', opacity: 0.7 }}>
+          ESC 또는 ✕ 버튼으로 닫기
+        </span>
+      </div>
+
       <Canvas
         camera={{ 
-          position: [0, 0, 2.8],
-          fov: 40,
-          near: 0.1,
-          far: 10,
+          position: CAMERA_CONFIG.position,
+          fov: CAMERA_CONFIG.fov,
+          near: CAMERA_CONFIG.near,
+          far: CAMERA_CONFIG.far,
         }}
         style={{
           width: '100%',
           height: '100%',
         }}
       >
-        <ambientLight intensity={0.6} />
-        <directionalLight position={[2, 3, 2]} intensity={1.2} />
-        <directionalLight position={[-2, 1, -1]} intensity={0.5} />
-        <directionalLight position={[0, -1, 1]} intensity={0.3} />
-        <pointLight position={[0, 0, 2]} intensity={0.4} />
+        {/* 조명 */}
+        <ambientLight intensity={LIGHTING_CONFIG.ambient.intensity} />
+        {LIGHTING_CONFIG.directionalLights.map((light, index) => (
+          <directionalLight
+            key={index}
+            position={light.position}
+            intensity={light.intensity}
+          />
+        ))}
+        <pointLight 
+          position={LIGHTING_CONFIG.pointLight.position}
+          intensity={LIGHTING_CONFIG.pointLight.intensity}
+        />
         
         <PaperMesh
           texture={texture}
@@ -452,33 +566,22 @@ export default function PaperWobble3D({
           windConfig={windConfig}
         />
         
-        <mesh position={[0, -0.55, -0.3]} rotation={[-Math.PI / 2, 0, 0]}>
-          <planeGeometry args={[2.5, 1.8]} />
+        {/* 그림자 */}
+        <mesh 
+          position={[0, SHADOW_CONFIG.positionY, SHADOW_CONFIG.positionZ]} 
+          rotation={[-Math.PI / 2, 0, 0]}
+        >
+          <planeGeometry args={[SHADOW_CONFIG.width, SHADOW_CONFIG.height]} />
           <meshBasicMaterial 
             color={0x000000}
             transparent
-            opacity={0.08}
+            opacity={SHADOW_CONFIG.opacity}
           />
         </mesh>
       </Canvas>
       
-      <div
-        style={{
-          position: 'absolute',
-          bottom: '20px',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          background: 'rgba(0,0,0,0.6)',
-          color: 'white',
-          padding: '6px 16px',
-          borderRadius: '20px',
-          fontSize: '12px',
-          backdropFilter: 'blur(4px)',
-          display: 'flex',
-          gap: '16px',
-          alignItems: 'center',
-        }}
-      >
+      {/* 하단 오버레이 */}
+      <div style={OVERLAY_CONFIG}>
         <span>{Math.round(progress * 100)}%</span>
         <span style={{ opacity: 0.5 }}>|</span>
         <span style={{ color: isActive ? '#4ade80' : '#888' }}>
