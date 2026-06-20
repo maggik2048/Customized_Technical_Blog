@@ -2,7 +2,7 @@
 "use client";
 
 import React from 'react';
-import PaperWobble3D from './PaperWobble3D';
+import PaperWobble3D from './PageFlippingAnimation/PaperWobble3D';
 
 interface PaperFlipPageProps {
   children: React.ReactNode;

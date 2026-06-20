@@ -30,10 +30,13 @@ import { TextSelectionEngine } from "@/app/components/Markdown/Theme/TextSelecti
 import PostAdminActions from "@/app/admin/PostAdminActions";
 
 // 🆕 리팩토링된 컨트롤러 import
-import { PageFlipController, usePageFlip } from "./pageFlipController";
+import { PageFlipController, usePageFlip } from "../../components/papers/PageFlippingAnimation/pageFlipController";
 
 // 🆕 3D 종이 import
-import PaperWobble3D from "@/app/components/papers/PaperWobble3D";
+import PaperWobble3D from "@/app/components/papers/PageFlippingAnimation/PaperWobble3D";
+
+// 🆕 SnapshotManager import
+import { useSnapshotManager } from "@/app/components/papers/PageFlippingAnimation/SnapshotManager";
 
 type Props = {
   data: any;
@@ -53,6 +56,16 @@ const PDFPageContent: React.FC<{
   globalIndex?: number;
   localTotal?: number;
 }> = ({ data, isDark, globalIndex, localTotal }) => {
+  // 🆕 SnapshotManager 사용
+  const { 
+    contentRef: snapshotContentRef, 
+    setActive, 
+    capture, 
+    isCapturing, 
+    savedPath,
+    error 
+  } = useSnapshotManager();
+  
   const contentRef = useRef<HTMLDivElement>(null);
   const headerImage = getHeaderImage(data);
   const textColor = isDark ? "#eee" : "#111";
@@ -68,6 +81,12 @@ const PDFPageContent: React.FC<{
     isWobble,
     handleFlipComplete,
   } = usePageFlip();
+
+  // 🆕 이 페이지가 활성화되면 SnapshotManager에 등록
+  useEffect(() => {
+    setActive(true);
+    return () => setActive(false);
+  }, [setActive]);
 
   const hasProject = React.useMemo(() => {
     const hasProjects = data?.project_slugs && 
@@ -153,9 +172,85 @@ const PDFPageContent: React.FC<{
     });
   }, [highlightEngine]);
 
+  // 🆕 스크린샷 캡처 핸들러
+  const handleCaptureScreenshot = useCallback(async () => {
+    try {
+      const result = await capture({
+        scale: 2,
+        backgroundColor: '#ffffff',
+        useCORS: true,
+      });
+      
+      console.log('✅ Screenshot captured:', result.savedPath);
+      
+      // 저장 완료 알림 (선택사항)
+      if (result.savedPath) {
+        // 간단한 토스트 메시지나 알림 표시
+        console.log(`📸 Saved to: ${result.savedPath}`);
+      }
+    } catch (err) {
+      console.error('❌ Failed to capture screenshot:', err);
+    }
+  }, [capture]);
+
   const renderPageContent = () => {
     return (
       <div style={pageStyle}>
+        {/* 🆕 스크린샷 버튼 - 오른쪽 상단 */}
+        <div
+          style={{
+            position: "absolute",
+            top: 66,
+            right: 160, // PostAdminActions 옆으로 배치
+            zIndex: 9999,
+            pointerEvents: "auto",
+            display: "flex",
+            gap: "8px",
+          }}
+        >
+          <button
+            onClick={handleCaptureScreenshot}
+            disabled={isCapturing}
+            style={{
+              padding: "8px 16px",
+              background: isCapturing ? "#666" : "#0070f3",
+              color: "white",
+              border: "none",
+              borderRadius: "6px",
+              cursor: isCapturing ? "not-allowed" : "pointer",
+              fontSize: "13px",
+              fontWeight: "bold",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+              transition: "all 0.2s ease",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+            }}
+            onMouseEnter={(e) => {
+              if (!isCapturing) {
+                e.currentTarget.style.background = "#005bb5";
+                e.currentTarget.style.transform = "scale(1.05)";
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (!isCapturing) {
+                e.currentTarget.style.background = "#0070f3";
+                e.currentTarget.style.transform = "scale(1)";
+              }
+            }}
+          >
+            {isCapturing ? (
+              <>
+                <span>⏳</span> 저장 중...
+              </>
+            ) : (
+              <>
+                <span>📸</span> 스크린샷
+              </>
+            )}
+          </button>
+        </div>
+
         <div
           style={{
             position: "absolute",
@@ -234,8 +329,9 @@ const PDFPageContent: React.FC<{
             paddingBottom={20}
             backgroundSize="520px 520px"
           >
+            {/* 🆕 contentRef를 snapshotContentRef로 변경 */}
             <div
-              ref={contentRef}
+              ref={snapshotContentRef}
               style={markdownWrapperStyle}
               onMouseUp={handleMouseUp}
             >
@@ -278,6 +374,75 @@ const PDFPageContent: React.FC<{
           <div style={{ clear: "both" }} />
           <GotoTheTop isDark={isDark} />
         </div>
+
+        {/* 🆕 저장 완료 토스트 메시지 */}
+        {savedPath && (
+          <div
+            style={{
+              position: "fixed",
+              bottom: "30px",
+              right: "30px",
+              background: "rgba(0, 0, 0, 0.85)",
+              color: "#4CAF50",
+              padding: "14px 24px",
+              borderRadius: "10px",
+              zIndex: 99999,
+              fontSize: "14px",
+              fontFamily: "monospace",
+              boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
+              animation: "slideIn 0.3s ease-out",
+              backdropFilter: "blur(10px)",
+              border: "1px solid rgba(76, 175, 80, 0.3)",
+              maxWidth: "400px",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <span style={{ fontSize: "20px" }}>✅</span>
+              <div>
+                <div style={{ fontWeight: "bold", marginBottom: "4px" }}>
+                  스크린샷 저장 완료!
+                </div>
+                <div style={{ fontSize: "12px", color: "#aaa", wordBreak: "break-all" }}>
+                  {savedPath}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 🆕 에러 메시지 */}
+        {error && (
+          <div
+            style={{
+              position: "fixed",
+              bottom: "30px",
+              right: "30px",
+              background: "rgba(0, 0, 0, 0.85)",
+              color: "#f44336",
+              padding: "14px 24px",
+              borderRadius: "10px",
+              zIndex: 99999,
+              fontSize: "14px",
+              boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
+              animation: "slideIn 0.3s ease-out",
+              backdropFilter: "blur(10px)",
+              border: "1px solid rgba(244, 67, 54, 0.3)",
+              maxWidth: "400px",
+            }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <span style={{ fontSize: "20px" }}>❌</span>
+              <div>
+                <div style={{ fontWeight: "bold", marginBottom: "4px" }}>
+                  스크린샷 저장 실패
+                </div>
+                <div style={{ fontSize: "12px", color: "#aaa" }}>
+                  {error.message || "알 수 없는 오류가 발생했습니다."}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   };
