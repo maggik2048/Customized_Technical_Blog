@@ -2,7 +2,7 @@
 
 import React from "react";
 
-import { useDarkMode } from "@/app/context/DarkModeContext";
+import { useDarkMode } from "@/app/contexts/DarkModeContext";
 
 import CodeBlockWithCopy from "./CodeBlock_black";
 

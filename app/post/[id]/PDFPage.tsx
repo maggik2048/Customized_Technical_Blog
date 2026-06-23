@@ -6,7 +6,7 @@ import "katex/dist/katex.min.css";
 import { motion } from "framer-motion";
 
 import { markdownComponents } from "@/lib/markdownComponents";
-import { useDarkMode } from "@/app/context/DarkModeContext";
+import { useDarkMode } from "@/app/contexts/DarkModeContext";
 import { getHeaderImage } from "@/app/-Data/getHeaderImage";
 import { visualizationRegistry } from "@/lib/visualizationRegistry";
 
@@ -37,6 +37,9 @@ import PaperWobble3D from "@/app/components/papers/PageFlippingAnimation/PaperWo
 
 // 🆕 SnapshotManager import
 import { useSnapshotManager } from "@/app/components/papers/PageFlippingAnimation/SnapshotManager";
+
+// 🆕 ThemeProvider import
+import { ThemeProvider } from "@/app/contexts/ThemeContext";
 
 type Props = {
   data: any;
@@ -193,257 +196,283 @@ const PDFPageContent: React.FC<{
     }
   }, [capture]);
 
+  // Determine theme type based on category
+  const getThemeType = () => {
+    const category = data?.category;
+    const NOTE_STYLE_CATEGORIES = [
+      "network", "ai", "sqldb", "compiler", "embed", "discrete",
+      "digitalelec", "os", "systems", "dsa", "cpp", "oop", "se",
+      "security", "mt_concurrency", "graphics_pipeline", "unreal",
+      "digitalTwin", "gameMath"
+    ];
+    const LETTER_STYLE_CATEGORIES = ["french"];
+    
+    if (!category) return 'default';
+    
+    if (LETTER_STYLE_CATEGORIES.includes(category.trim())) {
+      return 'letter';
+    }
+    if (NOTE_STYLE_CATEGORIES.includes(category.trim())) {
+      return 'note';
+    }
+    return 'default';
+  };
+
+  const themeType = getThemeType();
+
   const renderPageContent = () => {
     return (
-      <div style={pageStyle}>
-        {/* 🆕 스크린샷 버튼 - 오른쪽 상단 */}
-        <div
-          style={{
-            position: "absolute",
-            top: 66,
-            right: 160, // PostAdminActions 옆으로 배치
-            zIndex: 9999,
-            pointerEvents: "auto",
-            display: "flex",
-            gap: "8px",
-          }}
-        >
-          <button
-            onClick={handleCaptureScreenshot}
-            disabled={isCapturing}
+      <ThemeProvider theme={themeType}>
+        <div style={pageStyle}>
+          {/* 🆕 스크린샷 버튼 - 오른쪽 상단 */}
+          <div
             style={{
-              padding: "8px 16px",
-              background: isCapturing ? "#666" : "#0070f3",
-              color: "white",
-              border: "none",
-              borderRadius: "6px",
-              cursor: isCapturing ? "not-allowed" : "pointer",
-              fontSize: "13px",
-              fontWeight: "bold",
-              boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-              transition: "all 0.2s ease",
+              position: "absolute",
+              top: 66,
+              right: 160, // PostAdminActions 옆으로 배치
+              zIndex: 9999,
+              pointerEvents: "auto",
               display: "flex",
-              alignItems: "center",
-              gap: "6px",
-            }}
-            onMouseEnter={(e) => {
-              if (!isCapturing) {
-                e.currentTarget.style.background = "#005bb5";
-                e.currentTarget.style.transform = "scale(1.05)";
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!isCapturing) {
-                e.currentTarget.style.background = "#0070f3";
-                e.currentTarget.style.transform = "scale(1)";
-              }
+              gap: "8px",
             }}
           >
-            {isCapturing ? (
-              <>
-                <span>⏳</span> 저장 중...
-              </>
-            ) : (
-              <>
-                <span>📸</span> 스크린샷
-              </>
-            )}
-          </button>
-        </div>
-
-        <div
-          style={{
-            position: "absolute",
-            top: 16,
-            right: 40,
-            zIndex: 9999,
-            pointerEvents: "auto",
-          }}
-        >
-          <PostAdminActions
-            postId={data.id}
-            category={data.category}
-          />
-        </div>
-
-        <div
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: isDark
-              ? "rgba(60,60,60,0.3)"
-              : "rgba(255,255,255,0.2)",
-            borderRadius: 12,
-            pointerEvents: "none",
-            zIndex: 0,
-          }}
-        />
-
-        <PDFPageHeader
-          data={data}
-          isDark={isDark}
-          headerImage={headerImage}
-          globalIndex={globalIndex}
-          localIndex={currentPageIndex}
-          localTotal={localTotal}
-          headerHeight={HEADER_HEIGHT}
-        />
-
-        <div
-          style={{
-            paddingTop: HEADER_HEIGHT - 36,
-            position: "relative",
-            zIndex: 1,
-          }}
-        >
-          <div style={{ 
-            position: "relative", 
-            zIndex: 9998,
-            transform: "translateY(60px)",
-            marginBottom: "10px",
-          }}>
-            <MetadataPostalCode data={data} isDark={isDark} />
-          </div>
-
-          <GotoGitHubCorresponding 
-            commitUrl={data?.commit_url}
-            hasProject={hasProject}
-          />
-
-          <div
-            style={{
-              float: "left",
-              width: 165,
-              height: 110,
-              pointerEvents: "none",
-            }}
-          />
-
-          <DocContentBackgroundManager
-            parentPaddingLeft={64}
-            parentPaddingRight={64}
-            paddingTop={20}
-            paddingBottom={20}
-            backgroundSize="520px 520px"
-          >
-            {/* 🆕 contentRef를 snapshotContentRef로 변경 */}
-            <div
-              ref={snapshotContentRef}
-              style={markdownWrapperStyle}
-              onMouseUp={handleMouseUp}
+            <button
+              onClick={handleCaptureScreenshot}
+              disabled={isCapturing}
+              style={{
+                padding: "8px 16px",
+                background: isCapturing ? "#666" : "#0070f3",
+                color: "white",
+                border: "none",
+                borderRadius: "6px",
+                cursor: isCapturing ? "not-allowed" : "pointer",
+                fontSize: "13px",
+                fontWeight: "bold",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                transition: "all 0.2s ease",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
+              onMouseEnter={(e) => {
+                if (!isCapturing) {
+                  e.currentTarget.style.background = "#005bb5";
+                  e.currentTarget.style.transform = "scale(1.05)";
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!isCapturing) {
+                  e.currentTarget.style.background = "#0070f3";
+                  e.currentTarget.style.transform = "scale(1)";
+                }
+              }}
             >
-              <NotepageLines>
-                {parsedParts.map((item) => {
-                  if (item.kind === "viz") {
-                    const Component = item.Component;
-                    return (
-                      <div key={item.key}>
-                        <Component />
-                      </div>
-                    );
-                  }
+              {isCapturing ? (
+                <>
+                  <span>⏳</span> 저장 중...
+                </>
+              ) : (
+                <>
+                  <span>📸</span> 스크린샷
+                </>
+              )}
+            </button>
+          </div>
 
-                  if (item.kind === "diff") {
+          <div
+            style={{
+              position: "absolute",
+              top: 16,
+              right: 40,
+              zIndex: 9999,
+              pointerEvents: "auto",
+            }}
+          >
+            <PostAdminActions
+              postId={data.id}
+              category={data.category}
+            />
+          </div>
+
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: isDark
+                ? "rgba(60,60,60,0.3)"
+                : "rgba(255,255,255,0.2)",
+              borderRadius: 12,
+              pointerEvents: "none",
+              zIndex: 0,
+            }}
+          />
+
+          <PDFPageHeader
+            data={data}
+            isDark={isDark}
+            headerImage={headerImage}
+            globalIndex={globalIndex}
+            localIndex={currentPageIndex}
+            localTotal={localTotal}
+            headerHeight={HEADER_HEIGHT}
+          />
+
+          <div
+            style={{
+              paddingTop: HEADER_HEIGHT - 36,
+              position: "relative",
+              zIndex: 1,
+            }}
+          >
+            <div style={{ 
+              position: "relative", 
+              zIndex: 9998,
+              transform: "translateY(60px)",
+              marginBottom: "10px",
+            }}>
+              <MetadataPostalCode data={data} isDark={isDark} />
+            </div>
+
+            <GotoGitHubCorresponding 
+              commitUrl={data?.commit_url}
+              hasProject={hasProject}
+            />
+
+            <div
+              style={{
+                float: "left",
+                width: 165,
+                height: 110,
+                pointerEvents: "none",
+              }}
+            />
+
+            <DocContentBackgroundManager
+              parentPaddingLeft={64}
+              parentPaddingRight={64}
+              paddingTop={20}
+              paddingBottom={20}
+              backgroundSize="520px 520px"
+            >
+              {/* 🆕 contentRef를 snapshotContentRef로 변경 */}
+              <div
+                ref={snapshotContentRef}
+                style={markdownWrapperStyle}
+                onMouseUp={handleMouseUp}
+              >
+                <NotepageLines>
+                  {parsedParts.map((item) => {
+                    if (item.kind === "viz") {
+                      const Component = item.Component;
+                      return (
+                        <div key={item.key}>
+                          <Component />
+                        </div>
+                      );
+                    }
+
+                    if (item.kind === "diff") {
+                      return (
+                        <DiffVisualizer
+                          key={item.key}
+                          raw={item.content}
+                        />
+                      );
+                    }
+
                     return (
-                      <DiffVisualizer
+                      <MemoMarkdownRendererCoordinator
                         key={item.key}
-                        raw={item.content}
-                      />
+                        category={data?.category}
+                        markdownComponents={mdComponents}
+                        isDark={isDark}
+                        CodeBlock={CodeBlock}
+                      >
+                        {item.content}
+                      </MemoMarkdownRendererCoordinator>
                     );
-                  }
+                  })}
+                </NotepageLines>
+              </div>
+            </DocContentBackgroundManager>
 
-                  return (
-                    <MemoMarkdownRendererCoordinator
-                      key={item.key}
-                      category={data?.category}
-                      markdownComponents={mdComponents}
-                      isDark={isDark}
-                      CodeBlock={CodeBlock}
-                    >
-                      {item.content}
-                    </MemoMarkdownRendererCoordinator>
-                  );
-                })}
-              </NotepageLines>
+            <div style={{ clear: "both" }} />
+            <GotoTheTop isDark={isDark} />
+          </div>
+
+          {/* 🆕 저장 완료 토스트 메시지 */}
+          {savedPath && (
+            <div
+              style={{
+                position: "fixed",
+                bottom: "30px",
+                right: "30px",
+                background: "rgba(0, 0, 0, 0.85)",
+                color: "#4CAF50",
+                padding: "14px 24px",
+                borderRadius: "10px",
+                zIndex: 99999,
+                fontSize: "14px",
+                fontFamily: "monospace",
+                boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
+                animation: "slideIn 0.3s ease-out",
+                backdropFilter: "blur(10px)",
+                border: "1px solid rgba(76, 175, 80, 0.3)",
+                maxWidth: "400px",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <span style={{ fontSize: "20px" }}>✅</span>
+                <div>
+                  <div style={{ fontWeight: "bold", marginBottom: "4px" }}>
+                    스크린샷 저장 완료!
+                  </div>
+                  <div style={{ fontSize: "12px", color: "#aaa", wordBreak: "break-all" }}>
+                    {savedPath}
+                  </div>
+                </div>
+              </div>
             </div>
-          </DocContentBackgroundManager>
+          )}
 
-          <div style={{ clear: "both" }} />
-          <GotoTheTop isDark={isDark} />
+          {/* 🆕 에러 메시지 */}
+          {error && (
+            <div
+              style={{
+                position: "fixed",
+                bottom: "30px",
+                right: "30px",
+                background: "rgba(0, 0, 0, 0.85)",
+                color: "#f44336",
+                padding: "14px 24px",
+                borderRadius: "10px",
+                zIndex: 99999,
+                fontSize: "14px",
+                boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
+                animation: "slideIn 0.3s ease-out",
+                backdropFilter: "blur(10px)",
+                border: "1px solid rgba(244, 67, 54, 0.3)",
+                maxWidth: "400px",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <span style={{ fontSize: "20px" }}>❌</span>
+                <div>
+                  <div style={{ fontWeight: "bold", marginBottom: "4px" }}>
+                    스크린샷 저장 실패
+                  </div>
+                  <div style={{ fontSize: "12px", color: "#aaa" }}>
+                    {error.message || "알 수 없는 오류가 발생했습니다."}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-
-        {/* 🆕 저장 완료 토스트 메시지 */}
-        {savedPath && (
-          <div
-            style={{
-              position: "fixed",
-              bottom: "30px",
-              right: "30px",
-              background: "rgba(0, 0, 0, 0.85)",
-              color: "#4CAF50",
-              padding: "14px 24px",
-              borderRadius: "10px",
-              zIndex: 99999,
-              fontSize: "14px",
-              fontFamily: "monospace",
-              boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
-              animation: "slideIn 0.3s ease-out",
-              backdropFilter: "blur(10px)",
-              border: "1px solid rgba(76, 175, 80, 0.3)",
-              maxWidth: "400px",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <span style={{ fontSize: "20px" }}>✅</span>
-              <div>
-                <div style={{ fontWeight: "bold", marginBottom: "4px" }}>
-                  스크린샷 저장 완료!
-                </div>
-                <div style={{ fontSize: "12px", color: "#aaa", wordBreak: "break-all" }}>
-                  {savedPath}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 🆕 에러 메시지 */}
-        {error && (
-          <div
-            style={{
-              position: "fixed",
-              bottom: "30px",
-              right: "30px",
-              background: "rgba(0, 0, 0, 0.85)",
-              color: "#f44336",
-              padding: "14px 24px",
-              borderRadius: "10px",
-              zIndex: 99999,
-              fontSize: "14px",
-              boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
-              animation: "slideIn 0.3s ease-out",
-              backdropFilter: "blur(10px)",
-              border: "1px solid rgba(244, 67, 54, 0.3)",
-              maxWidth: "400px",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <span style={{ fontSize: "20px" }}>❌</span>
-              <div>
-                <div style={{ fontWeight: "bold", marginBottom: "4px" }}>
-                  스크린샷 저장 실패
-                </div>
-                <div style={{ fontSize: "12px", color: "#aaa" }}>
-                  {error.message || "알 수 없는 오류가 발생했습니다."}
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
+      </ThemeProvider>
     );
   };
 

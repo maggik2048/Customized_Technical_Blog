@@ -5,8 +5,8 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import SidebarState from "./components/SidebarCategory/SidebarState";
-import { DarkModeProvider } from "./context/DarkModeContext.tsx";
-import { CastShadowFilterProvider } from "./context/CastShadowFilterContext";
+import { DarkModeProvider } from "./contexts/DarkModeContext";
+import { CastShadowFilterProvider } from "./contexts/CastShadowFilterContext";
 
 import { HDRIProvider } from "./components/Markdown/Theme/HDRIProvider";
 

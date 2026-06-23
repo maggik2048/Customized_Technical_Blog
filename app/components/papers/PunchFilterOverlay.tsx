@@ -1,6 +1,6 @@
 "use client";
 
-import { useCastShadowFilter } from "@/app/context/CastShadowFilterContext";
+import { useCastShadowFilter } from "@/app/contexts/CastShadowFilterContext";
 
 export default function PunchFilterOverlay() {
   const { filterOn } = useCastShadowFilter();

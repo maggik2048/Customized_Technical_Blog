@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { useCastShadowFilter } from "@/app/context/CastShadowFilterContext";
+import { useCastShadowFilter } from "@/app/contexts/CastShadowFilterContext";
 
 type Props = {
   side: "left" | "right" | "center";

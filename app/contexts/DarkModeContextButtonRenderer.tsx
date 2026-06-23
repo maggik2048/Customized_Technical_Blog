@@ -1,8 +1,8 @@
 "use client";
 
 import React from "react";
-import { useDarkMode } from "@/app/context/DarkModeContext";
-import { useCastShadowFilter } from "@/app/context/CastShadowFilterContext";
+import { useDarkMode } from "@/app/contexts/DarkModeContext";
+import { useCastShadowFilter } from "@/app/contexts/CastShadowFilterContext";
 import { Dorsa } from "next/font/google";
 
 const dorsa = Dorsa({

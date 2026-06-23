@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
-import { useDarkMode } from "@/app/context/DarkModeContext";
+import { useDarkMode } from "@/app/contexts/DarkModeContext";
 
-import DarkModeContextButtonRenderer from "@/app/context/DarkModeContextButtonRenderer";
+import DarkModeContextButtonRenderer from "@/app/contexts/DarkModeContextButtonRenderer";
 import DrawingPenButton from "@/app/Graphics/DrawingNotation/DrawingPenButton";
 
 import { HDRIProvider } from "@/app/components/Markdown/Theme/HDRIProvider";
