@@ -85,7 +85,13 @@ export default function PostForm({
   const [
     commitPending,
     setCommitPending,
-  ] = useState(false);  
+  ] = useState(false);
+
+  /*
+    post-processing toggle state - ENABLED by default
+  */
+
+  const [isPostProcessingEnabled, setIsPostProcessingEnabled] = useState(true);
 
   /*
     metadata load
@@ -242,6 +248,14 @@ export default function PostForm({
     ).map(
       (option) => option.value
     );
+  };
+
+  /*
+    toggle post-processing handler
+  */
+
+  const togglePostProcessing = () => {
+    setIsPostProcessingEnabled(prev => !prev);
   };
 
   /*
@@ -561,11 +575,53 @@ export default function PostForm({
         />
       </div>
 
+      {/* Post-Processing Toggle Button */}
+      <div
+        style={{
+          marginBottom: 16,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          padding: '8px 12px',
+          border: '1px solid #333',
+          borderRadius: '8px',
+          backgroundColor: '#1a1a1a'
+        }}
+      >
+        <span style={{ fontWeight: 700, color: '#ccc' }}>
+          Post-Processing Rules:
+        </span>
+        <button
+          type="button"
+          onClick={togglePostProcessing}
+          style={{
+            padding: "6px 16px",
+            border: "none",
+            borderRadius: 6,
+            cursor: "pointer",
+            fontWeight: 700,
+            fontSize: "14px",
+            background: isPostProcessingEnabled ? "#22c55e" : "#ef4444",
+            color: "#fff",
+            transition: "all 0.2s ease",
+            minWidth: "80px",
+          }}
+        >
+          {isPostProcessingEnabled ? "🟢 ENABLED" : "🔴 DISABLED"}
+        </button>
+        <span style={{ fontSize: "12px", color: "#888", marginLeft: "8px" }}>
+          {isPostProcessingEnabled
+            ? "All rules are active"
+            : "All rules are temporarily disabled"}
+        </span>
+      </div>
+
       {/* Markdown */}
 
       <MarkdownImageManager
         content={content}
         setContent={setContent}
+        disablePostProcessing={!isPostProcessingEnabled}
       />
 
       {/* Commit Ready */}

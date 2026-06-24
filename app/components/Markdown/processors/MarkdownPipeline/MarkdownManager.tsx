@@ -21,6 +21,7 @@ import { uploadImage } from "../../imagehandle/uploadImage";
 import { DocumentPostProcessor } from "./DocumentPostProcessor";
 
 import { uploadQueue } from "../../imagehandle/uploadQueue";
+
 /**
  * =========================================
  * TYPES
@@ -29,10 +30,8 @@ import { uploadQueue } from "../../imagehandle/uploadQueue";
 
 type Props = {
   content: string;
-
-  setContent: React.Dispatch<
-    React.SetStateAction<string>
-  >;
+  setContent: React.Dispatch<React.SetStateAction<string>>;
+  disablePostProcessing?: boolean; // NEW: toggle prop
 };
 
 /**
@@ -43,9 +42,7 @@ type Props = {
 
 const turndown = new TurndownService({
   headingStyle: "atx",
-
   codeBlockStyle: "fenced",
-
   emDelimiter: "*",
 });
 
@@ -60,6 +57,7 @@ turndown.use(gfm);
 export default function MarkdownManager({
   content,
   setContent,
+  disablePostProcessing = false, // Default: false (processing ENABLED)
 }: Props) {
   /**
    * =====================================
@@ -123,13 +121,11 @@ export default function MarkdownManager({
       console.log(markdown);
 
       /**
-       * FINAL POST PROCESS
+       * FINAL POST PROCESS - only if not disabled
        */
-
-      const processed =
-        DocumentPostProcessor.process(
-          markdown
-        );
+      const processed = disablePostProcessing
+        ? markdown
+        : DocumentPostProcessor.process(markdown);
 
       /**
        * react state sync
@@ -178,7 +174,7 @@ export default function MarkdownManager({
         handler
       );
     };
-  }, [setContent]);
+  }, [setContent, disablePostProcessing]);
 
   /**
    * =====================================
@@ -192,13 +188,11 @@ export default function MarkdownManager({
       insert: string
     ) => {
       /**
-       * FINAL POST PROCESS
+       * FINAL POST PROCESS - only if not disabled
        */
-
-      const processed =
-        DocumentPostProcessor.process(
-          insert
-        );
+      const processed = disablePostProcessing
+        ? insert
+        : DocumentPostProcessor.process(insert);
 
       const current =
         view.state.doc.toString();
@@ -223,7 +217,7 @@ export default function MarkdownManager({
 
       setContent(next);
     },
-    [setContent]
+    [setContent, disablePostProcessing]
   );
 
   /**
@@ -746,8 +740,35 @@ export default function MarkdownManager({
 
         minHeight: "100vh",
         alignItems: "stretch",
+        position: "relative", // For the disabled indicator badge
       }}
     >
+      {/* ================================= */}
+      {/* DISABLED INDICATOR BADGE */}
+      {/* ================================= */}
+      
+      {disablePostProcessing && (
+        <div
+          style={{
+            position: "absolute",
+            top: "12px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: "#ef4444",
+            color: "#fff",
+            padding: "4px 16px",
+            borderRadius: "4px",
+            fontSize: "12px",
+            fontWeight: 700,
+            zIndex: 1000,
+            opacity: 0.9,
+            boxShadow: "0 2px 8px rgba(239, 68, 68, 0.3)",
+          }}
+        >
+          ⚠️ POST-PROCESSING DISABLED
+        </div>
+      )}
+
       {/* ================================= */}
       {/* LEFT : EDITOR */}
       {/* ================================= */}
