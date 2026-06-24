@@ -5,7 +5,7 @@ import { useTheme } from "@/app/contexts/ThemeContext";
 
 // 배경 이미지 상수화
 const DEFAULT_BG_IMAGE = "/images/dossierBg/woodmarble233.png";
-const MARBLE_BG_IMAGE = "/images/dossierBg/marble2.png";
+const MARBLE_BG_IMAGE = "/images/dossierBg/marble222.png";
 
 interface DocContentBackgroundManagerProps {
   children: React.ReactNode;
