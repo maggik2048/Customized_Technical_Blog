@@ -49,7 +49,6 @@ const NOTE_STYLE_CATEGORIES = [
 ========================= */
 
 const LETTER_STYLE_CATEGORIES = [
-  // la langue française(French Language)
   "french",
 ];
 
@@ -116,27 +115,55 @@ function MarkdownRendererCoordinatorComponent({
   });
 
   // =========================
-  // 🆕 CODE BLOCK INDEX WRAPPER
+  // 🆕 CODE BLOCK INDEX WRAPPER (수정됨)
   // =========================
-  // 각 렌더러에 전달할 CodeBlock을 index 기능이 추가된 버전으로 래핑
-  const CodeBlockWithIndex = React.useMemo(() => {
-    // 코드 블록 카운터
-    let codeBlockIndex = 0;
+  
+  // ✅ 컴포넌트 인스턴스당 하나의 카운터 유지 (ref로 관리)
+  const codeBlockCounterRef = React.useRef(0);
+  
+  // ✅ 콘텐츠 기반 매핑 (중복 방지 및 안정적인 인덱스 할당)
+  const codeBlockMapRef = React.useRef<Map<string, number>>(new Map());
+  
+  // ✅ 마크다운 내용이 변경될 때마다 카운터 리셋 (새로운 문서)
+  React.useEffect(() => {
+    // 새로운 마크다운 내용이 들어오면 카운터 초기화
+    codeBlockCounterRef.current = 0;
+    codeBlockMapRef.current.clear();
+    console.log('🔄 MarkdownRendererCoordinator: 코드 블록 카운터 리셋');
+  }, [children]); // ← children이 변경될 때마다 리셋
 
-    // 실제 렌더링에 사용될 컴포넌트
-    const WrappedCodeBlock = (props: any) => {
+  // ✅ CodeBlock을 래핑하는 컴포넌트 (수정됨)
+  const CodeBlockWithIndex = React.useCallback(
+    (props: any) => {
       // 코드 블록인지 확인 (inline이 아니고 language-가 있으면)
       const isCodeBlock = !props.inline && props.className?.includes("language-");
       
-      // 코드 블록이면 index 할당하고 증가
-      const index = isCodeBlock ? codeBlockIndex++ : undefined;
+      // 코드 블록이 아니면 원래대로
+      if (!isCodeBlock) {
+        return <CodeBlock {...props} />;
+      }
       
-      // 원래 CodeBlock 컴포넌트에 index prop 추가해서 전달
-      return <CodeBlock {...props} index={index} />;
-    };
-
-    return WrappedCodeBlock;
-  }, [CodeBlock]);
+      // ✅ 콘텐츠 기반으로 고유 키 생성
+      const content = String(props.children || '');
+      const contentKey = `${content.substring(0, 30)}-${content.length}`;
+      
+      // ✅ 이미 매핑된 인덱스가 있는지 확인
+      let blockIndex = codeBlockMapRef.current.get(contentKey);
+      
+      if (blockIndex === undefined) {
+        // 새 코드 블록이면 인덱스 할당
+        blockIndex = codeBlockCounterRef.current++;
+        codeBlockMapRef.current.set(contentKey, blockIndex);
+        console.log(`📝 새 코드 블록: index=${blockIndex}, key=${contentKey.substring(0, 20)}...`);
+      } else {
+        console.log(`♻️ 기존 코드 블록 재사용: index=${blockIndex}, key=${contentKey.substring(0, 20)}...`);
+      }
+      
+      // ✅ index prop 전달
+      return <CodeBlock {...props} index={blockIndex} />;
+    },
+    [CodeBlock] // CodeBlock이 변경될 때만 새로 생성
+  );
 
   // =========================
   // LETTER STYLE
@@ -186,11 +213,28 @@ function MarkdownRendererCoordinatorComponent({
 }
 
 /* =========================
-   EXPORT MEMOIZED
+   EXPORT MEMOIZED (개선됨)
 ========================= */
 
 const MarkdownRendererCoordinator = React.memo(
-  MarkdownRendererCoordinatorComponent
+  MarkdownRendererCoordinatorComponent,
+  // ✅ props가 실제로 변경되었을 때만 리렌더링
+  (prevProps, nextProps) => {
+    const isSame = 
+      prevProps.children === nextProps.children &&
+      prevProps.category === nextProps.category &&
+      prevProps.isDark === nextProps.isDark;
+    
+    if (!isSame) {
+      console.log('🔄 MarkdownRendererCoordinator 리렌더링:', {
+        childrenChanged: prevProps.children !== nextProps.children,
+        categoryChanged: prevProps.category !== nextProps.category,
+        isDarkChanged: prevProps.isDark !== nextProps.isDark,
+      });
+    }
+    
+    return isSame;
+  }
 );
 
 export default MarkdownRendererCoordinator;

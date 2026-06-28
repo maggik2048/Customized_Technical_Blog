@@ -30,9 +30,10 @@ interface CodeBlock3DProps {
   children: string;
   language?: string;
   index?: number;
+  debugId?: string;
 }
 
-// ✅ 컬러 매핑 함수
+// 컬러 매핑 함수
 const getColorFromClassName = (className: string): string => {
   const colors: Record<string, string> = {
     'token comment': '#6a9955',
@@ -69,7 +70,6 @@ const getColorFromClassName = (className: string): string => {
   return '#d4d4d4';
 };
 
-// ✅ HTML 엔티티 디코딩 함수
 const decodeHtmlEntities = (text: string): string => {
   const entities: Record<string, string> = {
     '&lt;': '<',
@@ -82,7 +82,18 @@ const decodeHtmlEntities = (text: string): string => {
   return text.replace(/&[a-z]+;/g, (match) => entities[match] || match);
 };
 
-export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBlock3DProps) {
+// ✅ 간단한 해시 함수
+function simpleHash(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash).toString(36).substring(0, 6);
+}
+
+export function CodeBlock3D({ children, language = "text", index = 0, debugId = "unknown" }: CodeBlock3DProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const { texture: hdriTexture } = useHDRI();
@@ -96,12 +107,31 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
   const frameCountRef = useRef<number>(0);
   const isMountedRef = useRef<boolean>(true);
   const initAttemptedRef = useRef<boolean>(false);
+  const initTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const cleanupRef = useRef<(() => void) | null>(null);
   
   const [viewportPosition, setViewportPosition] = useState(0);
   const [isWebGLAvailable, setIsWebGLAvailable] = useState<boolean | null>(null);
 
   const codeCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const codeTextureRef = useRef<THREE.CanvasTexture | null>(null);
+  
+  // ✅ 인스턴스 고유 ID (디버깅용)
+  const instanceId = useMemo(() => {
+    return `cb3d-${debugId}-${index}-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`;
+  }, [debugId, index]);
+  
+  // ✅ index를 ref로 저장
+  const indexRef = useRef(index);
+  useEffect(() => {
+    indexRef.current = index;
+  }, [index]);
+  
+  // ✅ 콘텐츠 기반 안정적인 key 생성
+  const stableKey = useMemo(() => {
+    const contentHash = simpleHash(String(children));
+    return `cb3d-${index}-${contentHash}`;
+  }, [children, index]);
   
   const randomOffset = useMemo(() => {
     const seed = index * 7.3;
@@ -116,7 +146,7 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     };
   }, [index]);
 
-  // ✅ WebGL availability check
+  // WebGL availability check
   useEffect(() => {
     const checkWebGL = () => {
       try {
@@ -138,15 +168,12 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     checkWebGL();
   }, []);
 
-  // ✅ 구문 강조가 적용된 코드 텍스처 생성 (동적 크기)
+  // 코드 텍스처 생성
   const codeTexture = useMemo(() => {
     const codeText = String(children);
     
-    // ✅ 빈 줄 제거 (실제 내용이 있는 줄만 필터링)
     const allLines = codeText.split("\n");
     const nonEmptyLines = allLines.filter(line => line.trim() !== "");
-    
-    // ✅ 빈 줄이 모두 제거되었으면 최소 1줄 유지
     const lines = nonEmptyLines.length > 0 ? nonEmptyLines : [" "];
     
     const fontSize = 22;
@@ -154,7 +181,6 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     const padding = 48;
     const maxLines = Math.min(lines.length, 30);
     
-    // ✅ 각 줄의 최대 길이 계산 (실제 텍스트 길이 기준)
     let maxLineLength = 0;
     const processedLines: string[] = [];
     
@@ -178,16 +204,13 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
       processedLines.push(...lines);
     }
 
-    // ✅ 최대 줄 수 제한
     if (processedLines.length > maxLines) {
       processedLines.splice(maxLines);
     }
 
-    // ✅ 각 줄의 실제 텍스트 길이 계산 (HTML 태그 제거)
     processedLines.forEach(line => {
       const cleanText = line.replace(/<[^>]*>/g, '');
       const decodedText = decodeHtmlEntities(cleanText);
-      // 한글은 2배, 영문은 1배로 계산 (대략적인 폭 측정)
       let length = 0;
       for (const char of decodedText) {
         length += char.charCodeAt(0) > 127 ? 1.8 : 1;
@@ -195,12 +218,10 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
       maxLineLength = Math.max(maxLineLength, length);
     });
 
-    // ✅ 최소/최대 너비 설정 (황금비율 유지)
-    const minChars = 20; // 최소 20자
-    const maxChars = 120; // 최대 120자
+    const minChars = 20;
+    const maxChars = 120;
     const effectiveLength = Math.max(minChars, Math.min(maxChars, maxLineLength));
     
-    // ✅ 캔버스 크기 계산 (내용에 맞게)
     const charWidth = fontSize * 0.6;
     const canvasWidth = Math.max(600, effectiveLength * charWidth + padding * 2);
     const canvasHeight = Math.max(300, Math.min(processedLines.length, maxLines) * lineHeight + padding * 2 + 34);
@@ -215,7 +236,6 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
 
     const ctx = canvas.getContext("2d")!;
     
-    // ✅ 어두운 배경
     const gradient = ctx.createLinearGradient(0, 0, 0, canvasHeight);
     gradient.addColorStop(0, "#1a1a2e");
     gradient.addColorStop(0.5, "#16213e");
@@ -223,22 +243,17 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
-    // ✅ 라인 번호 그리기
     ctx.textBaseline = "top";
-    
-    // ✅ 최대 글자수 계산 (실제 표시 가능한 글자수)
     const maxDisplayChars = Math.floor((canvasWidth - padding * 2 - 40) / (fontSize * 0.6));
     
     processedLines.forEach((line, i) => {
       if (i < maxLines) {
         const y = padding + i * lineHeight;
         
-        // 라인 번호
         ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
         ctx.font = `${fontSize}px "JetBrains Mono", "Fira Code", monospace`;
         ctx.fillText(`${i + 1}`, 20, y + 4);
         
-        // ✅ HTML 태그 파싱하여 컬러 텍스트 렌더링
         if (line.includes('<span')) {
           const tempSpan = document.createElement('div');
           tempSpan.innerHTML = line;
@@ -256,7 +271,6 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
               ctx.font = `bold ${fontSize}px "JetBrains Mono", "Fira Code", monospace`;
               const displayText = decodeHtmlEntities(text);
               
-              // ✅ 텍스트 자르기
               const remainingSpace = canvasWidth - padding - currentX - 20;
               const maxWidth = Math.min(displayText.length, Math.floor(remainingSpace / (fontSize * 0.6)));
               const truncated = displayText.length > maxWidth && maxWidth > 0 
@@ -276,7 +290,6 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
             ctx.fillText(truncated, 55, y + 4);
           }
         } else {
-          // 일반 텍스트
           ctx.fillStyle = "#e0e0e0";
           ctx.font = `bold ${fontSize}px "JetBrains Mono", "Fira Code", monospace`;
           const cleanText = decodeHtmlEntities(line);
@@ -288,7 +301,6 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
       }
     });
 
-    // ✅ 구분선
     ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
     ctx.lineWidth = 2;
     ctx.beginPath();
@@ -296,7 +308,6 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     ctx.lineTo(48, canvasHeight - padding + 10);
     ctx.stroke();
 
-    // ✅ 상단 타이틀 바
     ctx.fillStyle = "rgba(255, 255, 255, 0.06)";
     ctx.fillRect(0, 0, canvasWidth, 34);
     
@@ -306,7 +317,6 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     const langDisplay = language || "text";
     ctx.fillText(langDisplay.toUpperCase(), 16, 17);
 
-    // ✅ 창 컨트롤 버튼
     const dots = [
       { x: canvasWidth - 84, color: "#ff5f56" },
       { x: canvasWidth - 62, color: "#ffbd2e" },
@@ -319,7 +329,6 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
       ctx.fill();
     });
 
-    // ✅ 텍스처 생성 또는 업데이트
     if (codeTextureRef.current) {
       codeTextureRef.current.needsUpdate = true;
       return codeTextureRef.current;
@@ -334,21 +343,33 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     return texture;
   }, [children, language]);
 
+  // ✅ 개선된 dispose 함수
   const disposeObject = useCallback((obj: THREE.Object3D) => {
+    if (!obj) return;
+    
     obj.traverse((child) => {
       if (child instanceof THREE.Mesh) {
-        child.geometry?.dispose();
+        if (child.geometry) {
+          child.geometry.dispose();
+        }
         if (Array.isArray(child.material)) {
           child.material.forEach(m => {
-            m.map = null;
+            if (m.map) {
+              m.map = null;
+            }
             m.dispose();
           });
         } else if (child.material) {
-          child.material.map = null;
+          if (child.material.map) {
+            child.material.map = null;
+          }
           child.material.dispose();
         }
       }
     });
+    if (obj.parent) {
+      obj.parent.remove(obj);
+    }
   }, []);
 
   const handleResize = useCallback(() => {
@@ -399,309 +420,388 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     };
   }, []);
 
-  // Three.js 씬 설정
+  // ============================================================
+  // ⭐⭐⭐ Three.js 초기화 (최종 개선됨) ⭐⭐⭐
+  // ============================================================
   useEffect(() => {
-    // Don't proceed if WebGL is not available or still checking
-    if (isWebGLAvailable === null || isWebGLAvailable === false) return;
-    if (!canvasRef.current) return;
-    if (initAttemptedRef.current) return;
+    const currentIndex = indexRef.current;
     
-    initAttemptedRef.current = true;
-    isMountedRef.current = true;
+    console.log(`🔍 [${instanceId}] useEffect 실행 - WebGL: ${isWebGLAvailable}, initAttempted: ${initAttemptedRef.current}`);
 
-    const canvas = canvasRef.current;
-    const width = canvas.clientWidth || 600;
-    const height = canvas.clientHeight || 400;
+    // 이미 초기화되었거나 언마운트되었으면 스킵
+    if (initAttemptedRef.current || !isMountedRef.current) {
+      console.log(`⏭️ [${instanceId}] 스킵 (initAttempted: ${initAttemptedRef.current}, mounted: ${isMountedRef.current})`);
+      return;
+    }
 
-    let scene: THREE.Scene | null = null;
-    let camera: THREE.PerspectiveCamera | null = null;
-    let renderer: THREE.WebGLRenderer | null = null;
-    let group: THREE.Group | null = null;
+    // WebGL 사용 불가
+    if (isWebGLAvailable === false) {
+      console.warn(`⚠️ [${instanceId}] WebGL not available`);
+      return;
+    }
 
-    try {
-      scene = new THREE.Scene();
-      scene.background = null;
-      sceneRef.current = scene;
-
-      camera = new THREE.PerspectiveCamera(35, width / height, 0.1, 30);
-      camera.position.set(3.5, 2.0, 5.5);
-      camera.lookAt(0, 0, 0);
-      cameraRef.current = camera;
-
-      renderer = new THREE.WebGLRenderer({
-        canvas: canvas,
-        alpha: true,
-        antialias: true,
-        powerPreference: "default",
-      });
-
-      // Check if renderer initialized properly
-      if (!renderer || !renderer.domElement) {
-        throw new Error('Failed to initialize WebGL renderer');
-      }
-
-      renderer.setSize(width, height);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-      renderer.toneMapping = THREE.ACESFilmicToneMapping;
-      renderer.toneMappingExposure = 1.2;
-      renderer.setClearColor(0x000000, 0);
-      renderer.outputColorSpace = THREE.SRGBColorSpace;
-      rendererRef.current = renderer;
-
-      group = new THREE.Group();
-      groupRef.current = group;
-
-      // ✅ 종횡비 계산 (동적 크기)
-      const textureWidth = codeTexture.image?.width || 1600;
-      const textureHeight = codeTexture.image?.height || 400;
-      const textureAspect = textureWidth / textureHeight;
-      
-      // ✅ 보드 크기: 내용에 맞게 최적화 (황금비율 유지하면서 동적)
-      const baseHeight = 2.8;
-      const boardHeight = Math.min(3.5, Math.max(1.8, baseHeight * (textureHeight / 500)));
-      const boardWidth = boardHeight * textureAspect * 0.85;
-      const boardDepth = 0.04;
-
-      const boardGeometry = new THREE.BoxGeometry(boardWidth, boardHeight, boardDepth);
-      const boardMaterial = new THREE.MeshPhysicalMaterial({
-        map: codeTexture,
-        color: new THREE.Color(0.98, 0.98, 0.99),
-        roughness: 0.02,
-        metalness: 0.85,
-        clearcoat: 0.6,
-        clearcoatRoughness: 0.05,
-        envMap: hdriTexture || undefined,
-        envMapIntensity: 2.0,
-        reflectivity: 0.9,
-        side: THREE.DoubleSide,
-        ior: 1.5,
-      });
-      const board = new THREE.Mesh(boardGeometry, boardMaterial);
-      board.position.z = 0;
-      group.add(board);
-      whiteboardRef.current = board;
-
-      // ✅ 프레임 (보드 크기에 맞춤)
-      const frameMaterial = new THREE.MeshPhysicalMaterial({
-        color: new THREE.Color(0.4, 0.4, 0.48),
-        roughness: 0.02,
-        metalness: 0.98,
-        envMap: hdriTexture || undefined,
-        envMapIntensity: 4.0,
-        clearcoat: 0.8,
-        clearcoatRoughness: 0.02,
-        reflectivity: 1.0,
-        ior: 2.0,
-      });
-
-      const frameThickness = 0.045;
-      const frameWidth = boardWidth + frameThickness * 2.5;
-      const frameHeight = boardHeight + frameThickness * 2.5;
-      const frameDepth = 0.09;
-      const frameZ = 0.01;
-
-      const topFrame = new THREE.Mesh(
-        new THREE.BoxGeometry(frameWidth, frameThickness, frameDepth),
-        frameMaterial
-      );
-      topFrame.position.set(0, frameHeight / 2, frameZ);
-      topFrame.rotation.x = 0.01;
-      group.add(topFrame);
-
-      const bottomFrame = new THREE.Mesh(
-        new THREE.BoxGeometry(frameWidth, frameThickness, frameDepth),
-        frameMaterial
-      );
-      bottomFrame.position.set(0, -frameHeight / 2, frameZ);
-      bottomFrame.rotation.x = -0.01;
-      group.add(bottomFrame);
-
-      const leftFrame = new THREE.Mesh(
-        new THREE.BoxGeometry(frameThickness, frameHeight, frameDepth),
-        frameMaterial
-      );
-      leftFrame.position.set(-frameWidth / 2, 0, frameZ);
-      leftFrame.rotation.y = 0.01;
-      group.add(leftFrame);
-
-      const rightFrame = new THREE.Mesh(
-        new THREE.BoxGeometry(frameThickness, frameHeight, frameDepth),
-        frameMaterial
-      );
-      rightFrame.position.set(frameWidth / 2, 0, frameZ);
-      rightFrame.rotation.y = -0.01;
-      group.add(rightFrame);
-
-      // 모서리
-      const cornerMaterial = new THREE.MeshPhysicalMaterial({
-        color: new THREE.Color(0.45, 0.45, 0.5),
-        roughness: 0.01,
-        metalness: 0.99,
-        envMap: hdriTexture || undefined,
-        envMapIntensity: 4.5,
-        reflectivity: 1.0,
-      });
-
-      const cornerSize = frameThickness * 1.2;
-      const cornerPositions = [
-        [-frameWidth / 2, -frameHeight / 2],
-        [-frameWidth / 2, frameHeight / 2],
-        [frameWidth / 2, -frameHeight / 2],
-        [frameWidth / 2, frameHeight / 2],
-      ];
-
-      cornerPositions.forEach(([x, y]) => {
-        const corner = new THREE.Mesh(
-          new THREE.BoxGeometry(cornerSize, cornerSize, frameDepth * 1.1),
-          cornerMaterial
-        );
-        corner.position.set(x, y, frameZ);
-        corner.rotation.z = 0.005;
-        group.add(corner);
-      });
-
-      frameRef.current = topFrame;
-
-      // 조명
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-      scene.add(ambientLight);
-      const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
-      dirLight.position.set(3, 4, 5);
-      scene.add(dirLight);
-      const dirLight2 = new THREE.DirectionalLight(0x8888ff, 0.4);
-      dirLight2.position.set(-3, 2, -4);
-      scene.add(dirLight2);
-
-      scene.add(group);
-
-      // 애니메이션
-      let animationId: number | null = null;
-      
-      const animate = () => {
-        if (!isMountedRef.current) {
-          if (animationId) {
-            cancelAnimationFrame(animationId);
-          }
-          return;
+    // canvas 준비 안됨
+    if (!canvasRef.current) {
+      console.warn(`⚠️ [${instanceId}] Canvas not ready, retrying...`);
+      const retryTimer = setTimeout(() => {
+        if (isMountedRef.current && !initAttemptedRef.current) {
+          console.log(`🔄 [${instanceId}] Canvas 준비 완료, 재시도`);
+          initAttemptedRef.current = false;
         }
-        
-        animationId = requestAnimationFrame(animate);
-        
-        try {
-          frameCountRef.current++;
-          
-          if (groupRef.current && cameraRef.current) {
-            const targetY = viewportPosition * -0.8;
-            
-            groupRef.current.position.x = randomOffset.x * 0.3 + Math.sin(Date.now() * 0.0003 + index) * 0.02;
-            groupRef.current.position.y = randomOffset.y * 0.3 + targetY * 0.2;
-            groupRef.current.position.z = randomOffset.z * 0.2 + Math.sin(Date.now() * 0.0004 + index * 0.5) * 0.01;
-            
-            groupRef.current.rotation.y += 0.002 + (viewportPosition * 0.001) + (index * 0.0003);
-            groupRef.current.rotation.x = Math.sin(Date.now() * 0.0004 + index * 0.3) * 0.02 + viewportPosition * 0.02;
-            
-            cameraRef.current.position.y = targetY * 0.3 + randomOffset.y * 0.1;
-            cameraRef.current.position.x = randomOffset.x * 0.1;
-            cameraRef.current.lookAt(
-              groupRef.current.position.x * 0.3,
-              groupRef.current.position.y * 0.5,
-              0
-            );
-          }
+      }, 100);
+      return () => clearTimeout(retryTimer);
+    }
 
-          if (rendererRef.current && sceneRef.current && cameraRef.current && isMountedRef.current) {
-            try {
-              rendererRef.current.render(sceneRef.current, cameraRef.current);
-            } catch (renderError) {
-              // 셰이더 에러 무시
-              if (process.env.NODE_ENV === 'development') {
-                console.debug('Render error:', renderError);
+    // WebGL 상태가 null이면 대기
+    if (isWebGLAvailable === null) {
+      console.log(`⏳ [${instanceId}] WebGL 확인 중...`);
+      const timer = setTimeout(() => {
+        if (isMountedRef.current && !initAttemptedRef.current) {
+          console.log(`🔄 [${instanceId}] WebGL 확인 대기 후 재시도`);
+          initAttemptedRef.current = false;
+        }
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+
+    // ============================================================
+    // 여기서부터 실제 초기화 (isWebGLAvailable === true)
+    // ============================================================
+    console.log(`🎨 [${instanceId}] Three.js 초기화 시작 (index: ${currentIndex})`);
+
+    const initializeScene = () => {
+      if (initAttemptedRef.current || !isMountedRef.current) {
+        return;
+      }
+      
+      initAttemptedRef.current = true;
+      
+      const canvas = canvasRef.current!;
+      const width = canvas.clientWidth || 600;
+      const height = canvas.clientHeight || 400;
+
+      try {
+        console.log(`🎨 [${instanceId}] Three.js 씬 생성 중...`);
+
+        const scene = new THREE.Scene();
+        scene.background = null;
+        sceneRef.current = scene;
+
+        const camera = new THREE.PerspectiveCamera(35, width / height, 0.1, 30);
+        camera.position.set(3.5, 2.0, 5.5);
+        camera.lookAt(0, 0, 0);
+        cameraRef.current = camera;
+
+        const renderer = new THREE.WebGLRenderer({
+          canvas: canvas,
+          alpha: true,
+          antialias: true,
+          powerPreference: "default",
+        });
+
+        if (!renderer || !renderer.domElement) {
+          throw new Error('Failed to initialize WebGL renderer');
+        }
+
+        renderer.setSize(width, height);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.2;
+        renderer.setClearColor(0x000000, 0);
+        renderer.outputColorSpace = THREE.SRGBColorSpace;
+        rendererRef.current = renderer;
+
+        const group = new THREE.Group();
+        groupRef.current = group;
+
+        // 보드 생성
+        const textureWidth = codeTexture.image?.width || 1600;
+        const textureHeight = codeTexture.image?.height || 400;
+        const textureAspect = textureWidth / textureHeight;
+        
+        const baseHeight = 2.8;
+        const boardHeight = Math.min(3.5, Math.max(1.8, baseHeight * (textureHeight / 500)));
+        const boardWidth = boardHeight * textureAspect * 0.85;
+        const boardDepth = 0.04;
+
+        const boardGeometry = new THREE.BoxGeometry(boardWidth, boardHeight, boardDepth);
+        const boardMaterial = new THREE.MeshPhysicalMaterial({
+          map: codeTexture,
+          color: new THREE.Color(0.98, 0.98, 0.99),
+          roughness: 0.02,
+          metalness: 0.85,
+          clearcoat: 0.6,
+          clearcoatRoughness: 0.05,
+          envMap: hdriTexture || undefined,
+          envMapIntensity: 2.0,
+          reflectivity: 0.9,
+          side: THREE.DoubleSide,
+          ior: 1.5,
+        });
+        const board = new THREE.Mesh(boardGeometry, boardMaterial);
+        board.position.z = 0;
+        group.add(board);
+        whiteboardRef.current = board;
+
+        // 프레임
+        const frameMaterial = new THREE.MeshPhysicalMaterial({
+          color: new THREE.Color(0.4, 0.4, 0.48),
+          roughness: 0.02,
+          metalness: 0.98,
+          envMap: hdriTexture || undefined,
+          envMapIntensity: 4.0,
+          clearcoat: 0.8,
+          clearcoatRoughness: 0.02,
+          reflectivity: 1.0,
+          ior: 2.0,
+        });
+
+        const frameThickness = 0.045;
+        const frameWidth = boardWidth + frameThickness * 2.5;
+        const frameHeight = boardHeight + frameThickness * 2.5;
+        const frameDepth = 0.09;
+        const frameZ = 0.01;
+
+        const topFrame = new THREE.Mesh(
+          new THREE.BoxGeometry(frameWidth, frameThickness, frameDepth),
+          frameMaterial
+        );
+        topFrame.position.set(0, frameHeight / 2, frameZ);
+        topFrame.rotation.x = 0.01;
+        group.add(topFrame);
+
+        const bottomFrame = new THREE.Mesh(
+          new THREE.BoxGeometry(frameWidth, frameThickness, frameDepth),
+          frameMaterial
+        );
+        bottomFrame.position.set(0, -frameHeight / 2, frameZ);
+        bottomFrame.rotation.x = -0.01;
+        group.add(bottomFrame);
+
+        const leftFrame = new THREE.Mesh(
+          new THREE.BoxGeometry(frameThickness, frameHeight, frameDepth),
+          frameMaterial
+        );
+        leftFrame.position.set(-frameWidth / 2, 0, frameZ);
+        leftFrame.rotation.y = 0.01;
+        group.add(leftFrame);
+
+        const rightFrame = new THREE.Mesh(
+          new THREE.BoxGeometry(frameThickness, frameHeight, frameDepth),
+          frameMaterial
+        );
+        rightFrame.position.set(frameWidth / 2, 0, frameZ);
+        rightFrame.rotation.y = -0.01;
+        group.add(rightFrame);
+
+        // 모서리
+        const cornerMaterial = new THREE.MeshPhysicalMaterial({
+          color: new THREE.Color(0.45, 0.45, 0.5),
+          roughness: 0.01,
+          metalness: 0.99,
+          envMap: hdriTexture || undefined,
+          envMapIntensity: 4.5,
+          reflectivity: 1.0,
+        });
+
+        const cornerSize = frameThickness * 1.2;
+        const cornerPositions = [
+          [-frameWidth / 2, -frameHeight / 2],
+          [-frameWidth / 2, frameHeight / 2],
+          [frameWidth / 2, -frameHeight / 2],
+          [frameWidth / 2, frameHeight / 2],
+        ];
+
+        cornerPositions.forEach(([x, y]) => {
+          const corner = new THREE.Mesh(
+            new THREE.BoxGeometry(cornerSize, cornerSize, frameDepth * 1.1),
+            cornerMaterial
+          );
+          corner.position.set(x, y, frameZ);
+          corner.rotation.z = 0.005;
+          group.add(corner);
+        });
+
+        frameRef.current = topFrame;
+
+        // 조명
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+        scene.add(ambientLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        dirLight.position.set(3, 4, 5);
+        scene.add(dirLight);
+        const dirLight2 = new THREE.DirectionalLight(0x8888ff, 0.4);
+        dirLight2.position.set(-3, 2, -4);
+        scene.add(dirLight2);
+
+        scene.add(group);
+
+        console.log(`✅ [${instanceId}] Three.js 씬 생성 완료!`);
+
+        // 애니메이션
+        let animationId: number | null = null;
+        
+        const animate = () => {
+          if (!isMountedRef.current) {
+            if (animationId) {
+              cancelAnimationFrame(animationId);
+              animationId = null;
+            }
+            return;
+          }
+          
+          animationId = requestAnimationFrame(animate);
+          
+          try {
+            frameCountRef.current++;
+            
+            if (groupRef.current && cameraRef.current) {
+              const targetY = viewportPosition * -0.8;
+              
+              groupRef.current.position.x = randomOffset.x * 0.3 + Math.sin(Date.now() * 0.0003 + currentIndex) * 0.02;
+              groupRef.current.position.y = randomOffset.y * 0.3 + targetY * 0.2;
+              groupRef.current.position.z = randomOffset.z * 0.2 + Math.sin(Date.now() * 0.0004 + currentIndex * 0.5) * 0.01;
+              
+              groupRef.current.rotation.y += 0.002 + (viewportPosition * 0.001) + (currentIndex * 0.0003);
+              groupRef.current.rotation.x = Math.sin(Date.now() * 0.0004 + currentIndex * 0.3) * 0.02 + viewportPosition * 0.02;
+              
+              cameraRef.current.position.y = targetY * 0.3 + randomOffset.y * 0.1;
+              cameraRef.current.position.x = randomOffset.x * 0.1;
+              cameraRef.current.lookAt(
+                groupRef.current.position.x * 0.3,
+                groupRef.current.position.y * 0.5,
+                0
+              );
+            }
+
+            if (rendererRef.current && sceneRef.current && cameraRef.current && isMountedRef.current) {
+              try {
+                rendererRef.current.render(sceneRef.current, cameraRef.current);
+              } catch (renderError) {
+                if (process.env.NODE_ENV === 'development') {
+                  console.debug('Render error:', renderError);
+                }
               }
             }
+          } catch (error) {
+            // Animation error - ignore
           }
-        } catch (error) {
-          // Animation error - ignore
-        }
-      };
-      
-      animate();
-      animationRef.current = animationId;
+        };
+        
+        animate();
+        animationRef.current = animationId;
 
-      const handleVisibilityChange = () => {
-        if (document.hidden) {
+        const handleVisibilityChange = () => {
+          if (document.hidden) {
+            if (animationRef.current) {
+              cancelAnimationFrame(animationRef.current);
+              animationRef.current = null;
+            }
+          } else {
+            if (!animationRef.current && isMountedRef.current) {
+              animate();
+            }
+          }
+        };
+
+        const resizeObserver = new ResizeObserver(handleResize);
+        resizeObserver.observe(canvas);
+        
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+
+        // ✅ 클린업 함수 저장
+        cleanupRef.current = () => {
+          console.log(`🧹 [${instanceId}] 클린업 실행`);
+          
           if (animationRef.current) {
             cancelAnimationFrame(animationRef.current);
             animationRef.current = null;
           }
-        } else {
-          if (!animationRef.current && isMountedRef.current) {
-            animate();
+          
+          resizeObserver.disconnect();
+          document.removeEventListener("visibilitychange", handleVisibilityChange);
+          
+          if (rendererRef.current) {
+            rendererRef.current.dispose();
+            rendererRef.current = null;
           }
-        }
-      };
+          
+          if (sceneRef.current) {
+            disposeObject(sceneRef.current);
+            sceneRef.current = null;
+          }
+          
+          if (codeTextureRef.current) {
+            codeTextureRef.current.dispose();
+            codeTextureRef.current = null;
+          }
+          
+          cameraRef.current = null;
+          groupRef.current = null;
+          whiteboardRef.current = null;
+          frameRef.current = null;
+          
+          initAttemptedRef.current = false;
+        };
 
-      const resizeObserver = new ResizeObserver(handleResize);
-      resizeObserver.observe(canvas);
-      
-      document.addEventListener("visibilitychange", handleVisibilityChange);
-
-      return () => {
-        isMountedRef.current = false;
-        
-        if (animationRef.current) {
-          cancelAnimationFrame(animationRef.current);
-          animationRef.current = null;
-        }
-        
-        resizeObserver.disconnect();
-        document.removeEventListener("visibilitychange", handleVisibilityChange);
+        return cleanupRef.current;
+      } catch (error) {
+        console.error(`❌ [${instanceId}] 초기화 실패:`, error);
+        setIsWebGLAvailable(false);
+        initAttemptedRef.current = false;
         
         if (rendererRef.current) {
           rendererRef.current.dispose();
           rendererRef.current = null;
         }
-        
         if (sceneRef.current) {
           disposeObject(sceneRef.current);
           sceneRef.current = null;
         }
         
-        if (codeTextureRef.current) {
-          codeTextureRef.current.dispose();
-          codeTextureRef.current = null;
-        }
-        
-        cameraRef.current = null;
-        groupRef.current = null;
-        whiteboardRef.current = null;
-        frameRef.current = null;
-        
-        initAttemptedRef.current = false;
-      };
-    } catch (error) {
-      console.error('Failed to initialize CodeBlock3D:', error);
-      setIsWebGLAvailable(false);
-      initAttemptedRef.current = false;
-      
-      // Clean up on error
-      if (renderer) {
-        renderer.dispose();
+        return () => {
+          isMountedRef.current = false;
+          if (animationRef.current) {
+            cancelAnimationFrame(animationRef.current);
+            animationRef.current = null;
+          }
+        };
       }
-      if (scene) {
-        disposeObject(scene);
-      }
-      
-      return () => {
-        isMountedRef.current = false;
-        if (animationRef.current) {
-          cancelAnimationFrame(animationRef.current);
-          animationRef.current = null;
-        }
-      };
-    }
-  }, [isWebGLAvailable, hdriTexture, codeTexture, viewportPosition, randomOffset, index, disposeObject, handleResize]);
+    };
 
-  // Fallback UI when WebGL is not available
+    // 지연 초기화 (첫 번째는 빠르게, 나머지는 부하 분산)
+    const initDelay = currentIndex === 0 ? 100 : Math.min(currentIndex * 150 + 100, 600);
+    
+    const timeoutId = setTimeout(() => {
+      if (!isMountedRef.current) return;
+      if (initAttemptedRef.current) {
+        console.log(`⏭️ [${instanceId}] 초기화 시도했지만 이미 진행 중`);
+        return;
+      }
+      console.log(`⏰ [${instanceId}] ${initDelay}ms 후 초기화 실행`);
+      initializeScene();
+    }, initDelay);
+
+    // ✅ 메인 클린업
+    return () => {
+      console.log(`🧹 [${instanceId}] 메인 클린업 실행`);
+      clearTimeout(timeoutId);
+      if (initTimeoutRef.current) {
+        clearTimeout(initTimeoutRef.current);
+      }
+      if (cleanupRef.current) {
+        cleanupRef.current();
+        cleanupRef.current = null;
+      }
+      isMountedRef.current = false;
+      initAttemptedRef.current = false;
+    };
+    
+  }, [isWebGLAvailable, hdriTexture, codeTexture, viewportPosition, disposeObject, handleResize, instanceId, randomOffset]);
+
+  // ============================================================
+  // Fallback UI
+  // ============================================================
   if (isWebGLAvailable === false) {
     return (
       <div 
@@ -731,7 +831,6 @@ export function CodeBlock3D({ children, language = "text", index = 0 }: CodeBloc
     );
   }
 
-  // Loading state while checking WebGL
   if (isWebGLAvailable === null) {
     return (
       <div 

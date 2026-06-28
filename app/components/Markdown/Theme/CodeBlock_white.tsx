@@ -1,14 +1,15 @@
-// app/components/Markdown/Theme/CodeBlock_white.tsx
 "use client";
 
 import React, {
   useEffect,
   useRef,
   useState,
+  useMemo,
 } from "react";
 
 import { motion } from "framer-motion";
 import { CodeBlock3D } from "./CodeBlock3D";
+import DiffVisualizer from "@/app/components/Markdown/processors/MarkdownPipeline/DiffVisualizer";
 
 /* =========================
    TYPES
@@ -52,6 +53,20 @@ const CheckIcon = () => (
 );
 
 /* =========================
+   SIMPLE HASH FUNCTION (안정적인 key 생성용)
+========================= */
+
+function simpleHash(str: string): string {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return Math.abs(hash).toString(36).substring(0, 6);
+}
+
+/* =========================
    COMPONENT
 ========================= */
 
@@ -72,6 +87,17 @@ export default function CodeBlock_white({
   const match = /language-(.+)/.exec(className || "");
   const language = match?.[1]?.toLowerCase() || "";
 
+  // ✅ 고유 인스턴스 ID (디버깅용)
+  const instanceId = useMemo(() => {
+    return `cbw-${index}-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`;
+  }, [index]);
+
+  // ✅ 안정적인 key 생성 (콘텐츠 기반)
+  const stableKey = useMemo(() => {
+    const contentHash = simpleHash(text);
+    return `cb3d-${index}-${contentHash}`;
+  }, [text, index]);
+
   /* =========================
      INLINE DETECTION
   ========================= */
@@ -90,12 +116,14 @@ export default function CodeBlock_white({
      CLEANUP
   ========================= */
   useEffect(() => {
+    console.log(`✅ CodeBlock_white[${instanceId}][${index}]: 마운트됨`);
     return () => {
+      console.log(`🧹 CodeBlock_white[${instanceId}][${index}]: 언마운트됨`);
       if (timerRef.current) {
         clearTimeout(timerRef.current);
       }
     };
-  }, []);
+  }, [instanceId, index]);
 
   /* =========================
      COPY
@@ -157,6 +185,7 @@ export default function CodeBlock_white({
       ref={containerRef}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
+      data-instance-id={instanceId}
       style={{
         position: "relative",
         borderRadius: 14,
@@ -167,8 +196,12 @@ export default function CodeBlock_white({
         boxShadow: "none",
       }}
     >
-      {/* 3D 코드블록 */}
-      <CodeBlock3D language={language} index={index}>
+      {/* ✅ 3D 코드블록 - 안정적인 key 사용 */}
+      <CodeBlock3D 
+        key={stableKey}  // ← 변경됨: 콘텐츠 기반 안정적인 key
+        language={language} 
+        index={index}
+      >
         {text}
       </CodeBlock3D>
 
