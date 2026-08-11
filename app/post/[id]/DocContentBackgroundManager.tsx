@@ -3,175 +3,215 @@
 import React from "react";
 import { useTheme } from "@/app/contexts/ThemeContext";
 
-// 배경 이미지 상수화
+// ============================================================
+// CONSTANTES DES IMAGES DE FOND
+// ============================================================
 const DEFAULT_BG_IMAGE = "/images/dossierBg/woodmarble233.png";
-const MARBLE_BG_IMAGE = "/images/dossierBg/marble222.png";
+const MARBLE_BG_IMAGE = "/images/dossierBg/marble2.png";
+const MARBLE3_BG_IMAGE = "/images/dossierBg/marble2.png";
 
+// ============================================================
+// INTERFACE DES PROPS
+// ============================================================
 interface DocContentBackgroundManagerProps {
   children: React.ReactNode;
   parentPaddingLeft?: number;
   parentPaddingRight?: number;
   backgroundColor?: string;
-  backgroundImage?: string; // 외부에서 덮어쓰고 싶을 때만 사용
+  backgroundImage?: string;
   backgroundSize?: "cover" | "contain" | "auto" | string;
   backgroundPosition?: string;
   backgroundRepeat?: "no-repeat" | "repeat" | "repeat-x" | "repeat-y";
   backgroundBlendMode?: string;
   paddingTop?: number;
   paddingBottom?: number;
-  // 강제로 특정 배경을 사용하고 싶을 때
   forceDefaultBackground?: boolean;
   forceMarbleBackground?: boolean;
-  // 🆕 marble2.png 전용 설정 (기본 테마)
+  forceMarble3Background?: boolean;
+  
+  // marble2.png
   marbleBackgroundSize?: string;
   marbleBackgroundRepeat?: "no-repeat" | "repeat" | "repeat-x" | "repeat-y";
-  // 🆕 woodmarble233.png 전용 설정 (노트/레터 테마)
+  
+  // woodmarble233.png
   woodMarbleBackgroundSize?: string;
   woodMarbleBackgroundRepeat?: "no-repeat" | "repeat" | "repeat-x" | "repeat-y";
+  
+  // marble333.png
+  marble3BackgroundSize?: string;
+  marble3BackgroundRepeat?: "no-repeat" | "repeat" | "repeat-x" | "repeat-y";
+  marble3BlendMode?: "multiply" | "screen" | "overlay" | "darken" | "lighten";
+  marble3Opacity?: number;
+  marble3TileSize?: string; // 🔥 NOUVEAU
 }
 
+// ============================================================
+// COMPOSANT PRINCIPAL
+// ============================================================
 export default function DocContentBackgroundManager({
   children,
   parentPaddingLeft = 64,
   parentPaddingRight = 64,
   backgroundColor = "transparent",
-  backgroundImage, // 이제 기본값을 여기서 설정하지 않음
-  backgroundSize = "auto", // 원본 크기 유지 (tile 효과)
+  backgroundImage,
+  backgroundSize = "auto",
   backgroundPosition = "center center",
-  backgroundRepeat = "repeat", // 가로/세로 반복 (tile 효과)
+  backgroundRepeat = "repeat",
   backgroundBlendMode = "overlay",
   paddingTop = 20,
   paddingBottom = 20,
   forceDefaultBackground = false,
   forceMarbleBackground = false,
-  // 🆕 marble2.png 전용 설정 (기본 테마)
-  marbleBackgroundSize = "1200px 800px", // 기본값: 400px x 400px 타일
-  marbleBackgroundRepeat = "repeat", // 기본값: 반복
-  // 🆕 woodmarble233.png 전용 설정 (노트/레터 테마)
-  woodMarbleBackgroundSize = "auto", // 기본값: 원본 크기 유지
-  woodMarbleBackgroundRepeat = "repeat", // 기본값: 반복
+  forceMarble3Background = false,
+  
+  // marble2
+  marbleBackgroundSize = "1200px 800px",
+  marbleBackgroundRepeat = "repeat",
+  
+  // woodmarble
+  woodMarbleBackgroundSize = "auto",
+  woodMarbleBackgroundRepeat = "repeat",
+  
+  // 🔥🔥🔥 marble333 - CHANGÉ POUR FONCTIONNER
+  marble3BackgroundSize = "600px 600px", // ← CHANGÉ : "cover" → "600px 600px"
+  marble3BackgroundRepeat = "repeat",    // ← IMPORTANT : "repeat"
+  marble3BlendMode = "multiply",
+  marble3Opacity = 0.5,
+  marble3TileSize = "600px 600px", // ← NOUVEAU PARAMÈTRE
 }: DocContentBackgroundManagerProps) {
-  // 테마 컨텍스트 가져오기 (선택적으로)
+  
   let theme;
   try {
     theme = useTheme();
   } catch (error) {
-    // ThemeProvider가 없으면 기본값 사용
-    console.warn("DocContentBackgroundManager: ThemeProvider not found, using default background");
+    console.warn("DocContentBackgroundManager: ThemeProvider not found");
     theme = null;
   }
 
-  // 사용할 배경 이미지 결정
-  const getBackgroundImage = () => {
-    // 1. 외부에서 명시적으로 제공된 경우 우선 사용
-    if (backgroundImage) {
-      return backgroundImage;
-    }
-
-    // 2. 강제 오버라이드
-    if (forceDefaultBackground) {
-      return DEFAULT_BG_IMAGE;
-    }
-    if (forceMarbleBackground) {
-      return MARBLE_BG_IMAGE;
-    }
-
-    // 3. 테마가 없으면 기본값 사용
-    if (!theme) {
-      return DEFAULT_BG_IMAGE;
-    }
-
-    // 4. 테마에 따른 자동 선택
-    // 기본 테마(RemarkPageRenderer)에서는 marble2.png 사용
-    if (theme.isDefaultTheme) {
-      return MARBLE_BG_IMAGE;
-    }
-
-    // 노트/레터 테마에서는 woodmarble233.png 사용
-    return DEFAULT_BG_IMAGE;
+  const getMainBackgroundImage = (): string => {
+    if (backgroundImage) return backgroundImage;
+    if (forceDefaultBackground) return DEFAULT_BG_IMAGE;
+    if (forceMarbleBackground) return MARBLE_BG_IMAGE;
+    if (forceMarble3Background) return MARBLE3_BG_IMAGE;
+    if (!theme) return DEFAULT_BG_IMAGE;
+    return theme.isDefaultTheme ? MARBLE_BG_IMAGE : DEFAULT_BG_IMAGE;
   };
 
-  // 🆕 테마별 backgroundSize 결정
-  const getBackgroundSize = () => {
-    // 1. 외부에서 명시적으로 제공된 경우 우선 사용
-    if (backgroundImage && backgroundSize) {
-      return backgroundSize;
-    }
-
-    const image = getBackgroundImage();
-
-    // 2. 강제 오버라이드
-    if (forceDefaultBackground) {
-      return woodMarbleBackgroundSize;
-    }
-    if (forceMarbleBackground) {
-      return marbleBackgroundSize;
-    }
-
-    // 3. 테마가 없으면 기본값 사용
-    if (!theme) {
-      return woodMarbleBackgroundSize;
-    }
-
-    // 4. 테마별 설정 적용
-    if (theme.isDefaultTheme) {
-      return marbleBackgroundSize; // marble2.png 전용 사이즈
-    }
-
-    // 노트/레터 테마
-    return woodMarbleBackgroundSize; // woodmarble233.png 전용 사이즈
+  const getMainBackgroundSize = (): string => {
+    if (backgroundImage && backgroundSize) return backgroundSize;
+    if (forceDefaultBackground) return woodMarbleBackgroundSize;
+    if (forceMarbleBackground) return marbleBackgroundSize;
+    if (forceMarble3Background) return marble3BackgroundSize;
+    if (!theme) return woodMarbleBackgroundSize;
+    return theme.isDefaultTheme ? marbleBackgroundSize : woodMarbleBackgroundSize;
   };
 
-  // 🆕 테마별 backgroundRepeat 결정
-  const getBackgroundRepeat = () => {
-    // 1. 외부에서 명시적으로 제공된 경우 우선 사용
-    if (backgroundImage && backgroundRepeat) {
-      return backgroundRepeat;
-    }
-
-    const image = getBackgroundImage();
-
-    // 2. 강제 오버라이드
-    if (forceDefaultBackground) {
-      return woodMarbleBackgroundRepeat;
-    }
-    if (forceMarbleBackground) {
-      return marbleBackgroundRepeat;
-    }
-
-    // 3. 테마가 없으면 기본값 사용
-    if (!theme) {
-      return woodMarbleBackgroundRepeat;
-    }
-
-    // 4. 테마별 설정 적용
-    if (theme.isDefaultTheme) {
-      return marbleBackgroundRepeat; // marble2.png 전용 반복 설정
-    }
-
-    // 노트/레터 테마
-    return woodMarbleBackgroundRepeat; // woodmarble233.png 전용 반복 설정
+  const getMainBackgroundRepeat = (): string => {
+    if (backgroundImage && backgroundRepeat) return backgroundRepeat;
+    if (forceDefaultBackground) return woodMarbleBackgroundRepeat;
+    if (forceMarbleBackground) return marbleBackgroundRepeat;
+    if (forceMarble3Background) return marble3BackgroundRepeat;
+    if (!theme) return woodMarbleBackgroundRepeat;
+    return theme.isDefaultTheme ? marbleBackgroundRepeat : woodMarbleBackgroundRepeat;
   };
 
-  const finalBackgroundImage = getBackgroundImage();
-  const finalBackgroundSize = getBackgroundSize();
-  const finalBackgroundRepeat = getBackgroundRepeat();
+  const buildContainerStyle = (): React.CSSProperties => {
+    // CAS SPÉCIAL: FORCER marble333.png
+    if (forceMarble3Background) {
+      const imageUrl = MARBLE3_BG_IMAGE;
+      const size = marble3TileSize || marble3BackgroundSize;
+      const repeat = marble3BackgroundRepeat;
+      const pos = backgroundPosition;
+      const blend = marble3BlendMode;
+      const opacity = marble3Opacity;
 
-  const containerStyle: React.CSSProperties = {
-    marginLeft: -parentPaddingLeft,
-    marginRight: -parentPaddingRight,
-    paddingLeft: parentPaddingLeft,
-    paddingRight: parentPaddingRight,
-    paddingTop,
-    paddingBottom,
-    position: "relative",
-    backgroundColor,
-    backgroundImage: `url(${finalBackgroundImage})`,
-    backgroundSize: finalBackgroundSize,
-    backgroundPosition,
-    backgroundRepeat: finalBackgroundRepeat,
-    backgroundBlendMode: backgroundBlendMode as any,
+      return {
+        marginLeft: -parentPaddingLeft,
+        marginRight: -parentPaddingRight,
+        paddingLeft: parentPaddingLeft,
+        paddingRight: parentPaddingRight,
+        paddingTop,
+        paddingBottom,
+        position: "relative",
+        backgroundColor: backgroundColor,
+        
+        backgroundImage: `
+          linear-gradient(
+            rgba(255, 255, 255, ${1 - opacity}),
+            rgba(255, 255, 255, ${1 - opacity})
+          ),
+          url(${imageUrl}),
+          url(${imageUrl})
+        `,
+        backgroundSize: `cover, ${size}, ${size}`,
+        backgroundRepeat: `no-repeat, ${repeat}, ${repeat}`,
+        backgroundPosition: `center, ${pos}, ${pos}`,
+        backgroundBlendMode: `normal, ${blend}, normal`,
+      };
+    }
+
+    // 🔥 CAS PRINCIPAL: SUPERPOSITION POUR marble222.png
+    const isDefaultTheme = theme?.isDefaultTheme ?? false;
+    const isForceMarble = forceMarbleBackground;
+    const isUsingMarble222 = isDefaultTheme || isForceMarble;
+    
+    const mainImage = getMainBackgroundImage();
+    const mainSize = getMainBackgroundSize();
+    const mainRepeat = getMainBackgroundRepeat();
+
+    // 🔥🔥🔥 SI c'est marble222.png, on ajoute la superposition
+    if (isUsingMarble222 && mainImage === MARBLE_BG_IMAGE) {
+      const overlayImage = MARBLE3_BG_IMAGE;
+      // 🔥 Utiliser marble3TileSize pour contrôler la densité
+      const overlaySize = marble3TileSize || marble3BackgroundSize;
+      const overlayRepeat = marble3BackgroundRepeat;
+      const overlayBlend = marble3BlendMode;
+      const overlayOpacity = marble3Opacity;
+
+      return {
+        marginLeft: -parentPaddingLeft,
+        marginRight: -parentPaddingRight,
+        paddingLeft: parentPaddingLeft,
+        paddingRight: parentPaddingRight,
+        paddingTop,
+        paddingBottom,
+        position: "relative",
+        backgroundColor: backgroundColor,
+        
+        backgroundImage: `
+          linear-gradient(
+            rgba(255, 255, 255, ${1 - overlayOpacity}),
+            rgba(255, 255, 255, ${1 - overlayOpacity})
+          ),
+          url(${overlayImage}),
+          url(${mainImage})
+        `,
+        backgroundSize: `cover, ${overlaySize}, ${mainSize}`,
+        backgroundRepeat: `no-repeat, ${overlayRepeat}, ${mainRepeat}`,
+        backgroundPosition: `center, ${backgroundPosition}, ${backgroundPosition}`,
+        backgroundBlendMode: `normal, ${overlayBlend}, normal`,
+      };
+    }
+
+    // CAS NORMAL : une seule couche
+    return {
+      marginLeft: -parentPaddingLeft,
+      marginRight: -parentPaddingRight,
+      paddingLeft: parentPaddingLeft,
+      paddingRight: parentPaddingRight,
+      paddingTop,
+      paddingBottom,
+      position: "relative",
+      backgroundColor: backgroundColor,
+      backgroundImage: `url(${mainImage})`,
+      backgroundSize: mainSize,
+      backgroundRepeat: mainRepeat,
+      backgroundPosition: backgroundPosition,
+      backgroundBlendMode: backgroundBlendMode,
+    };
   };
+
+  const containerStyle = buildContainerStyle();
 
   const contentStyle: React.CSSProperties = {
     position: "relative",

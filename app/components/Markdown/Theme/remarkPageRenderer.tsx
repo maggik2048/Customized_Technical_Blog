@@ -19,7 +19,7 @@ import TableRenderer from "./TableRenderer";
 import KaTeXPostProcessor from "./KaTeXPostProcessor";
 
 /* =========================
-    FONT SYSTEM (더 두껍게 조정)
+    FONT SYSTEM
 ========================= */
 
 const fontH1 = Cormorant_SC({
@@ -48,7 +48,7 @@ const bodyFont = Libre_Baskerville({
 });
 
 /* =========================
-    BASE FONT (영문 가독성 + fallback)
+    BASE FONT
 ========================= */
 
 const baseFontFamily =
@@ -83,8 +83,8 @@ export default function RemarkPageRenderer({
     WebkitTextFillColor: "transparent",
     WebkitTextStroke: "0.9px rgba(0,0,0,0.18)",
     textShadow: `
-      0 3px 0 rgba(255,255,255,0.65),
-      0 2px 6px rgba(0,0,0,0.35)
+      0 3px 0 rgba(255,255,255,0.965),
+      0 2px 6px rgba(0,0,0,0.65)
     `,
   };
 
@@ -203,17 +203,22 @@ export default function RemarkPageRenderer({
       h2: renderHeading(2),
       h3: renderHeading(3),
 
-      // ✅ p → div로 변경 (hydration 에러 해결)
+      // ✅ p 태그 - 본문 텍스트에 약간 어두운 그림자 추가
       p: ({ children }: any) => (
         <div
           style={{
             fontFamily: baseFontFamily,
-            fontSize: 20,
+            fontSize: 16,
             lineHeight: 1.75,
             letterSpacing: "0.015em",
             margin: "6px 0",
-            color: "#4a3110",
-            textShadow,
+            color: "#6b5840",
+            textShadow: `
+              0 2px 0 rgba(255,255,255,0.95),
+              0 1px 3px rgba(255,255,255,0.9),
+              0 -1px 1px rgba(0,0,0,0.3),
+              0 2px 4px rgba(0,0,0,0.45)
+            `,
             fontWeight: 600,
           }}
         >
