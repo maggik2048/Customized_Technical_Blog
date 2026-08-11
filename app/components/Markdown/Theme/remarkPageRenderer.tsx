@@ -135,6 +135,57 @@ export default function RemarkPageRenderer({
     overflow: "hidden" as const,
   };
 
+  // ✅ 박스만 투명도 적용 (글씨는 영향을 받지 않음)
+  const luxuryWhiteBoxWithOpacity = {
+    ...luxuryWhiteBox,
+    position: "relative" as const,
+  };
+
+  // ✅ 오버레이 방식으로 박스 배경만 투명도 조절
+  const boxWrapperStyle = {
+    position: "relative" as const,
+    margin: "8px 0",
+    marginLeft: 16,
+    padding: "8px 14px",
+    borderRadius: 14,
+    overflow: "hidden" as const,
+  };
+
+  const boxBackgroundStyle = {
+    position: "absolute" as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundImage: `
+      linear-gradient(
+        90deg,
+        rgba(255,255,255,0.92) 0%,
+        rgba(255,255,255,0.78) 45%,
+        rgba(255,255,255,0.45) 75%,
+        rgba(255,255,255,0.15) 100%
+      ),
+      url("/images/tess4.png")
+    `,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "repeat",
+    border: "1px solid rgba(212,168,79,0.2)",
+    boxShadow: `
+      0 6px 18px rgba(0,0,0,0.07),
+      inset 0 1px 0 rgba(255,255,255,0.8)
+    `,
+    borderRadius: 14,
+    opacity: 0.5, // ✅ 배경만 50% 투명도
+    pointerEvents: "none" as const,
+    zIndex: 0,
+  };
+
+  const boxContentStyle = {
+    position: "relative" as const,
+    zIndex: 1,
+  };
+
   const starMarker = {
     color: "#a8842a",
     marginRight: 8,
@@ -251,32 +302,24 @@ export default function RemarkPageRenderer({
       ),
 
       ul: ({ children }: any) => (
-        <div
-          style={{
-            ...luxuryWhiteBox,
-            margin: "8px 0",
-            marginLeft: 16,
-            padding: "8px 14px",
-          }}
-        >
-          <ul style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
-            {children}
-          </ul>
+        <div style={boxWrapperStyle}>
+          <div style={boxBackgroundStyle} />
+          <div style={boxContentStyle}>
+            <ul style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
+              {children}
+            </ul>
+          </div>
         </div>
       ),
 
       ol: ({ children }: any) => (
-        <div
-          style={{
-            ...luxuryWhiteBox,
-            margin: "8px 0",
-            marginLeft: 16,
-            padding: "8px 14px",
-          }}
-        >
-          <ol style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
-            {children}
-          </ol>
+        <div style={boxWrapperStyle}>
+          <div style={boxBackgroundStyle} />
+          <div style={boxContentStyle}>
+            <ol style={{ margin: 0, paddingLeft: 0, listStyle: "none" }}>
+              {children}
+            </ol>
+          </div>
         </div>
       ),
 
