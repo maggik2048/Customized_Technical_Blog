@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useEffect, useMemo, useState, useCallback } from "react";
-import { useParams } from "next/navigation";
+import React, { useEffect, useState, useCallback } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 import StackedPostViewer from "@/app/components/papers/StackedPostViewer";
@@ -9,15 +9,14 @@ import PostEnvironment from "@/app/components/papers/PostEnvironment";
 import PaperWobble3D from "@/app/components/papers/PageFlippingAnimation/PaperWobble3D";
 import { windConfigs } from "@/app/data/windConfigs";
 
-const WINDOW_SIZE = 2;
-
 export default function PostPage() {
   const { id } = useParams() as { id: string };
+  const router = useRouter();
 
+  const [post, setPost] = useState<any>(null);
   const [allPosts, setAllPosts] = useState<any[]>([]);
-  const [index, setIndex] = useState(0);
-  const [cache, setCache] = useState<Record<string, any>>({});
-  const [isInitialLoading, setIsInitialLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // 🆕 3D 종이 상태
   const [show3D, setShow3D] = useState(false);
@@ -27,146 +26,137 @@ export default function PostPage() {
   const [current3DImage, setCurrent3DImage] = useState<string>('');
 
   // =========================
-  // LOAD ALL POSTS
+  // FETCH POST + ALL POSTS
   // =========================
   useEffect(() => {
-    const load = async () => {
-      console.log("[LOAD_ALL_POSTS] START");
-      setIsInitialLoading(true);
-
-      const { data, error } = await supabase
-        .from("posts")
-        .select(`
-          id,
-          title,
-          content,
-          created_at,
-          commit_url,
-          category,
-          category_slugs,
-          project_slugs,
-          tag_slugs
-        `)
-        .order("created_at", { ascending: true });
-
-      if (error) {
-        console.error("[LOAD_ALL_POSTS] ERROR:", error);
-        setIsInitialLoading(false);
+    const fetchData = async () => {
+      console.log("========================================");
+      console.log("🔍 [PostPage] Starting...");
+      console.log("🔍 [PostPage] URL id:", id);
+      console.log("========================================");
+      
+      if (!id) {
+        setError("ID is missing from URL");
+        setLoading(false);
         return;
       }
 
-      if (!data) {
-        console.warn("[LOAD_ALL_POSTS] NO DATA");
-        setIsInitialLoading(false);
-        return;
+      try {
+        // ✅ 1. 먼저 현재 포스트 찾기
+        console.log("📡 [Fetch] Finding post with id:", id);
+        const { data: postData, error: postError } = await supabase
+          .from("posts")
+          .select("*")
+          .eq("id", id)
+          .single();
+
+        if (postError) {
+          console.error("❌ [Fetch] Post error:", postError);
+          setError(`Post not found: ${postError.message}`);
+          setLoading(false);
+          return;
+        }
+
+        if (!postData) {
+          console.warn("⚠️ [Fetch] No data found for id:", id);
+          setError("Post not found");
+          setLoading(false);
+          return;
+        }
+
+        console.log("✅ [Fetch] Post found:", postData.title);
+        console.log("📌 [Fetch] Post category:", postData.category);
+        console.log("📌 [Fetch] Post project_slugs:", postData.project_slugs);
+        setPost(postData);
+
+        // ✅ 2. 모든 포스트 로드
+        console.log("📡 [Fetch] Loading all posts...");
+        const { data: allData, error: allError } = await supabase
+          .from("posts")
+          .select("*")
+          .order("created_at", { ascending: true });
+
+        if (allError) {
+          console.error("❌ [Fetch] All posts error:", allError);
+          setAllPosts([postData]);
+          setLoading(false);
+          return;
+        }
+
+        console.log("📡 [Fetch] All posts loaded:", allData?.length || 0);
+        setAllPosts(allData || []);
+        setLoading(false);
+        
+      } catch (err) {
+        console.error("❌ [Fetch] Unexpected error:", err);
+        setError(`Unexpected error: ${err}`);
+        setLoading(false);
       }
-
-      const initialCache: Record<string, any> = {};
-      data.forEach((post) => {
-        initialCache[post.id] = post;
-      });
-
-      setCache(initialCache);
-      setAllPosts(data);
-
-      const idx = data.findIndex((p) => p.id === id);
-      setIndex(idx >= 0 ? idx : 0);
-
-      setIsInitialLoading(false);
     };
 
-    load();
+    fetchData();
   }, [id]);
 
   // =========================
-  // CURRENT POST
+  // BUILD POSTS FOR STACKED VIEWER
   // =========================
-  const currentPost = allPosts[index];
-  const currentCategory = currentPost?.category;
+  const buildStackedPosts = () => {
+    if (!post) return [];
 
-  // =========================
-  // CATEGORY POSTS
-  // =========================
-  const categoryPosts = useMemo(() => {
-    if (!currentCategory) return [];
-    return allPosts.filter((p) => p.category === currentCategory);
-  }, [allPosts, currentCategory]);
+    // ✅ allPosts가 비어있으면 현재 포스트만 반환
+    if (!allPosts.length) {
+      return [{
+        ...post,
+        __globalIndex: 1,
+        __localIndex: 1,
+        __localTotal: 1,
+      }];
+    }
 
-  // =========================
-  // WINDOW POSTS
-  // =========================
-  const windowStart = Math.max(0, index - WINDOW_SIZE);
-  const windowPosts = useMemo(() => {
-    return allPosts.slice(windowStart, index + WINDOW_SIZE + 1);
-  }, [allPosts, index, windowStart]);
+    const currentIdx = allPosts.findIndex((p) => p.id === post.id);
+    
+    if (currentIdx === -1) {
+      return [{
+        ...post,
+        __globalIndex: 1,
+        __localIndex: 1,
+        __localTotal: 1,
+      }];
+    }
 
-  // =========================
-  // OPTIONAL WINDOW PREFETCH
-  // =========================
-  useEffect(() => {
-    const loadVisible = async () => {
-      const missingIds = windowPosts
-        .map((p) => p.id)
-        .filter((id) => !cache[id]);
+    const prevIdx = currentIdx - 1;
+    const nextIdx = currentIdx + 1;
+    
+    const indices = [prevIdx, currentIdx, nextIdx].filter(
+      (i) => i >= 0 && i < allPosts.length
+    );
 
-      if (!missingIds.length) {
-        console.log("[LOAD_VISIBLE] CACHE HIT");
-        return;
-      }
-
-      const { data, error } = await supabase
-        .from("posts")
-        .select("*")
-        .in("id", missingIds);
-
-      if (error) {
-        console.error("[LOAD_VISIBLE] ERROR:", error);
-        return;
-      }
-
-      if (!data) return;
-
-      setCache((prev) => {
-        const next = { ...prev };
-        data.forEach((p) => {
-          next[p.id] = p;
-        });
-        return next;
+    return indices.map((i) => {
+      const p = allPosts[i];
+      
+      // ✅ category가 없거나 null인 경우 처리
+      const sameCategoryPosts = allPosts.filter((x) => {
+        // 둘 다 category가 없거나 null이면 같은 그룹으로 처리
+        if (!x.category && !p.category) return true;
+        if (!x.category || !p.category) return false;
+        return x.category === p.category;
       });
-    };
 
-    loadVisible();
-  }, [windowPosts, cache]);
+      const localIndex = sameCategoryPosts.findIndex((x) => x.id === p.id) + 1;
+      const localTotal = sameCategoryPosts.length;
+      const globalIndex = allPosts.findIndex((x) => x.id === p.id) + 1;
 
-  // =========================
-  // BUILD POSTS
-  // =========================
-  const posts = useMemo(() => {
-    return windowPosts
-      .map((p) => {
-        const full = cache[p.id];
-        if (!full) {
-          console.warn("[POST BUILD] CACHE MISS:", p.id);
-          return null;
-        }
+      return {
+        ...p,
+        __globalIndex: globalIndex,
+        __localIndex: localIndex,
+        __localTotal: localTotal,
+      };
+    });
+  };
 
-        const sameCategoryPosts = allPosts.filter(
-          (x) => x.category === full.category
-        );
-
-        const localIndex = sameCategoryPosts.findIndex((x) => x.id === full.id) + 1;
-        const localTotal = sameCategoryPosts.length;
-        const globalIndex = allPosts.findIndex((x) => x.id === full.id) + 1;
-
-        return {
-          ...full,
-          __globalIndex: globalIndex,
-          __localIndex: localIndex,
-          __localTotal: localTotal,
-        };
-      })
-      .filter(Boolean);
-  }, [windowPosts, cache, allPosts]);
+  const stackedPosts = buildStackedPosts();
+  const viewerIndex = stackedPosts.findIndex((p) => p.id === post?.id);
 
   // =========================
   // 🆕 3D 종이 토글 핸들러
@@ -178,12 +168,10 @@ export default function PostPage() {
     
     setShow3D(prev => !prev);
     if (!show3D) {
-      // 3D 시작
       setIs3DActive(true);
       setFlipProgress(0);
       setFlipDirection('forward');
     } else {
-      // 3D 종료
       setIs3DActive(false);
     }
   }, [show3D]);
@@ -198,36 +186,97 @@ export default function PostPage() {
   }, []);
 
   // =========================
-  // DEBUG
-  // =========================
-  useEffect(() => {
-    if (!posts.length) return;
-    console.log("[FINAL POSTS]", posts.map((p) => ({
-      title: p.title,
-      category: p.category,
-      global: p.__globalIndex,
-      local: p.__localIndex,
-      total: p.__localTotal,
-    })));
-  }, [posts]);
-
-  // =========================
-  // LOADING
-  // =========================
-  if (isInitialLoading) {
-    return <div>Loading all posts...</div>;
-  }
-
-  if (!posts.length) {
-    return <div>Loading visible posts...</div>;
-  }
-
-  // =========================
   // RENDER
   // =========================
+  if (loading) {
+    return (
+      <div style={{ padding: "40px", textAlign: "center" }}>
+        <div>Loading post...</div>
+        <div style={{ fontSize: "12px", color: "#666", marginTop: "10px" }}>
+          ID: {id || "undefined"}
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{ padding: "40px", textAlign: "center" }}>
+        <div style={{ color: "red", fontSize: "20px", marginBottom: "10px" }}>
+          ❌ Error
+        </div>
+        <div style={{ fontSize: "14px", color: "#666", marginBottom: "20px" }}>
+          {error}
+        </div>
+        <div style={{ fontSize: "12px", color: "#999", marginBottom: "20px" }}>
+          ID: {id}
+        </div>
+        <button 
+          onClick={() => router.push("/")}
+          style={{
+            padding: "10px 24px",
+            borderRadius: "8px",
+            background: "#0070f3",
+            color: "white",
+            border: "none",
+            cursor: "pointer",
+            fontSize: "14px"
+          }}
+        >
+          ← Go Home
+        </button>
+      </div>
+    );
+  }
+
+  if (!post) {
+    return (
+      <div style={{ padding: "40px", textAlign: "center" }}>
+        <div>No post found</div>
+        <div style={{ fontSize: "12px", color: "#666", marginTop: "10px" }}>
+          ID: {id}
+        </div>
+      </div>
+    );
+  }
+
+  if (!stackedPosts.length) {
+    return (
+      <div style={{ padding: "40px", textAlign: "center" }}>
+        <h1>{post.title}</h1>
+        <div style={{ fontSize: "12px", color: "#666", marginTop: "10px" }}>
+          ID: {post.id}
+        </div>
+        <div style={{ fontSize: "12px", color: "#666", marginTop: "5px" }}>
+          Category: {post.category || "(no category)"}
+        </div>
+        <div style={{ marginTop: "20px", whiteSpace: "pre-wrap" }}>
+          {post.content?.slice(0, 500)}...
+        </div>
+        <button 
+          onClick={() => router.push("/")}
+          style={{
+            marginTop: "20px",
+            padding: "10px 20px",
+            borderRadius: "8px",
+            background: "#0070f3",
+            color: "white",
+            border: "none",
+            cursor: "pointer"
+          }}
+        >
+          ← Go Home
+        </button>
+      </div>
+    );
+  }
+
+  // =========================
+  // MAIN RENDER WITH STACKED VIEWER
+  // =========================
   return (
-    <PostEnvironment>
-      {/* 🆕 3D 종이 - ViewportGuard 완전히 밖에서 렌더링 */}
+    <PostEnvironment key={id}>
+      {/* 🆕 3D 종이 */}
       {show3D && current3DImage && (
         <PaperWobble3D
           imagePath={current3DImage}
@@ -247,14 +296,18 @@ export default function PostPage() {
         }}
       >
         <StackedPostViewer
-          posts={posts}
-          index={Math.min(index - windowStart, posts.length - 1)}
+          key={id}
+          posts={stackedPosts}
+          index={viewerIndex >= 0 ? viewerIndex : 0}
           onChangeIndex={(i: number) => {
-            const realIndex = windowStart + i;
-            setIndex(realIndex);
+            const targetPost = stackedPosts[i];
+            if (targetPost) {
+              console.log("[onChangeIndex] Navigating to:", targetPost.id);
+              router.push(`/post/${targetPost.id}`);
+            }
           }}
-          onToggle3D={toggle3D}  // 🆕 3D 토글 함수 전달
-          currentImage={currentPost?.thumbnail || currentPost?.image} // 🆕 현재 이미지 전달
+          onToggle3D={toggle3D}
+          currentImage={post?.thumbnail || post?.image}
         />
       </div>
     </PostEnvironment>

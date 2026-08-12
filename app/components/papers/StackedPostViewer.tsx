@@ -15,8 +15,8 @@ type Props = {
   posts: any[];
   index: number;
   onChangeIndex: (i: number) => void;
-  onToggle3D?: (imagePath?: string) => void; // 🆕 3D 토글 콜백
-  currentImage?: string; // 🆕 현재 이미지
+  onToggle3D?: (imagePath?: string) => void;
+  currentImage?: string;
 };
 
 const LEFT_MASK = "linear-gradient(to right, rgba(0,0,0,1) 45%, rgba(0,0,0,0))";
@@ -42,6 +42,7 @@ export default function StackedPostViewer({
 }: Props) {
   const STACK_OFFSET = -520;
 
+  // posts 배열에서 현재 인덱스 기준으로 이전, 현재, 다음 포스트 추출
   const prev = posts[index - 1];
   const current = posts[index];
   const next = posts[index + 1];
@@ -50,9 +51,14 @@ export default function StackedPostViewer({
   const animCenter = useMemo(() => getPostStyle(0), []);
   const animRight = useMemo(() => getPostStyle(1), []);
 
+  // 현재 포스트가 없으면 렌더링하지 않음
+  if (!current) {
+    return <div style={{ padding: "40px", textAlign: "center" }}>No post to display</div>;
+  }
+
   return (
     <>
-      {/* 🆕 3D 토글 버튼 - ViewportGuard 밖에 배치 */}
+      {/* 🆕 3D 토글 버튼 */}
       {onToggle3D && currentImage && (
         <button
           onClick={() => onToggle3D(currentImage)}
@@ -107,7 +113,7 @@ export default function StackedPostViewer({
             overflow: "visible" as const,
           }}
         >
-          {/* LEFT */}
+          {/* LEFT - 이전 포스트 */}
           {prev && (
             <motion.div
               key={prev.id}
@@ -122,7 +128,12 @@ export default function StackedPostViewer({
                 maskImage: LEFT_MASK,
                 WebkitMaskImage: LEFT_MASK,
               }}
-              onClick={() => onChangeIndex(index - 1)}
+              onClick={() => {
+                const prevIndex = index - 1;
+                if (prevIndex >= 0) {
+                  onChangeIndex(prevIndex);
+                }
+              }}
             >
               <PDFPage
                 data={prev}
@@ -135,7 +146,7 @@ export default function StackedPostViewer({
             </motion.div>
           )}
 
-          {/* CENTER */}
+          {/* CENTER - 현재 포스트 */}
           {current && (
             <motion.div
               key={current.id}
@@ -162,7 +173,7 @@ export default function StackedPostViewer({
             </motion.div>
           )}
 
-          {/* RIGHT */}
+          {/* RIGHT - 다음 포스트 */}
           {next && (
             <motion.div
               key={next.id}
@@ -177,7 +188,12 @@ export default function StackedPostViewer({
                 maskImage: RIGHT_MASK,
                 WebkitMaskImage: RIGHT_MASK,
               }}
-              onClick={() => onChangeIndex(index + 1)}
+              onClick={() => {
+                const nextIndex = index + 1;
+                if (nextIndex < posts.length) {
+                  onChangeIndex(nextIndex);
+                }
+              }}
             >
               <PDFPage
                 data={next}
