@@ -52,13 +52,14 @@ type Props = {
 
 const MemoMarkdownRendererCoordinator = React.memo(MarkdownRendererCoordinator);
 
-// 🔥 수정: PDFPageContent를 PageFlipController의 자식으로 받도록 변경
+// 🔥 FIXED: PDFPageContent now properly uses localIndex prop
 const PDFPageContent: React.FC<{
   data: any;
   isDark: boolean;
   globalIndex?: number;
+  localIndex?: number;  // ✅ Added localIndex prop
   localTotal?: number;
-}> = ({ data, isDark, globalIndex, localTotal }) => {
+}> = ({ data, isDark, globalIndex, localIndex, localTotal }) => {
   // 🆕 SnapshotManager 사용
   const { 
     contentRef: snapshotContentRef, 
@@ -74,7 +75,8 @@ const PDFPageContent: React.FC<{
   const textColor = isDark ? "#eee" : "#111";
   const HEADER_HEIGHT = 560;
 
-  // 🔥 이제 usePageFlip을 안전하게 사용 가능 (PageFlipController 내부에서 렌더링됨)
+  // ✅ Remove or comment out usePageFlip if not needed for other features
+  // If you need it for 3D/flip features, keep it but don't use currentPageIndex for display
   const {
     currentPageIndex,
     isFlipping,
@@ -186,9 +188,7 @@ const PDFPageContent: React.FC<{
       
       console.log('✅ Screenshot captured:', result.savedPath);
       
-      // 저장 완료 알림 (선택사항)
       if (result.savedPath) {
-        // 간단한 토스트 메시지나 알림 표시
         console.log(`📸 Saved to: ${result.savedPath}`);
       }
     } catch (err) {
@@ -229,7 +229,7 @@ const PDFPageContent: React.FC<{
             style={{
               position: "absolute",
               top: 66,
-              right: 160, // PostAdminActions 옆으로 배치
+              right: 160,
               zIndex: 9999,
               pointerEvents: "auto",
               display: "flex",
@@ -310,12 +310,13 @@ const PDFPageContent: React.FC<{
             }}
           />
 
+          {/* ✅ FIXED: Pass localIndex directly instead of currentPageIndex */}
           <PDFPageHeader
             data={data}
             isDark={isDark}
             headerImage={headerImage}
             globalIndex={globalIndex}
-            localIndex={currentPageIndex}
+            localIndex={localIndex}  // ✅ Use localIndex prop
             localTotal={localTotal}
             headerHeight={HEADER_HEIGHT}
           />
@@ -357,7 +358,6 @@ const PDFPageContent: React.FC<{
               paddingBottom={20}
               backgroundSize="520px 520px"
             >
-              {/* 🆕 contentRef를 snapshotContentRef로 변경 */}
               <div
                 ref={snapshotContentRef}
                 style={markdownWrapperStyle}
@@ -496,10 +496,11 @@ const PDFPageContent: React.FC<{
 
   return (
     <div>
+      {/* ✅ FIXED: Use localIndex for scroll bar */}
       <PDFPageScrollBar
         isDark={isDark}
         totalPages={localTotal}
-        currentPage={currentPageIndex !== undefined ? currentPageIndex + 1 : undefined}
+        currentPage={localIndex !== undefined ? localIndex + 1 : undefined}
       />
       <motion.div style={{ color: textColor }}>
         <ScrollWithKeyboardArrow />
@@ -509,12 +510,12 @@ const PDFPageContent: React.FC<{
   );
 };
 
-// 🔥 수정: 메인 컴포넌트 - PageFlipController가 PDFPageContent를 감싸도록 함
+// 🔥 FIXED: Main component properly passes localIndex
 export default function PDFPage({
   data,
   isActive = true,
   globalIndex,
-  localIndex,
+  localIndex,  // ✅ This comes from parent
   localTotal,
 }: Props) {
   const { mode } = useDarkMode();
@@ -530,18 +531,18 @@ export default function PDFPage({
 
   return (
     <>
-      {/* 🆕 PageFlipController가 PDFPageContent를 감싸도록 함 */}
       <PageFlipController
         isDark={isDark}
         totalPages={localTotal || 1}
         isWobble={isWobble}
         onWobbleToggle={handleWobbleToggle}
       >
-        {/* 🔥 PDFPageContent를 children으로 전달 */}
+        {/* ✅ FIXED: Pass localIndex to PDFPageContent */}
         <PDFPageContent
           data={data}
           isDark={isDark}
           globalIndex={globalIndex}
+          localIndex={localIndex}  // ✅ Pass localIndex through
           localTotal={localTotal}
         />
       </PageFlipController>
