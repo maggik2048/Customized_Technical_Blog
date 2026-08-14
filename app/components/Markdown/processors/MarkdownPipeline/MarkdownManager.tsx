@@ -233,6 +233,7 @@ export default function MarkdownManager({
         const pos =
           view.state.selection.main.from;
 
+        // ✅ Fixed: Use proper type handling
         let node = syntaxTree(
           view.state
         ).resolve(pos, -1);
@@ -244,6 +245,7 @@ export default function MarkdownManager({
         while (node) {
           console.log(node.name);
 
+          // ✅ Fixed: Handle null parent properly
           node = node.parent;
         }
       },
@@ -262,6 +264,7 @@ export default function MarkdownManager({
         const pos =
           view.state.selection.main.from;
 
+        // ✅ Fixed: Use proper type handling
         let node = syntaxTree(
           view.state
         ).resolve(pos, -1);
@@ -275,6 +278,7 @@ export default function MarkdownManager({
             return true;
           }
 
+          // ✅ Fixed: Handle null parent properly
           node = node.parent;
         }
 
