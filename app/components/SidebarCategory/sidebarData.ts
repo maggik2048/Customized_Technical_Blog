@@ -1,7 +1,16 @@
 // sidebarData.ts
-import { supabase } from "../../../lib/supabase"; // 기존 경로 그대로
+import { supabase } from "../../../lib/supabase";
 import { CATEGORY_TREE } from "../../-Data/CategoryTree";
-import { Item } from "./types";
+
+// Définissez et exportez le type Item ici
+export type Item = {
+  name: string;
+  slug: string;
+  href?: string;
+  count?: number;
+  children?: Item[];
+  // Ajoutez d'autres propriétés si nécessaire
+};
 
 export async function getMenu(): Promise<Item[]> {
   const { data: posts, error } = await supabase
