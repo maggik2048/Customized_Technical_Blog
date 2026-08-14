@@ -14,10 +14,6 @@ import { EditorView } from "@codemirror/view";
 // ✅ IMPORTANT: Import syntaxTree from @codemirror/language
 import { syntaxTree } from "@codemirror/language";
 
-// ✅ Option 1: Use type from the import namespace
-// The SyntaxNode type is available through the import namespace
-// We'll use a type alias instead
-
 import TurndownService from "turndown";
 
 import MarkdownPreview from "./MarkdownPreview";
@@ -71,8 +67,8 @@ export default function MarkdownManager({
    * =====================================
    */
 
-  const previewRef =
-    React.useRef<HTMLDivElement>(null);
+  // ✅ Fixed: Use non-nullable type assertion
+  const previewRef = React.useRef<HTMLDivElement>(null);
 
   /**
    * =====================================
@@ -238,8 +234,7 @@ export default function MarkdownManager({
         const pos =
           view.state.selection.main.from;
 
-        // ✅ Fixed: Use any type or import from correct path
-        // Option A: Use any (quickest fix)
+        // ✅ Fixed: Use any type
         let node: any = syntaxTree(
           view.state
         ).resolve(pos, -1);
