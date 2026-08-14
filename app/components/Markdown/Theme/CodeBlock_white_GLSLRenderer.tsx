@@ -45,6 +45,9 @@ const CodeBlock_white_GLSLRenderer = forwardRef<GLSLRendererRef, GLSLRendererPro
     const frameCountRef = useRef<number>(0);
     const lastCleanupRef = useRef<number>(Date.now());
 
+    // ✅ FIXED: Added radius constant
+    const radius = 5.5;
+
     // ✅ 메모리 최적화: 정리 함수
     const disposeObject = useCallback((obj: THREE.Object3D) => {
       obj.traverse((child) => {
@@ -292,6 +295,7 @@ const CodeBlock_white_GLSLRenderer = forwardRef<GLSLRendererRef, GLSLRendererPro
           const angleX = Math.sin(scrollOffset) * 0.3;
           const angleY = Math.cos(scrollOffset * 0.7) * 0.15;
           
+          // ✅ FIXED: radius is now defined
           cameraRef.current.position.x = Math.sin(angleX) * radius * 0.3;
           cameraRef.current.position.y = 1.8 + Math.sin(angleY) * 0.5;
           cameraRef.current.position.z = 5.5 + Math.cos(angleX) * 0.5;
