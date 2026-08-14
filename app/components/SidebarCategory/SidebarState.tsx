@@ -1,19 +1,10 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { getMenu } from "./sidebarData";
+import { getMenu, Item } from "./sidebarData"; // ← Importe Item depuis sidebarData
 import Sidebar from "./Sidebar";
 import SidebarOpenCloseMotion from "./SidebarOpenCloseMotion";
 import SidebarOpenCloseToggle from "./SidebarOpenCloseToggle";
-
-// Définir le type Item ici
-export interface Item {
-  id: string;
-  title: string;
-  path?: string;
-  icon?: React.ReactNode;
-  children?: Item[];
-}
 
 const SIDEBAR_WIDTH = 390;
 
