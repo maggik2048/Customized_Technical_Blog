@@ -1,7 +1,7 @@
 "use client";
 
-// ✅ Fixed: Use type assertion to bypass missing type declarations
-import { gfm } from "turndown-plugin-gfm" as any;
+// ✅ Fixed: Use require with type assertion
+const { gfm } = require("turndown-plugin-gfm") as any;
 
 import React from "react";
 
