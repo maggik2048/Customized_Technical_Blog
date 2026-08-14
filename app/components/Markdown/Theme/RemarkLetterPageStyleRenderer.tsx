@@ -1,37 +1,9 @@
 import React, { useMemo, useCallback, memo } from "react";
-import {
-  Tangerine,
-  Italianno,
-  Monsieur_La_Doulaise,
-} from "next/font/google";
 
-// Fonts
-export const titleFont = Monsieur_La_Doulaise({
-  subsets: ["latin"],
-  weight: ["400"],
-  display: "swap",
-  preload: true,
-  adjustFontFallback: false,
-});
-
-export const luxuryHeadingFont = Tangerine({
-  subsets: ["latin"],
-  weight: ["700"],
-  display: "swap",
-  preload: true,
-  adjustFontFallback: false,
-});
-
-export const boldCalligraphyFont = Italianno({
-  subsets: ["latin"],
-  weight: ["400"],
-  display: "swap",
-  preload: false,
-  adjustFontFallback: false,
-});
 
 // Font constants
-export const LETTER_FONT = `${luxuryHeadingFont.style.fontFamily}, "Times New Roman", serif`;
+// ✅ CHANGED: Direct font name instead of ${luxuryHeadingFont.style.fontFamily}
+export const LETTER_FONT = `"Tangerine", "Times New Roman", serif`;
 
 // Size configuration
 export const SIZES = Object.freeze({
@@ -180,7 +152,8 @@ export const getHeadingStyle = (
 });
 
 export const getParagraphStyle = (colors: any) => ({
-  fontFamily: LETTER_FONT,
+  // ✅ CHANGED: Now using direct font string
+  fontFamily: `"Tangerine", "Times New Roman", serif`,
   color: colors.inkColor,
   fontSize: SIZES.fontSize.p,
   lineHeight: 1.0,
@@ -207,14 +180,16 @@ export const getStrongStyle = (colors: any) => ({
 export const getEmphasisStyle = (colors: any) => ({
   color: colors.fadedInkColor,
   fontStyle: "italic" as const,
-  fontFamily: LETTER_FONT,
+  // ✅ CHANGED: Now using direct font string
+  fontFamily: `"Tangerine", "Times New Roman", serif`,
   textShadow: colors.textShadow,
 });
 
 export const getListItemStyle = (colors: any) => ({
   listStyle: "none" as const,
   position: "relative" as const,
-  fontFamily: LETTER_FONT,
+  // ✅ CHANGED: Now using direct font string
+  fontFamily: `"Tangerine", "Times New Roman", serif`,
   color: colors.inkColor,
   fontSize: SIZES.fontSize.li,
   lineHeight: 1.0,
@@ -242,7 +217,8 @@ export const getBlockquoteStyle = (colors: any) => ({
   borderRadius: 4,
   fontStyle: "italic" as const,
   backdropFilter: "blur(1px)",
-  fontFamily: LETTER_FONT,
+  // ✅ CHANGED: Now using direct font string
+  fontFamily: `"Tangerine", "Times New Roman", serif`,
   textShadow: colors.textShadow,
 });
 
@@ -300,7 +276,7 @@ export function useLetterStyles(isDark: boolean) {
     blockquoteStyle,
     hrStyle,
     listWrapperStyle,
-    highlightStyle, // ← Added this
+    highlightStyle,
     getHeadingStyleForLevel,
   };
 }

@@ -8,53 +8,33 @@ import remarkGfm from "remark-gfm";
 import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 
-import {
-  Cormorant,
-  Cormorant_SC,
-  Noto_Serif_KR,
-  Libre_Baskerville,
-} from "next/font/google";
+// ❌ REMOVED all next/font imports:
+
 
 import TableRenderer from "./TableRenderer";
 import KaTeXPostProcessor from "./KaTeXPostProcessor";
 
 /* =========================
-    FONT SYSTEM
+    FONT SYSTEM - Now using CSS classes
 ========================= */
 
-const fontH1 = Cormorant_SC({
-  subsets: ["latin"],
-  weight: ["700"],
-});
-
-const fontH2 = Cormorant_SC({
-  subsets: ["latin"],
-  weight: ["600"],
-});
-
-const fontH3 = Cormorant_SC({
-  subsets: ["latin"],
-  weight: ["600"],
-});
-
-const fontBody = Cormorant_SC({
-  subsets: ["latin"],
-  weight: ["500"],
-});
-
-const bodyFont = Libre_Baskerville({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-});
+// ❌ REMOVED all font configurations:
+// const fontH1 = Cormorant_SC({...});
+// const fontH2 = Cormorant_SC({...});
+// const fontH3 = Cormorant_SC({...});
+// const fontBody = Cormorant_SC({...});
+// const bodyFont = Libre_Baskerville({...});
 
 /* =========================
     BASE FONT
 ========================= */
 
-const baseFontFamily =
-  `${bodyFont.style.fontFamily},
-   "ZenSerifKR",
-   serif`;
+// ✅ CHANGED: Direct font name instead of ${bodyFont.style.fontFamily}
+const baseFontFamily = `
+  "Libre Baskerville",
+  "ZenSerifKR",
+  serif
+`;
 
 /* =========================
     COMPONENT
@@ -214,16 +194,18 @@ export default function RemarkPageRenderer({
       3: h3Style,
     };
 
-    const fontMap: any = {
-      1: fontH1,
-      2: fontH2,
-      3: fontH3,
+    // ✅ CHANGED: Map levels to CSS classes instead of font objects
+    const fontClassMap: any = {
+      1: "font-cormorant-sc",
+      2: "font-cormorant-sc",
+      3: "font-cormorant-sc",
     };
 
     return (
       <div style={{ margin: marginMap[level] }}>
         <span
-          className={fontMap[level].className}
+          // ✅ CHANGED: from className={fontMap[level].className} to className={fontClassMap[level]}
+          className={fontClassMap[level]}
           style={{
             ...styleMap[level],
             fontSize: sizeMap[level],

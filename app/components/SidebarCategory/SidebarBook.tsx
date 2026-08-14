@@ -4,20 +4,7 @@
 
 import Image from "next/image";
 
-import {
-  Cinzel,
-  Cormorant_Garamond,
-  Playfair_Display,
-  Baskervville,
-  EB_Garamond,
-  DM_Serif_Display,
-  Alegreya,
-  Marcellus,
-  Prata,
-  Libre_Baskerville,
-  Unbounded,
-  Orbitron,
-} from "next/font/google";
+
 
 import {
   onBookEnter,
@@ -34,86 +21,29 @@ import {
 } from "./sidebarFilters";
 
 /* =========================
-   GOOGLE FONTS
+   FONT MAP - Now using CSS classes
 ========================= */
 
-const cinzel = Cinzel({
-  subsets: ["latin"],
-  weight: ["600", "700"],
-});
+// ❌ REMOVED all font configurations:
+// const cinzel = Cinzel({...});
+// const cormorant = Cormorant_Garamond({...});
+// const playfair = Playfair_Display({...});
+// etc.
 
-const cormorant = Cormorant_Garamond({
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-});
-
-const playfair = Playfair_Display({
-  subsets: ["latin"],
-  weight: ["600", "700"],
-});
-
-const baskervville = Baskervville({
-  subsets: ["latin"],
-  weight: ["400"],
-});
-
-const ebgaramond = EB_Garamond({
-  subsets: ["latin"],
-  weight: ["500", "600"],
-});
-
-const dmserif = DM_Serif_Display({
-  subsets: ["latin"],
-  weight: ["400"],
-});
-
-const alegreya = Alegreya({
-  subsets: ["latin"],
-  weight: ["500", "700"],
-});
-
-const marcellus = Marcellus({
-  subsets: ["latin"],
-  weight: ["400"],
-});
-
-const prata = Prata({
-  subsets: ["latin"],
-  weight: ["400"],
-});
-
-const librebaskerville = Libre_Baskerville({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-});
-
-const unbounded = Unbounded({
-  subsets: ["latin"],
-  weight: ["500", "700"],
-});
-
-const orbitron = Orbitron({
-  subsets: ["latin"],
-  weight: ["500", "700"],
-});
-
-/* =========================
-   FONT MAP
-========================= */
-
-const FONT_MAP = {
-  cinzel,
-  cormorant,
-  playfair,
-  baskervville,
-  ebgaramond,
-  dmserif,
-  alegreya,
-  marcellus,
-  prata,
-  librebaskerville,
-  unbounded,
-  orbitron,
+// ✅ CHANGED: FONT_MAP now maps to CSS class names
+const FONT_MAP: Record<string, string> = {
+  cinzel: "font-cinzel",
+  cormorant: "font-cormorant-garamond",
+  playfair: "font-playfair",
+  baskervville: "font-baskervville",
+  ebgaramond: "font-eb-garamond",
+  dmserif: "font-dm-serif",
+  alegreya: "font-alegreya",
+  marcellus: "font-marcellus",
+  prata: "font-prata",
+  librebaskerville: "font-libre-baskerville",
+  unbounded: "font-unbounded",
+  orbitron: "font-orbitron",
 };
 
 /* =========================
@@ -163,8 +93,8 @@ export default function Book({
     color === "#F1ECE4" ||
     color === "#DDD6CC";
 
-  const fontObject =
-    FONT_MAP[font ?? "cormorant"];
+  // ✅ CHANGED: Now gets CSS class name instead of font object
+  const fontClass = FONT_MAP[font ?? "cormorant"];
 
   /**
    * 이미지 존재 여부
@@ -315,9 +245,8 @@ export default function Book({
         {/* AUTHOR */}
         {!onlyShowImage && (
           <div
-            className={
-              cormorant.className
-            }
+            // ✅ CHANGED: from className={cormorant.className} to className="font-cormorant-garamond"
+            className="font-cormorant-garamond"
             style={{
               position: "absolute",
 
@@ -346,9 +275,8 @@ export default function Book({
         {/* TITLE */}
         {!onlyShowImage && (
           <span
-            className={
-              fontObject.className
-            }
+            // ✅ CHANGED: from className={fontObject.className} to className={fontClass}
+            className={fontClass}
             style={{
               position: "relative",
               zIndex: 3,

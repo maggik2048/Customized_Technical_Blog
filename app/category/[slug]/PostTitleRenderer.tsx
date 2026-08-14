@@ -2,12 +2,14 @@
 
 import React from "react";
 
-import { Cormorant_SC } from "next/font/google";
+// ❌ REMOVED THIS LINE:
+// import { Cormorant_SC } from "next/font/google";
 
-const cormorant = Cormorant_SC({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
+// ❌ REMOVED THIS BLOCK:
+// const cormorant = Cormorant_SC({
+//   subsets: ["latin"],
+//   weight: ["400", "500", "600", "700"],
+// });
 
 export default function PostTitleRenderer({
   text,
@@ -190,7 +192,10 @@ export default function PostTitleRenderer({
 
   return (
     <span
-      className={cormorant.className}
+      // ✅ CHANGED THIS LINE:
+      // FROM: className={cormorant.className}
+      // TO: className="font-cormorant-sc"
+      className="font-cormorant-sc"
       style={{
         /**
          * 핵심 수정
@@ -208,8 +213,11 @@ export default function PostTitleRenderer({
 
         fontWeight: 520,
 
+        // ✅ CHANGED THIS LINE:
+        // FROM: fontFamily: `${cormorant.style.fontFamily}, "Pretendard", "Noto Sans KR", serif`
+        // TO: fontFamily: `'Cormorant SC', "Pretendard", "Noto Sans KR", serif`
         fontFamily: `
-          ${cormorant.style.fontFamily},
+          'Cormorant SC',
           "Pretendard",
           "Noto Sans KR",
           serif

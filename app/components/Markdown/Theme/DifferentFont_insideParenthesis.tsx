@@ -1,14 +1,13 @@
-// DifferentFont_insideParenthesis.tsx
 import React from "react";
-import { Jacquard_24 } from "next/font/google"; // Changed from Metamorphous
+// ❌ REMOVED: import { Jacquard_24 } from "next/font/google";
 
-// Initialize Jacquard 24 font with Next.js font loader
-const jacquard = Jacquard_24({
-  subsets: ["latin"],
-  weight: ["400"],
-  display: "swap",
-  preload: true,
-});
+// ❌ REMOVED:
+// const jacquard = Jacquard_24({
+//   subsets: ["latin"],
+//   weight: ["400"],
+//   display: "swap",
+//   preload: true,
+// });
 
 interface DifferentFont_insideParenthesisProps {
   children: string;
@@ -37,9 +36,11 @@ export function DifferentFont_insideParenthesis({
       parts.push(
         <span
           key={match.index}
-          className={`${jacquard.className} ${className}`} // Changed from metamorphous
+          // ✅ CHANGED: from className={`${jacquard.className} ${className}`} to className={`font-jacquard ${className}`}
+          className={`font-jacquard ${className}`}
           style={{
-            fontFamily: "'Jacquard 24', 'Times New Roman', serif", // Changed font family
+            // ✅ CHANGED: Direct font name instead of 'Jacquard 24'
+            fontFamily: "'Jacquard 24', 'Times New Roman', serif",
             fontSize: "0.46em",
             color: "#4a2c1a",
             letterSpacing: "0.03em",

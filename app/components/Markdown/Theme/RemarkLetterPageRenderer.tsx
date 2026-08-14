@@ -16,13 +16,16 @@ import rehypeRaw from "rehype-raw";
 
 // Local imports
 import RemarkLetterPageBackgroundRenderer from "./RemarkLetterPagebackgroundRenderer";
-import {
-  titleFont,
-  luxuryHeadingFont,
-  boldCalligraphyFont,
-  SIZES,
-  useLetterStyles,
-} from "./RemarkLetterPageStyleRenderer";
+// ❌ REMOVED font imports:
+// import {
+//   titleFont,
+//   luxuryHeadingFont,
+//   boldCalligraphyFont,
+//   SIZES,
+//   useLetterStyles,
+// } from "./RemarkLetterPageStyleRenderer";
+// ✅ Keep only what we need:
+import { SIZES, useLetterStyles } from "./RemarkLetterPageStyleRenderer";
 
 // Import TableRenderer directly instead of lazy loading
 import TableRenderer from "./TableRenderer";
@@ -42,6 +45,17 @@ import { DifferentFont_insideParenthesis } from "./DifferentFont_insideParenthes
 
 const REMARK_PLUGINS = [remarkMath, remarkGfm] as const;
 const REHYPE_PLUGINS = [rehypeKatex, rehypeRaw] as const;
+
+/* =========================
+   FONT CLASS MAP
+========================= */
+
+// ✅ Added: Map heading levels to CSS classes
+const HEADING_FONT_CLASSES = {
+  1: "font-tangerine",      // For h1
+  2: "font-monsieur-la-doulaise", // For h2
+  3: "font-italianno",      // For h3
+};
 
 /* =========================
    MEMOIZED COMPONENTS
@@ -219,7 +233,8 @@ export default function RemarkLetterPageRenderer({
     const seed = level * 999;
     const marginTop = SIZES.margin[level as keyof typeof SIZES.margin];
     const isLevel1 = level === 1;
-    const className = isLevel1 ? titleFont.className : luxuryHeadingFont.className;
+    // ✅ CHANGED: Use CSS class instead of font object
+    const className = HEADING_FONT_CLASSES[level as keyof typeof HEADING_FONT_CLASSES] || "font-tangerine";
     const headingStyle = getHeadingStyleForLevel(level, isLevel1);
     
     return memo(function HeadingRenderer({ children }: any) {

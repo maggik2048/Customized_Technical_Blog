@@ -3,12 +3,13 @@
 import React from "react";
 import { useDarkMode } from "@/app/contexts/DarkModeContext";
 import { useCastShadowFilter } from "@/app/contexts/CastShadowFilterContext";
-import { Dorsa } from "next/font/google";
 
-const dorsa = Dorsa({
-  subsets: ["latin"],
-  weight: "400",
-});
+
+// ❌ REMOVED:
+// const dorsa = Dorsa({
+//   subsets: ["latin"],
+//   weight: "400",
+// });
 
 export default function DarkModeContextButtonRenderer() {
   const { mode, codeDark, toggle, toggleCode } = useDarkMode();
@@ -17,8 +18,9 @@ export default function DarkModeContextButtonRenderer() {
 
   const isDark = mode === "dark";
 
+  // ✅ CHANGED: Direct font name instead of ${dorsa.style.fontFamily}
   const luxuryFont: React.CSSProperties = {
-    fontFamily: `${dorsa.style.fontFamily}, "Times New Roman", serif`,
+    fontFamily: `"Dorsa", "Times New Roman", serif`,
     letterSpacing: "0.28em",
     textTransform: "uppercase",
   };

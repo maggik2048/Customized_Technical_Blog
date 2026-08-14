@@ -10,42 +10,29 @@ import remarkGfm from "remark-gfm";
 import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 
-import {
-  Caveat,
-  Patrick_Hand,
-  Shadows_Into_Light,
-} from "next/font/google";
+// ❌ REMOVED: import { Caveat, Patrick_Hand, Shadows_Into_Light } from "next/font/google";
 
 import TableRenderer from "./TableRenderer";
 
 import KaTeXPostProcessor from "./KaTeXPostProcessor";
 
 /* =========================
-   HANDWRITING FONTS (Google Fonts)
+   HANDWRITING FONTS (Now using CSS classes)
 ========================= */
 
-const titleFont = Caveat({
-  subsets: ["latin"],
-  weight: ["700"],
-});
-
-const headingFont = Patrick_Hand({
-  subsets: ["latin"],
-  weight: ["400"],
-});
-
-const bodyFont = Shadows_Into_Light({
-  subsets: ["latin"],
-  weight: ["400"],
-});
+// ❌ REMOVED:
+// const titleFont = Caveat({...});
+// const headingFont = Patrick_Hand({...});
+// const bodyFont = Shadows_Into_Light({...});
 
 /* =========================
    BASE FONT (NanumPen 우선 사용 - globals.css에서 등록)
 ========================= */
 
+// ✅ CHANGED: removed ${bodyFont.style.fontFamily}
 const handwritingFont = `
   "NanumPen",
-  ${bodyFont.style.fontFamily},
+  "Shadows Into Light",
   "Nanum Pen Script",
   "Gaegu",
   cursive
@@ -210,6 +197,11 @@ export default function NotePageRenderer({
         ? "0 1px 0 rgba(255,255,255,0.15), 0 2px 4px rgba(0,0,0,0.5)"
         : "0 1px 0 rgba(255,255,255,0.65), 0 2px 4px rgba(0,0,0,0.25)";
 
+      // ✅ CHANGED: Use direct font names instead of titleFont.style.fontFamily
+      const fontFamily = level === 1 
+        ? `"BMKkubulim", "Caveat", cursive`
+        : `"BMKkubulim", "Patrick Hand", cursive`;
+
       return (
         <div
           style={{
@@ -227,8 +219,8 @@ export default function NotePageRenderer({
           <span
             style={{
 
-              // ✅ BMKkubulim 폰트 적용!
-              fontFamily: `"BMKkubulim", ${level === 1 ? titleFont.style.fontFamily : headingFont.style.fontFamily}`,
+              // ✅ CHANGED: Direct font names
+              fontFamily: fontFamily,
 
               color:
                 level === 1

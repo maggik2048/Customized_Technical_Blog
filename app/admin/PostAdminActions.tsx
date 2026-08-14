@@ -5,12 +5,7 @@ import { supabase } from "@/lib/supabase";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Pencil, Trash2, Plus } from "lucide-react";
-import { Cormorant_SC } from "next/font/google";
 
-const cormorant = Cormorant_SC({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-});
 
 export default function PostAdminActions({
   postId,
@@ -53,7 +48,7 @@ export default function PostAdminActions({
     overflow: "hidden",
     transition: "all 0.24s ease",
     boxShadow: `inset 0 1px 0 rgba(255,255,255,0.03)`,
-    pointerEvents: "auto", // Ensure clicks work
+    pointerEvents: "auto",
   };
 
   const innerLineStyle: React.CSSProperties = {
@@ -118,17 +113,15 @@ export default function PostAdminActions({
         style={{ pointerEvents: "auto" }}
       >
         <button
-          className={cormorant.className}
+          className="font-cormorant-sc"
           style={buttonStyle}
           onMouseEnter={hoverEffect}
           onMouseLeave={leaveEffect}
         >
           <div style={innerLineStyle} />
-
           <div style={iconWrapStyle}>
             <Plus size={10} strokeWidth={1.9} />
           </div>
-
           <span style={labelStyle}>Write Post</span>
         </button>
       </Link>
@@ -139,17 +132,15 @@ export default function PostAdminActions({
         style={{ pointerEvents: "auto" }}
       >
         <button
-          className={cormorant.className}
+          className="font-cormorant-sc"
           style={buttonStyle}
           onMouseEnter={hoverEffect}
           onMouseLeave={leaveEffect}
         >
           <div style={innerLineStyle} />
-
           <div style={iconWrapStyle}>
             <Pencil size={10} strokeWidth={1.9} />
           </div>
-
           <span style={labelStyle}>Modify Post</span>
         </button>
       </Link>
@@ -157,17 +148,15 @@ export default function PostAdminActions({
       {/* DELETE */}
       <button
         onClick={handleDelete}
-        className={cormorant.className}
+        className="font-cormorant-sc"
         style={buttonStyle}
         onMouseEnter={hoverEffect}
         onMouseLeave={leaveEffect}
       >
         <div style={innerLineStyle} />
-
         <div style={iconWrapStyle}>
           <Trash2 size={10} strokeWidth={1.9} />
         </div>
-
         <span style={labelStyle}>Delete Post</span>
       </button>
     </div>

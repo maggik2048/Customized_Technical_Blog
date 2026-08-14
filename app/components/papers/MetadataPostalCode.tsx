@@ -1,12 +1,13 @@
 "use client";
 
 import React from "react";
-import { Cormorant_SC } from "next/font/google";
 
-const cormorant = Cormorant_SC({
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-});
+
+// ❌ REMOVED:
+// const cormorant = Cormorant_SC({
+//   subsets: ["latin"],
+//   weight: ["500", "600", "700"],
+// });
 
 function seededRandom(seed: number) {
   const x = Math.sin(seed) * 10000;
@@ -187,7 +188,8 @@ export default function MetadataPostalCode({
 
           {/* TEXT OVERLAY */}
           <div
-            className={cormorant.className}
+            // ✅ CHANGED: from className={cormorant.className} to className="font-cormorant-sc"
+            className="font-cormorant-sc"
             style={{
               position: "absolute",
               inset: 0,

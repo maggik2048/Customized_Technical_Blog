@@ -2,17 +2,18 @@
 
 import React from "react";
 
-import { Cormorant_SC } from "next/font/google";
+// ❌ REMOVED: import { Cormorant_SC } from "next/font/google";
 
 import PDFPageIndexPanel from "./PDFPageIndexPanel";
 import HeadertitleAdjustment from "./HeadertitleAdjustment";
 
 import MetadataFetcher from "./MetadataFetcher";
 
-const cormorant = Cormorant_SC({
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
+// ❌ REMOVED:
+// const cormorant = Cormorant_SC({
+//   subsets: ["latin"],
+//   weight: ["400", "500", "600", "700"],
+// });
 
 type Props = {
   data: any;
@@ -156,7 +157,8 @@ export default function PDFPageHeader({
         >
           <HeadertitleAdjustment title={data.title}>
             {(style) => (
-              <h1 className={cormorant.className} style={style}>
+              // ✅ CHANGED: from className={cormorant.className} to className="font-cormorant-sc"
+              <h1 className="font-cormorant-sc" style={style}>
                 {data.title}
               </h1>
             )}
