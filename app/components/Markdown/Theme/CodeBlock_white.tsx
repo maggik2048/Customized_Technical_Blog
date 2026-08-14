@@ -76,7 +76,7 @@ export default function CodeBlock_white({
   children,
   index = 0,
   ...props
-}: CodeProps & { index?: number }) {
+}: CodeProps & { index?: number; inline?: boolean }) {  // ✅ FIXED: Added inline to interface
   const [copied, setCopied] = useState(false);
   const [hovered, setHovered] = useState(false);
 
