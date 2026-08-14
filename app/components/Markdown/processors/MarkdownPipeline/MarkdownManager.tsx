@@ -1,7 +1,7 @@
 "use client";
 
-// ✅ Fixed: Use require with type assertion
-const { gfm } = require("turndown-plugin-gfm") as any;
+// ✅ IMPORT PROPRE - Plus besoin de require
+import { gfm } from "turndown-plugin-gfm";
 
 import React from "react";
 

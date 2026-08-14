@@ -39,8 +39,12 @@
     "**/*.mts",
     "**/*.cts",
     ".next/types/**/*.ts",
-    ".next/dev/types/**/*.ts"
-, "app/ResponseExportAPI/routes/giveSuggestedTitles.js"  ],
+    ".next/dev/types/**/*.ts",
+    "app/ResponseExportAPI/routes/giveSuggestedTitles.js",
+    // ✅ AJOUTEZ CES LIGNES
+    "types/**/*.d.ts",
+    "types/**/*.ts"
+  ],
   "exclude": [
     "node_modules"
   ]

@@ -1,5 +1,8 @@
 "use client";
 
+// ✅ IMPORT PROPRE - Plus besoin de require
+import { gfm } from "turndown-plugin-gfm";
+
 import React from "react";
 import ReactMarkdown from "react-markdown";
 
@@ -12,7 +15,6 @@ import rehypeRaw from "rehype-raw";
 import "katex/dist/katex.min.css";
 
 import TurndownService from "turndown";
-import { gfm } from "turndown-plugin-gfm";
 
 import {
   PrismLight as SyntaxHighlighter,
@@ -249,7 +251,8 @@ type Props = {
     React.SetStateAction<string>
   >;
 
-  previewRef: React.RefObject<HTMLDivElement>;
+  // ✅ CORRIGÉ : Accepte null
+  previewRef: React.RefObject<HTMLDivElement | null>;
 };
 
 type EditableBlockProps = {
@@ -751,4 +754,3 @@ function MarkdownPreview({
 export default React.memo(
   MarkdownPreview
 );
-
