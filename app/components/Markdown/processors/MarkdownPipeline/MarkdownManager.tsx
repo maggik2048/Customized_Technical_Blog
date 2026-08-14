@@ -233,8 +233,8 @@ export default function MarkdownManager({
         const pos =
           view.state.selection.main.from;
 
-        // ✅ Fixed: Use proper type handling
-        let node = syntaxTree(
+        // ✅ Fixed: Explicitly type as SyntaxNode | null
+        let node: SyntaxNode | null = syntaxTree(
           view.state
         ).resolve(pos, -1);
 
@@ -245,7 +245,7 @@ export default function MarkdownManager({
         while (node) {
           console.log(node.name);
 
-          // ✅ Fixed: Handle null parent properly
+          // ✅ Fixed: Now type-safe assignment
           node = node.parent;
         }
       },
@@ -264,8 +264,8 @@ export default function MarkdownManager({
         const pos =
           view.state.selection.main.from;
 
-        // ✅ Fixed: Use proper type handling
-        let node = syntaxTree(
+        // ✅ Fixed: Explicitly type as SyntaxNode | null
+        let node: SyntaxNode | null = syntaxTree(
           view.state
         ).resolve(pos, -1);
 
@@ -278,7 +278,7 @@ export default function MarkdownManager({
             return true;
           }
 
-          // ✅ Fixed: Handle null parent properly
+          // ✅ Fixed: Now type-safe assignment
           node = node.parent;
         }
 
