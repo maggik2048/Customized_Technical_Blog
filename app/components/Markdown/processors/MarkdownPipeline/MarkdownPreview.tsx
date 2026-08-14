@@ -256,7 +256,8 @@ type Props = {
 };
 
 type EditableBlockProps = {
-  tag: keyof JSX.IntrinsicElements;
+  // ✅ CORRIGÉ : Utilisation de React.ElementType au lieu de JSX.IntrinsicElements
+  tag: React.ElementType;
 
   children: React.ReactNode;
 
