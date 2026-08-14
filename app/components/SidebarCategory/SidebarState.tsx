@@ -5,7 +5,15 @@ import { getMenu } from "./sidebarData";
 import Sidebar from "./Sidebar";
 import SidebarOpenCloseMotion from "./SidebarOpenCloseMotion";
 import SidebarOpenCloseToggle from "./SidebarOpenCloseToggle";
-import { Item } from "./types";
+
+// Définir le type Item ici
+export interface Item {
+  id: string;
+  title: string;
+  path?: string;
+  icon?: React.ReactNode;
+  children?: Item[];
+}
 
 const SIDEBAR_WIDTH = 390;
 
