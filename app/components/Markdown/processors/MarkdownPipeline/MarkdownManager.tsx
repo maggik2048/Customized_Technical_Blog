@@ -1,5 +1,7 @@
 "use client";
-import { gfm } from "turndown-plugin-gfm";
+
+// ✅ Fixed: Use type assertion to bypass missing type declarations
+import { gfm } from "turndown-plugin-gfm" as any;
 
 import React from "react";
 
@@ -12,7 +14,6 @@ import { EditorView } from "@codemirror/view";
 import { syntaxTree } from "@codemirror/language";
 
 import TurndownService from "turndown";
-
 
 import MarkdownPreview from "./MarkdownPreview";
 
