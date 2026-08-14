@@ -2,7 +2,15 @@
 
 import { usePathname } from "next/navigation";
 import Book from "./SidebarBook";
-import { Item } from "./types";
+
+// Define the Item type locally
+export interface Item {
+  slug: string;
+  name: string;
+  children?: Item[];
+  // Add any other properties your items might have
+  href?: string;
+}
 
 export default function Sidebar({
   menu,
