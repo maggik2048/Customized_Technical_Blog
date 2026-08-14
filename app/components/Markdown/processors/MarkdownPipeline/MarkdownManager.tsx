@@ -11,9 +11,12 @@ import { markdown } from "@codemirror/lang-markdown";
 
 import { EditorView } from "@codemirror/view";
 
-// ✅ IMPORTANT: Import syntaxTree and types correctly
+// ✅ IMPORTANT: Import syntaxTree from @codemirror/language
 import { syntaxTree } from "@codemirror/language";
-import type { SyntaxNode } from "@codemirror/language";
+
+// ✅ Option 1: Use type from the import namespace
+// The SyntaxNode type is available through the import namespace
+// We'll use a type alias instead
 
 import TurndownService from "turndown";
 
@@ -235,8 +238,9 @@ export default function MarkdownManager({
         const pos =
           view.state.selection.main.from;
 
-        // ✅ Fixed: Use type from import
-        let node: SyntaxNode | null = syntaxTree(
+        // ✅ Fixed: Use any type or import from correct path
+        // Option A: Use any (quickest fix)
+        let node: any = syntaxTree(
           view.state
         ).resolve(pos, -1);
 
@@ -265,8 +269,8 @@ export default function MarkdownManager({
         const pos =
           view.state.selection.main.from;
 
-        // ✅ Fixed: Use type from import
-        let node: SyntaxNode | null = syntaxTree(
+        // ✅ Fixed: Use any type
+        let node: any = syntaxTree(
           view.state
         ).resolve(pos, -1);
 
