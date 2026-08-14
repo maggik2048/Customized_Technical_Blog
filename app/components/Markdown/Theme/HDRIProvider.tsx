@@ -43,6 +43,38 @@ export function HDRIProvider({
     setScrollY(window.scrollY || window.pageYOffset || 0);
   }, []);
 
+  // ✅ FIXED: 폴백 텍스처 생성 (DataTexture 반환)
+  const createFallbackTexture = useCallback((): THREE.DataTexture => {
+    const canvas = document.createElement("canvas");
+    canvas.width = 2;
+    canvas.height = 2;
+    const ctx = canvas.getContext("2d")!;
+    
+    // 그라데이션 배경
+    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    gradient.addColorStop(0, "#404060");
+    gradient.addColorStop(1, "#606080");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // ✅ CanvasTexture -> DataTexture 변환
+    const canvasTexture = new THREE.CanvasTexture(canvas);
+    canvasTexture.mapping = THREE.EquirectangularReflectionMapping;
+    
+    // DataTexture로 변환 (픽셀 데이터 추출)
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const dataTexture = new THREE.DataTexture(
+      imageData.data,
+      canvas.width,
+      canvas.height,
+      THREE.RGBAFormat
+    );
+    dataTexture.mapping = THREE.EquirectangularReflectionMapping;
+    dataTexture.needsUpdate = true;
+    
+    return dataTexture;
+  }, []);
+
   // ✅ HDRI 로드 함수 (캐시 및 중복 로드 방지)
   const loadHDRI = useCallback(async () => {
     // 이미 로드 시도 중이면 건너뛰기
@@ -135,7 +167,7 @@ export function HDRIProvider({
         setIsLoading(false);
         onError?.(errorObj);
         
-        //  폴백: 기본 조명용 더미 텍스처 생성
+        // ✅ 폴백: 기본 조명용 더미 텍스처 생성 (DataTexture)
         const fallbackTexture = createFallbackTexture();
         textureRef.current = fallbackTexture;
         setTexture(fallbackTexture);
@@ -143,26 +175,7 @@ export function HDRIProvider({
     } finally {
       loadingPromises.delete(hdriUrl);
     }
-  }, [hdriUrl, onLoad, onError]);
-
-  //  폴백 텍스처 생성 (HDRI 로드 실패 시)
-  const createFallbackTexture = useCallback(() => {
-    const canvas = document.createElement("canvas");
-    canvas.width = 2;
-    canvas.height = 2;
-    const ctx = canvas.getContext("2d")!;
-    
-    // 그라데이션 배경
-    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-    gradient.addColorStop(0, "#404060");
-    gradient.addColorStop(1, "#606080");
-    ctx.fillStyle = gradient;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    const texture = new THREE.CanvasTexture(canvas);
-    texture.mapping = THREE.EquirectangularReflectionMapping;
-    return texture;
-  }, []);
+  }, [hdriUrl, onLoad, onError, createFallbackTexture]);
 
   //  useEffect로 HDRI 로드
   useEffect(() => {
@@ -193,7 +206,7 @@ export function HDRIProvider({
       const checkMemory = () => {
         if (texture) {
           const info = {
-            textureSize: `${texture.image?.width || 0}x${texture.image?.height || 0}`,
+            textureSize: `${(texture.image as any)?.width || 0}x${(texture.image as any)?.height || 0}`,
             cacheSize: textureCache.size,
           };
           console.log('📊 HDRI Cache Info:', info);
