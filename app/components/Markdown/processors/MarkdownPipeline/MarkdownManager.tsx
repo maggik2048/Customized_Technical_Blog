@@ -67,8 +67,8 @@ export default function MarkdownManager({
    * =====================================
    */
 
-  // ✅ Fixed: Use non-nullable type assertion
-  const previewRef = React.useRef<HTMLDivElement>(null);
+  // ✅ CORRIGÉ : Utilisation d'une assertion non-null
+  const previewRef = React.useRef<HTMLDivElement>(null!);
 
   /**
    * =====================================
