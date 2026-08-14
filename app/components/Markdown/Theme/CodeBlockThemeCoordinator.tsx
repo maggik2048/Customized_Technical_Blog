@@ -9,14 +9,14 @@ interface Props {
   inline?: boolean;
   className?: string;
   children: React.ReactNode;
-  index?: number;  // ✅ index prop 추가!
+  index?: number;  // ✅ index prop added!
 }
 
 export default function CodeBlockThemeCoordinator({
-  inline,
+  inline, // Keep this in props but don't pass it down
   className,
   children,
-  index = 0,  // ✅ 기본값 0
+  index = 0,  // ✅ default value 0
 }: Props) {
   const { codeDark } = useDarkMode();
 
@@ -26,7 +26,6 @@ export default function CodeBlockThemeCoordinator({
   if (codeDark) {
     return (
       <CodeBlockWithCopy
-        inline={inline}
         className={className}
         index={index}  // ✅ index 전달
       >
@@ -40,7 +39,6 @@ export default function CodeBlockThemeCoordinator({
   // ===============================
   return (
     <CodeBlock_white
-      inline={inline}
       className={className}
       index={index}  // ✅ index 전달
     >
