@@ -3,6 +3,7 @@
 
 import React from 'react';
 import PaperWobble3D from './PageFlippingAnimation/PaperWobble3D';
+import { windConfigs, WindConfig } from '@/app/data/windConfigs';
 
 interface PaperFlipPageProps {
   children: React.ReactNode;
@@ -11,6 +12,10 @@ interface PaperFlipPageProps {
   progress: number;
   isWobble: boolean;
   className?: string;
+  imagePath?: string; // For PaperWobble3D
+  onFlipComplete?: () => void; // For PaperWobble3D
+  onClose?: () => void; // For PaperWobble3D
+  windConfigId?: string; // Use wind config ID instead of name
 }
 
 export default function PaperFlipPage({
@@ -20,8 +25,15 @@ export default function PaperFlipPage({
   progress,
   isWobble,
   className = '',
+  imagePath = '',
+  onFlipComplete,
+  onClose,
+  windConfigId = 'gentleBreeze',
 }: PaperFlipPageProps) {
   const isForward = direction === 'forward';
+  
+  // Get wind config by ID
+  const windConfig = windConfigs[windConfigId] || windConfigs.gentleBreeze;
   
   // wobble이 아닐 때는 기본 3D 회전
   if (!isWobble) {
@@ -73,12 +85,13 @@ export default function PaperFlipPage({
   // 🆕 wobble 활성화 시 3D 종이 시뮬레이션
   return (
     <PaperWobble3D
+      imagePath={imagePath}
       isActive={isFlipping}
       progress={progress}
       direction={direction}
-      className={className}
-    >
-      {children}
-    </PaperWobble3D>
+      onFlipComplete={onFlipComplete}
+      windConfig={windConfig}
+      onClose={onClose}
+    />
   );
 }
