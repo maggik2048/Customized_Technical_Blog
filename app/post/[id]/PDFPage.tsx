@@ -244,7 +244,10 @@ const PDFPageContent: React.FC<{
                 alignItems: "center",
                 gap: "8px",
                 padding: "8px 16px",
-                background: "transparent",
+                // ✅ FIXED: Remove duplicate background, use single backgroundColor
+                backgroundColor: isDark 
+                  ? "rgba(255,255,255,0.04)" 
+                  : "rgba(255,255,255,0.5)",
                 color: isDark ? "#c0c0c0" : "#6b6b6b",
                 border: isDark ? "1px solid rgba(255,255,255,0.12)" : "1px solid rgba(0,0,0,0.1)",
                 borderRadius: "8px",
@@ -254,16 +257,13 @@ const PDFPageContent: React.FC<{
                 letterSpacing: "0.3px",
                 transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
                 backdropFilter: "blur(8px)",
-                background: isDark 
-                  ? "rgba(255,255,255,0.04)" 
-                  : "rgba(255,255,255,0.5)",
                 boxShadow: isDark
                   ? "0 1px 3px rgba(0,0,0,0.2)"
                   : "0 1px 3px rgba(0,0,0,0.05)",
               }}
               onMouseEnter={(e) => {
                 if (!isCapturing) {
-                  e.currentTarget.style.background = isDark 
+                  e.currentTarget.style.backgroundColor = isDark 
                     ? "rgba(255,255,255,0.08)" 
                     : "rgba(0,0,0,0.04)";
                   e.currentTarget.style.borderColor = isDark 
@@ -277,7 +277,7 @@ const PDFPageContent: React.FC<{
               }}
               onMouseLeave={(e) => {
                 if (!isCapturing) {
-                  e.currentTarget.style.background = isDark 
+                  e.currentTarget.style.backgroundColor = isDark 
                     ? "rgba(255,255,255,0.04)" 
                     : "rgba(255,255,255,0.5)";
                   e.currentTarget.style.borderColor = isDark 
