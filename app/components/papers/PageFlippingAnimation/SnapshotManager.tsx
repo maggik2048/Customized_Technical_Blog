@@ -22,6 +22,18 @@ type SnapshotResult = {
   savedPath?: string;
 };
 
+// ✅ ADDED: SnapshotData type for page flipping animation
+export type SnapshotData = {
+  id: string;
+  dataUrl: string;
+  width: number;
+  height: number;
+  timestamp: number;
+  savedPath?: string;
+  pageNumber?: number;
+  blob?: Blob;
+};
+
 type SnapshotManagerProps = {
   children: React.ReactNode;
   onCaptureStart?: () => void;
@@ -171,7 +183,7 @@ export class SnapshotManager {
       const dataUrl = canvas.toDataURL('image/png', quality);
       const blob = await this.canvasToBlob(canvas, quality);
 
-      // 🆕 파일명 생성
+      // 파일명 생성
       const timestamp = Date.now();
       const filename = `currentpage_${timestamp}.png`;
       const savedPath = `/CurrentPage/${filename}`;
@@ -186,7 +198,7 @@ export class SnapshotManager {
         savedPath,
       };
 
-      // 🆕 서버에 저장 (선택사항)
+      // 서버에 저장 (선택사항)
       await this.saveToServer(blob, filename);
 
       this.processQueue();
@@ -201,7 +213,7 @@ export class SnapshotManager {
   }
 
   /**
-   * 🆕 서버에 스크린샷 저장
+   * 서버에 스크린샷 저장
    */
   private async saveToServer(blob: Blob, filename: string): Promise<void> {
     try {
@@ -290,6 +302,26 @@ export class SnapshotManager {
   }
 
   /**
+   * SnapshotResult를 SnapshotData로 변환
+   */
+  resultToSnapshotData(
+    result: SnapshotResult, 
+    id: string, 
+    pageNumber?: number
+  ): SnapshotData {
+    return {
+      id,
+      dataUrl: result.dataUrl,
+      width: result.width,
+      height: result.height,
+      timestamp: Date.now(),
+      savedPath: result.savedPath,
+      pageNumber,
+      blob: result.blob,
+    };
+  }
+
+  /**
    * 상태 초기화
    */
   clear() {
@@ -346,7 +378,7 @@ export function useSnapshotManager() {
       const result = await manager.current.captureContent(id.current, options);
       setLastResult(result);
       
-      // 🆕 저장된 경로 설정
+      // 저장된 경로 설정
       if (result.savedPath) {
         setSavedPath(result.savedPath);
         console.log(`✅ Screenshot saved to: ${result.savedPath}`);
@@ -375,6 +407,12 @@ export function useSnapshotManager() {
     setSavedPath(null);
   }, []);
 
+  // Helper: Convert last result to SnapshotData
+  const getSnapshotData = useCallback((pageNumber?: number): SnapshotData | null => {
+    if (!lastResult) return null;
+    return manager.current.resultToSnapshotData(lastResult, id.current, pageNumber);
+  }, [lastResult]);
+
   return {
     contentRef,
     isCapturing,
@@ -385,6 +423,7 @@ export function useSnapshotManager() {
     download,
     clear,
     setActive,
+    getSnapshotData,
     manager: manager.current,
   };
 }
