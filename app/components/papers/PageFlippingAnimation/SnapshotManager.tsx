@@ -352,7 +352,8 @@ export function useSnapshotManager() {
       currentRef.current.dataset.snapshotTarget = 'true';
     }
 
-    manager.current.registerContentRef(currentId, currentRef);
+    // ✅ FIXED: Type assertion since we know contentRef.current is HTMLDivElement when registered
+    manager.current.registerContentRef(currentId, currentRef as React.RefObject<HTMLDivElement>);
 
     return () => {
       manager.current.unregisterContentRef(currentId);
