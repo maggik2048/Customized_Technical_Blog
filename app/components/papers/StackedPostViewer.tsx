@@ -22,8 +22,9 @@ type Props = {
 const LEFT_MASK = "linear-gradient(to right, rgba(0,0,0,1) 45%, rgba(0,0,0,0))";
 const RIGHT_MASK = "linear-gradient(to left, rgba(0,0,0,1) 45%, rgba(0,0,0,0))";
 
-const BASE_STYLE = {
-  position: "absolute",
+// 🔥 FIX: Use React.CSSProperties type for BASE_STYLE
+const BASE_STYLE: React.CSSProperties = {
+  position: "absolute" as const,
   left: "50%",
   transform: "translateX(-50%)",
   willChange: "transform, opacity",
@@ -102,13 +103,13 @@ export default function StackedPostViewer({
             x: STACK_OFFSET,
           }}
           style={{
-            position: "relative",
+            position: "relative" as const,
             display: "flex",
             justifyContent: "center",
             marginTop: 40,
             height: "100vh",
             willChange: "transform",
-            transformStyle: "preserve-3d",
+            transformStyle: "preserve-3d" as const,
             perspective: 1800,
             overflow: "visible" as const,
           }}
