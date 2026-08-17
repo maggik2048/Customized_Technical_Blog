@@ -77,14 +77,7 @@ next-env.d.ts
 *.exr
 
 # texture assets
-*.png
-*.jpg
-*.jpeg
-*.tga
-*.bmp
-*.tif
-*.tiff
-*.webp
+
 
 # baked texture maps
 *_albedo.*
