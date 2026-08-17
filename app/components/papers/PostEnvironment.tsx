@@ -18,8 +18,8 @@ export default function PostEnvironment({
   const isDark = mode === "dark";
 
   const bgImage = isDark
-    ? "/images/horizon.jpg"
-    : "/images/mathdraw0.png";
+    ? "/images/backgrounddimage/horizon.jpg"
+    : "/images/backgrounddimage/mathdraw0.png";
 
   return (
     <>

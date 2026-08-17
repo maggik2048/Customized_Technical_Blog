@@ -26,8 +26,8 @@ export default function RootLayout({
     setMounted(true);
   }, []);
 
-  const bgImage = "/images/mathdraw32.png";
-  const birdsImage = "/images/birds2.png";
+  const bgImage = "/images/backgrounddimage/mathdraw32.png";
+  const birdsImage = "/images/backgrounddimage/birds2.png";
 
   return (
     <html lang="en" suppressHydrationWarning>
