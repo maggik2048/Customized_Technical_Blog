@@ -272,7 +272,7 @@ function PaperMesh({
     world.gravity.set(0, -0.2, 0);
     world.broadphase = new CANNON.SAPBroadphase(world);
     world.allowSleep = true;
-    world.sleepTimeLimit = 0.5;
+    // ✅ REMOVED: world.sleepTimeLimit = 0.5; - Property doesn't exist in this version
     
     worldRef.current = world;
 
