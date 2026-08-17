@@ -1,21 +1,10 @@
-"use client";
-
-import PostForm from "@/app/admin/PostForm";
-import { useSearchParams } from "next/navigation";
-import { useEffect } from "react";
+import { Suspense } from "react";
+import WritePageClient from "./WritePageClient";
 
 export default function WritePage() {
-  const searchParams = useSearchParams();
-  const category = searchParams.get("category");
-
   return (
-    <div style={{ padding: 40 }}>
-      <h1>Write Post</h1>
-
-      <PostForm
-        mode="create"
-        defaultCategory={category ?? undefined}
-      />
-    </div>
+    <Suspense fallback={<div>Loading...</div>}>
+      <WritePageClient />
+    </Suspense>
   );
 }
