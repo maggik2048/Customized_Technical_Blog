@@ -126,7 +126,7 @@ export default function PageFlipAnimation({
     return (
       <div style={{ position: 'relative', width: '100%' }}>
         <img
-          src={currentSnapshot.imageData}
+          src={currentSnapshot.dataUrl}  // ✅ FIXED: changed from imageData to dataUrl
           alt={`Page ${currentIndex + 1}`}
           style={{
             width: '100%',
@@ -184,7 +184,7 @@ export default function PageFlipAnimation({
           }}
         >
           <img
-            src={nextSnapshot.imageData}
+            src={nextSnapshot.dataUrl}  // ✅ FIXED: changed from imageData to dataUrl
             alt={`Page ${isForward ? currentIndex + 2 : currentIndex}`}
             style={{
               width: '100%',
@@ -212,7 +212,7 @@ export default function PageFlipAnimation({
         }}
       >
         <img
-          src={currentSnapshot.imageData}
+          src={currentSnapshot.dataUrl}  // ✅ FIXED: changed from imageData to dataUrl
           alt={`Page ${currentIndex + 1}`}
           style={{
             width: '100%',
