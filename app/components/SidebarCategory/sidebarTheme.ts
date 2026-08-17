@@ -159,7 +159,6 @@ export const SIDEBAR_BOOK_THEME_MAP: Record<
     color: "#191919",
     image: "/images/covers/linear2.png",
 
-
     imageOpacity: 0.98,
     vignetteOpacity: 0.08,
 
@@ -186,7 +185,7 @@ export const SIDEBAR_BOOK_THEME_MAP: Record<
 
   complex_analysis: {
     font: "cormorant",
-    fontWeight: "1900",
+    fontWeight: "600", // ✅ Fixed: was "1900"
     color: "#262626",
     image: "/images/covers/complex.png",
 
