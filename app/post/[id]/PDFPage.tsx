@@ -224,7 +224,7 @@ const PDFPageContent: React.FC<{
     return (
       <ThemeProvider theme={themeType}>
         <div style={pageStyle}>
-          {/* 🆕 스크린샷 버튼 - 오른쪽 상단 */}
+          {/* 🆕 Elegant Screenshot Button - Top Right */}
           <div
             style={{
               position: "absolute",
@@ -240,42 +240,69 @@ const PDFPageContent: React.FC<{
               onClick={handleCaptureScreenshot}
               disabled={isCapturing}
               style={{
-                padding: "8px 16px",
-                background: isCapturing ? "#666" : "#0070f3",
-                color: "white",
-                border: "none",
-                borderRadius: "6px",
-                cursor: isCapturing ? "not-allowed" : "pointer",
-                fontSize: "13px",
-                fontWeight: "bold",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-                transition: "all 0.2s ease",
                 display: "flex",
                 alignItems: "center",
-                gap: "6px",
+                gap: "8px",
+                padding: "8px 16px",
+                background: "transparent",
+                color: isDark ? "#c0c0c0" : "#6b6b6b",
+                border: isDark ? "1px solid rgba(255,255,255,0.12)" : "1px solid rgba(0,0,0,0.1)",
+                borderRadius: "8px",
+                cursor: isCapturing ? "default" : "pointer",
+                fontSize: "13px",
+                fontWeight: 400,
+                letterSpacing: "0.3px",
+                transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+                backdropFilter: "blur(8px)",
+                background: isDark 
+                  ? "rgba(255,255,255,0.04)" 
+                  : "rgba(255,255,255,0.5)",
+                boxShadow: isDark
+                  ? "0 1px 3px rgba(0,0,0,0.2)"
+                  : "0 1px 3px rgba(0,0,0,0.05)",
               }}
               onMouseEnter={(e) => {
                 if (!isCapturing) {
-                  e.currentTarget.style.background = "#005bb5";
-                  e.currentTarget.style.transform = "scale(1.05)";
+                  e.currentTarget.style.background = isDark 
+                    ? "rgba(255,255,255,0.08)" 
+                    : "rgba(0,0,0,0.04)";
+                  e.currentTarget.style.borderColor = isDark 
+                    ? "rgba(255,255,255,0.25)" 
+                    : "rgba(0,0,0,0.2)";
+                  e.currentTarget.style.transform = "translateY(-1px)";
+                  e.currentTarget.style.boxShadow = isDark
+                    ? "0 4px 12px rgba(0,0,0,0.3)"
+                    : "0 4px 12px rgba(0,0,0,0.08)";
                 }
               }}
               onMouseLeave={(e) => {
                 if (!isCapturing) {
-                  e.currentTarget.style.background = "#0070f3";
-                  e.currentTarget.style.transform = "scale(1)";
+                  e.currentTarget.style.background = isDark 
+                    ? "rgba(255,255,255,0.04)" 
+                    : "rgba(255,255,255,0.5)";
+                  e.currentTarget.style.borderColor = isDark 
+                    ? "rgba(255,255,255,0.12)" 
+                    : "rgba(0,0,0,0.1)";
+                  e.currentTarget.style.transform = "translateY(0)";
+                  e.currentTarget.style.boxShadow = isDark
+                    ? "0 1px 3px rgba(0,0,0,0.2)"
+                    : "0 1px 3px rgba(0,0,0,0.05)";
                 }
               }}
             >
-              {isCapturing ? (
-                <>
-                  <span>⏳</span> 저장 중...
-                </>
-              ) : (
-                <>
-                  <span>📸</span> 스크린샷
-                </>
-              )}
+              <span style={{ 
+                fontSize: "16px", 
+                opacity: 0.6,
+                filter: isDark ? "brightness(0.8)" : "none"
+              }}>
+                {isCapturing ? "⏳" : "📷"}
+              </span>
+              <span style={{ 
+                opacity: isCapturing ? 0.5 : 0.7,
+                fontVariantNumeric: "tabular-nums"
+              }}>
+                {isCapturing ? "Capturing..." : "Capture"}
+              </span>
             </button>
           </div>
 
@@ -410,17 +437,21 @@ const PDFPageContent: React.FC<{
                 position: "fixed",
                 bottom: "30px",
                 right: "30px",
-                background: "rgba(0, 0, 0, 0.85)",
-                color: "#4CAF50",
+                background: isDark ? "rgba(40,40,40,0.92)" : "rgba(255,255,255,0.92)",
+                color: isDark ? "#4CAF50" : "#2e7d32",
                 padding: "14px 24px",
                 borderRadius: "10px",
                 zIndex: 99999,
                 fontSize: "14px",
                 fontFamily: "monospace",
-                boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
+                boxShadow: isDark
+                  ? "0 4px 20px rgba(0,0,0,0.4)"
+                  : "0 4px 20px rgba(0,0,0,0.1)",
                 animation: "slideIn 0.3s ease-out",
                 backdropFilter: "blur(10px)",
-                border: "1px solid rgba(76, 175, 80, 0.3)",
+                border: isDark
+                  ? "1px solid rgba(76, 175, 80, 0.2)"
+                  : "1px solid rgba(46, 125, 50, 0.15)",
                 maxWidth: "400px",
               }}
             >
@@ -428,9 +459,13 @@ const PDFPageContent: React.FC<{
                 <span style={{ fontSize: "20px" }}>✅</span>
                 <div>
                   <div style={{ fontWeight: "bold", marginBottom: "4px" }}>
-                    스크린샷 저장 완료!
+                    Screenshot Saved
                   </div>
-                  <div style={{ fontSize: "12px", color: "#aaa", wordBreak: "break-all" }}>
+                  <div style={{ 
+                    fontSize: "12px", 
+                    color: isDark ? "#999" : "#666",
+                    wordBreak: "break-all"
+                  }}>
                     {savedPath}
                   </div>
                 </div>
@@ -445,16 +480,18 @@ const PDFPageContent: React.FC<{
                 position: "fixed",
                 bottom: "30px",
                 right: "30px",
-                background: "rgba(0, 0, 0, 0.85)",
+                background: isDark ? "rgba(40,40,40,0.92)" : "rgba(255,255,255,0.92)",
                 color: "#f44336",
                 padding: "14px 24px",
                 borderRadius: "10px",
                 zIndex: 99999,
                 fontSize: "14px",
-                boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
+                boxShadow: isDark
+                  ? "0 4px 20px rgba(0,0,0,0.4)"
+                  : "0 4px 20px rgba(0,0,0,0.1)",
                 animation: "slideIn 0.3s ease-out",
                 backdropFilter: "blur(10px)",
-                border: "1px solid rgba(244, 67, 54, 0.3)",
+                border: "1px solid rgba(244, 67, 54, 0.15)",
                 maxWidth: "400px",
               }}
             >
@@ -462,10 +499,13 @@ const PDFPageContent: React.FC<{
                 <span style={{ fontSize: "20px" }}>❌</span>
                 <div>
                   <div style={{ fontWeight: "bold", marginBottom: "4px" }}>
-                    스크린샷 저장 실패
+                    Capture Failed
                   </div>
-                  <div style={{ fontSize: "12px", color: "#aaa" }}>
-                    {error.message || "알 수 없는 오류가 발생했습니다."}
+                  <div style={{ 
+                    fontSize: "12px", 
+                    color: isDark ? "#999" : "#666"
+                  }}>
+                    {error.message || "An unknown error occurred."}
                   </div>
                 </div>
               </div>
