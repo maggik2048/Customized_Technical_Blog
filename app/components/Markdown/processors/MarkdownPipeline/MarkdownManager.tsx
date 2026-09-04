@@ -83,6 +83,29 @@ export default function MarkdownManager({
 
   /**
    * =====================================
+   * ERROR STATE (NEW - FIX)
+   * =====================================
+   */
+
+  const [hasError, setHasError] = React.useState(false);
+
+  /**
+   * =====================================
+   * SAFE SYNTAX TREE WRAPPER (NEW - FIXES BACKTICK CRASH)
+   * =====================================
+   */
+
+  const safeGetSyntaxTree = React.useCallback((view: EditorView) => {
+    try {
+      return syntaxTree(view.state);
+    } catch (error) {
+      console.warn("Failed to get syntax tree:", error);
+      return null;
+    }
+  }, []);
+
+  /**
+   * =====================================
    * GPT EXTENSION INJECTION
    * =====================================
    */
@@ -224,66 +247,80 @@ export default function MarkdownManager({
 
   /**
    * =====================================
-   * AST LOGGER
+   * AST LOGGER (FIXED - SAFE WRAPPER)
    * =====================================
    */
 
   const logCurrentMarkdownTree =
     React.useCallback(
       (view: EditorView) => {
-        const pos =
-          view.state.selection.main.from;
+        try {
+          const tree = safeGetSyntaxTree(view);
+          if (!tree) {
+            console.log("===== AST UNAVAILABLE =====");
+            return;
+          }
 
-        // ✅ Fixed: Use any type
-        let node: any = syntaxTree(
-          view.state
-        ).resolve(pos, -1);
+          const pos =
+            view.state.selection.main.from;
 
-        console.log(
-          "===== CURRENT AST ====="
-        );
+          let node: any = tree.resolve(pos, -1);
 
-        while (node) {
-          console.log(node.name);
+          console.log(
+            "===== CURRENT AST ====="
+          );
 
-          node = node.parent;
+          let depth = 0;
+          while (node && depth < 20) {
+            console.log(node.name);
+            node = node.parent;
+            depth++;
+          }
+        } catch (error) {
+          console.warn("Failed to log AST:", error);
         }
       },
-      []
+      [safeGetSyntaxTree]
     );
 
   /**
    * =====================================
-   * INSIDE CODE BLOCK?
+   * INSIDE CODE BLOCK? (FIXED - SAFE WRAPPER)
    * =====================================
    */
 
   const isInsideCodeBlock =
     React.useCallback(
       (view: EditorView) => {
-        const pos =
-          view.state.selection.main.from;
+        try {
+          const tree = safeGetSyntaxTree(view);
+          if (!tree) return false;
 
-        // ✅ Fixed: Use any type
-        let node: any = syntaxTree(
-          view.state
-        ).resolve(pos, -1);
+          const pos =
+            view.state.selection.main.from;
 
-        while (node) {
-          if (
-            node.name ===
-              "FencedCode" ||
-            node.name === "CodeBlock"
-          ) {
-            return true;
+          let node: any = tree.resolve(pos, -1);
+
+          let depth = 0;
+          while (node && depth < 20) {
+            if (
+              node.name ===
+                "FencedCode" ||
+              node.name === "CodeBlock"
+            ) {
+              return true;
+            }
+            node = node.parent;
+            depth++;
           }
 
-          node = node.parent;
+          return false;
+        } catch (error) {
+          console.warn("Failed to check code block:", error);
+          return false;
         }
-
-        return false;
       },
-      []
+      [safeGetSyntaxTree]
     );
 
   /**
@@ -300,13 +337,15 @@ export default function MarkdownManager({
       if (
         lower.includes(
           "import threading"
-        )
+        ) ||
+        lower.includes("def ")
       ) {
         return "python";
       }
 
       if (
-        lower.includes("#include")
+        lower.includes("#include") ||
+        lower.includes("std::")
       ) {
         return "cpp";
       }
@@ -314,7 +353,8 @@ export default function MarkdownManager({
       if (
         lower.includes(
           "console.log"
-        )
+        ) ||
+        lower.includes("function ")
       ) {
         return "js";
       }
@@ -322,7 +362,8 @@ export default function MarkdownManager({
       if (
         lower.includes(
           "interface "
-        )
+        ) ||
+        lower.includes("type ")
       ) {
         return "ts";
       }
@@ -330,7 +371,8 @@ export default function MarkdownManager({
       if (
         lower.includes(
           "public class"
-        )
+        ) ||
+        lower.includes("System.out")
       ) {
         return "java";
       }
@@ -476,7 +518,11 @@ export default function MarkdownManager({
               const next =
                 update.state.doc.toString();
 
-              setContent(next);
+              // FIX: Prevent infinite loop
+              if (next !== content) {
+                setContent(next);
+              }
+              setHasError(false);
             }
           }
         ),
@@ -644,18 +690,28 @@ export default function MarkdownManager({
                  * =================================
                  */
 
-                logCurrentMarkdownTree(
-                  view
-                );
+                try {
+                  logCurrentMarkdownTree(
+                    view
+                  );
+                } catch (error) {
+                  console.warn("AST logging failed:", error);
+                }
 
                 /**
                  * inside code block?
                  */
 
-                const insideCode =
-                  isInsideCodeBlock(
-                    view
-                  );
+                let insideCode = false;
+                try {
+                  insideCode =
+                    isInsideCodeBlock(
+                      view
+                    );
+                } catch (error) {
+                  console.warn("Code block check failed:", error);
+                  insideCode = false;
+                }
 
                 /**
                  * =================================
@@ -726,6 +782,7 @@ export default function MarkdownManager({
         isInsideCodeBlock,
         logCurrentMarkdownTree,
         setContent,
+        content, // FIX: Added to prevent loop
       ]
     );
 
@@ -748,6 +805,30 @@ export default function MarkdownManager({
       }}
     >
       {/* ================================= */}
+      {/* ERROR INDICATOR (NEW) */}
+      {/* ================================= */}
+      {hasError && (
+        <div
+          style={{
+            position: "absolute",
+            top: "12px",
+            left: "50%",
+            transform: "translateX(-50%)",
+            background: "#ef4444",
+            color: "#fff",
+            padding: "8px 16px",
+            borderRadius: "4px",
+            fontSize: "14px",
+            fontWeight: 700,
+            zIndex: 1000,
+            boxShadow: "0 2px 8px rgba(239, 68, 68, 0.3)",
+          }}
+        >
+          ⚠️ Editor Error - Content may not render correctly
+        </div>
+      )}
+
+      {/* ================================= */}
       {/* DISABLED INDICATOR BADGE */}
       {/* ================================= */}
       
@@ -755,7 +836,7 @@ export default function MarkdownManager({
         <div
           style={{
             position: "absolute",
-            top: "12px",
+            top: hasError ? "56px" : "12px",
             left: "50%",
             transform: "translateX(-50%)",
             background: "#ef4444",
