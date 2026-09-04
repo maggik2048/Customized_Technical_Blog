@@ -1,182 +1,149 @@
+
 import { supabase } from "@/lib/supabase";
 
-import { CATEGORY_TREE } from "@/app/-Data/CategoryTree";
+type MetadataItem = {
+  name: string;
+  slug: string;
+  group?: string;
+};
 
-import { PROJECT_TREE } from "@/app/-Data/ProjectTree";
-
-import { TAG_TREE } from "@/app/-Data/TagTree";
-
-type MetadataResult<T> = {
-  items: T[];
-
-  recentSlugs: string[];
+type ProjectItem = {
+  name: string;
+  slug: string;
+  description?: string;
+  categories: string[];
+  tags: string[];
 };
 
 export async function getRecentAccessMetadata() {
-  const { data, error } =
-    await supabase
-      .from("posts")
-      .select(`
-        category_slugs,
-        project_slugs,
-        tag_slugs,
-        updated_at
-      `)
-      .order("updated_at", {
-        ascending: false,
-      });
+  // 1. Categories 가져오기
+  const { data: categoriesData, error: categoriesError } = await supabase
+    .from("categories")
+    .select("name, slug")
+    .order("name");
 
-  /*
-    fallback
-  */
+  if (categoriesError) {
+    console.error("Error fetching categories:", categoriesError);
+  }
 
-  if (error || !data) {
-    console.error(error);
+  // 2. Projects with their categories and tags
+  const { data: projectsData, error: projectsError } = await supabase
+    .from("projects")
+    .select(`
+      name,
+      slug,
+      description,
+      project_categories (
+        category_slug
+      ),
+      project_tags (
+        tag_slug
+      )
+    `)
+    .order("name");
 
+  if (projectsError) {
+    console.error("Error fetching projects:", projectsError);
+  }
+
+  // 3. Projects 데이터 구조 변환
+  const formattedProjects = (projectsData || []).map(project => ({
+    name: project.name,
+    slug: project.slug,
+    description: project.description,
+    categories: project.project_categories?.map((pc: any) => pc.category_slug) || [],
+    tags: project.project_tags?.map((pt: any) => pt.tag_slug) || []
+  }));
+
+  // 4. Tags 가져오기
+  const { data: tagsData, error: tagsError } = await supabase
+    .from("tags")
+    .select("name, slug, group_name as group")
+    .order("name");
+
+  if (tagsError) {
+    console.error("Error fetching tags:", tagsError);
+  }
+
+  // 5. 최근 사용된 slug 순서 가져오기
+  const { data: postsData, error: postsError } = await supabase
+    .from("posts")
+    .select(`
+      category_slugs,
+      project_slugs,
+      tag_slugs,
+      updated_at
+    `)
+    .order("updated_at", {
+      ascending: false,
+    });
+
+  if (postsError || !postsData) {
+    console.error("Error fetching posts for priority:", postsError);
+    
     return {
-      categories:
-        CATEGORY_TREE.flatMap(
-          (parent) =>
-            parent.children || []
-        ),
-
-      projects: PROJECT_TREE,
-
-      tags: TAG_TREE,
+      categories: categoriesData || [],
+      projects: formattedProjects,
+      tags: tagsData || [],
     };
   }
 
-  /*
-    flatten metadata
-  */
-
-  const recentCategoryOrder =
-    Array.from(
-      new Set(
-        data.flatMap(
-          (post) =>
-            post.category_slugs ||
-            []
-        )
-      )
-    );
-
-  const recentProjectOrder =
-    Array.from(
-      new Set(
-        data.flatMap(
-          (post) =>
-            post.project_slugs ||
-            []
-        )
-      )
-    );
-
-  const recentTagOrder = Array.from(
+  // 6. 최근 사용된 slug 순서 추출
+  const recentCategoryOrder = Array.from(
     new Set(
-      data.flatMap(
-        (post) =>
-          post.tag_slugs || []
-      )
+      postsData.flatMap((post) => post.category_slugs || [])
     )
   );
 
-  /*
-    priority map helper
-  */
+  const recentProjectOrder = Array.from(
+    new Set(
+      postsData.flatMap((post) => post.project_slugs || [])
+    )
+  );
 
-  const createPriorityMap = (
-    slugs: string[]
-  ) => {
-    const map = new Map<
-      string,
-      number
-    >();
+  const recentTagOrder = Array.from(
+    new Set(
+      postsData.flatMap((post) => post.tag_slugs || [])
+    )
+  );
 
-    slugs.forEach(
-      (slug, index) => {
-        map.set(slug, index);
-      }
-    );
-
+  // 7. 우선순위 맵 생성
+  const createPriorityMap = (slugs: string[]) => {
+    const map = new Map<string, number>();
+    slugs.forEach((slug, index) => {
+      map.set(slug, index);
+    });
     return map;
   };
 
-  const categoryPriorityMap =
-    createPriorityMap(
-      recentCategoryOrder
-    );
+  const categoryPriorityMap = createPriorityMap(recentCategoryOrder);
+  const projectPriorityMap = createPriorityMap(recentProjectOrder);
+  const tagPriorityMap = createPriorityMap(recentTagOrder);
 
-  const projectPriorityMap =
-    createPriorityMap(
-      recentProjectOrder
-    );
-
-  const tagPriorityMap =
-    createPriorityMap(
-      recentTagOrder
-    );
-
-  /*
-    flatten categories
-  */
-
-  const allCategories =
-    CATEGORY_TREE.flatMap(
-      (parent) =>
-        parent.children || []
-    );
-
-  /*
-    priority sorting helper
-  */
-
-  const prioritySort = <
-    T extends {
-      slug: string;
-    },
-  >(
+  // 8. 우선순위 정렬 함수
+  const prioritySort = <T extends { slug: string }>(
     items: T[],
-    priorityMap: Map<
-      string,
-      number
-    >
+    priorityMap: Map<string, number>
   ) => {
-    return [...items].sort(
-      (a, b) => {
-        const aPriority =
-          priorityMap.get(
-            a.slug
-          ) ??
-          Number.MAX_SAFE_INTEGER;
-
-        const bPriority =
-          priorityMap.get(
-            b.slug
-          ) ??
-          Number.MAX_SAFE_INTEGER;
-
-        return (
-          aPriority -
-          bPriority
-        );
-      }
-    );
+    return [...items].sort((a, b) => {
+      const aPriority = priorityMap.get(a.slug) ?? Number.MAX_SAFE_INTEGER;
+      const bPriority = priorityMap.get(b.slug) ?? Number.MAX_SAFE_INTEGER;
+      return aPriority - bPriority;
+    });
   };
 
+  // 9. 결과 반환
   return {
     categories: prioritySort(
-      allCategories,
+      categoriesData || [],
       categoryPriorityMap
     ),
-
     projects: prioritySort(
-      PROJECT_TREE,
+      formattedProjects,
       projectPriorityMap
     ),
-
     tags: prioritySort(
-      TAG_TREE,
+      tagsData || [],
       tagPriorityMap
     ),
   };
