@@ -863,4 +863,64 @@ export default function PostForm({
             fontWeight: 700,
             fontSize: "14px",
             background: isPostProcessingEnabled ? "#22c55e" : "#ef4444",
-            color:
+            color: "#fff",
+            transition: "all 0.2s ease",
+            minWidth: "80px",
+          }}
+        >
+          {isPostProcessingEnabled ? "🟢 ENABLED" : "🔴 DISABLED"}
+        </button>
+        <span style={{ fontSize: "12px", color: "#888", marginLeft: "8px" }}>
+          {isPostProcessingEnabled
+            ? "All rules are active"
+            : "All rules are temporarily disabled"}
+        </span>
+      </div>
+
+      {/* Markdown */}
+      <MarkdownImageManager
+        content={content}
+        setContent={setContent}
+        disablePostProcessing={!isPostProcessingEnabled}
+      />
+
+      {/* Commit Ready */}
+      <div style={{ marginTop: 24, marginBottom: 24 }}>
+        <button
+          type="button"
+          onClick={() => setCommitPending((prev) => !prev)}
+          style={{
+            padding: "10px 16px",
+            border: "none",
+            borderRadius: 8,
+            cursor: "pointer",
+            fontWeight: 700,
+            background: commitPending ? "#f97316" : "#333",
+            color: "#fff",
+          }}
+        >
+          {commitPending ? "🟠 Commit Ready" : "⚫ Commit Ready"}
+        </button>
+      </div>
+
+      {/* Submit */}
+      <button
+        type="submit"
+        style={{
+          position: "fixed",
+          right: 24,
+          bottom: 24,
+          padding: "12px 22px",
+          background: "#1e40af",
+          color: "#fff",
+          borderRadius: 8,
+          cursor: "pointer",
+          zIndex: 9999,
+          border: "none",
+        }}
+      >
+        {mode === "create" ? "Submit" : "Update"}
+      </button>
+    </form>
+  );
+}
