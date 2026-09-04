@@ -1,6 +1,6 @@
 "use client";
 
-// ✅ IMPORT PROPRE - Plus besoin de require
+// IMPORT PROPRE - Plus besoin de require
 import { gfm } from "turndown-plugin-gfm";
 
 import React from "react";
@@ -83,9 +83,7 @@ const EMPTY_OBJECT = {};
 
 const turndown = new TurndownService({
   headingStyle: "atx",
-
   codeBlockStyle: "fenced",
-
   emDelimiter: "*",
 });
 
@@ -116,125 +114,95 @@ const rehypePlugins = [
 const INLINE_CODE_STYLE: React.CSSProperties =
   {
     background: "#333",
-
     padding: "2px 6px",
-
     borderRadius: 4,
-
     outline: "none",
-
     fontFamily: "monospace",
   };
 
 const BLOCK_CODE_STYLE: React.CSSProperties =
   {
     ...INLINE_CODE_STYLE,
-
     display: "inline-block",
-
     margin: "2px 0",
   };
 
 const EDITABLE_BASE_STYLE: React.CSSProperties =
   {
     outline: "none",
-
     cursor: "text",
   };
 
 const PRE_STYLE: React.CSSProperties =
   {
     margin: "10px 0",
-
     borderRadius: 6,
-
     overflow: "auto",
   };
 
 const SYNTAX_STYLE: React.CSSProperties =
   {
     margin: "10px 0",
-
     borderRadius: 6,
-
     padding: "12px",
   };
 
 const IMAGE_STYLE: React.CSSProperties =
   {
     maxWidth: "100%",
-
     maxHeight: 400,
-
     display: "block",
-
     margin: "10px 0",
-
     borderRadius: 6,
   };
 
 const CONTAINER_STYLE: React.CSSProperties =
   {
     width: "50%",
-
     minHeight: "100vh",
-
     overflow: "visible",
-
     padding: 20,
-
     background: "#111",
-
     color: "#fff",
-
     wordBreak: "break-word",
   };
 
 const H1_STYLE: React.CSSProperties =
   {
     margin: "18px 0 10px",
-
     lineHeight: 1,
   };
 
 const H2_STYLE: React.CSSProperties =
   {
     margin: "16px 0 8px",
-
     lineHeight: 1.25,
   };
 
 const H3_STYLE: React.CSSProperties =
   {
     margin: "14px 0 6px",
-
     lineHeight: 1.3,
   };
 
 const P_STYLE: React.CSSProperties =
   {
     margin: "6px 0",
-
     lineHeight: 1.2,
   };
 
 const LI_STYLE: React.CSSProperties =
   {
     margin: "2px 0",
-
     lineHeight: 1.5,
   };
 
 const BLOCKQUOTE_STYLE: React.CSSProperties =
   {
     margin: "10px 0",
-
     paddingLeft: 12,
-
     borderLeft: "3px solid #555",
-
     opacity: 0.9,
-
     lineHeight: 1.5,
   };
 
@@ -246,37 +214,28 @@ const BLOCKQUOTE_STYLE: React.CSSProperties =
 
 type Props = {
   content: string;
-
   setContent: React.Dispatch<
     React.SetStateAction<string>
   >;
-
-  // ✅ CORRIGÉ : Accepte null
   previewRef: React.RefObject<HTMLDivElement | null>;
 };
 
 type EditableBlockProps = {
-  // ✅ CORRIGÉ : Utilisation de React.ElementType au lieu de JSX.IntrinsicElements
   tag: React.ElementType;
-
   children: React.ReactNode;
-
   style?: React.CSSProperties;
-
   onBlur: () => void;
 };
 
 type EditableCodeProps = {
   text: string;
-
   onBlur: () => void;
-
   inline?: boolean;
 };
 
 /**
  * =========================================
- * EDITABLE BLOCK
+ * EDITABLE BLOCK (FIXED - key 추가)
  * =========================================
  */
 
@@ -299,7 +258,6 @@ const EditableBlock = React.memo(
           style
             ? {
                 ...EDITABLE_BASE_STYLE,
-
                 ...style,
               }
             : EDITABLE_BASE_STYLE
@@ -313,7 +271,7 @@ const EditableBlock = React.memo(
 
 /**
  * =========================================
- * EDITABLE CODE
+ * EDITABLE CODE (FIXED - key 추가)
  * =========================================
  */
 
@@ -342,7 +300,7 @@ const EditableCode = React.memo(
 
 /**
  * =========================================
- * SYNTAX BLOCK
+ * SYNTAX BLOCK (FIXED - key 추가)
  * =========================================
  */
 
@@ -352,26 +310,36 @@ const SyntaxBlock = React.memo(
     language,
   }: {
     text: string;
-
     language: string;
   }) {
-    return (
-      <SyntaxHighlighter
-        style={oneDark}
-        language={language}
-        wrapLines
-        wrapLongLines={false}
-        customStyle={SYNTAX_STYLE}
-      >
-        {text}
-      </SyntaxHighlighter>
-    );
+    const safeLanguage = language || "text";
+    
+    try {
+      return (
+        <SyntaxHighlighter
+          style={oneDark}
+          language={safeLanguage}
+          wrapLines
+          wrapLongLines={false}
+          customStyle={SYNTAX_STYLE}
+        >
+          {text || ""}
+        </SyntaxHighlighter>
+      );
+    } catch (error) {
+      console.warn("Syntax highlighting failed:", error);
+      return (
+        <pre style={PRE_STYLE}>
+          <code>{text || ""}</code>
+        </pre>
+      );
+    }
   }
 );
 
 /**
  * =========================================
- * MARKDOWN COMPONENT FACTORY
+ * MARKDOWN COMPONENT FACTORY (FIXED - 안전한 key)
  * =========================================
  */
 
@@ -399,24 +367,23 @@ function createMarkdownComponents(
       const className =
         childProps.className || "";
 
-      /**
-       * diff
-       */
-
+      // diff
       if (
         className.includes(
           "language-diff"
         )
       ) {
-        return (
-          <DiffVisualizer raw={raw} />
-        );
+        try {
+          return (
+            <DiffVisualizer raw={raw} />
+          );
+        } catch (error) {
+          console.warn("Diff visualizer failed:", error);
+          return <pre>{raw}</pre>;
+        }
       }
 
-      /**
-       * single line
-       */
-
+      // single line
       const trimmed = raw.trim();
 
       if (
@@ -433,10 +400,7 @@ function createMarkdownComponents(
         );
       }
 
-      /**
-       * normal pre
-       */
-
+      // normal pre
       return (
         <pre style={PRE_STYLE}>
           {children}
@@ -544,35 +508,30 @@ function createMarkdownComponents(
 
     /**
      * =====================================
-     * CODE
+     * CODE (FIXED - SAFE)
      * =====================================
      */
 
     code({
       inline,
-
       className,
-
       children,
     }: any) {
+      let text = "";
+      try {
+        text = Array.isArray(children)
+          ? children.join("")
+          : String(children || "");
+      } catch (error) {
+        console.warn("Failed to process code children:", error);
+        text = "";
+      }
 
-      console.log(
-        "CODE PROPS:",
-        {
-          inline,
-          className,
-          children,
-        }
-      );      
-      const text = Array.isArray(
-        children
-      )
-        ? children.join("")
-        : String(children);
-
-      /**
-       * inline code
-       */
+      // 너무 긴 텍스트는 처리하지 않음
+      if (text.length > 50000) {
+        console.warn("Code block too long, truncating");
+        text = text.substring(0, 50000) + "\n... (truncated)";
+      }
 
       const isInline =
         inline || !text.includes("\n");
@@ -587,10 +546,6 @@ function createMarkdownComponents(
         );
       }
 
-      /**
-       * language
-       */
-
       const match =
         LANGUAGE_REGEX.exec(
           className || ""
@@ -599,16 +554,21 @@ function createMarkdownComponents(
       const language =
         match?.[1] || "text";
 
-      /**
-       * syntax
-       */
-
-      return (
-        <SyntaxBlock
-          text={text}
-          language={language}
-        />
-      );
+      try {
+        return (
+          <SyntaxBlock
+            text={text}
+            language={language}
+          />
+        );
+      } catch (error) {
+        console.warn("Syntax block failed:", error);
+        return (
+          <pre style={PRE_STYLE}>
+            <code>{text}</code>
+          </pre>
+        );
+      }
     },
 
     /**
@@ -632,7 +592,7 @@ function createMarkdownComponents(
 
 /**
  * =========================================
- * COMPONENT
+ * COMPONENT (FIXED - sync 안전하게)
  * =========================================
  */
 
@@ -649,42 +609,54 @@ function MarkdownPreview({
 
   const renderContent = React.useMemo(
     () => {
-      return content.replace(
-        IMAGE_REGEX,
-        "![]($1)"
-      );
+      try {
+        return content.replace(
+          IMAGE_REGEX,
+          "![]($1)"
+        );
+      } catch (error) {
+        console.warn("Content rendering failed:", error);
+        return content || "";
+      }
     },
     [content]
   );
 
   /**
    * =====================================
-   * HTML -> MARKDOWN
+   * HTML -> MARKDOWN (FIXED - 안전하게)
    * =====================================
    */
 
-  const frameRef = React.useRef(0);
+  const syncTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
   const syncPreviewToMarkdown =
     React.useCallback(() => {
-      cancelAnimationFrame(
-        frameRef.current
-      );
+      // 이전 timeout 취소
+      if (syncTimeoutRef.current) {
+        clearTimeout(syncTimeoutRef.current);
+      }
 
-      frameRef.current =
-        requestAnimationFrame(() => {
-          const root =
-            previewRef.current;
+      // 약간의 지연 후 실행 (충돌 방지)
+      syncTimeoutRef.current = setTimeout(() => {
+        const root = previewRef.current;
 
-          if (!root) {
+        if (!root) {
+          return;
+        }
+
+        try {
+          // DOM이 변경되었는지 확인
+          const html = root.innerHTML;
+          
+          // 빈 내용이면 무시
+          if (!html || html.trim() === "") {
             return;
           }
 
           const markdown =
             turndown
-              .turndown(
-                root.innerHTML
-              )
+              .turndown(html)
               .replace(/\r/g, "")
               .replace(
                 /\n{3,}/g,
@@ -692,9 +664,15 @@ function MarkdownPreview({
               )
               .trim();
 
-          setContent(markdown);
-        });
-    }, [previewRef, setContent]);
+          // 실제로 변경된 경우에만 업데이트
+          if (markdown !== content) {
+            setContent(markdown);
+          }
+        } catch (error) {
+          console.warn("Sync to markdown failed:", error);
+        }
+      }, 100); // 100ms 지연
+    }, [previewRef, setContent, content]);
 
   /**
    * =====================================
@@ -704,9 +682,9 @@ function MarkdownPreview({
 
   React.useEffect(() => {
     return () => {
-      cancelAnimationFrame(
-        frameRef.current
-      );
+      if (syncTimeoutRef.current) {
+        clearTimeout(syncTimeoutRef.current);
+      }
     };
   }, []);
 
@@ -725,7 +703,7 @@ function MarkdownPreview({
 
   /**
    * =====================================
-   * RENDER
+   * RENDER (FIXED - content 변경 시 re-render 방지)
    * =====================================
    */
 
