@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState } from "react";
@@ -73,10 +72,24 @@ export default function PostForm({
   */
   useEffect(() => {
     const loadMetadata = async () => {
-      const data = await getRecentAccessMetadata();
-      setCategories(data.categories);
-      setProjects(data.projects);
-      setTags(data.tags);
+      try {
+        const data = await getRecentAccessMetadata();
+        
+        // Debug logging
+        console.log('📊 Loaded metadata:', {
+          categoriesCount: data.categories.length,
+          projectsCount: data.projects.length,
+          tagsCount: data.tags.length,
+          firstFiveTags: data.tags.slice(0, 5),
+          allTags: data.tags
+        });
+        
+        setCategories(data.categories);
+        setProjects(data.projects);
+        setTags(data.tags);
+      } catch (error) {
+        console.error('Error loading metadata:', error);
+      }
     };
 
     loadMetadata();
@@ -502,11 +515,15 @@ export default function PostForm({
               color: "#fff",
             }}
           >
-            {projects.map((project) => (
-              <option key={project.slug} value={project.slug}>
-                {project.name}
-              </option>
-            ))}
+            {projects.length === 0 ? (
+              <option value="" disabled>No projects found</option>
+            ) : (
+              projects.map((project) => (
+                <option key={project.slug} value={project.slug}>
+                  {project.name}
+                </option>
+              ))
+            )}
           </select>
         </div>
 
@@ -627,11 +644,15 @@ export default function PostForm({
               color: "#fff",
             }}
           >
-            {categories.map((item) => (
-              <option key={item.slug} value={item.slug}>
-                {item.name}
-              </option>
-            ))}
+            {categories.length === 0 ? (
+              <option value="" disabled>No categories found</option>
+            ) : (
+              categories.map((item) => (
+                <option key={item.slug} value={item.slug}>
+                  {item.name}
+                </option>
+              ))
+            )}
           </select>
         </div>
 
@@ -773,12 +794,16 @@ export default function PostForm({
               color: "#fff",
             }}
           >
-            {tags.map((tag) => (
-              <option key={tag.slug} value={tag.slug}>
-                {tag.group ? `[${tag.group}] ` : ""}
-                {tag.name}
-              </option>
-            ))}
+            {tags.length === 0 ? (
+              <option value="" disabled>⚠️ No tags found - check console for errors</option>
+            ) : (
+              tags.map((tag) => (
+                <option key={tag.slug} value={tag.slug}>
+                  {tag.group ? `[${tag.group}] ` : "[no group] "}
+                  {tag.name}
+                </option>
+              ))
+            )}
           </select>
         </div>
       </div>

@@ -1,4 +1,3 @@
-
 import { supabase } from "@/lib/supabase";
 
 type MetadataItem = {
@@ -55,10 +54,10 @@ export async function getRecentAccessMetadata() {
     tags: project.project_tags?.map((pt: any) => pt.tag_slug) || []
   }));
 
-  // 4. Tags 가져오기
+  // 4. Tags 가져오기 - FIXED: removed "as group"
   const { data: tagsData, error: tagsError } = await supabase
     .from("tags")
-    .select("name, slug, group_name as group")
+    .select("name, slug, group_name")
     .order("name");
 
   if (tagsError) {
@@ -81,10 +80,16 @@ export async function getRecentAccessMetadata() {
   if (postsError || !postsData) {
     console.error("Error fetching posts for priority:", postsError);
     
+    // Map group_name to group for consistency
+    const mappedTags = (tagsData || []).map(tag => ({
+      ...tag,
+      group: tag.group_name
+    }));
+    
     return {
       categories: categoriesData || [],
       projects: formattedProjects,
-      tags: tagsData || [],
+      tags: mappedTags,
     };
   }
 
@@ -132,7 +137,14 @@ export async function getRecentAccessMetadata() {
     });
   };
 
-  // 9. 결과 반환
+  // 9. Map group_name to group for consistency
+  const mappedTags = (tagsData || []).map(tag => ({
+    name: tag.name,
+    slug: tag.slug,
+    group: tag.group_name || undefined
+  }));
+
+  // 10. 결과 반환
   return {
     categories: prioritySort(
       categoriesData || [],
@@ -143,7 +155,7 @@ export async function getRecentAccessMetadata() {
       projectPriorityMap
     ),
     tags: prioritySort(
-      tagsData || [],
+      mappedTags,
       tagPriorityMap
     ),
   };
