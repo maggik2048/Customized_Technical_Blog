@@ -67,13 +67,8 @@ SyntaxHighlighter.registerLanguage(
  * =========================================
  */
 
-const IMAGE_REGEX =
-  /^(https?:\/\/.*\.(png|jpg|jpeg|gif|webp|bmp|svg))$/gm;
-
 const LANGUAGE_REGEX =
   /language-(\w+)/;
-
-const EMPTY_OBJECT = {};
 
 /**
  * =========================================
@@ -110,28 +105,6 @@ const rehypePlugins = [
  * STYLES
  * =========================================
  */
-
-const INLINE_CODE_STYLE: React.CSSProperties =
-  {
-    background: "#333",
-    padding: "2px 6px",
-    borderRadius: 4,
-    outline: "none",
-    fontFamily: "monospace",
-  };
-
-const BLOCK_CODE_STYLE: React.CSSProperties =
-  {
-    ...INLINE_CODE_STYLE,
-    display: "inline-block",
-    margin: "2px 0",
-  };
-
-const EDITABLE_BASE_STYLE: React.CSSProperties =
-  {
-    outline: "none",
-    cursor: "text",
-  };
 
 const PRE_STYLE: React.CSSProperties =
   {
@@ -220,87 +193,9 @@ type Props = {
   previewRef: React.RefObject<HTMLDivElement | null>;
 };
 
-type EditableBlockProps = {
-  tag: React.ElementType;
-  children: React.ReactNode;
-  style?: React.CSSProperties;
-  onBlur: () => void;
-};
-
-type EditableCodeProps = {
-  text: string;
-  onBlur: () => void;
-  inline?: boolean;
-};
-
 /**
  * =========================================
- * EDITABLE BLOCK (FIXED - key 추가)
- * =========================================
- */
-
-const EditableBlock = React.memo(
-  function EditableBlock({
-    tag,
-    children,
-    style,
-    onBlur,
-  }: EditableBlockProps) {
-    const Tag = tag as any;
-
-    return (
-      <Tag
-        contentEditable
-        suppressContentEditableWarning
-        spellCheck={false}
-        onBlur={onBlur}
-        style={
-          style
-            ? {
-                ...EDITABLE_BASE_STYLE,
-                ...style,
-              }
-            : EDITABLE_BASE_STYLE
-        }
-      >
-        {children}
-      </Tag>
-    );
-  }
-);
-
-/**
- * =========================================
- * EDITABLE CODE (FIXED - key 추가)
- * =========================================
- */
-
-const EditableCode = React.memo(
-  function EditableCode({
-    text,
-    onBlur,
-    inline,
-  }: EditableCodeProps) {
-    return (
-      <code
-        contentEditable
-        suppressContentEditableWarning
-        onBlur={onBlur}
-        style={
-          inline
-            ? INLINE_CODE_STYLE
-            : BLOCK_CODE_STYLE
-        }
-      >
-        {text}
-      </code>
-    );
-  }
-);
-
-/**
- * =========================================
- * SYNTAX BLOCK (FIXED - key 추가)
+ * SYNTAX BLOCK
  * =========================================
  */
 
@@ -339,13 +234,11 @@ const SyntaxBlock = React.memo(
 
 /**
  * =========================================
- * MARKDOWN COMPONENT FACTORY (FIXED - 안전한 key)
+ * MARKDOWN COMPONENTS
  * =========================================
  */
 
-function createMarkdownComponents(
-  syncPreviewToMarkdown: () => void
-) {
+function createMarkdownComponents() {
   return {
     /**
      * =====================================
@@ -357,8 +250,7 @@ function createMarkdownComponents(
       children,
     }: any) {
       const childProps =
-        children?.props ||
-        EMPTY_OBJECT;
+        children?.props || {};
 
       const raw = String(
         childProps.children || ""
@@ -383,24 +275,6 @@ function createMarkdownComponents(
         }
       }
 
-      // single line
-      const trimmed = raw.trim();
-
-      if (
-        trimmed &&
-        !trimmed.includes("\n")
-      ) {
-        return (
-          <EditableCode
-            text={trimmed}
-            onBlur={
-              syncPreviewToMarkdown
-            }
-          />
-        );
-      }
-
-      // normal pre
       return (
         <pre style={PRE_STYLE}>
           {children}
@@ -416,43 +290,25 @@ function createMarkdownComponents(
 
     h1({ children }: any) {
       return (
-        <EditableBlock
-          tag="h1"
-          onBlur={
-            syncPreviewToMarkdown
-          }
-          style={H1_STYLE}
-        >
+        <h1 style={H1_STYLE}>
           {children}
-        </EditableBlock>
+        </h1>
       );
     },
 
     h2({ children }: any) {
       return (
-        <EditableBlock
-          tag="h2"
-          onBlur={
-            syncPreviewToMarkdown
-          }
-          style={H2_STYLE}
-        >
+        <h2 style={H2_STYLE}>
           {children}
-        </EditableBlock>
+        </h2>
       );
     },
 
     h3({ children }: any) {
       return (
-        <EditableBlock
-          tag="h3"
-          onBlur={
-            syncPreviewToMarkdown
-          }
-          style={H3_STYLE}
-        >
+        <h3 style={H3_STYLE}>
           {children}
-        </EditableBlock>
+        </h3>
       );
     },
 
@@ -464,29 +320,17 @@ function createMarkdownComponents(
 
     p({ children }: any) {
       return (
-        <EditableBlock
-          tag="p"
-          onBlur={
-            syncPreviewToMarkdown
-          }
-          style={P_STYLE}
-        >
+        <p style={P_STYLE}>
           {children}
-        </EditableBlock>
+        </p>
       );
     },
 
     li({ children }: any) {
       return (
-        <EditableBlock
-          tag="li"
-          onBlur={
-            syncPreviewToMarkdown
-          }
-          style={LI_STYLE}
-        >
+        <li style={LI_STYLE}>
           {children}
-        </EditableBlock>
+        </li>
       );
     },
 
@@ -494,21 +338,15 @@ function createMarkdownComponents(
       children,
     }: any) {
       return (
-        <EditableBlock
-          tag="blockquote"
-          onBlur={
-            syncPreviewToMarkdown
-          }
-          style={BLOCKQUOTE_STYLE}
-        >
+        <blockquote style={BLOCKQUOTE_STYLE}>
           {children}
-        </EditableBlock>
+        </blockquote>
       );
     },
 
     /**
      * =====================================
-     * CODE (FIXED - SAFE)
+     * CODE
      * =====================================
      */
 
@@ -538,11 +376,14 @@ function createMarkdownComponents(
 
       if (isInline) {
         return (
-          <EditableCode
-            text={text}
-            inline
-            onBlur={syncPreviewToMarkdown}
-          />
+          <code style={{
+            background: "#333",
+            padding: "2px 6px",
+            borderRadius: 4,
+            fontFamily: "monospace",
+          }}>
+            {text}
+          </code>
         );
       }
 
@@ -592,7 +433,7 @@ function createMarkdownComponents(
 
 /**
  * =========================================
- * COMPONENT (FIXED - sync 안전하게)
+ * COMPONENT
  * =========================================
  */
 
@@ -603,17 +444,14 @@ function MarkdownPreview({
 }: Props) {
   /**
    * =====================================
-   * MARKDOWN -> IMAGE
+   * CONTENT RENDER
    * =====================================
    */
 
   const renderContent = React.useMemo(
     () => {
       try {
-        return content.replace(
-          IMAGE_REGEX,
-          "![]($1)"
-        );
+        return content || "";
       } catch (error) {
         console.warn("Content rendering failed:", error);
         return content || "";
@@ -624,86 +462,18 @@ function MarkdownPreview({
 
   /**
    * =====================================
-   * HTML -> MARKDOWN (FIXED - 안전하게)
-   * =====================================
-   */
-
-  const syncTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
-
-  const syncPreviewToMarkdown =
-    React.useCallback(() => {
-      // 이전 timeout 취소
-      if (syncTimeoutRef.current) {
-        clearTimeout(syncTimeoutRef.current);
-      }
-
-      // 약간의 지연 후 실행 (충돌 방지)
-      syncTimeoutRef.current = setTimeout(() => {
-        const root = previewRef.current;
-
-        if (!root) {
-          return;
-        }
-
-        try {
-          // DOM이 변경되었는지 확인
-          const html = root.innerHTML;
-          
-          // 빈 내용이면 무시
-          if (!html || html.trim() === "") {
-            return;
-          }
-
-          const markdown =
-            turndown
-              .turndown(html)
-              .replace(/\r/g, "")
-              .replace(
-                /\n{3,}/g,
-                "\n\n"
-              )
-              .trim();
-
-          // 실제로 변경된 경우에만 업데이트
-          if (markdown !== content) {
-            setContent(markdown);
-          }
-        } catch (error) {
-          console.warn("Sync to markdown failed:", error);
-        }
-      }, 100); // 100ms 지연
-    }, [previewRef, setContent, content]);
-
-  /**
-   * =====================================
-   * CLEANUP
-   * =====================================
-   */
-
-  React.useEffect(() => {
-    return () => {
-      if (syncTimeoutRef.current) {
-        clearTimeout(syncTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  /**
-   * =====================================
    * COMPONENTS
    * =====================================
    */
 
   const markdownComponents =
     React.useMemo(() => {
-      return createMarkdownComponents(
-        syncPreviewToMarkdown
-      );
-    }, [syncPreviewToMarkdown]);
+      return createMarkdownComponents();
+    }, []);
 
   /**
    * =====================================
-   * RENDER (FIXED - content 변경 시 re-render 방지)
+   * RENDER
    * =====================================
    */
 
