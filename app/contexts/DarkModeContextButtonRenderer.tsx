@@ -4,9 +4,6 @@ import React from "react";
 import { useDarkMode } from "@/app/contexts/DarkModeContext";
 import { useCastShadowFilter } from "@/app/contexts/CastShadowFilterContext";
 
-// ❌ @next/font/google import 제거
-// const dorsa = Dorsa({ ... });
-
 export default function DarkModeContextButtonRenderer() {
   const { mode, codeDark, toggle, toggleCode } = useDarkMode();
   const { toggle: toggleShadowFilter, enabled } =
@@ -14,13 +11,7 @@ export default function DarkModeContextButtonRenderer() {
 
   const isDark = mode === "dark";
 
-  // ✅ global.css의 .font-dorsa 클래스 사용
-  const luxuryFont: React.CSSProperties = {
-    fontFamily: '"Dorsa", "Times New Roman", serif',
-    letterSpacing: "0.28em",
-    textTransform: "uppercase",
-  };
-
+  // ✅ 폰트 관련 스타일 간소화 (className에 의존)
   const buttonBaseStyle: React.CSSProperties = {
     width: 190,
     height: 48,
@@ -37,7 +28,6 @@ export default function DarkModeContextButtonRenderer() {
     justifyContent: "space-between",
     padding: "0 16px",
     overflow: "hidden",
-    ...luxuryFont,
   };
 
   const labelStyle: React.CSSProperties = {
@@ -73,6 +63,7 @@ export default function DarkModeContextButtonRenderer() {
 
   return (
     <div
+      className="font-dorsa" // ✅ 여기! 클래스 추가
       style={{
         position: "fixed",
         left: "460px",
@@ -81,7 +72,8 @@ export default function DarkModeContextButtonRenderer() {
         display: "flex",
         gap: 26,
         alignItems: "center",
-        ...luxuryFont,
+        letterSpacing: "0.28em",
+        textTransform: "uppercase",
       }}
     >
       {/* ================= DARK MODE ================= */}
