@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 import StackedPostViewer from "@/app/components/papers/StackedPostViewer";
-import PostEnvironment from "@/app/components/papers/PostEnvironment";
+import PostEnvironment from "@/app/post/[id]/PostEnvironment";
 import PaperWobble3D from "@/app/components/papers/PageFlippingAnimation/PaperWobble3D";
 import { windConfigs } from "@/app/data/windConfigs";
 
