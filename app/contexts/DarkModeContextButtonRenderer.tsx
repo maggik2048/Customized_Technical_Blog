@@ -4,12 +4,8 @@ import React from "react";
 import { useDarkMode } from "@/app/contexts/DarkModeContext";
 import { useCastShadowFilter } from "@/app/contexts/CastShadowFilterContext";
 
-
-// ❌ REMOVED:
-// const dorsa = Dorsa({
-//   subsets: ["latin"],
-//   weight: "400",
-// });
+// ❌ @next/font/google import 제거
+// const dorsa = Dorsa({ ... });
 
 export default function DarkModeContextButtonRenderer() {
   const { mode, codeDark, toggle, toggleCode } = useDarkMode();
@@ -18,9 +14,9 @@ export default function DarkModeContextButtonRenderer() {
 
   const isDark = mode === "dark";
 
-  // ✅ CHANGED: Direct font name instead of ${dorsa.style.fontFamily}
+  // ✅ global.css의 .font-dorsa 클래스 사용
   const luxuryFont: React.CSSProperties = {
-    fontFamily: `"Dorsa", "Times New Roman", serif`,
+    fontFamily: '"Dorsa", "Times New Roman", serif',
     letterSpacing: "0.28em",
     textTransform: "uppercase",
   };
@@ -113,12 +109,10 @@ export default function DarkModeContextButtonRenderer() {
           }}
         />
 
-        {/* SUN */}
         <div style={iconWrap}>
           <span style={iconBase}>☀</span>
         </div>
 
-        {/* MOON */}
         <div style={iconWrap}>
           <span style={dotSmall}>•</span>
           <span style={iconBase}>☾</span>
@@ -156,7 +150,7 @@ export default function DarkModeContextButtonRenderer() {
           <span
             style={{
               ...iconBase,
-              color: "#ffffff", // 🔥 invert (black knob → white icon)
+              color: "#ffffff",
             }}
           >
             {"</>"}
@@ -195,7 +189,7 @@ export default function DarkModeContextButtonRenderer() {
           <span
             style={{
               ...iconBase,
-              color: "#111111", // 🔥 invert (white knob → black icon)
+              color: "#111111",
             }}
           >
             ◐
