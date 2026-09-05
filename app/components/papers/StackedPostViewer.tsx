@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import PDFPage from "@/app/post/[id]/PDFPage";
 import ViewportGuard from "./ViewportGuard";
 import CastshadowOnPost from "./CastshadowOnPost";
@@ -22,7 +22,6 @@ type Props = {
 const LEFT_MASK = "linear-gradient(to right, rgba(0,0,0,1) 45%, rgba(0,0,0,0))";
 const RIGHT_MASK = "linear-gradient(to left, rgba(0,0,0,1) 45%, rgba(0,0,0,0))";
 
-// 🔥 FIX: Use React.CSSProperties type for BASE_STYLE
 const BASE_STYLE: React.CSSProperties = {
   position: "absolute" as const,
   left: "50%",
@@ -43,26 +42,86 @@ export default function StackedPostViewer({
 }: Props) {
   const STACK_OFFSET = -520;
 
+  // =========================
+  // DEBUG LOGGING
+  // =========================
+  useEffect(() => {
+    console.log("========================================");
+    console.log("📚 [StackedPostViewer] Mounted/Updated");
+    console.log("📚 [StackedPostViewer] Total posts:", posts.length);
+    console.log("📚 [StackedPostViewer] Current index:", index);
+    console.log("📚 [StackedPostViewer] Posts:", posts.map((p, i) => ({
+      index: i,
+      id: p.id,
+      title: p.title,
+      isCurrent: i === index ? "⭐ CURRENT" : ""
+    })));
+    console.log("========================================");
+  }, [posts, index]);
+
   // posts 배열에서 현재 인덱스 기준으로 이전, 현재, 다음 포스트 추출
   const prev = posts[index - 1];
   const current = posts[index];
   const next = posts[index + 1];
 
-  const animLeft = useMemo(() => getPostStyle(-1), []);
-  const animCenter = useMemo(() => getPostStyle(0), []);
-  const animRight = useMemo(() => getPostStyle(1), []);
+  // 디버깅: 이전/현재/다음 포스트 로깅
+  useEffect(() => {
+    console.log("📚 [StackedPostViewer] Prev:", prev ? { id: prev.id, title: prev.title } : "None");
+    console.log("📚 [StackedPostViewer] Current:", current ? { id: current.id, title: current.title } : "None");
+    console.log("📚 [StackedPostViewer] Next:", next ? { id: next.id, title: next.title } : "None");
+    
+    if (prev) {
+      console.log("📚 [StackedPostViewer] Prev __globalIndex:", prev.__globalIndex);
+      console.log("📚 [StackedPostViewer] Prev __localIndex:", prev.__localIndex);
+      console.log("📚 [StackedPostViewer] Prev __localTotal:", prev.__localTotal);
+    }
+    if (current) {
+      console.log("📚 [StackedPostViewer] Current __globalIndex:", current.__globalIndex);
+      console.log("📚 [StackedPostViewer] Current __localIndex:", current.__localIndex);
+      console.log("📚 [StackedPostViewer] Current __localTotal:", current.__localTotal);
+    }
+    if (next) {
+      console.log("📚 [StackedPostViewer] Next __globalIndex:", next.__globalIndex);
+      console.log("📚 [StackedPostViewer] Next __localIndex:", next.__localIndex);
+      console.log("📚 [StackedPostViewer] Next __localTotal:", next.__localTotal);
+    }
+  }, [prev, current, next]);
+
+  const animLeft = useMemo(() => {
+    const style = getPostStyle(-1);
+    console.log("🎬 [StackedPostViewer] animLeft:", style);
+    return style;
+  }, []);
+
+  const animCenter = useMemo(() => {
+    const style = getPostStyle(0);
+    console.log("🎬 [StackedPostViewer] animCenter:", style);
+    return style;
+  }, []);
+
+  const animRight = useMemo(() => {
+    const style = getPostStyle(1);
+    console.log("🎬 [StackedPostViewer] animRight:", style);
+    return style;
+  }, []);
 
   // 현재 포스트가 없으면 렌더링하지 않음
   if (!current) {
+    console.warn("⚠️ [StackedPostViewer] No current post to display");
     return <div style={{ padding: "40px", textAlign: "center" }}>No post to display</div>;
   }
 
+  console.log("✅ [StackedPostViewer] Rendering with current post:", current.title);
+
   return (
     <>
-      {/* 🆕 3D 토글 버튼 */}
+      {/* 3D 토글 버튼 */}
       {onToggle3D && currentImage && (
         <button
-          onClick={() => onToggle3D(currentImage)}
+          onClick={() => {
+            console.log("🔄 [StackedPostViewer] 3D button clicked, image:", currentImage);
+            onToggle3D(currentImage);
+          }}
           style={{
             position: "fixed",
             bottom: "180px",
@@ -131,8 +190,12 @@ export default function StackedPostViewer({
               }}
               onClick={() => {
                 const prevIndex = index - 1;
+                console.log("👈 [StackedPostViewer] Left click - navigating to prev index:", prevIndex);
                 if (prevIndex >= 0) {
+                  console.log("👈 [StackedPostViewer] Target post:", posts[prevIndex]?.title);
                   onChangeIndex(prevIndex);
+                } else {
+                  console.warn("👈 [StackedPostViewer] Cannot go left - already at first post");
                 }
               }}
             >
@@ -191,8 +254,12 @@ export default function StackedPostViewer({
               }}
               onClick={() => {
                 const nextIndex = index + 1;
+                console.log("👉 [StackedPostViewer] Right click - navigating to next index:", nextIndex);
                 if (nextIndex < posts.length) {
+                  console.log("👉 [StackedPostViewer] Target post:", posts[nextIndex]?.title);
                   onChangeIndex(nextIndex);
+                } else {
+                  console.warn("👉 [StackedPostViewer] Cannot go right - already at last post");
                 }
               }}
             >
