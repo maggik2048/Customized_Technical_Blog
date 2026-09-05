@@ -18,16 +18,12 @@ export default function PostPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // 3D 종이 상태
   const [show3D, setShow3D] = useState(false);
   const [is3DActive, setIs3DActive] = useState(false);
   const [flipProgress, setFlipProgress] = useState(0);
   const [flipDirection, setFlipDirection] = useState<'forward' | 'backward' | null>(null);
   const [current3DImage, setCurrent3DImage] = useState<string>('');
 
-  // =========================
-  // FETCH POST + ALL POSTS
-  // =========================
   useEffect(() => {
     const fetchData = async () => {
       console.log("========================================");
@@ -43,7 +39,6 @@ export default function PostPage() {
       }
 
       try {
-        // ✅ 1. 먼저 현재 포스트 찾기
         console.log("📡 [Fetch] Finding post with id:", id);
         const { data: postData, error: postError } = await supabase
           .from("posts")
@@ -53,12 +48,6 @@ export default function PostPage() {
 
         if (postError) {
           console.error("❌ [Fetch] Post error:", postError);
-          console.error("❌ [Fetch] Post error details:", {
-            code: postError.code,
-            message: postError.message,
-            details: postError.details,
-            hint: postError.hint
-          });
           setError(`Post not found: ${postError.message}`);
           setLoading(false);
           return;
@@ -75,12 +64,10 @@ export default function PostPage() {
           id: postData.id,
           title: postData.title,
           category: postData.category,
-          project_slugs: postData.project_slugs,
           created_at: postData.created_at
         });
         setPost(postData);
 
-        // ✅ 2. 모든 포스트 로드
         console.log("📡 [Fetch] Loading all posts...");
         const { data: allData, error: allError } = await supabase
           .from("posts")
@@ -89,65 +76,56 @@ export default function PostPage() {
 
         if (allError) {
           console.error("❌ [Fetch] All posts error:", allError);
-          console.error("❌ [Fetch] All posts error details:", {
-            code: allError.code,
-            message: allError.message,
-            details: allError.details,
-            hint: allError.hint
-          });
-          console.warn("⚠️ [Fetch] Falling back to single post mode");
           setAllPosts([postData]);
           setLoading(false);
           return;
         }
 
         console.log("📡 [Fetch] All posts loaded:", allData?.length || 0);
-        
-        // allData가 없거나 빈 배열이면 현재 포스트만 사용
-        if (!allData || allData.length === 0) {
-          console.warn("⚠️ [Fetch] No all posts data, using current post only");
-          setAllPosts([postData]);
-          setLoading(false);
-          return;
+
+        // 🔥 FIX: 현재 포스트가 allData에 있는지 확인 (ID를 문자열로 비교)
+        let finalAllData = allData || [];
+        const currentExists = finalAllData.some((p) => String(p.id) === String(postData.id));
+        console.log("📡 [Fetch] Current post exists in allData:", currentExists);
+
+        // 🔥 FIX: 없으면 추가
+        if (!currentExists) {
+          console.warn("⚠️ [Fetch] Current post missing from allData, adding it...");
+          finalAllData = [postData, ...finalAllData];
+          
+          finalAllData.sort((a, b) => {
+            return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+          });
+          
+          console.log("📡 [Fetch] Updated all posts count:", finalAllData.length);
         }
 
-        // 현재 포스트의 인덱스 찾기
-        const currentIndex = allData.findIndex((p) => p.id === postData.id);
+        const currentIndex = finalAllData.findIndex((p) => String(p.id) === String(postData.id));
         console.log("📡 [Fetch] Current post index in all posts:", currentIndex);
         
-        // 이전/다음 포스트 정보 로깅
         if (currentIndex > 0) {
           console.log("📡 [Fetch] Previous post:", {
-            id: allData[currentIndex - 1].id,
-            title: allData[currentIndex - 1].title
+            id: finalAllData[currentIndex - 1].id,
+            title: finalAllData[currentIndex - 1].title
           });
         } else {
           console.log("📡 [Fetch] No previous post (first post)");
         }
 
-        if (currentIndex < allData.length - 1) {
+        if (currentIndex < finalAllData.length - 1) {
           console.log("📡 [Fetch] Next post:", {
-            id: allData[currentIndex + 1].id,
-            title: allData[currentIndex + 1].title
+            id: finalAllData[currentIndex + 1].id,
+            title: finalAllData[currentIndex + 1].title
           });
         } else {
           console.log("📡 [Fetch] No next post (last post)");
         }
 
-        // 전체 포스트 제목 목록 로깅
-        console.log("📡 [Fetch] All post titles:", allData.map((p, i) => ({
-          index: i,
-          id: p.id,
-          title: p.title,
-          isCurrent: p.id === postData.id ? "⭐ CURRENT" : ""
-        })));
-
-        setAllPosts(allData);
+        setAllPosts(finalAllData);
         setLoading(false);
         
       } catch (err) {
         console.error("❌ [Fetch] Unexpected error:", err);
-        console.error("❌ [Fetch] Error stack:", err instanceof Error ? err.stack : "No stack available");
         setError(`Unexpected error: ${err}`);
         setLoading(false);
       }
@@ -156,9 +134,6 @@ export default function PostPage() {
     fetchData();
   }, [id]);
 
-  // =========================
-  // BUILD POSTS FOR STACKED VIEWER
-  // =========================
   const buildStackedPosts = () => {
     console.log("========================================");
     console.log("📊 [Stacked] Building stacked posts...");
@@ -171,7 +146,6 @@ export default function PostPage() {
       return [];
     }
 
-    // allPosts가 비어있으면 현재 포스트만 반환
     if (!allPosts.length) {
       console.warn("⚠️ [Stacked] allPosts is empty, returning single post");
       return [{
@@ -182,7 +156,7 @@ export default function PostPage() {
       }];
     }
 
-    const currentIdx = allPosts.findIndex((p) => p.id === post.id);
+    const currentIdx = allPosts.findIndex((p) => String(p.id) === String(post.id));
     console.log("📊 [Stacked] Current index in allPosts:", currentIdx);
     
     if (currentIdx === -1) {
@@ -207,7 +181,6 @@ export default function PostPage() {
     const result = indices.map((i) => {
       const p = allPosts[i];
       
-      // category가 없거나 null인 경우 처리
       const sameCategoryPosts = allPosts.filter((x) => {
         if (!x.category && !p.category) return true;
         if (!x.category || !p.category) return false;
@@ -252,11 +225,7 @@ export default function PostPage() {
     console.log("📊 [Stacked] Current post in stack:", stackedPosts[viewerIndex]?.title);
   }
 
-  // =========================
-  // 3D 종이 토글 핸들러
-  // =========================
   const toggle3D = useCallback((imagePath?: string) => {
-    console.log("🔄 [3D] Toggling 3D view:", { imagePath, show3D: !show3D });
     if (imagePath) {
       setCurrent3DImage(imagePath);
     }
@@ -271,19 +240,12 @@ export default function PostPage() {
     }
   }, [show3D]);
 
-  // =========================
-  // 3D 플립 완료 핸들러
-  // =========================
   const handleFlipComplete = useCallback(() => {
-    console.log("🔄 [3D] Flip complete");
     setIs3DActive(false);
     setFlipProgress(0);
     setFlipDirection(null);
   }, []);
 
-  // =========================
-  // RENDER
-  // =========================
   if (loading) {
     return (
       <div style={{ padding: "40px", textAlign: "center" }}>
@@ -367,12 +329,8 @@ export default function PostPage() {
     );
   }
 
-  // =========================
-  // MAIN RENDER WITH STACKED VIEWER
-  // =========================
   return (
     <PostEnvironment key={id}>
-      {/* 3D 종이 */}
       {show3D && current3DImage && (
         <PaperWobble3D
           imagePath={current3DImage}
@@ -398,14 +356,8 @@ export default function PostPage() {
           onChangeIndex={(i: number) => {
             const targetPost = stackedPosts[i];
             if (targetPost) {
-              console.log("🔄 [onChangeIndex] Navigating to:", {
-                id: targetPost.id,
-                title: targetPost.title,
-                index: i
-              });
+              console.log("[onChangeIndex] Navigating to:", targetPost.id);
               router.push(`/post/${targetPost.id}`);
-            } else {
-              console.warn("⚠️ [onChangeIndex] No target post at index:", i);
             }
           }}
           onToggle3D={toggle3D}
