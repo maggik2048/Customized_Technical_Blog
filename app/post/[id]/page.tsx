@@ -24,6 +24,9 @@ export default function PostPage() {
   const [flipDirection, setFlipDirection] = useState<'forward' | 'backward' | null>(null);
   const [current3DImage, setCurrent3DImage] = useState<string>('');
 
+  // =========================
+  // FETCH POST + ALL POSTS
+  // =========================
   useEffect(() => {
     const fetchData = async () => {
       console.log("========================================");
@@ -83,12 +86,10 @@ export default function PostPage() {
 
         console.log("📡 [Fetch] All posts loaded:", allData?.length || 0);
 
-        // 🔥 FIX: 현재 포스트가 allData에 있는지 확인 (ID를 문자열로 비교)
         let finalAllData = allData || [];
         const currentExists = finalAllData.some((p) => String(p.id) === String(postData.id));
         console.log("📡 [Fetch] Current post exists in allData:", currentExists);
 
-        // 🔥 FIX: 없으면 추가
         if (!currentExists) {
           console.warn("⚠️ [Fetch] Current post missing from allData, adding it...");
           finalAllData = [postData, ...finalAllData];
@@ -134,6 +135,27 @@ export default function PostPage() {
     fetchData();
   }, [id]);
 
+  // =========================
+  // 🔥 FIX: 클라이언트 사이드 포스트 변경 핸들러
+  // =========================
+  const handlePostChange = useCallback((targetPost: any) => {
+    if (!targetPost) return;
+    
+    console.log("🔄 [PostPage] Changing to post:", targetPost.id, targetPost.title);
+    
+    // 1. 현재 포스트 업데이트
+    setPost(targetPost);
+    
+    // 2. URL 업데이트 (히스토리만 변경, 페이지 새로고침 없음)
+    window.history.pushState(null, '', `/post/${targetPost.id}`);
+    
+    // 3. allPosts에서 현재 포스트 인덱스 업데이트를 위해 다시 빌드하지 않음
+    // StackedPostViewer가 내부적으로 인덱스만 변경하면 됨
+  }, []);
+
+  // =========================
+  // BUILD POSTS FOR STACKED VIEWER
+  // =========================
   const buildStackedPosts = () => {
     console.log("========================================");
     console.log("📊 [Stacked] Building stacked posts...");
@@ -355,9 +377,10 @@ export default function PostPage() {
           index={viewerIndex >= 0 ? viewerIndex : 0}
           onChangeIndex={(i: number) => {
             const targetPost = stackedPosts[i];
-            if (targetPost) {
-              console.log("[onChangeIndex] Navigating to:", targetPost.id);
-              router.push(`/post/${targetPost.id}`);
+            if (targetPost && targetPost.id !== post?.id) {
+              console.log("🔄 [onChangeIndex] Navigating to:", targetPost.id);
+              // 🔥 FIX: router.push 대신 handlePostChange 사용
+              handlePostChange(targetPost);
             }
           }}
           onToggle3D={toggle3D}
